@@ -1,0 +1,136 @@
+📋 Fix Task Display & Add Date Selector
+Let's fix the task display issue and add a proper date selector:
+
+1. DEBUG TASK DISPLAY:
+   First, let's ensure the mock tasks are actually being loaded:
+   ```typescript
+   // In your Tasks component, add console logging
+   console.log('Current tasks:', tasks);
+   console.log('Filtered tasks:', filteredTasks);
+   
+   // Make sure tasks are initialized with the mock data
+   const [tasks, setTasks] = useState(mockTasks);
+
+ENSURE MOCK TASKS ARE DEFINED:
+typescript// At the top of the Tasks component
+const mockTasks = [
+  {
+    id: 1,
+    title: "Seed Lettuce Trays",
+    type: "Seeding - Leafy Greens",
+    priority: "medium",
+    assignedTo: "Seeding Tech",
+    status: "in-progress",
+    completionDate: "2024-03-15", // Today's date
+    estimatedTime: "2h 30m",
+    progress: 60,
+    checklistItems: 3,
+    checklistCompleted: 3
+  },
+  {
+    id: 2,
+    title: "Harvest Spinach",
+    type: "Harvest - Leafy Greens", 
+    priority: "high",
+    assignedTo: "Harvest Team",
+    status: "pending",
+    completionDate: "2024-03-15", // Today's date
+    estimatedTime: "3h"
+  },
+  {
+    id: 3,
+    title: "Remove Blackout Covers",
+    type: "Blackout Tasks",
+    priority: "high",
+    assignedTo: "All Staff",
+    status: "pending",
+    completionDate: "2024-03-14", // Yesterday (will be overdue)
+    estimatedTime: "45m",
+    isOverdue: true
+  },
+  {
+    id: 4,
+    title: "Monthly Inventory Audit",
+    type: "Inventory",
+    priority: "low",
+    assignedTo: "Manager",
+    status: "pending",
+    completionDate: "2024-03-16", // Tomorrow
+    estimatedTime: "1h 30m"
+  }
+];
+
+ADD PROPER DATE SELECTOR:
+Replace the date filter with a full calendar date picker:
+jsx<input
+  type="date"
+  className="date-filter"
+  value={selectedDate}
+  onChange={(e) => setSelectedDate(e.target.value)}
+/>
+Or use a better date picker component:
+jsx<div className="date-filter-wrapper">
+  <label>📅</label>
+  <input
+    type="date"
+    value={selectedDate || format(new Date(), 'yyyy-MM-dd')}
+    onChange={(e) => handleDateChange(e.target.value)}
+    className="date-picker"
+  />
+  <button onClick={() => setSelectedDate(null)}>Clear</button>
+</div>
+
+FIX FILTERING LOGIC:
+typescriptconst filterTasks = () => {
+  let filtered = [...tasks];
+  
+  // Filter by category
+  if (selectedCategory && selectedCategory !== 'all') {
+    filtered = filtered.filter(task => task.type === selectedCategory);
+  }
+  
+  // Filter by date
+  if (selectedDate) {
+    filtered = filtered.filter(task => {
+      if (!task.completionDate) return false;
+      
+      if (typeof task.completionDate === 'string') {
+        return task.completionDate === selectedDate;
+      } else {
+        // Handle date ranges
+        const selected = new Date(selectedDate);
+        const start = new Date(task.completionDate.start);
+        const end = new Date(task.completionDate.end);
+        return selected >= start && selected <= end;
+      }
+    });
+  }
+  
+  // Filter by status
+  if (selectedStatus && selectedStatus !== 'all') {
+    filtered = filtered.filter(task => task.status === selectedStatus);
+  }
+  
+  return filtered;
+};
+
+CHECK FOR COMMON ISSUES:
+
+Make sure the task cards are not being hidden by CSS
+Verify the "No tasks found" condition isn't always true
+Check if filters are too restrictive (maybe defaulting to a date with no tasks)
+Ensure the task mapping is correct:
+
+jsx{filteredTasks.length > 0 ? (
+  filteredTasks.map(task => (
+    <TaskCard key={task.id} task={task} onStartTask={handleStartTask} />
+  ))
+) : (
+  <div className="no-tasks">No tasks found</div>
+)}
+
+ADD "SHOW ALL DATES" OPTION:
+Next to the date picker, add a button or checkbox:
+jsx<button onClick={() => setSelectedDate(null)}>
+  Show All Dates
+</button>

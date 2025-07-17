@@ -80,7 +80,13 @@ export class MemStorage implements IStorage {
       this.users.set(newUser.id, newUser);
     });
 
-    // Create sample tasks
+    // Create sample tasks with different dates
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    
     const sampleTasks = [
       {
         title: "Seed Arugula Trays",
@@ -102,10 +108,11 @@ export class MemStorage implements IStorage {
           { id: "5", text: "Place in germination area", completed: false }
         ] as ChecklistItem[],
         startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        completedAt: null
+        completedAt: null,
+        dueDate: today // Due today
       },
       {
-        title: "Remove Covers - Tower 3",
+        title: "Remove Covers - Microgreens",
         description: "Day 2 blackout removal for proper stem height",
         type: "blackout-tasks",
         status: "pending",
@@ -122,7 +129,8 @@ export class MemStorage implements IStorage {
           { id: "3", text: "Adjust lighting schedule", completed: false }
         ] as ChecklistItem[],
         startedAt: null,
-        completedAt: null
+        completedAt: null,
+        dueDate: yesterday // Overdue
       },
       {
         title: "Harvest Spinach",
@@ -142,7 +150,8 @@ export class MemStorage implements IStorage {
           { id: "3", text: "Clean harvested area", completed: false }
         ] as ChecklistItem[],
         startedAt: null,
-        completedAt: null
+        completedAt: null,
+        dueDate: tomorrow // Due tomorrow
       },
       {
         title: "Clean Tower Systems",
@@ -162,6 +171,7 @@ export class MemStorage implements IStorage {
           { id: "3", text: "Replace filters", completed: true }
         ] as ChecklistItem[],
         completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+        dueDate: yesterday // Was due yesterday but completed
       }
     ];
 
@@ -170,10 +180,10 @@ export class MemStorage implements IStorage {
         ...task,
         id: this.currentTaskId++,
         data: {},
-        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Due tomorrow
+        dueDate: task.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000),
         createdAt: new Date(),
         description: task.description || null,
-        location: task.location || null,
+        location: null, // Always null - no location references
         estimatedTime: task.estimatedTime || null,
         actualTime: task.actualTime || null,
         progress: task.progress || 0,

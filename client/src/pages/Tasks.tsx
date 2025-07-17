@@ -29,7 +29,7 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
-  const [dateFilter, setDateFilter] = React.useState<Date | null>(new Date());
+  const [dateFilter, setDateFilter] = React.useState<Date | null>(null);
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -73,6 +73,13 @@ const Tasks: React.FC = () => {
     },
     enabled: !!auth.user,
   });
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Current tasks:', tasks);
+    console.log('Date filter:', dateFilter);
+    console.log('Filtered tasks:', filteredTasks);
+  }, [tasks, dateFilter]);
 
   // Task mutations
   const startTaskMutation = useMutation({
@@ -204,7 +211,9 @@ const Tasks: React.FC = () => {
     if (dateFilter) {
       filtered = filtered.filter(task => {
         if (task.dueDate) {
-          return isSameDay(new Date(task.dueDate), dateFilter);
+          const taskDate = new Date(task.dueDate);
+          const filterDate = new Date(dateFilter);
+          return taskDate.toDateString() === filterDate.toDateString();
         }
         return false;
       });
@@ -437,71 +446,24 @@ const Tasks: React.FC = () => {
             )}
           </div>
 
-          {/* Date Filter Dropdown */}
-          <div className="relative" ref={dateDropdownRef}>
-            <Button
-              variant="outline"
-              onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
-              className="flex items-center gap-2"
-            >
-              {dateFilter ? (
-                <>
-                  <Calendar className="h-4 w-4" />
-                  {format(dateFilter, 'MMM d, yyyy')}
-                  <X 
-                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDateFilter(null);
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  <Calendar className="h-4 w-4" />
-                  All Dates
-                  <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-            
-            {dateDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
-                <div className="p-2">
-                  <button
-                    onClick={() => {
-                      setDateFilter(new Date());
-                      setDateDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Today
-                  </button>
-                  <button
-                    onClick={() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      setDateFilter(tomorrow);
-                      setDateDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Tomorrow
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDateFilter(null);
-                      setDateDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    All Dates
-                  </button>
-                </div>
-              </div>
+          {/* Date Filter */}
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            <input
+              type="date"
+              value={dateFilter ? format(dateFilter, 'yyyy-MM-dd') : ''}
+              onChange={(e) => setDateFilter(e.target.value ? new Date(e.target.value) : null)}
+              className="border rounded px-3 py-2 text-sm"
+            />
+            {dateFilter && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDateFilter(null)}
+                className="px-2 py-1"
+              >
+                Clear
+              </Button>
             )}
           </div>
 
