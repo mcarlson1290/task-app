@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/trayService";
 import SystemConfiguration from "@/components/SystemConfiguration";
+import { EquipmentManagement } from "@/components/EquipmentManagement";
 
 interface Crop extends CropType {
   checklistTemplate: any;
@@ -590,10 +591,11 @@ const ProductionData: React.FC = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className={`grid w-full ${isCorporateManager ? 'grid-cols-3' : 'grid-cols-1'}`}>
-          <TabsTrigger value="dashboard">Live Dashboard</TabsTrigger>
-          {isCorporateManager && <TabsTrigger value="crops">Crop Configuration</TabsTrigger>}
-          {isCorporateManager && <TabsTrigger value="systems">System Configuration</TabsTrigger>}
+        <TabsList className={`grid w-full ${isCorporateManager ? 'grid-cols-4' : 'grid-cols-2'}`}>
+          <TabsTrigger value="dashboard">📊 Live Dashboard</TabsTrigger>
+          {isCorporateManager && <TabsTrigger value="crops">🌾 Crop Configuration</TabsTrigger>}
+          {isCorporateManager && <TabsTrigger value="systems">⚙️ System Configuration</TabsTrigger>}
+          <TabsTrigger value="equipment">🏭 Equipment Management</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dashboard" className="space-y-4">
@@ -620,6 +622,10 @@ const ProductionData: React.FC = () => {
             <SystemConfiguration isCorporateManager={isCorporateManager} />
           </TabsContent>
         )}
+        
+        <TabsContent value="equipment" className="space-y-4">
+          <EquipmentManagement />
+        </TabsContent>
       </Tabs>
 
       {/* Crop Modal */}
