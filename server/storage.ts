@@ -265,12 +265,85 @@ export class MemStorage implements IStorage {
       this.tasks.set(newTask.id, newTask);
     });
 
-    // Create sample inventory items
+    // Create sample inventory items with product codes and seed usage
     const sampleInventory = [
-      { name: "Lettuce Seeds", category: "seeds", currentStock: 150, minimumStock: 50, unit: "packets", supplier: "Green Thumb Seeds" },
-      { name: "Spinach Seeds", category: "seeds", currentStock: 25, minimumStock: 30, unit: "packets", supplier: "Green Thumb Seeds" },
-      { name: "Nutrient Solution A", category: "nutrients", currentStock: 45, minimumStock: 20, unit: "liters", supplier: "Hydro Nutrients Co" },
-      { name: "Growing Medium", category: "supplies", currentStock: 80, minimumStock: 40, unit: "kg", supplier: "Farm Supply Plus" }
+      { 
+        name: "Arugula Seeds", 
+        category: "seeds", 
+        currentStock: 450, 
+        minimumStock: 100, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "ARU",
+        ozPerTray: 0.5,
+        cropId: 1
+      },
+      { 
+        name: "Romaine Seeds", 
+        category: "seeds", 
+        currentStock: 1200, 
+        minimumStock: 200, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "ROM",
+        ozPerTray: 0.75,
+        cropId: 2
+      },
+      { 
+        name: "Broccoli Microgreen Seeds", 
+        category: "seeds", 
+        currentStock: 800, 
+        minimumStock: 150, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "BROC",
+        ozPerTray: 1.0,
+        cropId: 3
+      },
+      { 
+        name: "Basil Seeds", 
+        category: "seeds", 
+        currentStock: 300, 
+        minimumStock: 50, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "BAS",
+        ozPerTray: 0.25,
+        cropId: 4
+      },
+      { 
+        name: "Spinach Seeds", 
+        category: "seeds", 
+        currentStock: 25, 
+        minimumStock: 30, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "SPI",
+        ozPerTray: 0.6,
+        cropId: 5
+      },
+      { 
+        name: "Nutrient Solution A", 
+        category: "nutrients", 
+        currentStock: 45, 
+        minimumStock: 20, 
+        unit: "liters", 
+        supplier: "Hydro Nutrients Co",
+        productCode: "NUT-A",
+        ozPerTray: null,
+        cropId: null
+      },
+      { 
+        name: "Growing Medium", 
+        category: "supplies", 
+        currentStock: 80, 
+        minimumStock: 40, 
+        unit: "kg", 
+        supplier: "Farm Supply Plus",
+        productCode: "GROW-MED",
+        ozPerTray: null,
+        cropId: null
+      }
     ];
 
     sampleInventory.forEach(item => {

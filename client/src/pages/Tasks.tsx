@@ -258,18 +258,25 @@ const Tasks: React.FC = () => {
         
         // Check if this is a seeding task and create tray
         if (task.type.includes('seeding') || task.type.includes('Seeding')) {
-          const newTray = TrayService.createTrayFromTask(task, auth.user);
-          if (newTray) {
-            toast({
-              title: "🎉 Task completed!",
-              description: `Great job! Task completed and tray ${newTray.id} created for ${newTray.cropType}.`,
-            });
-          } else {
+          TrayService.createTrayFromTask(task, auth.user).then(newTray => {
+            if (newTray) {
+              toast({
+                title: "🎉 Task completed!",
+                description: `Great job! Task completed and tray ${newTray.id} created for ${newTray.cropType}. Used ${newTray.seedsUsedOz} oz of seeds.`,
+              });
+            } else {
+              toast({
+                title: "🎉 Task completed!",
+                description: "Great job! The task has been marked as completed.",
+              });
+            }
+          }).catch(error => {
+            console.error('Error creating tray:', error);
             toast({
               title: "🎉 Task completed!",
               description: "Great job! The task has been marked as completed.",
             });
-          }
+          });
         } else {
           toast({
             title: "🎉 Task completed!",

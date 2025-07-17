@@ -43,8 +43,11 @@ export const inventoryItems = pgTable("inventory_items", {
   category: text("category").notNull(), // 'seeds', 'nutrients', 'supplies', 'equipment'
   currentStock: integer("current_stock").default(0),
   minimumStock: integer("minimum_stock").default(0),
-  unit: text("unit").notNull(), // 'kg', 'lbs', 'pieces', 'liters'
+  unit: text("unit").notNull(), // 'kg', 'lbs', 'pieces', 'liters', 'grams'
   supplier: text("supplier"),
+  productCode: text("product_code"), // Used for tray ID generation
+  ozPerTray: real("oz_per_tray"), // Amount needed per tray for seeds
+  cropId: integer("crop_id"), // Links to crop configuration
   lastRestocked: timestamp("last_restocked"),
   createdAt: timestamp("created_at").defaultNow(),
 });

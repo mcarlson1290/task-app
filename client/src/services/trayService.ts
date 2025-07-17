@@ -1,17 +1,24 @@
-// Tray Management Service
+import { Task, User, InventoryItem } from '@shared/schema';
+import { apiRequest } from '@/lib/queryClient';
+
 export interface Tray {
   id: string;
   cropType: string;
-  cropId: number;
+  cropId: number | null;
+  productCode: string;
+  seedInventoryId: number | null;
+  seedLot?: string;
   datePlanted: string;
-  assignedSystem: string;
   estimatedHarvestDate: string;
-  status: string;
-  actualYield: number | null;
-  harvestDate?: string;
-  notes: string;
-  createdByTask?: number;
-  createdBy?: string;
+  assignedSystem?: string;
+  status: 'growing' | 'ready-to-harvest' | 'harvested';
+  actualYield?: number;
+  expectedYield: number;
+  seedsUsedOz: number;
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  taskId: number;
 }
 
 export interface Crop {
@@ -23,6 +30,193 @@ export interface Crop {
   lightRequirements: string;
   status: string;
 }
+
+class TrayServiceClass {
+  private trays: Map<string, Tray> = new Map();
+
+  async createTrayFromTask(task: Task, user: User | null): Promise<Tray | null> {
+    if (!task.type.includes('seeding') && !task.type.includes('Seeding')) {
+      return null;
+    }
+
+    // Get inventory items
+    let inventoryItems: InventoryItem[] = [];
+    try {
+      const response = await fetch('/api/inventory');
+      inventoryItems = await response.json();
+    } catch (error) {
+      console.error('Failed to fetch inventory:', error);
+      return null;
+    }
+
+    // Find matching seed inventory item
+    const seedItem = this.findMatchingSeedItem(task.title, inventoryItems);
+    if (!seedItem) {
+      console.warn('No matching seed inventory item found for task:', task.title);
+      return null;
+    }
+
+    // Generate unique tray ID using product code
+    const trayId = this.generateTrayId(seedItem);
+    
+    // Calculate harvest date (typically 7-14 days for microgreens)
+    const harvestDate = new Date();
+    harvestDate.setDate(harvestDate.getDate() + 10); // 10 days from now
+    
+    const newTray: Tray = {
+      id: trayId,
+      cropType: seedItem.name.replace(' Seeds', ''),
+      cropId: seedItem.cropId,
+      productCode: seedItem.productCode || 'UNKNOWN',
+      seedInventoryId: seedItem.id,
+      seedLot: 'Unknown', // Could be enhanced with lot tracking
+      datePlanted: new Date().toISOString().split('T')[0],
+      estimatedHarvestDate: harvestDate.toISOString().split('T')[0],
+      assignedSystem: 'Tower 1 - Level A', // Default assignment
+      status: 'growing',
+      expectedYield: 0.5, // Default expected yield in lbs
+      seedsUsedOz: seedItem.ozPerTray || 0.5,
+      notes: `Created from task: ${task.title}`,
+      createdBy: user?.name || 'Unknown',
+      createdAt: new Date().toISOString(),
+      taskId: task.id
+    };
+
+    // Deduct inventory
+    await this.deductInventory(seedItem, newTray.seedsUsedOz);
+
+    this.trays.set(trayId, newTray);
+    return newTray;
+  }
+
+  private findMatchingSeedItem(taskTitle: string, inventoryItems: InventoryItem[]): InventoryItem | null {
+    // Look for seed items only
+    const seedItems = inventoryItems.filter(item => item.category === 'seeds');
+    
+    // Try to match by name
+    const cropPatterns = [
+      { pattern: /arugula/i, seedName: 'Arugula Seeds' },
+      { pattern: /lettuce/i, seedName: 'Lettuce Seeds' },
+      { pattern: /spinach/i, seedName: 'Spinach Seeds' },
+      { pattern: /kale/i, seedName: 'Kale Seeds' },
+      { pattern: /basil/i, seedName: 'Basil Seeds' },
+      { pattern: /cilantro/i, seedName: 'Cilantro Seeds' },
+      { pattern: /broccoli/i, seedName: 'Broccoli Microgreen Seeds' },
+      { pattern: /radish/i, seedName: 'Radish Seeds' },
+      { pattern: /pea/i, seedName: 'Pea Seeds' },
+      { pattern: /sunflower/i, seedName: 'Sunflower Seeds' },
+      { pattern: /romaine/i, seedName: 'Romaine Seeds' }
+    ];
+
+    for (const { pattern, seedName } of cropPatterns) {
+      if (pattern.test(taskTitle)) {
+        const item = seedItems.find(item => item.name === seedName);
+        if (item) return item;
+      }
+    }
+
+    // Default to first available seed item
+    return seedItems[0] || null;
+  }
+
+  private async deductInventory(seedItem: InventoryItem, ozUsed: number): Promise<void> {
+    try {
+      // Convert oz to grams
+      const gramsUsed = ozUsed * 28.35;
+      const newStock = Math.max(0, (seedItem.currentStock || 0) - gramsUsed);
+      
+      await apiRequest('PATCH', `/api/inventory/${seedItem.id}`, {
+        currentStock: Math.round(newStock)
+      });
+
+      console.log(`Deducted ${gramsUsed.toFixed(1)}g from ${seedItem.name}. New stock: ${newStock.toFixed(1)}g`);
+    } catch (error) {
+      console.error('Failed to deduct inventory:', error);
+    }
+  }
+
+  private generateTrayId(seedItem: InventoryItem): string {
+    // Generate ID format: K071725-MG-CROP-1C
+    const date = new Date();
+    const dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getFullYear().toString().slice(-2)}`;
+    
+    // Determine category code based on seed type
+    let categoryCode = 'MG'; // Default to microgreens
+    if (seedItem.name.includes('Microgreen')) {
+      categoryCode = 'MG';
+    } else if (seedItem.category === 'seeds') {
+      categoryCode = 'LG'; // Leafy greens
+    }
+    
+    // Use product code from inventory
+    const productCode = seedItem.productCode || 'UNKN';
+    
+    // Generate tray identifier
+    const trayNum = Math.floor(Math.random() * 9) + 1;
+    const section = String.fromCharCode(65 + Math.floor(Math.random() * 4)); // A-D
+    
+    return `K${dateStr}-${categoryCode}-${productCode}-${trayNum}${section}`;
+  }
+
+  getAllTrays(): Tray[] {
+    return Array.from(this.trays.values());
+  }
+
+  getTrayById(id: string): Tray | undefined {
+    return this.trays.get(id);
+  }
+
+  updateTrayStatus(id: string, status: Tray['status'], actualYield?: number): boolean {
+    const tray = this.trays.get(id);
+    if (!tray) return false;
+
+    tray.status = status;
+    if (actualYield !== undefined) {
+      tray.actualYield = actualYield;
+    }
+
+    this.trays.set(id, tray);
+    return true;
+  }
+
+  addTray(tray: Tray): void {
+    this.trays.set(tray.id, tray);
+  }
+
+  deleteTray(id: string): boolean {
+    return this.trays.delete(id);
+  }
+
+  // Get trays by status
+  getTraysByStatus(status: Tray['status']): Tray[] {
+    return Array.from(this.trays.values()).filter(tray => tray.status === status);
+  }
+
+  // Get trays by crop type
+  getTraysByCrop(cropType: string): Tray[] {
+    return Array.from(this.trays.values()).filter(tray => tray.cropType === cropType);
+  }
+
+  // Get performance metrics
+  getPerformanceMetrics() {
+    const trays = this.getAllTrays();
+    const harvestedTrays = trays.filter(t => t.status === 'harvested' && t.actualYield);
+    
+    const totalExpected = harvestedTrays.reduce((sum, t) => sum + t.expectedYield, 0);
+    const totalActual = harvestedTrays.reduce((sum, t) => sum + (t.actualYield || 0), 0);
+    
+    return {
+      totalTrays: trays.length,
+      harvestedTrays: harvestedTrays.length,
+      averageYield: harvestedTrays.length > 0 ? totalActual / harvestedTrays.length : 0,
+      yieldVariance: totalExpected > 0 ? ((totalActual - totalExpected) / totalExpected) * 100 : 0,
+      readyToHarvest: trays.filter(t => t.status === 'ready-to-harvest').length,
+      growing: trays.filter(t => t.status === 'growing').length
+    };
+  }
+}
+
+export const TrayService = new TrayServiceClass();
 
 // Generate unique tray ID
 export const generateTrayId = (cropType: string, location: string = 'K'): string => {
@@ -73,195 +267,16 @@ export const detectCropFromTask = (task: any): { cropType: string; cropId: numbe
   
   if (combined.includes('romaine') || combined.includes('lettuce')) {
     return { cropType: 'Romaine Lettuce', cropId: 1 };
-  } else if (combined.includes('broccoli') && combined.includes('microgreen')) {
+  }
+  if (combined.includes('broccoli') || combined.includes('microgreen')) {
     return { cropType: 'Broccoli Microgreens', cropId: 2 };
-  } else if (combined.includes('arugula')) {
+  }
+  if (combined.includes('arugula')) {
     return { cropType: 'Arugula', cropId: 3 };
-  } else if (combined.includes('basil')) {
+  }
+  if (combined.includes('basil')) {
     return { cropType: 'Basil', cropId: 4 };
   }
   
   return null;
 };
-
-// TrayService class for managing trays
-export class TrayService {
-  private static STORAGE_KEY = 'productionTrays';
-  
-  // Get all trays from localStorage
-  static getTrays(): Tray[] {
-    try {
-      const trays = localStorage.getItem(this.STORAGE_KEY);
-      return trays ? JSON.parse(trays) : [];
-    } catch (error) {
-      console.error('Error loading trays:', error);
-      return [];
-    }
-  }
-  
-  // Add new tray
-  static addTray(tray: Tray): void {
-    try {
-      const trays = this.getTrays();
-      trays.push(tray);
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trays));
-      
-      // Trigger update event
-      window.dispatchEvent(new CustomEvent('trayAdded', { detail: tray }));
-    } catch (error) {
-      console.error('Error adding tray:', error);
-    }
-  }
-  
-  // Update existing tray
-  static updateTray(trayId: string, updates: Partial<Tray>): void {
-    try {
-      const trays = this.getTrays();
-      const index = trays.findIndex(t => t.id === trayId);
-      if (index !== -1) {
-        trays[index] = { ...trays[index], ...updates };
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trays));
-        
-        // Trigger update event
-        window.dispatchEvent(new CustomEvent('trayUpdated', { detail: trays[index] }));
-      }
-    } catch (error) {
-      console.error('Error updating tray:', error);
-    }
-  }
-  
-  // Generate multiple trays
-  static generateMultipleTrays(cropType: string, cropId: number, quantity: number, system: string, taskId?: number, createdBy?: string): Tray[] {
-    const trays: Tray[] = [];
-    
-    for (let i = 0; i < quantity; i++) {
-      trays.push({
-        id: generateTrayId(cropType),
-        cropType,
-        cropId,
-        datePlanted: new Date().toISOString().split('T')[0],
-        assignedSystem: system,
-        estimatedHarvestDate: calculateHarvestDate(cropId),
-        status: 'growing',
-        actualYield: null,
-        notes: taskId ? `Created from task ID: ${taskId}` : '',
-        createdByTask: taskId,
-        createdBy: createdBy
-      });
-    }
-    
-    // Add all trays
-    try {
-      const existingTrays = this.getTrays();
-      const updatedTrays = [...existingTrays, ...trays];
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedTrays));
-      
-      // Trigger events for each tray
-      trays.forEach(tray => {
-        window.dispatchEvent(new CustomEvent('trayAdded', { detail: tray }));
-      });
-    } catch (error) {
-      console.error('Error generating multiple trays:', error);
-    }
-    
-    return trays;
-  }
-  
-  // Create tray from completed seeding task
-  static createTrayFromTask(task: any, currentUser: any): Tray | null {
-    // Only create trays for seeding tasks
-    if (!task.type.includes('seeding') && !task.type.includes('Seeding')) {
-      return null;
-    }
-    
-    const cropInfo = detectCropFromTask(task);
-    if (!cropInfo) {
-      console.warn('Could not detect crop type from task:', task.title);
-      return null;
-    }
-    
-    const newTray: Tray = {
-      id: generateTrayId(cropInfo.cropType),
-      cropType: cropInfo.cropType,
-      cropId: cropInfo.cropId,
-      datePlanted: new Date().toISOString().split('T')[0],
-      assignedSystem: task.location || 'Unassigned',
-      estimatedHarvestDate: calculateHarvestDate(cropInfo.cropId),
-      status: 'growing',
-      actualYield: null,
-      notes: `Created from task: ${task.title}`,
-      createdByTask: task.id,
-      createdBy: currentUser.name
-    };
-    
-    this.addTray(newTray);
-    return newTray;
-  }
-  
-  // Initialize trays with some sample data if empty
-  static initializeSampleTrays(): void {
-    const existingTrays = this.getTrays();
-    if (existingTrays.length === 0) {
-      const sampleTrays: Tray[] = [
-        {
-          id: 'K071725-MG-BROC-1C',
-          cropType: 'Broccoli Microgreens',
-          cropId: 2,
-          datePlanted: '2024-03-10',
-          assignedSystem: 'Tower 3 - Level A',
-          estimatedHarvestDate: '2024-03-17',
-          status: 'growing',
-          actualYield: null,
-          notes: ''
-        },
-        {
-          id: 'K071725-LG-ROM-2A',
-          cropType: 'Romaine Lettuce',
-          cropId: 1,
-          datePlanted: '2024-02-15',
-          assignedSystem: 'NFT System 1',
-          estimatedHarvestDate: '2024-03-22',
-          status: 'growing',
-          actualYield: null,
-          notes: 'Looking healthy'
-        },
-        {
-          id: 'K071725-LG-ARU-3B',
-          cropType: 'Arugula',
-          cropId: 3,
-          datePlanted: '2024-03-01',
-          assignedSystem: 'Tower 2 - Level B',
-          estimatedHarvestDate: '2024-03-29',
-          status: 'growing',
-          actualYield: null,
-          notes: ''
-        },
-        {
-          id: 'K071725-MG-BROC-2C',
-          cropType: 'Broccoli Microgreens',
-          cropId: 2,
-          datePlanted: '2024-03-08',
-          assignedSystem: 'Tower 3 - Level B',
-          estimatedHarvestDate: '2024-03-15',
-          status: 'ready-to-harvest',
-          actualYield: null,
-          notes: 'Ready for harvest'
-        },
-        {
-          id: 'K071725-LG-ROM-1A',
-          cropType: 'Romaine Lettuce',
-          cropId: 1,
-          datePlanted: '2024-02-10',
-          assignedSystem: 'NFT System 2',
-          estimatedHarvestDate: '2024-03-17',
-          status: 'harvested',
-          actualYield: 2.3,
-          harvestDate: '2024-03-16',
-          notes: 'Good yield'
-        }
-      ];
-      
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sampleTrays));
-    }
-  }
-}

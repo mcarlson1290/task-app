@@ -466,8 +466,7 @@ const ProductionData: React.FC = () => {
 
   // Initialize trays from TrayService
   useEffect(() => {
-    TrayService.initializeSampleTrays();
-    setTrays(TrayService.getTrays());
+    setTrays(TrayService.getAllTrays());
   }, []);
 
   // Listen for tray updates
@@ -477,7 +476,7 @@ const ProductionData: React.FC = () => {
     };
     
     const handleTrayUpdated = () => {
-      setTrays(TrayService.getTrays());
+      setTrays(TrayService.getAllTrays());
     };
     
     window.addEventListener('trayAdded', handleTrayAdded);
