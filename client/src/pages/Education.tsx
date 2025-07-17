@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, BookOpen, Award, CheckCircle, Play, Filter, Plus } from "lucide-react";
 import { TrainingModule, UserProgress } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
@@ -392,7 +393,9 @@ const Education: React.FC = () => {
       {/* Filter Tabs */}
       <div className="flex items-center space-x-2">
         <Filter className="h-4 w-4 text-gray-500" />
-        <div className="flex space-x-2 course-filters">
+        
+        {/* Desktop Filters */}
+        <div className="hidden md:flex space-x-2 course-filters">
           {[
             { key: 'all', label: 'All Courses' },
             { key: 'in-progress', label: 'In Progress' },
@@ -409,6 +412,21 @@ const Education: React.FC = () => {
               {filter.label}
             </Button>
           ))}
+        </div>
+
+        {/* Mobile Dropdown Filter */}
+        <div className="md:hidden flex-1 mobile-filter-dropdown">
+          <Select value={activeFilter} onValueChange={setActiveFilter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Filter courses..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Courses</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="not-started">Not Started</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
