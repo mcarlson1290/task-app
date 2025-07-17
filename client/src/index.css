@@ -75,6 +75,129 @@
   }
 }
 
+/* Staff Data Page Styles */
+.staff-data-page {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.btn-export {
+  background: #2D8028;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-export:hover {
+  background: #1a4f15;
+}
+
+.tab-navigation {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.tab.active {
+  color: #203B17;
+  border-bottom-color: #203B17;
+  font-weight: 600;
+}
+
+.tab-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+}
+
+.access-denied {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.access-denied h2 {
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.staff-summary, .analytics-summary {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.staff-summary h3, .analytics-summary h3 {
+  color: #203B17;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.staff-summary p, .analytics-summary p {
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .staff-data-page {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .tab-navigation {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .tab {
+    min-width: 120px;
+  }
+  
+  .tab-content {
+    padding: 16px;
+  }
+}
+
 /* Custom animations for task completion */
 @keyframes celebrate {
   0% { transform: scale(1); }
