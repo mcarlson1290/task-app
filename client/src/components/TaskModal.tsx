@@ -44,12 +44,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
 
   const updateTaskMutation = useMutation({
     mutationFn: async (updates: Partial<Task>) => {
-      if (!task) return;
+      if (!task) {
+        console.error("No task found for update!");
+        return null;
+      }
       console.log("Updating task with:", updates);
-      const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
-      const result = await response.json();
-      console.log("Task update response:", result);
-      return result;
+      try {
+        const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
+        const result = await response.json();
+        console.log("Task update response:", result);
+        return result;
+      } catch (error) {
+        console.error("Error in mutation function:", error);
+        throw error;
+      }
     },
     onSuccess: (updatedTask) => {
       console.log("Task updated successfully:", updatedTask);
@@ -139,9 +147,18 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
       : task?.estimatedTime || 0;
 
     console.log('Completing task with status change to completed');
-    updateTaskMutation.mutate({
+    console.log('Task ID:', task?.id);
+    console.log('Completion data:', {
       status: 'completed',
       completedAt: now,
+      actualTime,
+      progress: 100,
+      data: { ...task?.data, notes }
+    });
+
+    updateTaskMutation.mutate({
+      status: 'completed',
+      completedAt: now.toISOString(),
       actualTime,
       progress: 100,
       data: { ...task?.data, notes }, // Store notes in task data
