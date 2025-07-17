@@ -99,6 +99,7 @@ export class MemStorage implements IStorage {
           { id: "5", text: "Place in germination area", completed: false }
         ] as ChecklistItem[],
         startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        completedAt: null
       },
       {
         title: "Harvest Spinach",
@@ -116,6 +117,7 @@ export class MemStorage implements IStorage {
           { id: "2", text: "Harvest plants", completed: false, dataCollection: { type: "number", label: "Weight (lbs)" } },
           { id: "3", text: "Clean harvested area", completed: false }
         ] as ChecklistItem[],
+        completedAt: null
       },
       {
         title: "Clean Tower Systems",
@@ -135,6 +137,24 @@ export class MemStorage implements IStorage {
           { id: "3", text: "Replace filters", completed: true }
         ] as ChecklistItem[],
         completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+      },
+      {
+        title: "Inventory Check - Nutrients",
+        description: "Check stock levels and quality of nutrient solutions",
+        type: "inventory",
+        status: "pending",
+        priority: "low",
+        assignedTo: 1,
+        createdBy: 2,
+        location: "Storage Room A",
+        estimatedTime: 90,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Check nutrient levels", completed: false, dataCollection: { type: "number", label: "Containers remaining" } },
+          { id: "2", text: "Inspect for damage", completed: false },
+          { id: "3", text: "Update inventory records", completed: false }
+        ] as ChecklistItem[],
+        completedAt: null
       }
     ];
 
