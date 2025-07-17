@@ -47,6 +47,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
     return labels[status] || status;
   };
 
+  const getPriorityColor = (priority: string): string => {
+    const colors = {
+      high: "bg-red-500",
+      medium: "bg-yellow-500",
+      low: "bg-green-500"
+    };
+    return colors[priority] || "bg-gray-500";
+  };
+
   const formatTime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -86,10 +95,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
   };
 
   return (
-    <Card className={`shadow-sm hover:shadow-md transition-shadow ${
+    <Card className={`relative shadow-sm hover:shadow-md transition-shadow ${
       isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
     } ${isCompleted ? 'opacity-75' : ''}`}>
       <CardContent className="p-6">
+        {/* Priority Badge */}
+        <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
+          {task.priority.toUpperCase()}
+        </div>
+
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center">
             <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>

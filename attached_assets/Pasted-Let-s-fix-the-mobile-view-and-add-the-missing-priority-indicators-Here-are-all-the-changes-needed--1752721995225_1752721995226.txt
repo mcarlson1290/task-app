@@ -1,0 +1,116 @@
+Let's fix the mobile view and add the missing priority indicators. Here are all the changes needed:
+
+1. MOBILE LAYOUT FIXES:
+   - On screens <768px wide:
+     * Completely hide the green sidebar
+     * Show only the bottom navigation with 4 tabs
+     * Make main content full width with padding-bottom: 70px (for bottom nav)
+   - Fix the broken user dropdown (it should not be expanded by default)
+   - Bottom nav should be: white background, fixed to bottom, 60px height
+
+2. USER SWITCHING ON MOBILE:
+   Since sidebar is hidden on mobile, add user switching to mobile header:
+   - Create a compact mobile header showing:
+     * "Grow Space" on the left
+     * Current user dropdown on the right (e.g., "Alex Martinez ▼")
+     * When tapped, show the 3 user options in a dropdown
+
+3. ADD PRIORITY INDICATORS:
+   Each task card needs a priority badge. Add to existing task cards:
+   - High Priority: Small red badge with "HIGH" text
+   - Medium Priority: Small yellow/orange badge with "MEDIUM" text  
+   - Low Priority: Small green badge with "LOW" text
+   - Position: top-right corner of each task card
+   - Style: Small rounded rectangle with white text
+
+4. UPDATE THE NEW TASK MODAL:
+   Remove these fields from the Add Task form:
+   - Remove the Time picker (keep only Date picker)
+   - Remove any Location field (tasks aren't location-specific)
+   - Keep these fields:
+     * Title (required)
+     * Quick Info
+     * Description
+     * Task Type (Seeding, Harvest, Cleaning, Packing, Inventory)
+     * Priority (High, Medium, Low)
+     * Assign To (roles or "All Staff")
+     * Due Date (date only, no time)
+     * Estimated Duration (e.g., "2 hours", "30 minutes")
+
+5. MOBILE OPTIMIZATIONS:
+   - Task cards: full width minus 16px margins on each side
+   - All buttons: minimum 44px height for touch targets
+   - Proper spacing between elements (at least 8px)
+   - Font sizes readable on mobile (minimum 14px)
+
+6. CSS STRUCTURE:
+   ```css
+   /* Mobile styles */
+   @media (max-width: 768px) {
+     .sidebar {
+       display: none !important;
+     }
+     
+     .main-content {
+       margin-left: 0;
+       width: 100%;
+       padding-bottom: 70px;
+     }
+     
+     .mobile-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding: 12px 16px;
+       background: white;
+       border-bottom: 1px solid #e0e0e0;
+     }
+     
+     .bottom-nav {
+       position: fixed;
+       bottom: 0;
+       left: 0;
+       right: 0;
+       height: 60px;
+       background: white;
+       border-top: 1px solid #e0e0e0;
+       display: flex;
+       justify-content: space-around;
+       align-items: center;
+     }
+     
+     /* Hide mobile elements on desktop */
+     @media (min-width: 769px) {
+       .mobile-header,
+       .bottom-nav {
+         display: none;
+       }
+     }
+   }
+
+PRIORITY BADGE STYLES:
+css.priority-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-high {
+  background: #dc2626;
+  color: white;
+}
+
+.priority-medium {
+  background: #f59e0b;
+  color: white;
+}
+
+.priority-low {
+  background: #10b981;
+  color: white;
+}

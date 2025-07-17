@@ -39,7 +39,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
       priority: "medium",
       assignedTo: auth.user?.id || 1,
       createdBy: auth.user?.id || 1,
-      location: "",
+      location: "Main Growing Area",
       estimatedTime: 60,
       status: "pending",
       progress: 0,
@@ -130,15 +130,16 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
           </div>
 
           <div>
-            <Label htmlFor="location">Location *</Label>
-            <Input
-              id="location"
-              {...form.register("location")}
-              placeholder="e.g., Section A - Towers 1-5"
+            <Label htmlFor="fullDescription">Description</Label>
+            <Textarea
+              id="fullDescription"
+              {...form.register("description")}
+              placeholder="Full task description and details"
+              rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="priority">Priority</Label>
               <Select value={form.watch("priority")} onValueChange={(value) => form.setValue("priority", value)}>
@@ -154,20 +155,21 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
             </div>
 
             <div>
-              <Label htmlFor="estimatedTime">Estimated Time (mins)</Label>
+              <Label htmlFor="estimatedTime">Estimated Duration</Label>
               <Input
                 id="estimatedTime"
                 type="number"
                 {...form.register("estimatedTime", { valueAsNumber: true })}
                 placeholder="60"
               />
+              <p className="text-xs text-gray-500 mt-1">Duration in minutes (e.g., 30 for 30 minutes, 120 for 2 hours)</p>
             </div>
 
             <div>
               <Label htmlFor="dueDate">Due Date *</Label>
               <Input
                 id="dueDate"
-                type="datetime-local"
+                type="date"
                 {...form.register("dueDate")}
               />
               {form.formState.errors.dueDate && (

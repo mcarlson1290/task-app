@@ -1,11 +1,13 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Bell, User, MapPin } from "lucide-react";
+import { Bell, User, MapPin, ChevronDown, Home, Package, GraduationCap, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { getStoredAuth, clearStoredAuth, setStoredAuth } from "@/lib/auth";
 import { DashboardAnalytics } from "@/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [selectedLocation, setSelectedLocation] = React.useState("grow-space");
   const auth = getStoredAuth();
+  const isMobile = useIsMobile();
 
   const { data: analytics } = useQuery<DashboardAnalytics>({
     queryKey: ["/api/analytics/dashboard"],
@@ -51,10 +54,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navigationItems = [
-    { href: "/", label: "Tasks", icon: "📋", requiresRole: null },
-    { href: "/account", label: "Account Info", icon: "👤", requiresRole: null },
-    { href: "/inventory", label: "Inventory", icon: "📦", requiresRole: null },
-    { href: "/education", label: "Education", icon: "🎓", requiresRole: null },
+    { href: "/", label: "Tasks", icon: "📋", lucideIcon: Home, requiresRole: null },
+    { href: "/account", label: "Account", icon: "👤", lucideIcon: User, requiresRole: null },
+    { href: "/inventory", label: "Inventory", icon: "📦", lucideIcon: Package, requiresRole: null },
+    { href: "/education", label: "Education", icon: "🎓", lucideIcon: GraduationCap, requiresRole: null },
   ];
 
   const managerItems = [
@@ -84,8 +87,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex">
-      {/* Fixed Left Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-[#203B17] text-white flex flex-col z-50">
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-[#203B17]">Grow Space</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center space-x-2">
+                <span className="text-sm font-medium">{currentUser.name}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {testUsers.map((user) => (
+                <DropdownMenuItem
+                  key={user.username}
+                  onClick={() => handleUserSwitch(user.username)}
+                  className={currentUser.username === user.username ? "bg-green-50" : ""}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{user.name}</span>
+                    <span className="text-xs text-gray-500">{user.role}</span>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
+      {/* Fixed Left Sidebar - Hidden on mobile */}
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-[#203B17] text-white flex flex-col z-50 ${isMobile ? 'hidden' : ''}`}>
         {/* Logo/Header */}
         <div className="p-6 border-b border-[#2D8028]">
           <h1 className="text-xl font-bold text-white">🌱 Grow Space</h1>
@@ -189,60 +221,67 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-64">
-        {/* Top Header */}
-        <header className="bg-white shadow-sm sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-4">
-                <h2 className="text-lg font-semibold text-[#203B17]">
-                  {navigationItems.find(item => isActive(item.href))?.label || 
-                   managerItems.find(item => isActive(item.href))?.label || 
-                   "Dashboard"}
-                </h2>
-                <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
-                  {currentUser.role}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">Welcome, {currentUser.name}</span>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5 text-gray-600" />
-                  {analytics?.lowStockAlerts && analytics.lowStockAlerts > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                      {analytics.lowStockAlerts}
-                    </Badge>
-                  )}
-                </Button>
+      <div className={`flex-1 ${isMobile ? 'ml-0' : 'ml-64'}`}>
+        {/* Top Header - Hidden on mobile */}
+        {!isMobile && (
+          <header className="bg-white shadow-sm sticky top-0 z-40">
+            <div className="px-6 py-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-4">
+                  <h2 className="text-lg font-semibold text-[#203B17]">
+                    {navigationItems.find(item => isActive(item.href))?.label || 
+                     managerItems.find(item => isActive(item.href))?.label || 
+                     "Dashboard"}
+                  </h2>
+                  <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
+                    {currentUser.role}
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">Welcome, {currentUser.name}</span>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5 text-gray-600" />
+                    {analytics?.lowStockAlerts && analytics.lowStockAlerts > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
+                        {analytics.lowStockAlerts}
+                      </Badge>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Main Content */}
-        <main className="p-6">
+        <main className={`p-6 ${isMobile ? 'pt-20 pb-20' : ''}`}>
           {children}
         </main>
       </div>
 
-      {/* Mobile Navigation (hidden on desktop) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="flex justify-around py-2">
-          {navigationItems.slice(0, 4).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center p-2 ${
-                isActive(item.href) ? "text-[#2D8028]" : "text-gray-600"
-              }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="text-xs mt-1">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+      {/* Bottom Navigation - Only visible on mobile */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 h-16">
+          <div className="flex justify-around items-center h-full">
+            {navigationItems.slice(0, 4).map((item) => {
+              const IconComponent = item.lucideIcon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex flex-col items-center justify-center min-h-[44px] px-3 ${
+                    isActive(item.href) ? "text-[#2D8028]" : "text-gray-600"
+                  }`}
+                >
+                  <IconComponent className="h-5 w-5" />
+                  <span className="text-xs mt-1">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 };
