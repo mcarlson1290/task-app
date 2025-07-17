@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,14 +24,49 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
   onDelete,
   onClose
 }) => {
-  const [formData, setFormData] = useState({
-    name: item?.name || '',
-    currentStock: item?.currentStock || 0,
-    unit: item?.unit || 'units',
-    minimumStock: item?.minimumStock || 0,
-    category: item?.category || 'supplies',
-    supplier: item?.supplier || ''
+  const [formData, setFormData] = useState(() => {
+    if (mode === 'edit' && item) {
+      return {
+        name: item.name,
+        currentStock: item.currentStock,
+        unit: item.unit,
+        minimumStock: item.minimumStock,
+        category: item.category,
+        supplier: item.supplier || ''
+      };
+    }
+    return {
+      name: '',
+      currentStock: 0,
+      unit: 'units',
+      minimumStock: 0,
+      category: 'supplies',
+      supplier: ''
+    };
   });
+
+  // Update form data when item changes
+  useEffect(() => {
+    if (mode === 'edit' && item) {
+      setFormData({
+        name: item.name,
+        currentStock: item.currentStock,
+        unit: item.unit,
+        minimumStock: item.minimumStock,
+        category: item.category,
+        supplier: item.supplier || ''
+      });
+    } else if (mode === 'add') {
+      setFormData({
+        name: '',
+        currentStock: 0,
+        unit: 'units',
+        minimumStock: 0,
+        category: 'supplies',
+        supplier: ''
+      });
+    }
+  }, [item, mode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +123,9 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <DialogTitle className="text-[#203B17]">
             {mode === 'edit' ? 'Edit Inventory Item' : 'Add New Item'}
           </DialogTitle>
+          <DialogDescription>
+            {mode === 'edit' ? 'Update the inventory item details below.' : 'Enter the details for the new inventory item.'}
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
