@@ -37,6 +37,88 @@ const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onCo
       setSectionCompleted(false);
     }
   }, [course]);
+
+  // Helper functions for video URLs
+  const isYouTubeUrl = (url: string) => {
+    return url.includes('youtube.com/watch') || url.includes('youtu.be/');
+  };
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    let videoId = '';
+    if (url.includes('youtube.com/watch')) {
+      videoId = url.split('v=')[1]?.split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    }
+    return `https://www.youtube.com/embed/${videoId}`;
+  };
+
+  const isVimeoUrl = (url: string) => {
+    return url.includes('vimeo.com/');
+  };
+
+  const getVimeoEmbedUrl = (url: string) => {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return `https://player.vimeo.com/video/${videoId}`;
+  };
+
+  // Render rich text content with embedded media
+  const renderRichContent = (content: string) => {
+    if (!content) return null;
+    
+    // Split content by media tags
+    const parts = content.split(/(\[\[IMAGE:.*?\]\]|\[\[VIDEO:.*?\]\])/);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('[[IMAGE:')) {
+        const url = part.match(/\[\[IMAGE:(.*?)\]\]/)?.[1];
+        return url ? (
+          <img 
+            key={index} 
+            src={url} 
+            alt="Embedded" 
+            className="max-w-full h-auto my-3 rounded-lg"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+            }}
+          />
+        ) : null;
+      } else if (part.startsWith('[[VIDEO:')) {
+        const url = part.match(/\[\[VIDEO:(.*?)\]\]/)?.[1];
+        if (!url) return null;
+        
+        if (isYouTubeUrl(url)) {
+          return (
+            <iframe
+              key={index}
+              src={getYouTubeEmbedUrl(url)}
+              className="w-full h-96 my-3 rounded-lg"
+              frameBorder="0"
+              allowFullScreen
+            />
+          );
+        } else if (isVimeoUrl(url)) {
+          return (
+            <iframe
+              key={index}
+              src={getVimeoEmbedUrl(url)}
+              className="w-full h-96 my-3 rounded-lg"
+              frameBorder="0"
+              allowFullScreen
+            />
+          );
+        } else {
+          return (
+            <video key={index} controls className="w-full my-3 rounded-lg">
+              <source src={url} />
+            </video>
+          );
+        }
+      } else {
+        return <p key={index} className="mb-3">{part}</p>;
+      }
+    });
+  };
   
   if (!course) return null;
   
@@ -61,6 +143,100 @@ const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onCo
       5: ['Leadership Fundamentals', 'Team Management', 'Scheduling Systems', 'Performance Metrics', 'Communication', 'Problem Solving', 'Resource Planning', 'Quality Assurance', 'Training Others', 'Operational Excellence']
     };
     return titles[courseId]?.[sectionIndex] || `Section ${sectionIndex + 1}`;
+  };
+
+  const renderSectionForViewing = (section: any) => {
+    if (!section) return null;
+    
+    switch (section.type) {
+      case 'video':
+        if (isYouTubeUrl(section.content)) {
+          return (
+            <iframe
+              src={getYouTubeEmbedUrl(section.content)}
+              className="w-full h-96 rounded-lg"
+              frameBorder="0"
+              allowFullScreen
+            />
+          );
+        } else if (isVimeoUrl(section.content)) {
+          return (
+            <iframe
+              src={getVimeoEmbedUrl(section.content)}
+              className="w-full h-96 rounded-lg"
+              frameBorder="0"
+              allowFullScreen
+            />
+          );
+        } else {
+          return (
+            <video className="w-full rounded-lg" controls>
+              <source src={section.content} />
+              Your browser does not support video.
+            </video>
+          );
+        }
+        
+      case 'image':
+        return (
+          <div className="text-center">
+            <img 
+              src={section.content} 
+              alt={section.title} 
+              className="max-w-full h-auto rounded-lg mx-auto"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+              }}
+            />
+            {section.caption && (
+              <p className="text-center italic text-gray-600 mt-2">{section.caption}</p>
+            )}
+          </div>
+        );
+        
+      case 'rich-text':
+        return (
+          <div className="prose max-w-none">
+            {renderRichContent(section.content)}
+          </div>
+        );
+        
+      case 'quiz':
+        return (
+          <div className="space-y-4">
+            <p className="text-lg font-semibold">{section.content}</p>
+            <div className="space-y-2">
+              {['A', 'B', 'C', 'D'].map(option => (
+                <label key={option} className="flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                  <input
+                    type="radio"
+                    name={`quiz-${section.id}`}
+                    value={option}
+                    className="mr-3"
+                  />
+                  <span>{section[`option${option}`]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+        
+      case 'checklist':
+        const items = section.content.split('\n').filter((item: string) => item.trim());
+        return (
+          <div className="space-y-2">
+            {items.map((item: string, idx: number) => (
+              <label key={idx} className="flex items-center p-2 rounded cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" className="mr-3" />
+                <span>{item.replace(/^☐\s*/, '')}</span>
+              </label>
+            ))}
+          </div>
+        );
+        
+      default:
+        return <div className="whitespace-pre-wrap">{section.content}</div>;
+    }
   };
 
   const progressPercentage = ((currentSection + (sectionCompleted ? 1 : 0)) / totalSections) * 100;
@@ -122,41 +298,66 @@ const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onCo
                   </h3>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-600 mb-4">
-                    This section covers essential knowledge and skills for the {course.roleAwarded} role.
-                  </p>
-                  
-                  <div className="space-y-2">
-                    <p className="font-medium text-gray-800">Learning objectives:</p>
-                    <ul className="space-y-1 text-sm text-gray-600">
-                      <li>• 📹 Watch instructional videos</li>
-                      <li>• 📄 Review detailed procedures</li>
-                      <li>• 🖼️ Study visual guides and diagrams</li>
-                      <li>• ✅ Complete interactive exercises</li>
-                      <li>• ❓ Pass section quiz</li>
-                    </ul>
-                  </div>
-
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium text-blue-800">Section Review</span>
-                    </div>
-                    <p className="text-sm text-blue-700 mb-3">
-                      Please confirm you have reviewed all materials in this section.
+                <div className="space-y-6">
+                  {/* Course content for demo - in real app this would come from course sections */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-gray-600 mb-4">
+                      This section covers essential knowledge and skills for the {course.roleAwarded} role.
                     </p>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sectionCompleted}
-                        onChange={(e) => setSectionCompleted(e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <span className="text-sm text-blue-800">
-                        I have completed this section
-                      </span>
-                    </label>
+                    
+                    {/* Demo content with rich text example */}
+                    <div className="bg-white p-4 rounded-lg mb-4">
+                      <h4 className="font-semibold mb-3">Section Content:</h4>
+                      {renderSectionForViewing({
+                        type: 'rich-text',
+                        content: `Welcome to this training section! 
+
+Here are the key learning points:
+• Understanding safety protocols
+• Following proper procedures
+• Quality control measures
+
+[[IMAGE:https://via.placeholder.com/600x300/4CAF50/FFFFFF?text=Training+Diagram]]
+
+Watch this instructional video to learn more:
+
+[[VIDEO:https://www.youtube.com/watch?v=dQw4w9WgXcQ]]
+
+Complete the checklist below to track your progress.`
+                      })}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <p className="font-medium text-gray-800">Learning objectives:</p>
+                      <ul className="space-y-1 text-sm text-gray-600">
+                        <li>• 📹 Watch instructional videos</li>
+                        <li>• 📄 Review detailed procedures</li>
+                        <li>• 🖼️ Study visual guides and diagrams</li>
+                        <li>• ✅ Complete interactive exercises</li>
+                        <li>• ❓ Pass section quiz</li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-5 w-5 text-blue-600" />
+                        <span className="font-medium text-blue-800">Section Review</span>
+                      </div>
+                      <p className="text-sm text-blue-700 mb-3">
+                        Please confirm you have reviewed all materials in this section.
+                      </p>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={sectionCompleted}
+                          onChange={(e) => setSectionCompleted(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-sm text-blue-800">
+                          I have completed this section
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
