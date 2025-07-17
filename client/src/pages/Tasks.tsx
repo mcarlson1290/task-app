@@ -1,27 +1,102 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Filter, Search } from "lucide-react";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
+import NewTaskModal from "@/components/NewTaskModal";
+import TaskActionModal from "@/components/TaskActionModal";
 import { Task } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import confetti from "canvas-confetti";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [newTaskModalOpen, setNewTaskModalOpen] = React.useState(false);
+  const [taskActionModalOpen, setTaskActionModalOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const [activeFilter, setActiveFilter] = React.useState<string>("all");
   
   const auth = getStoredAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", { userId: auth.user?.id }],
+    queryKey: ["/api/tasks", auth.user?.id],
+    queryFn: async () => {
+      const url = auth.user?.role === 'technician' 
+        ? `/api/tasks?userId=${auth.user.id}`
+        : '/api/tasks';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json();
+    },
     enabled: !!auth.user,
+  });
+
+  // Task mutations
+  const startTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      return await apiRequest(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: "in_progress",
+          startedAt: new Date().toISOString(),
+        }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        title: "Task started!",
+        description: "You've successfully started the task.",
+      });
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
+      return await apiRequest(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify(updates),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const completeTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      return await apiRequest(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: "completed",
+          completedAt: new Date().toISOString(),
+          progress: 100,
+        }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        title: "🎉 Task completed!",
+        description: "Great job! The task has been marked as completed.",
+      });
+      // Celebrate with confetti!
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    },
   });
 
   const taskTypes = [
@@ -33,6 +108,19 @@ const Tasks: React.FC = () => {
     { value: "cleaning", label: "Cleaning", emoji: "🧹" },
     { value: "inventory", label: "Inventory", emoji: "📋" },
   ];
+
+  // Calculate task counts
+  const taskCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    taskTypes.forEach(type => {
+      if (type.value === "all") {
+        counts[type.value] = tasks.length;
+      } else {
+        counts[type.value] = tasks.filter(task => task.type === type.value).length;
+      }
+    });
+    return counts;
+  }, [tasks]);
 
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
@@ -59,18 +147,25 @@ const Tasks: React.FC = () => {
   }, [tasks, searchTerm, activeFilter, filters]);
 
   const handleTaskStart = (task: Task) => {
-    setSelectedTask(task);
-    setModalOpen(true);
+    startTaskMutation.mutate(task.id);
   };
 
   const handleTaskContinue = (task: Task) => {
     setSelectedTask(task);
-    setModalOpen(true);
+    setTaskActionModalOpen(true);
   };
 
   const handleTaskDetails = (task: Task) => {
     setSelectedTask(task);
     setModalOpen(true);
+  };
+
+  const handleCompleteTask = (task: Task) => {
+    completeTaskMutation.mutate(task.id);
+  };
+
+  const handleNewTask = () => {
+    setNewTaskModalOpen(true);
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
@@ -107,7 +202,7 @@ const Tasks: React.FC = () => {
           <p className="text-gray-600">Complete your daily farm operations</p>
         </div>
         <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-          <Button className="bg-[#2D8028] hover:bg-[#203B17] text-white">
+          <Button onClick={handleNewTask} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
             <Plus className="h-4 w-4 mr-2" />
             New Task
           </Button>
@@ -153,6 +248,9 @@ const Tasks: React.FC = () => {
           >
             <span className="mr-1">{type.emoji}</span>
             {type.label}
+            <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">
+              {taskCounts[type.value] || 0}
+            </span>
           </Button>
         ))}
       </div>
@@ -189,6 +287,19 @@ const Tasks: React.FC = () => {
         isOpen={modalOpen}
         onClose={handleCloseModal}
         onTaskUpdate={handleTaskUpdate}
+      />
+
+      {/* New Task Modal */}
+      <NewTaskModal
+        open={newTaskModalOpen}
+        onClose={() => setNewTaskModalOpen(false)}
+      />
+
+      {/* Task Action Modal */}
+      <TaskActionModal
+        task={selectedTask}
+        open={taskActionModalOpen}
+        onClose={() => setTaskActionModalOpen(false)}
       />
     </div>
   );

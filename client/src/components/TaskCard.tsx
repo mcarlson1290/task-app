@@ -73,6 +73,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
 
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
+  const isPending = task.status === 'pending';
+
+  const getCardClassName = () => {
+    let baseClass = "hover:shadow-lg transition-all duration-200 cursor-pointer";
+    if (isInProgress) {
+      baseClass += " bg-blue-50 border-blue-200";
+    } else if (isCompleted) {
+      baseClass += " bg-green-50 border-green-200";
+    }
+    return baseClass;
+  };
 
   return (
     <Card className={`shadow-sm hover:shadow-md transition-shadow ${
