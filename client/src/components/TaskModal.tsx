@@ -186,7 +186,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
       pending: "bg-blue-100 text-blue-800",
       in_progress: "bg-amber-100 text-amber-800",
       completed: "bg-green-100 text-green-800",
-      approved: "bg-green-100 text-green-800"
+      approved: "bg-green-100 text-green-800",
+      paused: "bg-yellow-100 text-yellow-800",
+      skipped: "bg-gray-100 text-gray-800"
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
@@ -402,6 +404,30 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                     {task.completedAt && (
                       <p className="text-sm text-green-600 mt-1">
                         Completed at: {new Date(task.completedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Show pause info if paused */}
+                {task.status === 'paused' && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 w-full">
+                    <p className="text-yellow-800 font-medium">⏸️ Task Paused</p>
+                    {task.pausedAt && (
+                      <p className="text-sm text-yellow-600 mt-1">
+                        Paused at: {new Date(task.pausedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Show skip info if skipped */}
+                {task.status === 'skipped' && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 w-full">
+                    <p className="text-gray-800 font-medium">⏭️ Task Skipped</p>
+                    {task.skippedAt && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Skipped at: {new Date(task.skippedAt).toLocaleString()}
                       </p>
                     )}
                   </div>

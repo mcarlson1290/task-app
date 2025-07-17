@@ -141,3 +141,8 @@ Preferred communication style: Simple, everyday language.
   - Streamlined TaskModal to always show checklist and proper action buttons
   - Removed complex mutation system and replaced with unified task action handler
   - Verified task completion flow working correctly with proper status updates and server persistence
+  - **Added pause and skip functionality**: Tasks can now be paused (with resume capability) or skipped (with mandatory reason)
+  - Enhanced database schema with pause/skip fields (pausedAt, resumedAt, skippedAt, skipReason)
+  - Added visual styling for paused (yellow) and skipped (gray) task states
+  - Fixed modal button display after resume to show correct action buttons
+  - Added pause/skip options to status filter dropdown

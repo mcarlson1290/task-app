@@ -287,6 +287,12 @@ const Tasks: React.FC = () => {
         
       case 'resume':
         // Update paused task back to in-progress
+        const resumedTask = {
+          ...task,
+          status: 'in_progress' as const,
+          resumedAt: new Date().toISOString()
+        };
+        
         updateTaskMutation.mutate({
           taskId,
           updates: { 
@@ -294,8 +300,9 @@ const Tasks: React.FC = () => {
             resumedAt: new Date().toISOString()
           }
         });
-        // Reopen the modal
-        setSelectedTask(task);
+        
+        // Pass the updated task to modal
+        setSelectedTask(resumedTask);
         setModalOpen(true);
         toast({
           title: "Task Resumed",
