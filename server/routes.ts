@@ -103,7 +103,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       console.log("Creating task with data:", req.body);
-      const taskData = insertTaskSchema.parse(req.body);
+      
+      // Convert date string to Date object before validation
+      const processedBody = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+        startedAt: req.body.startedAt ? new Date(req.body.startedAt) : undefined,
+        completedAt: req.body.completedAt ? new Date(req.body.completedAt) : undefined,
+        pausedAt: req.body.pausedAt ? new Date(req.body.pausedAt) : undefined,
+        resumedAt: req.body.resumedAt ? new Date(req.body.resumedAt) : undefined,
+        skippedAt: req.body.skippedAt ? new Date(req.body.skippedAt) : undefined,
+      };
+      
+      const taskData = insertTaskSchema.parse(processedBody);
       console.log("Parsed task data:", taskData);
       const task = await storage.createTask(taskData);
       console.log("Created task:", task);
