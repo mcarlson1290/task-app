@@ -1,0 +1,120 @@
+📋 Fix Start Task Modal & Overdue Date Display
+I see the issues from your screenshots. Let's fix them:
+
+1. FIX START TASK MODAL - Should Show All Buttons:
+   The modal when clicking "Start Task" should show Complete/Pause/Skip buttons, not just Close:
+
+   ```jsx
+   // Update the Start Task handler to set a flag
+   const handleStartTask = (taskId: number) => {
+     const task = tasks.find(t => t.id === taskId);
+     if (!task) return;
+     
+     // Update task to in-progress
+     setTasks(prevTasks => 
+       prevTasks.map(t => 
+         t.id === taskId 
+           ? { 
+               ...t, 
+               status: 'in-progress',
+               startTime: new Date().toISOString(),
+               progress: 0
+             }
+           : t
+       )
+     );
+     
+     // Open modal with task actions
+     setSelectedTask({ ...task, status: 'in-progress' });
+     setShowTaskModal(true);
+     setIsTaskJustStarted(true); // Flag to show action buttons
+   };
+   
+   // In the modal, check if task is in-progress to show buttons
+   const TaskModal = ({ task, onClose }) => {
+     const showActionButtons = task.status === 'in-progress';
+     
+     return (
+       <div className="modal">
+         {/* ... task details ... */}
+         
+         {showActionButtons ? (
+           <div className="action-buttons">
+             <button onClick={() => handleComplete(task.id)} className="btn-complete">
+               ✅ Complete Task
+             </button>
+             <button onClick={() => handlePause(task.id)} className="btn-pause">
+               ⏸️ Pause Task
+             </button>
+             <button onClick={() => setShowSkipModal(true)} className="btn-skip">
+               ⏭️ Skip Task
+             </button>
+           </div>
+         ) : (
+           <button onClick={onClose}>Close</button>
+         )}
+       </div>
+     );
+   };
+
+FIX OVERDUE DATE DISPLAY - Show Date AND Overdue Warning:
+The issue is the date is being replaced. We need to show both:
+jsx// In the task card component
+<div className="task-dates">
+  {/* Always show the due date */}
+  <div className="due-date">
+    📅 Due: {formatDate(task.completionDate)}
+  </div>
+  
+  {/* Show overdue warning separately if overdue */}
+  {task.isOverdue && (
+    <div className="overdue-status">
+      ⚠️ Overdue by {calculateOverdueDays(task.completionDate)} days
+    </div>
+  )}
+</div>
+Remove the duplicate "Due: Overdue by X days" text and instead structure it as:
+
+Line 1: "📅 Due: March 15, 2024" (or whatever the actual date is)
+Line 2: "⚠️ Overdue by 1 days" (only if overdue)
+
+
+CSS TO ENSURE PROPER DISPLAY:
+css.task-dates {
+  margin-top: 8px;
+}
+
+.due-date {
+  font-size: 14px;
+  color: #666;
+}
+
+.overdue-status {
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* For overdue cards */
+.task-card.overdue {
+  background-color: #fee2e2;
+}
+
+.task-card.overdue .due-date {
+  color: #b91c1c; /* Darker red for the date text */
+}
+
+ENSURE CONSISTENT BEHAVIOR:
+Both "Start Task" and "Collaborate" should open the same modal with action buttons when the task is in-progress:
+typescript// Make sure both handlers use the same modal logic
+const openTaskModal = (taskId: number) => {
+  const task = tasks.find(t => t.id === taskId);
+  if (task && task.status === 'in-progress') {
+    setSelectedTask(task);
+    setShowTaskModal(true);
+  }
+};
+
+
+This should fix both issues - the Start Task modal will show all action buttons, and overdue tasks will display both the actual due date AND the overdue warning!

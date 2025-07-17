@@ -94,15 +94,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onCollaborate, onVie
   };
 
   const formatDueDate = (dueDate: Date): string => {
-    const now = new Date();
-    const isOverdue = checkIfOverdue(dueDate);
-    
-    if (isOverdue) {
-      const daysDiff = differenceInDays(now, dueDate);
-      return `Overdue by ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
-    }
-    
-    return `Due: ${format(dueDate, 'MMM d, yyyy')}`;
+    return format(dueDate, 'MMM d, yyyy');
   };
 
   const isCompleted = task.status === 'completed' || task.status === 'approved';
