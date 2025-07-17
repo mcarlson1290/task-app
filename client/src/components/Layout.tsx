@@ -58,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { href: "/account", label: "Account", icon: "👤", lucideIcon: User, requiresRole: null },
     { href: "/inventory", label: "Inventory", icon: "📦", lucideIcon: Package, requiresRole: null },
     { href: "/education", label: "Education", icon: "🎓", lucideIcon: GraduationCap, requiresRole: null },
+    { href: "/analytics", label: "Analytics", icon: "📊", lucideIcon: Settings, requiresRole: null },
   ];
 
   const managerItems = [
