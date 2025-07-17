@@ -71,6 +71,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
           title: "🎉 Task Completed!",
           description: "Great job! The task has been marked as completed.",
         });
+        // Close modal after successful completion
+        onClose();
       }
     },
     onError: (error) => {
@@ -141,27 +143,35 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
   };
 
   const handleCompleteTask = () => {
+    if (!task) {
+      console.error('No task available for completion');
+      return;
+    }
+
     const now = new Date();
     const actualTime = timeStarted 
       ? Math.round((now.getTime() - timeStarted.getTime()) / (1000 * 60))
-      : task?.estimatedTime || 0;
+      : task.estimatedTime || 0;
 
     console.log('Completing task with status change to completed');
-    console.log('Task ID:', task?.id);
+    console.log('Task ID:', task.id);
     console.log('Completion data:', {
       status: 'completed',
       completedAt: now,
       actualTime,
       progress: 100,
-      data: { ...task?.data, notes }
+      data: { ...task.data, notes }
     });
 
+    // Store task ID before closing modal
+    const taskId = task.id;
+    
     updateTaskMutation.mutate({
       status: 'completed',
       completedAt: now.toISOString(),
       actualTime,
       progress: 100,
-      data: { ...task?.data, notes }, // Store notes in task data
+      data: { ...task.data, notes }, // Store notes in task data
     });
 
     createTaskLogMutation.mutate({
@@ -176,7 +186,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
       origin: { y: 0.6 }
     });
 
-    onClose();
+    // Don't close modal immediately - let the mutation complete first
+    // onClose will be called in the mutation success handler
   };
 
   if (!task) return null;
