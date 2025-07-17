@@ -1,0 +1,233 @@
+Part 1: Planning the Recurring Tasks Enhancement
+
+REQUIREMENTS BREAKDOWN:
+
+1. RECURRING TASK VISIBILITY:
+   - Show recurring tasks in Task Manager before due date
+   - Mark with special icon (🔄) to indicate recurring
+   - Editable in Recurring Tasks tab until started
+   - Once started, becomes a regular task
+
+2. SYSTEM MANAGEMENT:
+   A. Microgreen Flow (Automated):
+      - Nursery → Blackout Area → Microgreen Racks
+      - Auto-move when task completed
+   
+   B. Leafy Green Flow (Manual with tracking):
+      - Ebb & Flow → Towers/NFT
+      - One tray splits to multiple locations
+   
+   C. Growing Systems:
+      - Microgreen Nursery (catch-all)
+      - Ebb & Flow: A-16 spots, B-20 spots, C-20 spots
+      - Towers: 26 regular (44 ports each), 2 HD (176 ports each)
+        Numbering: A1-7, B1-6, C1-6, D1-9
+      - NFT: 72 total spots (4 channels × 18 plants each)
+        Restriction: Same plant per channel
+
+3. CHECKLIST FEATURES:
+   - Dynamic based on task type
+   - System assignment during task
+   - Tray movement tracking
+   - Weekly editable automations
+
+4. EQUIPMENT MANAGEMENT:
+   - New tab in Production Data
+   - Track system availability
+   - Auto-assign spots when possible
+
+Let's start with the data structure:
+
+```javascript
+// System Configuration
+const growingSystems = {
+  microgreens: {
+    nursery: {
+      name: 'Microgreen Nursery',
+      capacity: 'unlimited',
+      type: 'staging'
+    },
+    blackout: {
+      name: 'Blackout Area',
+      capacity: 'unlimited',
+      type: 'staging'
+    },
+    racks: {
+      name: 'Microgreen Racks',
+      sections: ['A', 'B', 'C', 'D'],
+      capacity: 'variable',
+      type: 'final'
+    }
+  },
+  
+  leafyGreens: {
+    ebbFlow: {
+      name: 'Ebb & Flow',
+      sections: {
+        'A': { capacity: 16, occupied: [] },
+        'B': { capacity: 20, occupied: [] },
+        'C': { capacity: 20, occupied: [] }
+      },
+      type: 'nursery'
+    },
+    
+    towers: {
+      name: 'Towers',
+      units: [
+        // Regular towers
+        ...['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'].map(id => ({
+          id,
+          type: 'regular',
+          totalPorts: 44,
+          occupiedPorts: []
+        })),
+        ...['B1', 'B2', 'B3', 'B4', 'B5', 'B6'].map(id => ({
+          id,
+          type: 'regular',
+          totalPorts: 44,
+          occupiedPorts: []
+        })),
+        ...['C1', 'C2', 'C3', 'C4', 'C5', 'C6'].map(id => ({
+          id,
+          type: 'regular',
+          totalPorts: 44,
+          occupiedPorts: []
+        })),
+        ...['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'].map(id => ({
+          id,
+          type: 'regular',
+          totalPorts: 44,
+          occupiedPorts: []
+        })),
+        // HD towers
+        { id: 'D8', type: 'HD', totalPorts: 176, occupiedPorts: [] },
+        { id: 'D9', type: 'HD', totalPorts: 176, occupiedPorts: [] }
+      ],
+      type: 'final'
+    },
+    
+    nft: {
+      name: 'NFT System',
+      totalSlots: 72,
+      channels: [
+        { id: 1, capacity: 18, crop: null, occupied: [] },
+        { id: 2, capacity: 18, crop: null, occupied: [] },
+        { id: 3, capacity: 18, crop: null, occupied: [] },
+        { id: 4, capacity: 18, crop: null, occupied: [] }
+      ],
+      type: 'final'
+    }
+  }
+};
+
+// Enhanced Recurring Task Structure
+const enhancedRecurringTask = {
+  id: 'RT001',
+  title: 'Seed Romaine Lettuce - 10 Trays',
+  type: 'Seeding - Leafy Greens',
+  frequency: 'daily',
+  daysOfWeek: ['monday', 'wednesday', 'friday'],
+  
+  // Automation settings
+  automation: {
+    enabled: true,
+    generateTrays: true,
+    trayCount: 10,
+    cropType: 'Romaine Lettuce',
+    seedInventoryId: 2,
+    
+    // Flow configuration
+    flow: {
+      type: 'leafy-green',
+      stages: [
+        { 
+          name: 'nursery', 
+          system: 'ebbFlow', 
+          duration: 14, // days
+          autoMove: false 
+        },
+        { 
+          name: 'production', 
+          system: 'multiple', // towers or NFT
+          duration: 21,
+          autoMove: false,
+          splitRatio: { // How to split when moving
+            towers: 0.7,
+            nft: 0.3
+          }
+        }
+      ]
+    }
+  },
+  
+  // Dynamic checklist template
+  checklistTemplate: {
+    steps: [
+      {
+        type: 'instruction',
+        text: 'Prepare seed trays and growing medium'
+      },
+      {
+        type: 'inventory-select',
+        label: 'Select seed type',
+        inventoryCategory: 'Seeds'
+      },
+      {
+        type: 'number-input',
+        label: 'Number of trays to seed',
+        min: 1,
+        max: 50,
+        default: 10
+      },
+      {
+        type: 'system-assignment',
+        label: 'Assign to Ebb & Flow section',
+        systemType: 'ebbFlow',
+        autoSuggest: true
+      },
+      {
+        type: 'data-capture',
+        label: 'Seeds used (oz)',
+        dataType: 'number',
+        calculation: 'trays * 0.75' // Auto-calculate based on trays
+      },
+      {
+        type: 'photo',
+        label: 'Photo of seeded trays',
+        required: false
+      }
+    ]
+  }
+};
+IMPLEMENTATION PLAN:
+Phase 1: Enhanced Task Generation
+
+Update recurring task to generate advance tasks
+Add recurring indicator to task cards
+Implement edit restrictions
+
+Phase 2: Dynamic Checklist System
+
+Build checklist step types
+Create system assignment UI
+Add data capture fields
+
+Phase 3: System Management
+
+Create equipment tracking
+Build availability checker
+Implement auto-assignment logic
+
+Phase 4: Tray Movement Automation
+
+Track tray locations
+Implement movement workflows
+Add split tray functionality
+
+Phase 5: Equipment Management Tab
+
+System overview dashboard
+Capacity tracking
+Movement history
+
+Shall we start with Phase 1: Enhanced Task Generation?

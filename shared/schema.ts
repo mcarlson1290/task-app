@@ -34,7 +34,99 @@ export const tasks = pgTable("tasks", {
   resumedAt: timestamp("resumed_at"),
   skippedAt: timestamp("skipped_at"),
   skipReason: text("skip_reason"),
+  isRecurring: boolean("is_recurring").default(false),
+  recurringTaskId: integer("recurring_task_id").references(() => recurringTasks.id),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const recurringTasks = pgTable("recurring_tasks", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: text("type").notNull(),
+  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'monthly'
+  daysOfWeek: json("days_of_week").$type<string[]>(), // ['monday', 'tuesday', etc.]
+  dayOfMonth: integer("day_of_month"), // For monthly tasks
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  
+  // Automation settings
+  automation: json("automation").$type<{
+    enabled: boolean;
+    generateTrays: boolean;
+    trayCount: number;
+    cropType: string;
+    seedInventoryId?: number;
+    flow: {
+      type: 'microgreen' | 'leafy-green';
+      stages: {
+        name: string;
+        system: string;
+        duration: number;
+        autoMove: boolean;
+        splitRatio?: Record<string, number>;
+      }[];
+    };
+  }>(),
+  
+  // Dynamic checklist template
+  checklistTemplate: json("checklist_template").$type<{
+    steps: {
+      type: 'instruction' | 'inventory-select' | 'number-input' | 'system-assignment' | 'data-capture' | 'photo';
+      text?: string;
+      label?: string;
+      inventoryCategory?: string;
+      min?: number;
+      max?: number;
+      default?: number;
+      systemType?: string;
+      autoSuggest?: boolean;
+      dataType?: string;
+      calculation?: string;
+      required?: boolean;
+    }[];
+  }>(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const growingSystems = pgTable("growing_systems", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'microgreen', 'leafy-green'
+  category: text("category").notNull(), // 'nursery', 'staging', 'final'
+  capacity: integer("capacity"), // null for unlimited
+  currentOccupancy: integer("current_occupancy").default(0),
+  systemData: json("system_data").$type<{
+    sections?: Record<string, { capacity: number; occupied: string[] }>;
+    units?: {
+      id: string;
+      type: string;
+      totalPorts: number;
+      occupiedPorts: string[];
+    }[];
+    channels?: {
+      id: number;
+      capacity: number;
+      crop: string | null;
+      occupied: string[];
+    }[];
+  }>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const trayMovements = pgTable("tray_movements", {
+  id: serial("id").primaryKey(),
+  trayId: text("tray_id").notNull(),
+  fromSystem: text("from_system"),
+  toSystem: text("to_system").notNull(),
+  fromLocation: text("from_location"),
+  toLocation: text("to_location").notNull(),
+  taskId: integer("task_id").references(() => tasks.id),
+  movedBy: integer("moved_by").references(() => users.id),
+  movedAt: timestamp("moved_at").defaultNow(),
+  notes: text("notes"),
 });
 
 export const inventoryItems = pgTable("inventory_items", {
@@ -72,6 +164,33 @@ export const userProgress = pgTable("user_progress", {
   completedAt: timestamp("completed_at"),
   score: integer("score"), // 0-100
 });
+
+// Type exports
+export type Task = typeof tasks.$inferSelect;
+export type RecurringTask = typeof recurringTasks.$inferSelect;
+export type GrowingSystem = typeof growingSystems.$inferSelect;
+export type TrayMovement = typeof trayMovements.$inferSelect;
+
+// Legacy exports for backwards compatibility
+export type { Task };
+
+// ChecklistItem type for task checklists
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  data?: Record<string, any>;
+}
+
+export const insertTaskSchema = createInsertSchema(tasks);
+export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
+export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
+export const insertTrayMovementSchema = createInsertSchema(trayMovements);
+
+export type InsertTask = z.infer<typeof insertTaskSchema>;
+export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
+export type InsertGrowingSystem = z.infer<typeof insertGrowingSystemSchema>;
+export type InsertTrayMovement = z.infer<typeof insertTrayMovementSchema>;
 
 export const taskLogs = pgTable("task_logs", {
   id: serial("id").primaryKey(),

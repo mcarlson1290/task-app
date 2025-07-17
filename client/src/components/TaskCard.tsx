@@ -143,7 +143,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           <div className="flex items-center">
             <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
             <div>
-              <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
+                {task.isRecurring && (
+                  <span className="text-blue-500 text-sm" title="Recurring Task">
+                    🔄
+                  </span>
+                )}
+              </div>
               {task.assignedTo && (
                 <p className="text-sm text-gray-600">Assigned to: User {task.assignedTo}</p>
               )}
