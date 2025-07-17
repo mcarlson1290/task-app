@@ -355,6 +355,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recurring tasks routes
+  app.get("/api/recurring-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getAllRecurringTasks();
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch recurring tasks" });
+    }
+  });
+
+  app.post("/api/recurring-tasks", async (req, res) => {
+    try {
+      const task = await storage.createRecurringTask(req.body);
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create recurring task" });
+    }
+  });
+
+  app.patch("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.updateRecurringTask(id, req.body);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update recurring task" });
+    }
+  });
+
+  app.delete("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteRecurringTask(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      res.json({ message: "Recurring task deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete recurring task" });
+    }
+  });
+
+  // Growing systems routes
+  app.get("/api/growing-systems", async (req, res) => {
+    try {
+      const systems = await storage.getAllGrowingSystems();
+      res.json(systems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch growing systems" });
+    }
+  });
+
+  app.post("/api/growing-systems", async (req, res) => {
+    try {
+      const system = await storage.createGrowingSystem(req.body);
+      res.json(system);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create growing system" });
+    }
+  });
+
+  app.patch("/api/growing-systems/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const system = await storage.updateGrowingSystem(id, req.body);
+      
+      if (!system) {
+        return res.status(404).json({ message: "Growing system not found" });
+      }
+
+      res.json(system);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update growing system" });
+    }
+  });
+
+  app.delete("/api/growing-systems/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteGrowingSystem(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Growing system not found" });
+      }
+
+      res.json({ message: "Growing system deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete growing system" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

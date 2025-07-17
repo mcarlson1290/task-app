@@ -14,6 +14,7 @@ import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/trayService";
+import SystemConfiguration from "@/components/SystemConfiguration";
 
 interface Crop extends CropType {
   checklistTemplate: any;
@@ -589,9 +590,10 @@ const ProductionData: React.FC = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isCorporateManager ? 'grid-cols-3' : 'grid-cols-1'}`}>
           <TabsTrigger value="dashboard">Live Dashboard</TabsTrigger>
           {isCorporateManager && <TabsTrigger value="crops">Crop Configuration</TabsTrigger>}
+          {isCorporateManager && <TabsTrigger value="systems">System Configuration</TabsTrigger>}
         </TabsList>
         
         <TabsContent value="dashboard" className="space-y-4">
@@ -610,6 +612,12 @@ const ProductionData: React.FC = () => {
               onEditCrop={handleEditCrop}
               onDeleteCrop={handleDeleteCrop}
             />
+          </TabsContent>
+        )}
+        
+        {isCorporateManager && (
+          <TabsContent value="systems" className="space-y-4">
+            <SystemConfiguration isCorporateManager={isCorporateManager} />
           </TabsContent>
         )}
       </Tabs>

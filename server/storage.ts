@@ -1,9 +1,12 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
+  recurringTasks, growingSystems, trayMovements,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
-  type TaskLog, type InsertTaskLog, type ChecklistItem
+  type TaskLog, type InsertTaskLog, type ChecklistItem, type RecurringTask,
+  type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
+  type TrayMovement, type InsertTrayMovement
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -43,6 +46,24 @@ export interface IStorage {
   // Task logs
   createTaskLog(log: InsertTaskLog): Promise<TaskLog>;
   getTaskLogs(taskId: number): Promise<TaskLog[]>;
+
+  // Recurring tasks
+  getRecurringTask(id: number): Promise<RecurringTask | undefined>;
+  getAllRecurringTasks(): Promise<RecurringTask[]>;
+  createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
+  updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
+  deleteRecurringTask(id: number): Promise<boolean>;
+
+  // Growing systems
+  getGrowingSystem(id: number): Promise<GrowingSystem | undefined>;
+  getAllGrowingSystems(): Promise<GrowingSystem[]>;
+  createGrowingSystem(system: InsertGrowingSystem): Promise<GrowingSystem>;
+  updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined>;
+  deleteGrowingSystem(id: number): Promise<boolean>;
+
+  // Tray movements
+  createTrayMovement(movement: InsertTrayMovement): Promise<TrayMovement>;
+  getTrayMovements(trayId: string): Promise<TrayMovement[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -52,6 +73,9 @@ export class MemStorage implements IStorage {
   private trainingModules: Map<number, TrainingModule> = new Map();
   private userProgress: Map<string, UserProgress> = new Map(); // key: userId-moduleId
   private taskLogs: Map<number, TaskLog> = new Map();
+  private recurringTasks: Map<number, RecurringTask> = new Map();
+  private growingSystems: Map<number, GrowingSystem> = new Map();
+  private trayMovements: Map<number, TrayMovement> = new Map();
   
   private currentUserId = 1;
   private currentTaskId = 1;
@@ -59,6 +83,9 @@ export class MemStorage implements IStorage {
   private currentModuleId = 1;
   private currentProgressId = 1;
   private currentLogId = 1;
+  private currentRecurringTaskId = 1;
+  private currentGrowingSystemId = 1;
+  private currentTrayMovementId = 1;
 
   constructor() {
     this.seedInitialData();
@@ -389,6 +416,146 @@ export class MemStorage implements IStorage {
       };
       this.trainingModules.set(newModule.id, newModule);
     });
+
+    // Create sample growing systems
+    const sampleSystems = [
+      {
+        name: 'Microgreen Nursery A',
+        type: 'microgreen',
+        category: 'nursery',
+        capacity: 120,
+        currentOccupancy: 75,
+        systemData: {
+          sections: {
+            'A1': { capacity: 60, occupied: ['MG-001', 'MG-002', 'MG-003'] },
+            'A2': { capacity: 60, occupied: ['MG-004', 'MG-005'] }
+          }
+        },
+        isActive: true
+      },
+      {
+        name: 'Tower System B',
+        type: 'leafy-green',
+        category: 'final',
+        capacity: 176,
+        currentOccupancy: 88,
+        systemData: {
+          units: [
+            { id: 'B1', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-001', 'LG-002'] },
+            { id: 'B2', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-003', 'LG-004'] },
+            { id: 'B3', type: 'HD', totalPorts: 176, occupiedPorts: ['LG-005', 'LG-006'] }
+          ]
+        },
+        isActive: true
+      },
+      {
+        name: 'Ebb & Flow System C',
+        type: 'leafy-green',
+        category: 'staging',
+        capacity: 100,
+        currentOccupancy: 45,
+        systemData: {
+          channels: [
+            { id: 1, capacity: 20, crop: 'Romaine', occupied: ['ROM-001', 'ROM-002'] },
+            { id: 2, capacity: 20, crop: 'Arugula', occupied: ['ARU-001'] },
+            { id: 3, capacity: 20, crop: null, occupied: [] },
+            { id: 4, capacity: 20, crop: 'Basil', occupied: ['BAS-001', 'BAS-002'] },
+            { id: 5, capacity: 20, crop: null, occupied: [] }
+          ]
+        },
+        isActive: true
+      }
+    ];
+
+    sampleSystems.forEach(system => {
+      const newSystem: GrowingSystem = {
+        ...system,
+        id: this.currentGrowingSystemId++,
+        createdAt: new Date()
+      };
+      this.growingSystems.set(newSystem.id, newSystem);
+    });
+
+    // Create sample recurring tasks
+    const sampleRecurringTasks = [
+      {
+        title: 'Daily Seeding - Microgreens',
+        description: 'Plant daily batch of microgreen seeds',
+        type: 'seeding-microgreens',
+        frequency: 'daily',
+        daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+        isActive: true,
+        createdBy: 3,
+        automation: {
+          enabled: true,
+          generateTrays: true,
+          trayCount: 12,
+          cropType: 'microgreen',
+          flow: {
+            type: 'microgreen' as const,
+            stages: [
+              { name: 'Nursery', system: 'Microgreen Nursery A', duration: 2, autoMove: true },
+              { name: 'Blackout', system: 'Blackout Racks', duration: 2, autoMove: true },
+              { name: 'Growing', system: 'Microgreen Racks', duration: 3, autoMove: false }
+            ]
+          }
+        },
+        checklistTemplate: {
+          steps: [
+            { type: 'inventory-select', label: 'Select seed type', inventoryCategory: 'seeds' },
+            { type: 'number-input', label: 'Number of trays', min: 1, max: 24, default: 12 },
+            { type: 'system-assignment', label: 'Assign to system', systemType: 'nursery' },
+            { type: 'instruction', text: 'Prepare trays with growing medium' },
+            { type: 'instruction', text: 'Plant seeds evenly across surface' },
+            { type: 'instruction', text: 'Label trays with date and crop type' },
+            { type: 'data-capture', label: 'Weight of seeds used', dataType: 'weight' }
+          ]
+        }
+      },
+      {
+        title: 'Weekly Leafy Green Planting',
+        description: 'Plant weekly batch of leafy greens',
+        type: 'seeding-leafy-greens',
+        frequency: 'weekly',
+        daysOfWeek: ['monday'],
+        isActive: true,
+        createdBy: 3,
+        automation: {
+          enabled: true,
+          generateTrays: true,
+          trayCount: 8,
+          cropType: 'leafy-green',
+          flow: {
+            type: 'leafy-green' as const,
+            stages: [
+              { name: 'Nursery', system: 'Leafy Green Nursery', duration: 14, autoMove: true },
+              { name: 'Staging', system: 'Ebb & Flow System C', duration: 14, autoMove: true },
+              { name: 'Final', system: 'Tower System B', duration: 14, autoMove: false }
+            ]
+          }
+        },
+        checklistTemplate: {
+          steps: [
+            { type: 'inventory-select', label: 'Select leafy green variety', inventoryCategory: 'seeds' },
+            { type: 'number-input', label: 'Number of trays', min: 1, max: 20, default: 8 },
+            { type: 'system-assignment', label: 'Assign to nursery system', systemType: 'nursery' },
+            { type: 'instruction', text: 'Prepare seed trays with rockwool cubes' },
+            { type: 'instruction', text: 'Plant 2-3 seeds per cube' },
+            { type: 'instruction', text: 'Set up irrigation schedule' },
+            { type: 'data-capture', label: 'Germination rate target', dataType: 'percentage' }
+          ]
+        }
+      }
+    ];
+
+    sampleRecurringTasks.forEach(task => {
+      const newTask: RecurringTask = {
+        ...task,
+        id: this.currentRecurringTaskId++,
+        createdAt: new Date()
+      };
+      this.recurringTasks.set(newTask.id, newTask);
+    });
   }
 
   // User methods
@@ -672,6 +839,85 @@ export class MemStorage implements IStorage {
 
   async getTaskLogs(taskId: number): Promise<TaskLog[]> {
     return Array.from(this.taskLogs.values()).filter(log => log.taskId === taskId);
+  }
+
+  // Recurring tasks
+  async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
+    return this.recurringTasks.get(id);
+  }
+
+  async getAllRecurringTasks(): Promise<RecurringTask[]> {
+    return Array.from(this.recurringTasks.values());
+  }
+
+  async createRecurringTask(insertTask: InsertRecurringTask): Promise<RecurringTask> {
+    const task: RecurringTask = {
+      ...insertTask,
+      id: this.currentRecurringTaskId++,
+      createdAt: new Date()
+    };
+    this.recurringTasks.set(task.id, task);
+    return task;
+  }
+
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
+    const task = this.recurringTasks.get(id);
+    if (!task) return undefined;
+    
+    const updatedTask = { ...task, ...updates };
+    this.recurringTasks.set(id, updatedTask);
+    return updatedTask;
+  }
+
+  async deleteRecurringTask(id: number): Promise<boolean> {
+    return this.recurringTasks.delete(id);
+  }
+
+  // Growing systems
+  async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
+    return this.growingSystems.get(id);
+  }
+
+  async getAllGrowingSystems(): Promise<GrowingSystem[]> {
+    return Array.from(this.growingSystems.values());
+  }
+
+  async createGrowingSystem(insertSystem: InsertGrowingSystem): Promise<GrowingSystem> {
+    const system: GrowingSystem = {
+      ...insertSystem,
+      id: this.currentGrowingSystemId++,
+      createdAt: new Date()
+    };
+    this.growingSystems.set(system.id, system);
+    return system;
+  }
+
+  async updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined> {
+    const system = this.growingSystems.get(id);
+    if (!system) return undefined;
+    
+    const updatedSystem = { ...system, ...updates };
+    this.growingSystems.set(id, updatedSystem);
+    return updatedSystem;
+  }
+
+  async deleteGrowingSystem(id: number): Promise<boolean> {
+    return this.growingSystems.delete(id);
+  }
+
+  // Tray movements
+  async createTrayMovement(insertMovement: InsertTrayMovement): Promise<TrayMovement> {
+    const movement: TrayMovement = {
+      ...insertMovement,
+      id: this.currentTrayMovementId++,
+      movedAt: new Date()
+    };
+    this.trayMovements.set(movement.id, movement);
+    return movement;
+  }
+
+  async getTrayMovements(trayId: string): Promise<TrayMovement[]> {
+    return Array.from(this.trayMovements.values()).filter(movement => movement.trayId === trayId);
   }
 }
 

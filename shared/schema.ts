@@ -182,12 +182,10 @@ export interface ChecklistItem {
   data?: Record<string, any>;
 }
 
-export const insertTaskSchema = createInsertSchema(tasks);
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
 export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
 export const insertTrayMovementSchema = createInsertSchema(trayMovements);
 
-export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
 export type InsertGrowingSystem = z.infer<typeof insertGrowingSystemSchema>;
 export type InsertTrayMovement = z.infer<typeof insertTrayMovementSchema>;
