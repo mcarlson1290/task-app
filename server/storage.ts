@@ -30,6 +30,7 @@ export interface IStorage {
   getAllInventoryItems(): Promise<InventoryItem[]>;
   createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
   updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined>;
+  deleteInventoryItem(id: number): Promise<boolean>;
   getLowStockItems(): Promise<InventoryItem[]>;
 
   // Training methods
@@ -535,6 +536,10 @@ export class MemStorage implements IStorage {
     const updatedItem = { ...item, ...updates };
     this.inventoryItems.set(id, updatedItem);
     return updatedItem;
+  }
+
+  async deleteInventoryItem(id: number): Promise<boolean> {
+    return this.inventoryItems.delete(id);
   }
 
   async getLowStockItems(): Promise<InventoryItem[]> {

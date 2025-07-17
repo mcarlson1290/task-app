@@ -221,6 +221,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/inventory/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteInventoryItem(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Inventory item not found" });
+      }
+
+      res.json({ message: "Inventory item deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete inventory item" });
+    }
+  });
+
   // Training routes
   app.get("/api/training/modules", async (req, res) => {
     try {

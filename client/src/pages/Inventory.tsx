@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,14 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
+import { apiRequest } from "@/lib/queryClient";
+import InventoryModal from "@/components/InventoryModal";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
   const [showLowStockOnly, setShowLowStockOnly] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<string>("name");
+  const [showModal, setShowModal] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState<InventoryItem | null>(null);
+  const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
   const auth = getStoredAuth();
   const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  const queryClient = useQueryClient();
 
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
     queryKey: ["/api/inventory"],
@@ -23,6 +29,33 @@ const Inventory: React.FC = () => {
 
   const { data: lowStockItems = [] } = useQuery<InventoryItem[]>({
     queryKey: ["/api/inventory/low-stock"],
+  });
+
+  const createItemMutation = useMutation({
+    mutationFn: (itemData: any) => apiRequest("POST", "/api/inventory", itemData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      setShowModal(false);
+    },
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: (itemData: any) => apiRequest("PATCH", `/api/inventory/${itemData.id}`, itemData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      setShowModal(false);
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: (itemId: number) => apiRequest("DELETE", `/api/inventory/${itemId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      setShowModal(false);
+    },
   });
 
   const categories = [
@@ -107,6 +140,35 @@ Please process this reorder request at your earliest convenience.`;
     window.open(mailtoLink, '_blank');
   };
 
+  const handleAddItem = () => {
+    setEditingItem(null);
+    setModalMode('add');
+    setShowModal(true);
+  };
+
+  const handleEditItem = (item: InventoryItem) => {
+    setEditingItem(item);
+    setModalMode('edit');
+    setShowModal(true);
+  };
+
+  const handleSaveItem = (itemData: any) => {
+    if (modalMode === 'edit') {
+      updateItemMutation.mutate(itemData);
+    } else {
+      createItemMutation.mutate(itemData);
+    }
+  };
+
+  const handleDeleteItem = (itemId: number) => {
+    deleteItemMutation.mutate(itemId);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingItem(null);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -132,10 +194,15 @@ Please process this reorder request at your earliest convenience.`;
           <p className="text-gray-600">Track supplies and manage stock levels</p>
         </div>
         <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-          <Button className="bg-[#2D8028] hover:bg-[#203B17] text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Item
-          </Button>
+          {isManager && (
+            <Button 
+              onClick={handleAddItem}
+              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Button>
+          )}
         </div>
       </div>
 
@@ -304,10 +371,7 @@ Please process this reorder request at your earliest convenience.`;
                         variant="outline" 
                         size="sm" 
                         className="flex-1"
-                        onClick={() => {
-                          // TODO: Implement edit functionality
-                          console.log("Edit item:", item);
-                        }}
+                        onClick={() => handleEditItem(item)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
@@ -320,6 +384,16 @@ Please process this reorder request at your earliest convenience.`;
           })}
         </div>
       )}
+
+      {/* Add/Edit Item Modal */}
+      <InventoryModal
+        item={editingItem}
+        mode={modalMode}
+        isOpen={showModal}
+        onSave={handleSaveItem}
+        onDelete={handleDeleteItem}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
