@@ -223,15 +223,22 @@ const Tasks: React.FC = () => {
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   const handleTaskStart = (task: Task) => {
+    console.log('Starting task:', task);
+    // Start the task first
     startTaskMutation.mutate(task.id);
+    // Then immediately open the modal
+    setSelectedTask(task);
+    setModalOpen(true);
   };
 
-  const handleTaskContinue = (task: Task) => {
+  const handleTaskCollaborate = (task: Task) => {
+    console.log('Collaborating on task:', task);
     setSelectedTask(task);
-    setTaskActionModalOpen(true);
+    setModalOpen(true);
   };
 
   const handleTaskDetails = (task: Task) => {
+    console.log('Viewing task details:', task);
     setSelectedTask(task);
     setModalOpen(true);
   };
@@ -499,7 +506,7 @@ const Tasks: React.FC = () => {
               key={task.id}
               task={task}
               onStart={handleTaskStart}
-              onContinue={handleTaskContinue}
+              onCollaborate={handleTaskCollaborate}
               onViewDetails={handleTaskDetails}
             />
           ))}

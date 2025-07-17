@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, CheckSquare, Square } from "lucide-react";
 import { Task, ChecklistItem } from "@shared/schema";
@@ -13,6 +14,7 @@ import { TaskType, TaskStatus } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
 
 interface TaskModalProps {
   task: Task | null;
@@ -24,6 +26,7 @@ interface TaskModalProps {
 const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpdate }) => {
   const [checklist, setChecklist] = React.useState<ChecklistItem[]>([]);
   const [timeStarted, setTimeStarted] = React.useState<Date | null>(null);
+  const [notes, setNotes] = React.useState<string>('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -124,26 +127,27 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
       completedAt: now,
       actualTime,
       progress: 100,
+      data: { ...task?.data, notes }, // Store notes in task data
     });
 
     createTaskLogMutation.mutate({
       action: 'completed',
-      data: { actualTime },
+      data: { actualTime, notes },
     });
 
     // Show confetti celebration
-    if (window.confetti) {
-      window.confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
 
     toast({
       title: "🎉 Task Completed!",
       description: "Great job! The task has been marked as completed.",
     });
+
+    onClose();
   };
 
   if (!task) return null;
@@ -318,6 +322,19 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
               </div>
             </div>
           </div>
+
+          {/* Notes Section */}
+          {task.status === 'in_progress' && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-[#203B17] mb-2">Task Notes</h4>
+              <Textarea
+                placeholder="Add any notes about your progress, issues encountered, or observations..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">

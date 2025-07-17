@@ -11,11 +11,11 @@ import { TaskType, TaskStatus } from "@/types";
 interface TaskCardProps {
   task: Task;
   onStart: (task: Task) => void;
-  onContinue: (task: Task) => void;
+  onCollaborate: (task: Task) => void;
   onViewDetails: (task: Task) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDetails }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onCollaborate, onViewDetails }) => {
   const getTaskEmoji = (type: TaskType): string => {
     const emojis = {
       "seeding-microgreens": "🌱",
@@ -227,10 +227,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
           <div className="flex gap-2">
             {isInProgress ? (
               <Button
-                onClick={() => onContinue(task)}
+                onClick={() => onCollaborate(task)}
                 className="bg-[#2D8028] hover:bg-[#203B17] text-white"
               >
-                Continue
+                🤝 Collaborate
               </Button>
             ) : task.status === 'pending' ? (
               <Button
