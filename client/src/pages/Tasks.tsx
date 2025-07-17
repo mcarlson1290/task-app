@@ -81,60 +81,13 @@ const Tasks: React.FC = () => {
     console.log('Filtered tasks:', filteredTasks);
   }, [tasks, dateFilter]);
 
-  // Task mutations
-  const startTaskMutation = useMutation({
-    mutationFn: async (taskId: number) => {
-      return await apiRequest("PATCH", `/api/tasks/${taskId}`, {
-        status: "in_progress",
-        startedAt: new Date().toISOString(),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({
-        title: "Task started!",
-        description: "You've successfully started the task.",
-      });
-    },
-    onError: (error) => {
-      console.error("Error starting task:", error);
-      toast({
-        title: "Failed to start task",
-        description: "There was an error starting the task. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Task update mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
       return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
-  const completeTaskMutation = useMutation({
-    mutationFn: async (taskId: number) => {
-      return await apiRequest("PATCH", `/api/tasks/${taskId}`, {
-        status: "completed",
-        completedAt: new Date().toISOString(),
-        progress: 100,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({
-        title: "🎉 Task completed!",
-        description: "Great job! The task has been marked as completed.",
-      });
-      // Celebrate with confetti!
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
     },
   });
 
@@ -243,109 +196,76 @@ const Tasks: React.FC = () => {
     return filtered;
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
 
-  const handleTaskStart = (task: Task) => {
-    console.log('Starting task:', task);
-    // Start the task first, then open modal with updated task
-    startTaskMutation.mutate(task.id, {
-      onSuccess: (updatedTask) => {
-        // Set the updated task with in_progress status
-        setSelectedTask({ ...updatedTask, status: 'in_progress' });
+  // Single task action handler
+  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view') => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    switch (action) {
+      case 'start':
+        // Update task to in-progress and open modal
+        updateTaskMutation.mutate({
+          taskId,
+          updates: { 
+            status: 'in_progress', 
+            startedAt: new Date().toISOString() 
+          }
+        });
+        setSelectedTask({ ...task, status: 'in_progress' });
         setModalOpen(true);
-      }
-    });
-  };
-
-  const handleTaskCollaborate = (task: Task) => {
-    console.log('Collaborating on task:', task);
-    // For in-progress tasks, show the same modal with action buttons
-    setSelectedTask(task);
-    setModalOpen(true);
-  };
-
-  const handleTaskDetails = (task: Task) => {
-    console.log('Viewing task details:', task);
-    setSelectedTask(task);
-    setModalOpen(true);
-  };
-
-  const handleCompleteTask = (task: Task) => {
-    completeTaskMutation.mutate(task.id);
-  };
-
-  const handlePauseTask = (taskId: number) => {
-    console.log('Pausing task:', taskId);
-    // Implement pause functionality
-    const mutation = useMutation({
-      mutationFn: async () => {
-        const response = await apiRequest("PATCH", `/api/tasks/${taskId}`, {
-          status: 'paused',
-          pausedAt: new Date().toISOString()
+        break;
+        
+      case 'collaborate':
+        // Just open modal for in-progress tasks
+        setSelectedTask(task);
+        setModalOpen(true);
+        break;
+        
+      case 'complete':
+        // Update task to completed
+        updateTaskMutation.mutate({
+          taskId,
+          updates: { 
+            status: 'completed', 
+            completedAt: new Date().toISOString(),
+            progress: 100
+          }
         });
-        return response.json();
-      },
-      onSuccess: () => {
-        refetch();
         setModalOpen(false);
         toast({
-          title: "Task Paused",
-          description: "The task has been paused and can be resumed later.",
+          title: "🎉 Task completed!",
+          description: "Great job! The task has been marked as completed.",
         });
-      },
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to pause task. Please try again.",
-          variant: "destructive",
+        // Celebrate with confetti!
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
         });
-      }
-    });
-    mutation.mutate();
-  };
-
-  const handleSkipTask = (taskId: number, reason: string) => {
-    console.log('Skipping task:', taskId, 'Reason:', reason);
-    // Implement skip functionality
-    const mutation = useMutation({
-      mutationFn: async () => {
-        const response = await apiRequest("PATCH", `/api/tasks/${taskId}`, {
-          status: 'skipped',
-          skipReason: reason,
-          skippedAt: new Date().toISOString()
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        refetch();
+        break;
+        
+      case 'view':
+        // Just open modal in read-only mode
+        setSelectedTask(task);
+        setModalOpen(true);
+        break;
+        
+      case 'pause':
+        // Handle pause logic
+        console.log("Pausing task:", taskId);
         setModalOpen(false);
-        toast({
-          title: "Task Skipped",
-          description: "The task has been skipped and managers have been notified.",
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to skip task. Please try again.",
-          variant: "destructive",
-        });
-      }
-    });
-    mutation.mutate();
+        break;
+        
+      case 'skip':
+        // Handle skip logic
+        console.log("Skipping task:", taskId);
+        setModalOpen(false);
+        break;
+    }
   };
 
   const handleNewTask = () => {
     setNewTaskModalOpen(true);
-  };
-
-  const handleTaskUpdate = (updatedTask: Task) => {
-    // Update the selected task state to reflect the changes
-    setSelectedTask(updatedTask);
-    refetch();
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedTask(null);
   };
 
   if (isLoading) {
@@ -611,9 +531,7 @@ const Tasks: React.FC = () => {
             <TaskCard
               key={task.id}
               task={task}
-              onStart={handleTaskStart}
-              onCollaborate={handleTaskCollaborate}
-              onViewDetails={handleTaskDetails}
+              onTaskAction={handleTaskAction}
             />
           ))}
         </div>
@@ -623,10 +541,8 @@ const Tasks: React.FC = () => {
       <TaskModal
         task={selectedTask}
         isOpen={modalOpen}
-        onClose={handleCloseModal}
-        onTaskUpdate={handleTaskUpdate}
-        onPause={handlePauseTask}
-        onSkip={handleSkipTask}
+        onClose={() => setModalOpen(false)}
+        onTaskAction={handleTaskAction}
       />
 
       {/* New Task Modal */}

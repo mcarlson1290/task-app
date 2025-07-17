@@ -10,12 +10,10 @@ import { TaskType, TaskStatus } from "@/types";
 
 interface TaskCardProps {
   task: Task;
-  onStart: (task: Task) => void;
-  onCollaborate: (task: Task) => void;
-  onViewDetails: (task: Task) => void;
+  onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view') => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onCollaborate, onViewDetails }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const getTaskEmoji = (type: TaskType): string => {
     const emojis = {
       "seeding-microgreens": "🌱",
@@ -223,24 +221,29 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onCollaborate, onVie
           </div>
           
           <div className="flex gap-2">
-            {isInProgress ? (
+            {/* Single button based on task status */}
+            {task.status === 'pending' && (
               <Button
-                onClick={() => onCollaborate(task)}
-                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
-              >
-                🤝 Collaborate
-              </Button>
-            ) : task.status === 'pending' ? (
-              <Button
-                onClick={() => onStart(task)}
+                onClick={() => onTaskAction(task.id, 'start')}
                 className="bg-[#2D8028] hover:bg-[#203B17] text-white"
               >
                 Start Task
               </Button>
-            ) : (
+            )}
+            
+            {task.status === 'in_progress' && (
+              <Button
+                onClick={() => onTaskAction(task.id, 'collaborate')}
+                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+              >
+                🤝 Collaborate
+              </Button>
+            )}
+            
+            {task.status === 'completed' && (
               <Button
                 variant="outline"
-                onClick={() => onViewDetails(task)}
+                onClick={() => onTaskAction(task.id, 'view')}
                 className="text-gray-600"
               >
                 View Details
