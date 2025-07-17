@@ -224,11 +224,14 @@ const Tasks: React.FC = () => {
 
   const handleTaskStart = (task: Task) => {
     console.log('Starting task:', task);
-    // Start the task first
-    startTaskMutation.mutate(task.id);
-    // Then immediately open the modal
-    setSelectedTask(task);
-    setModalOpen(true);
+    // Start the task first, then open modal with updated task
+    startTaskMutation.mutate(task.id, {
+      onSuccess: (updatedTask) => {
+        // Set the updated task with in_progress status
+        setSelectedTask({ ...updatedTask, status: 'in_progress' });
+        setModalOpen(true);
+      }
+    });
   };
 
   const handleTaskCollaborate = (task: Task) => {

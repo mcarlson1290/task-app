@@ -342,34 +342,42 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            {!showSkipReason && task.status === 'in_progress' && (
+            {!showSkipReason && (
               <>
-                {canComplete && (
-                  <Button
-                    onClick={handleCompleteTask}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    disabled={updateTaskMutation.isPending}
-                  >
-                    ✅ Complete Task
-                  </Button>
+                {task.status === 'in_progress' && (
+                  <>
+                    {canComplete && (
+                      <Button
+                        onClick={handleCompleteTask}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={updateTaskMutation.isPending}
+                      >
+                        ✅ Complete Task
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={() => onPause?.(task.id)}
+                      variant="outline"
+                      className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                      disabled={updateTaskMutation.isPending}
+                    >
+                      ⏸️ Pause Task
+                    </Button>
+                    
+                    <Button
+                      onClick={() => setShowSkipReason(true)}
+                      variant="outline"
+                      className="border-red-500 text-red-600 hover:bg-red-50"
+                      disabled={updateTaskMutation.isPending}
+                    >
+                      ⏭️ Skip Task
+                    </Button>
+                  </>
                 )}
                 
-                <Button
-                  onClick={() => onPause?.(task.id)}
-                  variant="outline"
-                  className="border-amber-500 text-amber-600 hover:bg-amber-50"
-                  disabled={updateTaskMutation.isPending}
-                >
-                  ⏸️ Pause Task
-                </Button>
-                
-                <Button
-                  onClick={() => setShowSkipReason(true)}
-                  variant="outline"
-                  className="border-red-500 text-red-600 hover:bg-red-50"
-                  disabled={updateTaskMutation.isPending}
-                >
-                  ⏭️ Skip Task
+                <Button variant="outline" onClick={onClose}>
+                  Close
                 </Button>
               </>
             )}
@@ -411,10 +419,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
                 </div>
               </div>
             )}
-            
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
           </div>
         </div>
       </DialogContent>
