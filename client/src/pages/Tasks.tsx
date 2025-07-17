@@ -15,6 +15,7 @@ import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import confetti from "canvas-confetti";
+import { TrayService } from "@/services/trayService";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -254,10 +255,28 @@ const Tasks: React.FC = () => {
           }
         });
         setModalOpen(false);
-        toast({
-          title: "🎉 Task completed!",
-          description: "Great job! The task has been marked as completed.",
-        });
+        
+        // Check if this is a seeding task and create tray
+        if (task.type.includes('seeding') || task.type.includes('Seeding')) {
+          const newTray = TrayService.createTrayFromTask(task, auth.user);
+          if (newTray) {
+            toast({
+              title: "🎉 Task completed!",
+              description: `Great job! Task completed and tray ${newTray.id} created for ${newTray.cropType}.`,
+            });
+          } else {
+            toast({
+              title: "🎉 Task completed!",
+              description: "Great job! The task has been marked as completed.",
+            });
+          }
+        } else {
+          toast({
+            title: "🎉 Task completed!",
+            description: "Great job! The task has been marked as completed.",
+          });
+        }
+        
         // Celebrate with confetti!
         confetti({
           particleCount: 100,

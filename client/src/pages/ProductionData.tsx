@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,30 +13,13 @@ import { Download, AlertTriangle, Sprout, Calendar, TrendingUp, Plus, Edit2, Tra
 import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/trayService";
 
-interface Crop {
-  id: number;
-  name: string;
-  category: string;
-  expectedYieldPerTray: number;
-  averageGrowthTime: number;
-  lightRequirements: string;
-  status: string;
+interface Crop extends CropType {
   checklistTemplate: any;
 }
 
-interface Tray {
-  id: string;
-  cropType: string;
-  cropId: number;
-  datePlanted: string;
-  assignedSystem: string;
-  estimatedHarvestDate: string;
-  status: string;
-  actualYield: number | null;
-  harvestDate?: string;
-  notes: string;
-}
+interface Tray extends TrayType {}
 
 // Mock data for initial implementation
 const mockCrops: Crop[] = [
@@ -477,9 +460,34 @@ const ProductionData: React.FC = () => {
   const { toast } = useToast();
 
   const [crops, setCrops] = useState<Crop[]>(mockCrops);
-  const [trays, setTrays] = useState<Tray[]>(mockTrays);
+  const [trays, setTrays] = useState<Tray[]>([]);
   const [showCropModal, setShowCropModal] = useState(false);
   const [editingCrop, setEditingCrop] = useState<Crop | null>(null);
+
+  // Initialize trays from TrayService
+  useEffect(() => {
+    TrayService.initializeSampleTrays();
+    setTrays(TrayService.getTrays());
+  }, []);
+
+  // Listen for tray updates
+  useEffect(() => {
+    const handleTrayAdded = (event: any) => {
+      setTrays(prevTrays => [...prevTrays, event.detail]);
+    };
+    
+    const handleTrayUpdated = () => {
+      setTrays(TrayService.getTrays());
+    };
+    
+    window.addEventListener('trayAdded', handleTrayAdded);
+    window.addEventListener('trayUpdated', handleTrayUpdated);
+    
+    return () => {
+      window.removeEventListener('trayAdded', handleTrayAdded);
+      window.removeEventListener('trayUpdated', handleTrayUpdated);
+    };
+  }, []);
 
   const handleAddCrop = () => {
     setEditingCrop(null);
@@ -520,7 +528,7 @@ const ProductionData: React.FC = () => {
   };
 
   const handleUpdateTray = (tray: Tray) => {
-    setTrays(trays.map(t => t.id === tray.id ? tray : t));
+    TrayService.updateTray(tray.id, tray);
   };
 
   const handleExport = () => {
