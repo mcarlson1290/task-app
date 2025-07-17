@@ -29,7 +29,7 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
-  const [dateFilter, setDateFilter] = React.useState<Date | null>(null);
+  const [dateFilter, setDateFilter] = React.useState<string>("");
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -212,8 +212,8 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => {
         if (task.dueDate) {
           const taskDate = new Date(task.dueDate);
-          const filterDate = new Date(dateFilter);
-          return taskDate.toDateString() === filterDate.toDateString();
+          const taskDateString = taskDate.toISOString().split('T')[0];
+          return taskDateString === dateFilter;
         }
         return false;
       });
@@ -451,15 +451,15 @@ const Tasks: React.FC = () => {
             <Calendar className="h-4 w-4 text-gray-500" />
             <input
               type="date"
-              value={dateFilter ? format(dateFilter, 'yyyy-MM-dd') : ''}
-              onChange={(e) => setDateFilter(e.target.value ? new Date(e.target.value) : null)}
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
               className="border rounded px-3 py-2 text-sm"
             />
             {dateFilter && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setDateFilter(null)}
+                onClick={() => setDateFilter("")}
                 className="px-2 py-1"
               >
                 Clear

@@ -114,15 +114,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
+      console.log("Updating task:", id, "with updates:", updates);
       const task = await storage.updateTask(id, updates);
       
       if (!task) {
+        console.log("Task not found:", id);
         return res.status(404).json({ message: "Task not found" });
       }
 
+      console.log("Task updated successfully:", task);
       res.json(task);
     } catch (error) {
-      res.status(500).json({ message: "Failed to update task" });
+      console.error("Error updating task:", error);
+      res.status(500).json({ message: "Failed to update task", error: error.message });
     }
   });
 

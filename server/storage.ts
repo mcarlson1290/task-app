@@ -172,6 +172,72 @@ export class MemStorage implements IStorage {
         ] as ChecklistItem[],
         completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
         dueDate: yesterday // Was due yesterday but completed
+      },
+      {
+        title: "Check Nutrient Levels",
+        description: "Monitor and adjust nutrient solution pH and EC levels",
+        type: "nutrient-monitoring",
+        status: "pending",
+        priority: "high",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 60,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Test pH levels", completed: false },
+          { id: "2", text: "Test EC levels", completed: false },
+          { id: "3", text: "Adjust if needed", completed: false },
+          { id: "4", text: "Record readings", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago (OVERDUE)
+      },
+      {
+        title: "Inventory Count - Seeds",
+        description: "Count and update seed inventory levels",
+        type: "inventory-count",
+        status: "pending",
+        priority: "medium",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 90,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Count arugula seeds", completed: false },
+          { id: "2", text: "Count pea seeds", completed: false },
+          { id: "3", text: "Count radish seeds", completed: false },
+          { id: "4", text: "Update inventory system", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: new Date(Date.now() - 4 * 60 * 60 * 1000) // 4 hours ago (OVERDUE)
+      },
+      {
+        title: "Weekly Equipment Check",
+        description: "Inspect and maintain growing equipment",
+        type: "equipment-maintenance",
+        status: "pending",
+        priority: "low",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 120,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Check LED panels", completed: false },
+          { id: "2", text: "Inspect water pumps", completed: false },
+          { id: "3", text: "Clean air filters", completed: false },
+          { id: "4", text: "Test temperature sensors", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24 hours ago (OVERDUE)
       }
     ];
 
@@ -532,4 +598,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
