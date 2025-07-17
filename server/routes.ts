@@ -1,0 +1,310 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema } from "@shared/schema";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (!user.approved) {
+        return res.status(403).json({ message: "Account pending approval" });
+      }
+
+      // In a real app, you'd set up proper session management
+      res.json({ user: { ...user, password: undefined } });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const existingUser = await storage.getUserByUsername(userData.username);
+      
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      const user = await storage.createUser(userData);
+      res.json({ user: { ...user, password: undefined } });
+    } catch (error) {
+      res.status(400).json({ message: "Registration failed" });
+    }
+  });
+
+  // User routes
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users.map(user => ({ ...user, password: undefined })));
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.patch("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const user = await storage.updateUser(id, updates);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ ...user, password: undefined });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Task routes
+  app.get("/api/tasks", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      let tasks;
+      
+      if (userId) {
+        tasks = await storage.getTasksByUser(parseInt(userId as string));
+      } else {
+        tasks = await storage.getAllTasks();
+      }
+      
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.get("/api/tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.getTask(id);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task" });
+    }
+  });
+
+  app.post("/api/tasks", async (req, res) => {
+    try {
+      const taskData = insertTaskSchema.parse(req.body);
+      const task = await storage.createTask(taskData);
+      res.json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.patch("/api/tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const task = await storage.updateTask(id, updates);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteTask(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Inventory routes
+  app.get("/api/inventory", async (req, res) => {
+    try {
+      const items = await storage.getAllInventoryItems();
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch inventory" });
+    }
+  });
+
+  app.get("/api/inventory/low-stock", async (req, res) => {
+    try {
+      const items = await storage.getLowStockItems();
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch low stock items" });
+    }
+  });
+
+  app.post("/api/inventory", async (req, res) => {
+    try {
+      const itemData = insertInventoryItemSchema.parse(req.body);
+      const item = await storage.createInventoryItem(itemData);
+      res.json(item);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create inventory item" });
+    }
+  });
+
+  app.patch("/api/inventory/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const item = await storage.updateInventoryItem(id, updates);
+      
+      if (!item) {
+        return res.status(404).json({ message: "Inventory item not found" });
+      }
+
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update inventory item" });
+    }
+  });
+
+  // Training routes
+  app.get("/api/training/modules", async (req, res) => {
+    try {
+      const modules = await storage.getAllTrainingModules();
+      res.json(modules);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch training modules" });
+    }
+  });
+
+  app.get("/api/training/modules/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const module = await storage.getTrainingModule(id);
+      
+      if (!module) {
+        return res.status(404).json({ message: "Training module not found" });
+      }
+      
+      res.json(module);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch training module" });
+    }
+  });
+
+  app.post("/api/training/modules", async (req, res) => {
+    try {
+      const moduleData = insertTrainingModuleSchema.parse(req.body);
+      const module = await storage.createTrainingModule(moduleData);
+      res.json(module);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create training module" });
+    }
+  });
+
+  app.get("/api/training/progress/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const progress = await storage.getUserProgress(userId);
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user progress" });
+    }
+  });
+
+  app.post("/api/training/progress", async (req, res) => {
+    try {
+      const progressData = insertUserProgressSchema.parse(req.body);
+      const progress = await storage.updateUserProgress(progressData);
+      res.json(progress);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update progress" });
+    }
+  });
+
+  // Task logs
+  app.post("/api/tasks/:id/logs", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const logData = insertTaskLogSchema.parse({ ...req.body, taskId });
+      const log = await storage.createTaskLog(logData);
+      res.json(log);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create task log" });
+    }
+  });
+
+  app.get("/api/tasks/:id/logs", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const logs = await storage.getTaskLogs(taskId);
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task logs" });
+    }
+  });
+
+  // Analytics routes
+  app.get("/api/analytics/dashboard", async (req, res) => {
+    try {
+      const tasks = await storage.getAllTasks();
+      const users = await storage.getAllUsers();
+      const inventory = await storage.getAllInventoryItems();
+      const lowStockItems = await storage.getLowStockItems();
+
+      const completedTasks = tasks.filter(t => t.status === 'completed').length;
+      const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+      const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+
+      const totalTime = tasks
+        .filter(t => t.actualTime)
+        .reduce((sum, t) => sum + (t.actualTime || 0), 0);
+
+      const analytics = {
+        totalTasks: tasks.length,
+        completedTasks,
+        inProgressTasks,
+        pendingTasks,
+        totalUsers: users.length,
+        totalInventoryItems: inventory.length,
+        lowStockAlerts: lowStockItems.length,
+        totalTimeLogged: totalTime,
+        tasksByType: tasks.reduce((acc, task) => {
+          acc[task.type] = (acc[task.type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        tasksByStatus: {
+          completed: completedTasks,
+          in_progress: inProgressTasks,
+          pending: pendingTasks
+        }
+      };
+
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

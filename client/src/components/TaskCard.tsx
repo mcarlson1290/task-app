@@ -1,0 +1,184 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Clock, Weight, Info, CheckCircle, User } from "lucide-react";
+import { Task } from "@shared/schema";
+import { TaskType, TaskStatus } from "@/types";
+
+interface TaskCardProps {
+  task: Task;
+  onStart: (task: Task) => void;
+  onContinue: (task: Task) => void;
+  onViewDetails: (task: Task) => void;
+}
+
+const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDetails }) => {
+  const getTaskEmoji = (type: TaskType): string => {
+    const emojis = {
+      seeding: "🌱",
+      moving: "🌿",
+      harvesting: "🥬",
+      packing: "📦",
+      cleaning: "🧹",
+      inventory: "📋"
+    };
+    return emojis[type] || "📋";
+  };
+
+  const getStatusColor = (status: TaskStatus): string => {
+    const colors = {
+      pending: "bg-blue-100 text-blue-800",
+      in_progress: "bg-amber-100 text-amber-800",
+      completed: "bg-green-100 text-green-800",
+      approved: "bg-green-100 text-green-800"
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getStatusLabel = (status: TaskStatus): string => {
+    const labels = {
+      pending: "Pending",
+      in_progress: "In Progress",
+      completed: "Completed",
+      approved: "Approved"
+    };
+    return labels[status] || status;
+  };
+
+  const formatTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    }
+    return `${mins}m`;
+  };
+
+  const getTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
+    if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    }
+    return "Just now";
+  };
+
+  const isCompleted = task.status === 'completed' || task.status === 'approved';
+  const isInProgress = task.status === 'in_progress';
+
+  return (
+    <Card className={`shadow-sm hover:shadow-md transition-shadow ${
+      isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
+    } ${isCompleted ? 'opacity-75' : ''}`}>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center">
+            <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
+            <div>
+              <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
+              <p className="text-sm text-gray-600">{task.location}</p>
+            </div>
+          </div>
+          <Badge className={`${getStatusColor(task.status as TaskStatus)} border-none`}>
+            {getStatusLabel(task.status as TaskStatus)}
+          </Badge>
+        </div>
+
+        {/* Progress Bar (for in-progress tasks) */}
+        {isInProgress && (
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600">Progress</span>
+              <span className="text-sm font-medium text-[#203B17]">
+                {task.progress}%
+              </span>
+            </div>
+            <Progress value={task.progress} className="h-2" />
+          </div>
+        )}
+
+        {/* Task Details */}
+        <div className="mb-4">
+          {task.description && (
+            <div className="flex items-center text-sm text-gray-600 mb-2">
+              <Info className="h-4 w-4 mr-1" />
+              <span>{task.description}</span>
+            </div>
+          )}
+          
+          {task.checklist && task.checklist.length > 0 && (
+            <div className="text-sm text-gray-600 mb-2">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-1" />
+                <span>
+                  {task.checklist.filter(item => item.completed).length}/
+                  {task.checklist.length} checklist items
+                </span>
+              </div>
+            </div>
+          )}
+
+          {isCompleted && (
+            <div className="flex items-center text-sm text-gray-600 mb-2">
+              <User className="h-4 w-4 mr-1" />
+              <span>Completed and approved</span>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm text-gray-600">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>
+              {isInProgress && task.startedAt
+                ? `Started ${getTimeAgo(new Date(task.startedAt))}`
+                : isCompleted && task.completedAt
+                ? `Completed ${getTimeAgo(new Date(task.completedAt))}`
+                : task.estimatedTime
+                ? `Est. ${formatTime(task.estimatedTime)}`
+                : "No time estimate"
+              }
+            </span>
+          </div>
+          
+          <div className="flex gap-2">
+            {isInProgress ? (
+              <Button
+                onClick={() => onContinue(task)}
+                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+              >
+                Continue
+              </Button>
+            ) : task.status === 'pending' ? (
+              <Button
+                onClick={() => onStart(task)}
+                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+              >
+                Start Task
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => onViewDetails(task)}
+                className="text-gray-600"
+              >
+                View Details
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TaskCard;
