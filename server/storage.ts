@@ -23,6 +23,7 @@ export interface IStorage {
   getTask(id: number): Promise<Task | undefined>;
   getTasksByUser(userId: number): Promise<Task[]>;
   getAllTasks(): Promise<Task[]>;
+  getTasksByLocation(locationId: string): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
@@ -31,10 +32,12 @@ export interface IStorage {
   // Inventory methods
   getInventoryItem(id: number): Promise<InventoryItem | undefined>;
   getAllInventoryItems(): Promise<InventoryItem[]>;
+  getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]>;
   createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
   updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined>;
   deleteInventoryItem(id: number): Promise<boolean>;
   getLowStockItems(): Promise<InventoryItem[]>;
+  getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]>;
 
   // Training methods
   getTrainingModule(id: number): Promise<TrainingModule | undefined>;
@@ -50,6 +53,7 @@ export interface IStorage {
   // Recurring tasks
   getRecurringTask(id: number): Promise<RecurringTask | undefined>;
   getAllRecurringTasks(): Promise<RecurringTask[]>;
+  getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]>;
   createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
   updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
   deleteRecurringTask(id: number): Promise<boolean>;
@@ -57,6 +61,7 @@ export interface IStorage {
   // Growing systems
   getGrowingSystem(id: number): Promise<GrowingSystem | undefined>;
   getAllGrowingSystems(): Promise<GrowingSystem[]>;
+  getGrowingSystemsByLocation(locationId: string): Promise<GrowingSystem[]>;
   createGrowingSystem(system: InsertGrowingSystem): Promise<GrowingSystem>;
   updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined>;
   deleteGrowingSystem(id: number): Promise<boolean>;
@@ -76,6 +81,7 @@ export class MemStorage implements IStorage {
   private recurringTasks: Map<number, RecurringTask> = new Map();
   private growingSystems: Map<number, GrowingSystem> = new Map();
   private trayMovements: Map<number, TrayMovement> = new Map();
+  private crops: Map<number, Crop> = new Map();
   
   private currentUserId = 1;
   private currentTaskId = 1;
@@ -86,6 +92,7 @@ export class MemStorage implements IStorage {
   private currentRecurringTaskId = 1;
   private currentGrowingSystemId = 1;
   private currentTrayMovementId = 1;
+  private currentCropId = 1;
 
   constructor() {
     this.seedInitialData();
@@ -109,14 +116,20 @@ export class MemStorage implements IStorage {
       this.users.set(newUser.id, newUser);
     });
 
-    // Create sample tasks with different dates
+    // Create location-specific data
+    this.seedLocationData();
+  }
+
+  private seedLocationData() {
+    // Create location-specific tasks
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
-    
-    const sampleTasks = [
+
+    // Kenosha tasks
+    const kenoshaTasks = [
       {
         title: "Seed Arugula Trays",
         description: "Plant arugula seeds in designated trays for microgreens production",
@@ -125,7 +138,7 @@ export class MemStorage implements IStorage {
         priority: "high",
         assignedTo: 1,
         createdBy: 2,
-        location: null,
+        location: "K",
         estimatedTime: 180,
         actualTime: 135,
         progress: 60,
@@ -136,9 +149,9 @@ export class MemStorage implements IStorage {
           { id: "4", text: "Label trays with date", completed: false },
           { id: "5", text: "Place in germination area", completed: false }
         ] as ChecklistItem[],
-        startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
         completedAt: null,
-        dueDate: today // Due today
+        dueDate: today
       },
       {
         title: "Remove Covers - Microgreens",
@@ -148,7 +161,7 @@ export class MemStorage implements IStorage {
         priority: "high",
         assignedTo: 1,
         createdBy: 2,
-        location: null,
+        location: "K",
         estimatedTime: 45,
         actualTime: null,
         progress: 0,
@@ -159,8 +172,12 @@ export class MemStorage implements IStorage {
         ] as ChecklistItem[],
         startedAt: null,
         completedAt: null,
-        dueDate: yesterday // Overdue
-      },
+        dueDate: yesterday
+      }
+    ];
+
+    // Racine tasks
+    const racineTasks = [
       {
         title: "Harvest Spinach",
         description: "Harvest mature spinach plants in leafy greens section",
@@ -169,7 +186,7 @@ export class MemStorage implements IStorage {
         priority: "medium",
         assignedTo: 1,
         createdBy: 2,
-        location: null,
+        location: "R",
         estimatedTime: 150,
         actualTime: null,
         progress: 0,
@@ -180,7 +197,7 @@ export class MemStorage implements IStorage {
         ] as ChecklistItem[],
         startedAt: null,
         completedAt: null,
-        dueDate: tomorrow // Due tomorrow
+        dueDate: tomorrow
       },
       {
         title: "Clean Tower Systems",
@@ -247,30 +264,31 @@ export class MemStorage implements IStorage {
         dueDate: new Date(Date.now() - 4 * 60 * 60 * 1000) // 4 hours ago (OVERDUE)
       },
       {
-        title: "Weekly Equipment Check",
-        description: "Inspect and maintain growing equipment",
-        type: "equipment-maintenance",
-        status: "pending",
-        priority: "low",
+        title: "Clean Tower Systems",
+        description: "Full sanitization of tower systems",
+        type: "cleaning",
+        status: "completed",
+        priority: "medium",
         assignedTo: 1,
         createdBy: 2,
-        location: null,
+        location: "R",
         estimatedTime: 120,
-        actualTime: null,
-        progress: 0,
+        actualTime: 105,
+        progress: 100,
         checklist: [
-          { id: "1", text: "Check LED panels", completed: false },
-          { id: "2", text: "Inspect water pumps", completed: false },
-          { id: "3", text: "Clean air filters", completed: false },
-          { id: "4", text: "Test temperature sensors", completed: false }
+          { id: "1", text: "Sanitize towers", completed: true },
+          { id: "2", text: "Clean water systems", completed: true },
+          { id: "3", text: "Replace filters", completed: true }
         ] as ChecklistItem[],
-        startedAt: null,
-        completedAt: null,
-        dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24 hours ago (OVERDUE)
+        completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+        dueDate: yesterday
       }
     ];
 
-    sampleTasks.forEach(task => {
+    // Create tasks for both locations
+    const allTasks = [...kenoshaTasks, ...racineTasks];
+    
+    allTasks.forEach(task => {
       const newTask: Task = {
         ...task,
         id: this.currentTaskId++,
@@ -278,7 +296,6 @@ export class MemStorage implements IStorage {
         dueDate: task.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000),
         createdAt: new Date(),
         description: task.description || null,
-        location: null, // Always null - no location references
         estimatedTime: task.estimatedTime || null,
         actualTime: task.actualTime || null,
         progress: task.progress || 0,
@@ -292,8 +309,8 @@ export class MemStorage implements IStorage {
       this.tasks.set(newTask.id, newTask);
     });
 
-    // Create sample inventory items with product codes and seed usage
-    const sampleInventory = [
+    // Create location-based inventory items
+    const kenoshaInventory = [
       { 
         name: "Arugula Seeds", 
         category: "seeds", 
@@ -303,18 +320,8 @@ export class MemStorage implements IStorage {
         supplier: "Green Thumb Seeds",
         productCode: "ARU",
         ozPerTray: 0.5,
-        cropId: 1
-      },
-      { 
-        name: "Romaine Seeds", 
-        category: "seeds", 
-        currentStock: 1200, 
-        minimumStock: 200, 
-        unit: "grams", 
-        supplier: "Green Thumb Seeds",
-        productCode: "ROM",
-        ozPerTray: 0.75,
-        cropId: 2
+        cropId: 1,
+        location: "K"
       },
       { 
         name: "Broccoli Microgreen Seeds", 
@@ -325,40 +332,8 @@ export class MemStorage implements IStorage {
         supplier: "Green Thumb Seeds",
         productCode: "BROC",
         ozPerTray: 1.0,
-        cropId: 3
-      },
-      { 
-        name: "Basil Seeds", 
-        category: "seeds", 
-        currentStock: 300, 
-        minimumStock: 50, 
-        unit: "grams", 
-        supplier: "Green Thumb Seeds",
-        productCode: "BAS",
-        ozPerTray: 0.25,
-        cropId: 4
-      },
-      { 
-        name: "Spinach Seeds", 
-        category: "seeds", 
-        currentStock: 25, 
-        minimumStock: 30, 
-        unit: "grams", 
-        supplier: "Green Thumb Seeds",
-        productCode: "SPI",
-        ozPerTray: 0.6,
-        cropId: 5
-      },
-      { 
-        name: "Nutrient Solution A", 
-        category: "nutrients", 
-        currentStock: 45, 
-        minimumStock: 20, 
-        unit: "liters", 
-        supplier: "Hydro Nutrients Co",
-        productCode: "NUT-A",
-        ozPerTray: null,
-        cropId: null
+        cropId: 3,
+        location: "K"
       },
       { 
         name: "Growing Medium", 
@@ -369,11 +344,53 @@ export class MemStorage implements IStorage {
         supplier: "Farm Supply Plus",
         productCode: "GROW-MED",
         ozPerTray: null,
-        cropId: null
+        cropId: null,
+        location: "K"
       }
     ];
 
-    sampleInventory.forEach(item => {
+    const racineInventory = [
+      { 
+        name: "Romaine Seeds", 
+        category: "seeds", 
+        currentStock: 1200, 
+        minimumStock: 200, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "ROM",
+        ozPerTray: 0.75,
+        cropId: 2,
+        location: "R"
+      },
+      { 
+        name: "Spinach Seeds", 
+        category: "seeds", 
+        currentStock: 25, 
+        minimumStock: 30, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "SPI",
+        ozPerTray: 0.6,
+        cropId: 5,
+        location: "R"
+      },
+      { 
+        name: "Nutrient Solution A", 
+        category: "nutrients", 
+        currentStock: 45, 
+        minimumStock: 20, 
+        unit: "liters", 
+        supplier: "Hydro Nutrients Co",
+        productCode: "NUT-A",
+        ozPerTray: null,
+        cropId: null,
+        location: "R"
+      }
+    ];
+
+    const allInventory = [...kenoshaInventory, ...racineInventory];
+
+    allInventory.forEach(item => {
       const newItem: InventoryItem = {
         ...item,
         id: this.currentInventoryId++,
@@ -384,6 +401,88 @@ export class MemStorage implements IStorage {
         supplier: item.supplier || null
       };
       this.inventoryItems.set(newItem.id, newItem);
+    });
+
+    // Create location-based growing systems
+    const kenoshaGrowingSystems = [
+      {
+        name: 'Kenosha Microgreen Nursery A',
+        type: 'microgreen',
+        category: 'nursery',
+        capacity: 120,
+        currentOccupancy: 75,
+        systemData: {
+          sections: {
+            'A1': { capacity: 60, occupied: ['MG-001', 'MG-002', 'MG-003'] },
+            'A2': { capacity: 60, occupied: ['MG-004', 'MG-005'] }
+          }
+        },
+        isActive: true,
+        location: "K"
+      },
+      {
+        name: 'Kenosha Blackout System',
+        type: 'microgreen',
+        category: 'blackout',
+        capacity: 100,
+        currentOccupancy: 45,
+        systemData: {
+          sections: {
+            'B1': { capacity: 50, occupied: ['BL-001', 'BL-002'] },
+            'B2': { capacity: 50, occupied: ['BL-003'] }
+          }
+        },
+        isActive: true,
+        location: "K"
+      }
+    ];
+
+    const racineGrowingSystems = [
+      {
+        name: 'Racine Tower System B',
+        type: 'leafy-green',
+        category: 'final',
+        capacity: 176,
+        currentOccupancy: 88,
+        systemData: {
+          units: [
+            { id: 'B1', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-001', 'LG-002'] },
+            { id: 'B2', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-003', 'LG-004'] },
+            { id: 'B3', type: 'HD', totalPorts: 176, occupiedPorts: ['LG-005', 'LG-006'] }
+          ]
+        },
+        isActive: true,
+        location: "R"
+      },
+      {
+        name: 'Racine Ebb & Flow System C',
+        type: 'leafy-green',
+        category: 'staging',
+        capacity: 100,
+        currentOccupancy: 45,
+        systemData: {
+          channels: [
+            { id: 1, capacity: 20, crop: 'Romaine', occupied: ['ROM-001', 'ROM-002'] },
+            { id: 2, capacity: 20, crop: 'Spinach', occupied: ['SPI-001'] },
+            { id: 3, capacity: 20, crop: null, occupied: [] },
+            { id: 4, capacity: 20, crop: 'Basil', occupied: ['BAS-001', 'BAS-002'] },
+            { id: 5, capacity: 20, crop: null, occupied: [] }
+          ]
+        },
+        isActive: true,
+        location: "R"
+      }
+    ];
+
+    const allGrowingSystems = [...kenoshaGrowingSystems, ...racineGrowingSystems];
+
+    allGrowingSystems.forEach(system => {
+      const newSystem: GrowingSystem = {
+        ...system,
+        id: this.currentGrowingSystemId++,
+        createdAt: new Date()
+      };
+      this.growingSystems.set(newSystem.id, newSystem);
     });
 
     // Create sample training modules
@@ -417,213 +516,167 @@ export class MemStorage implements IStorage {
       this.trainingModules.set(newModule.id, newModule);
     });
 
-    // Create sample growing systems
-    const sampleSystems = [
+    // Create recurring tasks for each location
+    const kenoshaRecurringTasks = [
       {
-        name: 'Microgreen Nursery A',
-        type: 'microgreen',
-        category: 'nursery',
-        capacity: 120,
-        currentOccupancy: 75,
-        systemData: {
-          sections: {
-            'A1': { capacity: 60, occupied: ['MG-001', 'MG-002', 'MG-003'] },
-            'A2': { capacity: 60, occupied: ['MG-004', 'MG-005'] }
-          }
-        },
-        isActive: true
-      },
-      {
-        name: 'Tower System B',
-        type: 'leafy-green',
-        category: 'final',
-        capacity: 176,
-        currentOccupancy: 88,
-        systemData: {
-          units: [
-            { id: 'B1', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-001', 'LG-002'] },
-            { id: 'B2', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-003', 'LG-004'] },
-            { id: 'B3', type: 'HD', totalPorts: 176, occupiedPorts: ['LG-005', 'LG-006'] }
-          ]
-        },
-        isActive: true
-      },
-      {
-        name: 'Ebb & Flow System C',
-        type: 'leafy-green',
-        category: 'staging',
-        capacity: 100,
-        currentOccupancy: 45,
-        systemData: {
-          channels: [
-            { id: 1, capacity: 20, crop: 'Romaine', occupied: ['ROM-001', 'ROM-002'] },
-            { id: 2, capacity: 20, crop: 'Arugula', occupied: ['ARU-001'] },
-            { id: 3, capacity: 20, crop: null, occupied: [] },
-            { id: 4, capacity: 20, crop: 'Basil', occupied: ['BAS-001', 'BAS-002'] },
-            { id: 5, capacity: 20, crop: null, occupied: [] }
-          ]
-        },
-        isActive: true
+        title: "Daily Seed Propagation",
+        description: "Daily microgreen seeding tasks",
+        type: "seeding-microgreens",
+        frequency: "daily",
+        daysOfWeek: [1, 2, 3, 4, 5],
+        assignedTo: 1,
+        createdBy: 2,
+        location: "K",
+        isActive: true,
+        estimatedTime: 120,
+        nextOccurrence: new Date(Date.now() + 24 * 60 * 60 * 1000)
       }
     ];
 
-    sampleSystems.forEach(system => {
-      const newSystem: GrowingSystem = {
-        ...system,
-        id: this.currentGrowingSystemId++,
-        createdAt: new Date()
-      };
-      this.growingSystems.set(newSystem.id, newSystem);
-    });
-
-    // Create sample recurring tasks
-    const sampleRecurringTasks = [
+    const racineRecurringTasks = [
       {
-        title: 'Daily Seeding - Microgreens',
-        description: 'Plant daily batch of microgreen seeds',
-        type: 'seeding-microgreens',
-        frequency: 'daily',
-        daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+        title: "Weekly Harvest Check",
+        description: "Check all leafy greens for harvest readiness",
+        type: "harvest-leafy-greens",
+        frequency: "weekly",
+        daysOfWeek: [1, 3, 5],
+        assignedTo: 1,
+        createdBy: 2,
+        location: "R",
         isActive: true,
-        createdBy: 3,
-        automation: {
-          enabled: true,
-          generateTrays: true,
-          trayCount: 12,
-          cropType: 'microgreen',
-          flow: {
-            type: 'microgreen' as const,
-            stages: [
-              { name: 'Nursery', system: 'Microgreen Nursery A', duration: 2, autoMove: true },
-              { name: 'Blackout', system: 'Blackout Racks', duration: 2, autoMove: true },
-              { name: 'Growing', system: 'Microgreen Racks', duration: 3, autoMove: false }
-            ]
-          }
-        },
-        checklistTemplate: {
-          steps: [
-            { type: 'inventory-select', label: 'Select seed type', inventoryCategory: 'seeds' },
-            { type: 'number-input', label: 'Number of trays', min: 1, max: 24, default: 12 },
-            { type: 'system-assignment', label: 'Assign to system', systemType: 'nursery' },
-            { type: 'instruction', text: 'Prepare trays with growing medium' },
-            { type: 'instruction', text: 'Plant seeds evenly across surface' },
-            { type: 'instruction', text: 'Label trays with date and crop type' },
-            { type: 'data-capture', label: 'Weight of seeds used', dataType: 'weight' }
-          ]
-        }
-      },
-      {
-        title: 'Weekly Leafy Green Planting',
-        description: 'Plant weekly batch of leafy greens',
-        type: 'seeding-leafy-greens',
-        frequency: 'weekly',
-        daysOfWeek: ['monday'],
-        isActive: true,
-        createdBy: 3,
-        automation: {
-          enabled: true,
-          generateTrays: true,
-          trayCount: 8,
-          cropType: 'leafy-green',
-          flow: {
-            type: 'leafy-green' as const,
-            stages: [
-              { name: 'Nursery', system: 'Leafy Green Nursery', duration: 14, autoMove: true },
-              { name: 'Staging', system: 'Ebb & Flow System C', duration: 14, autoMove: true },
-              { name: 'Final', system: 'Tower System B', duration: 14, autoMove: false }
-            ]
-          }
-        },
-        checklistTemplate: {
-          steps: [
-            { type: 'inventory-select', label: 'Select leafy green variety', inventoryCategory: 'seeds' },
-            { type: 'number-input', label: 'Number of trays', min: 1, max: 20, default: 8 },
-            { type: 'system-assignment', label: 'Assign to nursery system', systemType: 'nursery' },
-            { type: 'instruction', text: 'Prepare seed trays with rockwool cubes' },
-            { type: 'instruction', text: 'Plant 2-3 seeds per cube' },
-            { type: 'instruction', text: 'Set up irrigation schedule' },
-            { type: 'data-capture', label: 'Germination rate target', dataType: 'percentage' }
-          ]
-        }
+        estimatedTime: 90,
+        nextOccurrence: new Date(Date.now() + 24 * 60 * 60 * 1000)
       }
     ];
 
-    sampleRecurringTasks.forEach(task => {
-      const newTask: RecurringTask = {
+    const allRecurringTasks = [...kenoshaRecurringTasks, ...racineRecurringTasks];
+
+    allRecurringTasks.forEach(task => {
+      const newRecurringTask: RecurringTask = {
         ...task,
         id: this.currentRecurringTaskId++,
         createdAt: new Date()
       };
-      this.recurringTasks.set(newTask.id, newTask);
+      this.recurringTasks.set(newRecurringTask.id, newRecurringTask);
+    });
+
+    // Create sample crops with location-specific assignments
+    const sampleCrops = [
+      {
+        name: "Arugula",
+        category: "microgreens",
+        description: "Peppery microgreens",
+        growthTime: 7,
+        daysToHarvest: 7,
+        systemType: "microgreen",
+        location: "K"
+      },
+      {
+        name: "Broccoli",
+        category: "microgreens",
+        description: "Nutrient-rich microgreens",
+        growthTime: 5,
+        daysToHarvest: 5,
+        systemType: "microgreen",
+        location: "K"
+      },
+      {
+        name: "Romaine",
+        category: "leafy-greens",
+        description: "Crisp lettuce variety",
+        growthTime: 35,
+        daysToHarvest: 35,
+        systemType: "leafy-green",
+        location: "R"
+      },
+      {
+        name: "Spinach",
+        category: "leafy-greens",
+        description: "Nutrient-dense leafy green",
+        growthTime: 30,
+        daysToHarvest: 30,
+        systemType: "leafy-green",
+        location: "R"
+      }
+    ];
+
+    sampleCrops.forEach(crop => {
+      const newCrop: Crop = {
+        ...crop,
+        id: this.currentCropId++,
+        createdAt: new Date(),
+        isActive: true
+      };
+      this.crops.set(newCrop.id, newCrop);
     });
   }
 
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const user: User = {
-      ...insertUser,
+  // Create user with username
+  async createUser(userData: InsertUser): Promise<User> {
+    const newUser: User = {
+      ...userData,
       id: this.currentUserId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      approved: userData.approved || null
     };
-    this.users.set(user.id, user);
-    return user;
+    this.users.set(newUser.id, newUser);
+    return newUser;
   }
 
-  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+  // Get user by username
+  async getUserByUsername(username: string): Promise<User | null> {
+    return Array.from(this.users.values()).find(user => user.username === username) || null;
+  }
+
+  // Get all users
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  // Update user
+  async updateUser(id: number, updates: Partial<User>): Promise<User | null> {
     const user = this.users.get(id);
-    if (!user) return undefined;
-    
+    if (!user) return null;
+
     const updatedUser = { ...user, ...updates };
     this.users.set(id, updatedUser);
     return updatedUser;
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+  // Tasks methods
+  async getAllTasks(): Promise<Task[]> {
+    return Array.from(this.tasks.values());
   }
 
-  // Task methods
-  async getTask(id: number): Promise<Task | undefined> {
-    return this.tasks.get(id);
+  async getTasksByLocation(location: string): Promise<Task[]> {
+    return Array.from(this.tasks.values()).filter(task => task.location === location);
   }
 
   async getTasksByUser(userId: number): Promise<Task[]> {
     return Array.from(this.tasks.values()).filter(task => task.assignedTo === userId);
   }
 
-  async getAllTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values());
+  async getTask(id: number): Promise<Task | null> {
+    return this.tasks.get(id) || null;
   }
 
-  async createTask(insertTask: InsertTask): Promise<Task> {
-    const task: Task = {
-      ...insertTask,
+  async createTask(taskData: InsertTask): Promise<Task> {
+    const newTask: Task = {
+      ...taskData,
       id: this.currentTaskId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      data: taskData.data || {}
     };
-    this.tasks.set(task.id, task);
-    return task;
+    this.tasks.set(newTask.id, newTask);
+    return newTask;
   }
 
-  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
-    console.log("MemStorage updateTask called with id:", id, "updates:", updates);
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task | null> {
     const task = this.tasks.get(id);
-    if (!task) {
-      console.log("Task not found for id:", id);
-      return undefined;
-    }
-    
+    if (!task) return null;
+
     const updatedTask = { ...task, ...updates };
     this.tasks.set(id, updatedTask);
-    console.log("MemStorage updateTask result:", updatedTask);
     return updatedTask;
   }
 
@@ -631,148 +684,42 @@ export class MemStorage implements IStorage {
     return this.tasks.delete(id);
   }
 
-  async resetTasks(): Promise<boolean> {
-    // Clear existing tasks
-    this.tasks.clear();
-    
-    // Reset task ID counter
-    this.currentTaskId = 1;
-    
-    // Recreate the original mock tasks
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    
-    const sampleTasks = [
-      {
-        title: "Seed Arugula Trays",
-        description: "Plant arugula seeds in designated trays for microgreens production",
-        type: "seeding-microgreens",
-        status: "pending",
-        priority: "high",
-        assignedTo: 1,
-        createdBy: 2,
-        location: null,
-        estimatedTime: 180,
-        actualTime: null,
-        progress: 0,
-        checklist: [
-          { id: "1", text: "Prepare seed trays", completed: false },
-          { id: "2", text: "Fill with growing medium", completed: false },
-          { id: "3", text: "Plant arugula seeds", completed: false },
-          { id: "4", text: "Label trays with date", completed: false },
-          { id: "5", text: "Place in germination area", completed: false }
-        ] as ChecklistItem[],
-        startedAt: null,
-        completedAt: null,
-        dueDate: today
-      },
-      {
-        title: "Remove Covers - Microgreens",
-        description: "Day 2 blackout removal for proper stem height",
-        type: "blackout-tasks",
-        status: "pending",
-        priority: "high",
-        assignedTo: 1,
-        createdBy: 2,
-        location: null,
-        estimatedTime: 45,
-        actualTime: null,
-        progress: 0,
-        checklist: [
-          { id: "1", text: "Check seedling height", completed: false },
-          { id: "2", text: "Remove blackout covers", completed: false },
-          { id: "3", text: "Adjust lighting schedule", completed: false }
-        ] as ChecklistItem[],
-        startedAt: null,
-        completedAt: null,
-        dueDate: yesterday
-      },
-      {
-        title: "Harvest Lettuce - Section A",
-        description: "Harvest mature lettuce from designated growing area",
-        type: "harvesting-leafy-greens",
-        status: "pending",
-        priority: "medium",
-        assignedTo: 1,
-        createdBy: 2,
-        location: null,
-        estimatedTime: 90,
-        actualTime: null,
-        progress: 0,
-        checklist: [
-          { id: "1", text: "Prepare harvest containers", completed: false },
-          { id: "2", text: "Cut lettuce at base", completed: false },
-          { id: "3", text: "Weigh and record harvest", completed: false },
-          { id: "4", text: "Transport to cold storage", completed: false }
-        ] as ChecklistItem[],
-        startedAt: null,
-        completedAt: null,
-        dueDate: tomorrow
-      },
-      {
-        title: "System Maintenance Check",
-        description: "Weekly maintenance of growing systems and equipment",
-        type: "equipment-monitoring",
-        status: "pending",
-        priority: "medium",
-        assignedTo: 1,
-        createdBy: 2,
-        location: null,
-        estimatedTime: 120,
-        actualTime: null,
-        progress: 0,
-        checklist: [
-          { id: "1", text: "Check water pH levels", completed: false },
-          { id: "2", text: "Inspect grow lights", completed: false },
-          { id: "3", text: "Clean air filters", completed: false },
-          { id: "4", text: "Update maintenance log", completed: false }
-        ] as ChecklistItem[],
-        startedAt: null,
-        completedAt: null,
-        dueDate: today
-      }
-    ];
-
-    // Add tasks to storage
-    sampleTasks.forEach(taskData => {
-      const task: Task = {
-        ...taskData,
-        id: this.currentTaskId++,
-        data: {},
-        createdAt: new Date()
-      };
-      this.tasks.set(task.id, task);
-    });
-
-    return true;
-  }
-
   // Inventory methods
-  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
-    return this.inventoryItems.get(id);
-  }
-
   async getAllInventoryItems(): Promise<InventoryItem[]> {
     return Array.from(this.inventoryItems.values());
   }
 
-  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
-    const item: InventoryItem = {
-      ...insertItem,
+  async getInventoryItemsByLocation(location: string): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values()).filter(item => item.location === location);
+  }
+
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values()).filter(item => 
+      item.currentStock !== null && item.minimumStock !== null && item.currentStock <= item.minimumStock
+    );
+  }
+
+  async getLowStockItemsByLocation(location: string): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values()).filter(item => 
+      item.location === location &&
+      item.currentStock !== null && item.minimumStock !== null && item.currentStock <= item.minimumStock
+    );
+  }
+
+  async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
+    const newItem: InventoryItem = {
+      ...itemData,
       id: this.currentInventoryId++,
       createdAt: new Date()
     };
-    this.inventoryItems.set(item.id, item);
-    return item;
+    this.inventoryItems.set(newItem.id, newItem);
+    return newItem;
   }
 
-  async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
+  async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | null> {
     const item = this.inventoryItems.get(id);
-    if (!item) return undefined;
-    
+    if (!item) return null;
+
     const updatedItem = { ...item, ...updates };
     this.inventoryItems.set(id, updatedItem);
     return updatedItem;
@@ -782,88 +729,87 @@ export class MemStorage implements IStorage {
     return this.inventoryItems.delete(id);
   }
 
-  async getLowStockItems(): Promise<InventoryItem[]> {
-    return Array.from(this.inventoryItems.values()).filter(
-      item => item.currentStock <= item.minimumStock
-    );
-  }
-
   // Training methods
-  async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
-    return this.trainingModules.get(id);
-  }
-
   async getAllTrainingModules(): Promise<TrainingModule[]> {
     return Array.from(this.trainingModules.values());
   }
 
-  async createTrainingModule(insertModule: InsertTrainingModule): Promise<TrainingModule> {
-    const module: TrainingModule = {
-      ...insertModule,
+  async getTrainingModule(id: number): Promise<TrainingModule | null> {
+    return this.trainingModules.get(id) || null;
+  }
+
+  async createTrainingModule(moduleData: InsertTrainingModule): Promise<TrainingModule> {
+    const newModule: TrainingModule = {
+      ...moduleData,
       id: this.currentModuleId++,
       createdAt: new Date()
     };
-    this.trainingModules.set(module.id, module);
-    return module;
+    this.trainingModules.set(newModule.id, newModule);
+    return newModule;
   }
 
+  // User progress methods
   async getUserProgress(userId: number): Promise<UserProgress[]> {
-    return Array.from(this.userProgress.values()).filter(
-      progress => progress.userId === userId
-    );
+    return Array.from(this.userProgress.values()).filter(progress => progress.userId === userId);
   }
 
-  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
-    const key = `${insertProgress.userId}-${insertProgress.moduleId}`;
-    const existing = this.userProgress.get(key);
-    
-    const progress: UserProgress = {
-      id: existing?.id || this.currentProgressId++,
-      ...insertProgress,
+  async createUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
+    const newProgress: UserProgress = {
+      ...progressData,
+      id: this.currentProgressId++,
+      createdAt: new Date()
     };
-    
-    this.userProgress.set(key, progress);
-    return progress;
+    this.userProgress.set(newProgress.id, newProgress);
+    return newProgress;
   }
 
-  // Task logs
-  async createTaskLog(insertLog: InsertTaskLog): Promise<TaskLog> {
-    const log: TaskLog = {
-      ...insertLog,
-      id: this.currentLogId++,
-      timestamp: new Date()
-    };
-    this.taskLogs.set(log.id, log);
-    return log;
+  async updateUserProgress(id: number, updates: Partial<UserProgress>): Promise<UserProgress | null> {
+    const progress = this.userProgress.get(id);
+    if (!progress) return null;
+
+    const updatedProgress = { ...progress, ...updates };
+    this.userProgress.set(id, updatedProgress);
+    return updatedProgress;
   }
 
+  // Task logs methods
   async getTaskLogs(taskId: number): Promise<TaskLog[]> {
     return Array.from(this.taskLogs.values()).filter(log => log.taskId === taskId);
   }
 
-  // Recurring tasks
-  async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
-    return this.recurringTasks.get(id);
+  async createTaskLog(logData: InsertTaskLog): Promise<TaskLog> {
+    const newLog: TaskLog = {
+      ...logData,
+      id: this.currentLogId++,
+      createdAt: new Date()
+    };
+    this.taskLogs.set(newLog.id, newLog);
+    return newLog;
   }
 
+  // Recurring tasks methods
   async getAllRecurringTasks(): Promise<RecurringTask[]> {
     return Array.from(this.recurringTasks.values());
   }
 
-  async createRecurringTask(insertTask: InsertRecurringTask): Promise<RecurringTask> {
-    const task: RecurringTask = {
-      ...insertTask,
+  async getRecurringTasksByLocation(location: string): Promise<RecurringTask[]> {
+    return Array.from(this.recurringTasks.values()).filter(task => task.location === location);
+  }
+
+  async createRecurringTask(taskData: any): Promise<RecurringTask> {
+    const newTask: RecurringTask = {
+      ...taskData,
       id: this.currentRecurringTaskId++,
       createdAt: new Date()
     };
-    this.recurringTasks.set(task.id, task);
-    return task;
+    this.recurringTasks.set(newTask.id, newTask);
+    return newTask;
   }
 
-  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
+  async updateRecurringTask(id: number, updates: any): Promise<RecurringTask | null> {
     const task = this.recurringTasks.get(id);
-    if (!task) return undefined;
-    
+    if (!task) return null;
+
     const updatedTask = { ...task, ...updates };
     this.recurringTasks.set(id, updatedTask);
     return updatedTask;
@@ -873,29 +819,29 @@ export class MemStorage implements IStorage {
     return this.recurringTasks.delete(id);
   }
 
-  // Growing systems
-  async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
-    return this.growingSystems.get(id);
-  }
-
+  // Growing systems methods
   async getAllGrowingSystems(): Promise<GrowingSystem[]> {
     return Array.from(this.growingSystems.values());
   }
 
-  async createGrowingSystem(insertSystem: InsertGrowingSystem): Promise<GrowingSystem> {
-    const system: GrowingSystem = {
-      ...insertSystem,
+  async getGrowingSystemsByLocation(location: string): Promise<GrowingSystem[]> {
+    return Array.from(this.growingSystems.values()).filter(system => system.location === location);
+  }
+
+  async createGrowingSystem(systemData: any): Promise<GrowingSystem> {
+    const newSystem: GrowingSystem = {
+      ...systemData,
       id: this.currentGrowingSystemId++,
       createdAt: new Date()
     };
-    this.growingSystems.set(system.id, system);
-    return system;
+    this.growingSystems.set(newSystem.id, newSystem);
+    return newSystem;
   }
 
-  async updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined> {
+  async updateGrowingSystem(id: number, updates: any): Promise<GrowingSystem | null> {
     const system = this.growingSystems.get(id);
-    if (!system) return undefined;
-    
+    if (!system) return null;
+
     const updatedSystem = { ...system, ...updates };
     this.growingSystems.set(id, updatedSystem);
     return updatedSystem;
@@ -905,265 +851,36 @@ export class MemStorage implements IStorage {
     return this.growingSystems.delete(id);
   }
 
-  // Tray movements
-  async createTrayMovement(insertMovement: InsertTrayMovement): Promise<TrayMovement> {
-    const movement: TrayMovement = {
-      ...insertMovement,
-      id: this.currentTrayMovementId++,
-      movedAt: new Date()
+  // Crop methods
+  async getAllCrops(): Promise<Crop[]> {
+    return Array.from(this.crops.values());
+  }
+
+  async getCropsByLocation(location: string): Promise<Crop[]> {
+    return Array.from(this.crops.values()).filter(crop => crop.location === location);
+  }
+
+  async createCrop(cropData: any): Promise<Crop> {
+    const newCrop: Crop = {
+      ...cropData,
+      id: this.currentCropId++,
+      createdAt: new Date()
     };
-    this.trayMovements.set(movement.id, movement);
-    return movement;
+    this.crops.set(newCrop.id, newCrop);
+    return newCrop;
   }
 
-  async getTrayMovements(trayId: string): Promise<TrayMovement[]> {
-    return Array.from(this.trayMovements.values()).filter(movement => movement.trayId === trayId);
-  }
-}
+  async updateCrop(id: number, updates: any): Promise<Crop | null> {
+    const crop = this.crops.get(id);
+    if (!crop) return null;
 
-export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    const updatedCrop = { ...crop, ...updates };
+    this.crops.set(id, updatedCrop);
+    return updatedCrop;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
-  }
-
-  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
-    return user || undefined;
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
-  async getTask(id: number): Promise<Task | undefined> {
-    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
-    return task || undefined;
-  }
-
-  async getTasksByUser(userId: number): Promise<Task[]> {
-    return await db.select().from(tasks).where(eq(tasks.assignedTo, userId));
-  }
-
-  async getAllTasks(): Promise<Task[]> {
-    return await db.select().from(tasks);
-  }
-
-  async createTask(insertTask: InsertTask): Promise<Task> {
-    const [task] = await db.insert(tasks).values(insertTask).returning();
-    return task;
-  }
-
-  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
-    const [task] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
-    return task || undefined;
-  }
-
-  async deleteTask(id: number): Promise<boolean> {
-    const result = await db.delete(tasks).where(eq(tasks.id, id));
-    return (result.rowCount ?? 0) > 0;
-  }
-
-  async resetTasks(): Promise<boolean> {
-    try {
-      // Clear existing tasks
-      await db.delete(tasks);
-      
-      // Recreate the original mock tasks
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-      const yesterday = new Date();
-      yesterday.setDate(today.getDate() - 1);
-      
-      const sampleTasks = [
-        {
-          title: "Seed Arugula Trays",
-          description: "Plant arugula seeds in designated trays for microgreens production",
-          type: "seeding-microgreens",
-          status: "pending",
-          priority: "high",
-          assignedTo: 1,
-          createdBy: 2,
-          location: null,
-          estimatedTime: 180,
-          actualTime: null,
-          progress: 0,
-          checklist: [
-            { id: "1", text: "Prepare seed trays", completed: false },
-            { id: "2", text: "Fill with growing medium", completed: false },
-            { id: "3", text: "Plant arugula seeds", completed: false },
-            { id: "4", text: "Label trays with date", completed: false },
-            { id: "5", text: "Place in germination area", completed: false }
-          ] as ChecklistItem[],
-          startedAt: null,
-          completedAt: null,
-          dueDate: today,
-          data: {},
-          createdAt: new Date()
-        },
-        {
-          title: "Remove Covers - Microgreens",
-          description: "Day 2 blackout removal for proper stem height",
-          type: "blackout-tasks",
-          status: "pending",
-          priority: "high",
-          assignedTo: 1,
-          createdBy: 2,
-          location: null,
-          estimatedTime: 45,
-          actualTime: null,
-          progress: 0,
-          checklist: [
-            { id: "1", text: "Check seedling height", completed: false },
-            { id: "2", text: "Remove blackout covers", completed: false },
-            { id: "3", text: "Adjust lighting schedule", completed: false }
-          ] as ChecklistItem[],
-          startedAt: null,
-          completedAt: null,
-          dueDate: yesterday,
-          data: {},
-          createdAt: new Date()
-        },
-        {
-          title: "Harvest Lettuce - Section A",
-          description: "Harvest mature lettuce from designated growing area",
-          type: "harvesting-leafy-greens",
-          status: "pending",
-          priority: "medium",
-          assignedTo: 1,
-          createdBy: 2,
-          location: null,
-          estimatedTime: 90,
-          actualTime: null,
-          progress: 0,
-          checklist: [
-            { id: "1", text: "Prepare harvest containers", completed: false },
-            { id: "2", text: "Cut lettuce at base", completed: false },
-            { id: "3", text: "Weigh and record harvest", completed: false },
-            { id: "4", text: "Transport to cold storage", completed: false }
-          ] as ChecklistItem[],
-          startedAt: null,
-          completedAt: null,
-          dueDate: tomorrow,
-          data: {},
-          createdAt: new Date()
-        },
-        {
-          title: "System Maintenance Check",
-          description: "Weekly maintenance of growing systems and equipment",
-          type: "equipment-monitoring",
-          status: "pending",
-          priority: "medium",
-          assignedTo: 1,
-          createdBy: 2,
-          location: null,
-          estimatedTime: 120,
-          actualTime: null,
-          progress: 0,
-          checklist: [
-            { id: "1", text: "Check water pH levels", completed: false },
-            { id: "2", text: "Inspect grow lights", completed: false },
-            { id: "3", text: "Clean air filters", completed: false },
-            { id: "4", text: "Update maintenance log", completed: false }
-          ] as ChecklistItem[],
-          startedAt: null,
-          completedAt: null,
-          dueDate: today,
-          data: {},
-          createdAt: new Date()
-        }
-      ];
-
-      // Insert tasks
-      await db.insert(tasks).values(sampleTasks);
-      return true;
-    } catch (error) {
-      console.error("Error resetting tasks:", error);
-      return false;
-    }
-  }
-
-  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
-    const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
-    return item || undefined;
-  }
-
-  async getAllInventoryItems(): Promise<InventoryItem[]> {
-    return await db.select().from(inventoryItems);
-  }
-
-  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
-    const [item] = await db.insert(inventoryItems).values(insertItem).returning();
-    return item;
-  }
-
-  async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
-    const [item] = await db.update(inventoryItems).set(updates).where(eq(inventoryItems.id, id)).returning();
-    return item || undefined;
-  }
-
-  async getLowStockItems(): Promise<InventoryItem[]> {
-    return await db.select().from(inventoryItems).where(
-      sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`
-    );
-  }
-
-  async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
-    const [module] = await db.select().from(trainingModules).where(eq(trainingModules.id, id));
-    return module || undefined;
-  }
-
-  async getAllTrainingModules(): Promise<TrainingModule[]> {
-    return await db.select().from(trainingModules);
-  }
-
-  async createTrainingModule(insertModule: InsertTrainingModule): Promise<TrainingModule> {
-    const [module] = await db.insert(trainingModules).values(insertModule).returning();
-    return module;
-  }
-
-  async getUserProgress(userId: number): Promise<UserProgress[]> {
-    return await db.select().from(userProgress).where(eq(userProgress.userId, userId));
-  }
-
-  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
-    const existing = await db.select().from(userProgress).where(
-      and(
-        eq(userProgress.userId, insertProgress.userId!),
-        eq(userProgress.moduleId, insertProgress.moduleId!)
-      )
-    );
-
-    if (existing.length > 0) {
-      const [updated] = await db.update(userProgress)
-        .set(insertProgress)
-        .where(eq(userProgress.id, existing[0].id))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db.insert(userProgress).values(insertProgress).returning();
-      return created;
-    }
-  }
-
-  async createTaskLog(insertLog: InsertTaskLog): Promise<TaskLog> {
-    const [log] = await db.insert(taskLogs).values(insertLog).returning();
-    return log;
-  }
-
-  async getTaskLogs(taskId: number): Promise<TaskLog[]> {
-    return await db.select().from(taskLogs).where(eq(taskLogs.taskId, taskId));
+  async deleteCrop(id: number): Promise<boolean> {
+    return this.crops.delete(id);
   }
 }
 

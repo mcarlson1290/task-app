@@ -1,0 +1,725 @@
+# 📊 UI Restructure: Analytics & Tray Tracking Integration
+
+## Move Analytics to Task Data and Tray Tracking to Production Data with horizontal scrolling tabs
+
+### 1. UPDATE TASK DATA PAGE WITH ANALYTICS TAB:
+
+Update `src/pages/TaskData.tsx`:
+
+```typescript
+import React, { useState } from 'react';
+import { TaskOverview } from '../components/TaskOverview';
+import { TaskAnalytics } from '../components/TaskAnalytics';
+import { useLocation } from '../contexts/LocationContext';
+
+export const TaskData: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview');
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  return (
+    <div className="task-data-page">
+      <div className="page-header">
+        <h1>📊 Task Data</h1>
+        <div className="header-info">
+          {isViewingAllLocations ? (
+            <span className="location-indicator all">All Locations Combined</span>
+          ) : (
+            <span className="location-indicator">{currentLocation.name}</span>
+          )}
+        </div>
+      </div>
+      
+      <div className="tab-navigation">
+        <button
+          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
+        >
+          📋 Overview
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          📈 Analytics
+        </button>
+      </div>
+      
+      <div className="tab-content">
+        {activeTab === 'overview' && <TaskOverview />}
+        {activeTab === 'analytics' && <TaskAnalytics />}
+      </div>
+    </div>
+  );
+};
+```
+
+### 2. UPDATE PRODUCTION DATA WITH HORIZONTAL SCROLLING:
+
+Update `src/pages/ProductionData.tsx`:
+
+```typescript
+import React, { useState, useRef, useEffect } from 'react';
+import { CropConfiguration } from '../components/CropConfiguration';
+import { ProductionDashboard } from '../components/ProductionDashboard';
+import { EquipmentManagement } from '../components/EquipmentManagement';
+import { TrayTracking } from '../components/TrayTracking';
+import { useLocation } from '../contexts/LocationContext';
+
+export const ProductionData: React.FC = () => {
+  const currentUser = getCurrentUser();
+  const isCorporateManager = currentUser.role === 'Corporate';
+  const isManager = currentUser.role === 'Manager' || isCorporateManager;
+  
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [showLeftScroll, setShowLeftScroll] = useState(false);
+  const [showRightScroll, setShowRightScroll] = useState(false);
+  
+  const tabs = [
+    { id: 'dashboard', label: '📊 Live Dashboard', icon: '📊' },
+    { id: 'trays', label: '📦 Tray Tracking', icon: '📦' },
+    { id: 'equipment', label: '🏭 Equipment', icon: '🏭' },
+    ...(isCorporateManager ? [{ id: 'crops', label: '🌾 Crop Config', icon: '🌾' }] : [])
+  ];
+  
+  // Check scroll indicators
+  useEffect(() => {
+    const checkScroll = () => {
+      if (tabsRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+        setShowLeftScroll(scrollLeft > 0);
+        setShowRightScroll(scrollLeft + clientWidth < scrollWidth - 5);
+      }
+    };
+    
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [tabs.length]);
+  
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsRef.current) {
+      const scrollAmount = 200;
+      tabsRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      
+      // Check scroll indicators after scrolling
+      setTimeout(() => {
+        if (tabsRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+          setShowLeftScroll(scrollLeft > 0);
+          setShowRightScroll(scrollLeft + clientWidth < scrollWidth - 5);
+        }
+      }, 300);
+    }
+  };
+  
+  if (!isManager) {
+    return (
+      <div className="access-denied">
+        <h2>Access Restricted</h2>
+        <p>Production Data is only available to managers.</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="production-data-page">
+      <div className="page-header">
+        <h1>🌱 Production Data</h1>
+      </div>
+      
+      <div className="tab-navigation-wrapper">
+        {showLeftScroll && (
+          <button 
+            className="tab-scroll-btn left"
+            onClick={() => scrollTabs('left')}
+          >
+            <ChevronLeft size={20} />
+          </button>
+        )}
+        
+        <div 
+          className="tab-navigation horizontal-scroll"
+          ref={tabsRef}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setShowLeftScroll(target.scrollLeft > 0);
+            setShowRightScroll(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        
+        {showRightScroll && (
+          <button 
+            className="tab-scroll-btn right"
+            onClick={() => scrollTabs('right')}
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
+      </div>
+      
+      <div className="tab-content">
+        {activeTab === 'dashboard' && <ProductionDashboard />}
+        {activeTab === 'trays' && <TrayTracking />}
+        {activeTab === 'equipment' && <EquipmentManagement />}
+        {activeTab === 'crops' && isCorporateManager && <CropConfiguration />}
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. CREATE TRAY TRACKING COMPONENT:
+
+Create `src/components/TrayTracking.tsx`:
+
+```typescript
+import React, { useState, useEffect } from 'react';
+import { Tray } from '../data/trayTracking';
+import { BarcodeScanner } from './BarcodeScanner';
+import { TrayMovementDashboard } from './TrayMovementDashboard';
+import { useLocation } from '../contexts/LocationContext';
+
+export const TrayTracking: React.FC = () => {
+  const [activeView, setActiveView] = useState<'overview' | 'movements' | 'history'>('overview');
+  const [trays, setTrays] = useState<Tray[]>([]);
+  const [selectedTray, setSelectedTray] = useState<Tray | null>(null);
+  const [filter, setFilter] = useState({
+    status: 'all',
+    crop: 'all',
+    system: 'all',
+    dateRange: '7days'
+  });
+  
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  // Tray statistics
+  const stats = {
+    total: trays.length,
+    growing: trays.filter(t => t.status === 'growing').length,
+    ready: trays.filter(t => t.status === 'ready').length,
+    harvested: trays.filter(t => t.status === 'harvested').length
+  };
+  
+  const handleBarcodeScan = (barcode: string) => {
+    const tray = trays.find(t => t.id === barcode || t.barcode === barcode);
+    if (tray) {
+      setSelectedTray(tray);
+    } else {
+      alert(`Tray not found: ${barcode}`);
+    }
+  };
+  
+  return (
+    <div className="tray-tracking">
+      {/* Quick Stats */}
+      <div className="tray-stats">
+        <div className="stat-card">
+          <div className="stat-value">{stats.total}</div>
+          <div className="stat-label">Total Trays</div>
+        </div>
+        <div className="stat-card growing">
+          <div className="stat-value">{stats.growing}</div>
+          <div className="stat-label">Currently Growing</div>
+        </div>
+        <div className="stat-card ready">
+          <div className="stat-value">{stats.ready}</div>
+          <div className="stat-label">Ready to Harvest</div>
+        </div>
+        <div className="stat-card harvested">
+          <div className="stat-value">{stats.harvested}</div>
+          <div className="stat-label">Harvested Today</div>
+        </div>
+      </div>
+      
+      {/* View Toggle */}
+      <div className="view-controls">
+        <div className="view-toggle">
+          <button
+            className={activeView === 'overview' ? 'active' : ''}
+            onClick={() => setActiveView('overview')}
+          >
+            📋 Tray Overview
+          </button>
+          <button
+            className={activeView === 'movements' ? 'active' : ''}
+            onClick={() => setActiveView('movements')}
+          >
+            🚚 Movement Queue
+          </button>
+          <button
+            className={activeView === 'history' ? 'active' : ''}
+            onClick={() => setActiveView('history')}
+          >
+            📜 History
+          </button>
+        </div>
+        
+        <BarcodeScanner onScan={handleBarcodeScan} />
+      </div>
+      
+      {/* Content based on view */}
+      {activeView === 'overview' && (
+        <TrayOverview 
+          trays={trays}
+          filter={filter}
+          onFilterChange={setFilter}
+          onSelectTray={setSelectedTray}
+        />
+      )}
+      
+      {activeView === 'movements' && (
+        <TrayMovementDashboard />
+      )}
+      
+      {activeView === 'history' && (
+        <TrayHistory />
+      )}
+      
+      {/* Tray Detail Modal */}
+      {selectedTray && (
+        <TrayDetailModal
+          tray={selectedTray}
+          onClose={() => setSelectedTray(null)}
+          onMove={(tray, destination) => {
+            // Handle tray movement
+            console.log('Moving tray', tray.id, 'to', destination);
+          }}
+          onSplit={(tray) => {
+            // Handle tray split
+            console.log('Splitting tray', tray.id);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// Tray Overview Component
+const TrayOverview: React.FC<{
+  trays: Tray[];
+  filter: any;
+  onFilterChange: (filter: any) => void;
+  onSelectTray: (tray: Tray) => void;
+}> = ({ trays, filter, onFilterChange, onSelectTray }) => {
+  const filteredTrays = trays.filter(tray => {
+    if (filter.status !== 'all' && tray.status !== filter.status) return false;
+    if (filter.crop !== 'all' && tray.cropType !== filter.crop) return false;
+    if (filter.system !== 'all' && tray.currentLocation.systemType !== filter.system) return false;
+    // Add date filtering logic
+    return true;
+  });
+  
+  return (
+    <div className="tray-overview">
+      {/* Filters */}
+      <div className="tray-filters">
+        <select 
+          value={filter.status}
+          onChange={(e) => onFilterChange({ ...filter, status: e.target.value })}
+        >
+          <option value="all">All Status</option>
+          <option value="seeded">Seeded</option>
+          <option value="germinating">Germinating</option>
+          <option value="growing">Growing</option>
+          <option value="ready">Ready</option>
+          <option value="harvested">Harvested</option>
+        </select>
+        
+        <select
+          value={filter.crop}
+          onChange={(e) => onFilterChange({ ...filter, crop: e.target.value })}
+        >
+          <option value="all">All Crops</option>
+          <option value="Romaine Lettuce">Romaine Lettuce</option>
+          <option value="Broccoli Microgreens">Broccoli Microgreens</option>
+          <option value="Arugula">Arugula</option>
+          <option value="Basil">Basil</option>
+        </select>
+        
+        <select
+          value={filter.system}
+          onChange={(e) => onFilterChange({ ...filter, system: e.target.value })}
+        >
+          <option value="all">All Systems</option>
+          <option value="nursery">Nursery</option>
+          <option value="blackout">Blackout</option>
+          <option value="ebbFlow">Ebb & Flow</option>
+          <option value="towers">Towers</option>
+          <option value="nft">NFT</option>
+        </select>
+        
+        <select
+          value={filter.dateRange}
+          onChange={(e) => onFilterChange({ ...filter, dateRange: e.target.value })}
+        >
+          <option value="today">Today</option>
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+      
+      {/* Tray Table */}
+      <div className="tray-table-wrapper">
+        <table className="tray-table">
+          <thead>
+            <tr>
+              <th>Tray ID</th>
+              <th>Crop</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Planted</th>
+              <th>Est. Harvest</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTrays.map(tray => (
+              <tr key={tray.id} onClick={() => onSelectTray(tray)}>
+                <td className="tray-id">
+                  <span className="location-prefix">{tray.id.charAt(0)}</span>
+                  {tray.id.substring(1)}
+                </td>
+                <td>{tray.cropType}</td>
+                <td>
+                  <span className={`status-badge ${tray.status}`}>
+                    {tray.status}
+                  </span>
+                </td>
+                <td>{tray.currentLocation.systemId}</td>
+                <td>{new Date(tray.datePlanted).toLocaleDateString()}</td>
+                <td>{new Date(tray.expectedHarvest).toLocaleDateString()}</td>
+                <td>
+                  <button className="btn-action">View</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+```
+
+### 4. MOVE ANALYTICS COMPONENT:
+
+Move your existing Analytics component to be used within TaskData:
+
+```typescript
+// src/components/TaskAnalytics.tsx
+export const TaskAnalytics: React.FC = () => {
+  // Your existing analytics component content
+  // Just rename from Analytics to TaskAnalytics
+  
+  return (
+    <div className="task-analytics">
+      {/* All your existing analytics content */}
+    </div>
+  );
+};
+```
+
+### 5. UPDATE CSS FOR HORIZONTAL SCROLLING TABS:
+
+```css
+/* Horizontal Scrolling Tab Navigation */
+.tab-navigation-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.tab-navigation.horizontal-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 4px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  
+  /* Hide scrollbar but keep functionality */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.tab-navigation.horizontal-scroll::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+.tab-btn {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #2D8028;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Scroll Indicators */
+.tab-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.tab-scroll-btn:hover {
+  background: #f3f4f6;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tab-scroll-btn.left {
+  left: -16px;
+}
+
+.tab-scroll-btn.right {
+  right: -16px;
+}
+
+/* Standard Tab Navigation (for Task Data) */
+.tab-navigation:not(.horizontal-scroll) {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* Tray Tracking Styles */
+.tray-tracking {
+  padding: 24px;
+}
+
+.tray-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tray-stats .stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+}
+
+.tray-stats .stat-card.growing {
+  border-color: #10b981;
+}
+
+.tray-stats .stat-card.ready {
+  border-color: #f59e0b;
+}
+
+.tray-stats .stat-card.harvested {
+  border-color: #3b82f6;
+}
+
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.view-toggle button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-toggle button.active {
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Tray Table */
+.tray-table-wrapper {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tray-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tray-table th {
+  background: #f9fafb;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tray-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tray-table tbody tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tray-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.tray-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tray-filters select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .tab-navigation-wrapper {
+    margin: 0 -16px 24px -16px;
+    padding: 0 16px;
+  }
+  
+  .tray-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .view-controls {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .tray-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .tray-table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+/* Tab Content */
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+### 6. UPDATE NAVIGATION (REMOVE ANALYTICS):
+
+Update your sidebar navigation to remove the Analytics item since it's now under Task Data:
+
+```typescript
+// In Sidebar component
+const navigationItems = [
+  { icon: ClipboardList, label: 'Task Manager', path: '/' },
+  { icon: User, label: 'Account Info', path: '/account' },
+  { icon: Package, label: 'Inventory', path: '/inventory' },
+  { icon: GraduationCap, label: 'Education', path: '/education' },
+  // Remove Analytics from here
+];
+
+const managerItems = [
+  { icon: Repeat, label: 'Recurring Tasks', path: '/recurring-tasks' },
+  { icon: BarChart3, label: 'Task Data', path: '/task-data' }, // Now includes Analytics
+  { icon: Users, label: 'Staff Data', path: '/staff-data' },
+  { icon: Leaf, label: 'Production Data', path: '/production-data' }, // Now includes Tray Tracking
+];
+```
+
+### SUMMARY:
+
+This restructure implements:
+
+✅ **Analytics moved to Task Data** as a sub-tab
+✅ **Tray Tracking moved to Production Data** as a sub-tab
+✅ **Horizontal scrolling tabs** for Production Data with scroll indicators
+✅ **Cleaner navigation** with logical grouping
+
+Key changes:
+- Task Data now has: Overview | Analytics tabs
+- Production Data now has: Live Dashboard | Tray Tracking | Equipment | Crop Config
+- Horizontal scrolling with left/right arrow buttons when tabs overflow
+- Smooth transitions between tabs
+- Mobile responsive with proper overflow handling

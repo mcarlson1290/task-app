@@ -9,6 +9,7 @@ import { getStoredAuth, clearStoredAuth, setStoredAuth } from "@/lib/auth";
 import { DashboardAnalytics } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LocationSelector } from "@/components/LocationSelector";
+import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [selectedLocation, setSelectedLocation] = React.useState("grow-space");
   const auth = getStoredAuth();
   const isMobile = useIsMobile();
+  const { currentLocation } = useLocationContext();
 
   const { data: analytics } = useQuery<DashboardAnalytics>({
     queryKey: ["/api/analytics/dashboard"],
@@ -169,14 +171,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Bottom Section */}
         <div className="p-4 border-t border-[#2D8028] space-y-4">
-          {/* Location Selector */}
+          {/* Location Display */}
           <div className="space-y-2">
             <div className="flex items-center text-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="text-sm">Location:</span>
             </div>
-            <div className="sidebar-location-selector">
-              <LocationSelector />
+            <div className="bg-[#2D8028] px-3 py-2 rounded-md text-white text-sm">
+              {currentLocation.name}
             </div>
           </div>
 

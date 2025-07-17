@@ -70,10 +70,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Task routes
   app.get("/api/tasks", async (req, res) => {
     try {
-      const { userId } = req.query;
+      const { userId, location } = req.query;
       let tasks;
       
-      if (userId) {
+      if (location) {
+        tasks = await storage.getTasksByLocation(location as string);
+      } else if (userId) {
         tasks = await storage.getTasksByUser(parseInt(userId as string));
       } else {
         tasks = await storage.getAllTasks();
@@ -179,7 +181,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Inventory routes
   app.get("/api/inventory", async (req, res) => {
     try {
-      const items = await storage.getAllInventoryItems();
+      const { location } = req.query;
+      let items;
+      
+      if (location) {
+        items = await storage.getInventoryItemsByLocation(location as string);
+      } else {
+        items = await storage.getAllInventoryItems();
+      }
+      
       res.json(items);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch inventory" });
@@ -188,7 +198,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/inventory/low-stock", async (req, res) => {
     try {
-      const items = await storage.getLowStockItems();
+      const { location } = req.query;
+      let items;
+      
+      if (location) {
+        items = await storage.getLowStockItemsByLocation(location as string);
+      } else {
+        items = await storage.getLowStockItems();
+      }
+      
       res.json(items);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch low stock items" });
@@ -358,7 +376,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recurring tasks routes
   app.get("/api/recurring-tasks", async (req, res) => {
     try {
-      const tasks = await storage.getAllRecurringTasks();
+      const { location } = req.query;
+      let tasks;
+      
+      if (location) {
+        tasks = await storage.getRecurringTasksByLocation(location as string);
+      } else {
+        tasks = await storage.getAllRecurringTasks();
+      }
+      
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch recurring tasks" });
@@ -407,7 +433,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Growing systems routes
   app.get("/api/growing-systems", async (req, res) => {
     try {
-      const systems = await storage.getAllGrowingSystems();
+      const { location } = req.query;
+      let systems;
+      
+      if (location) {
+        systems = await storage.getGrowingSystemsByLocation(location as string);
+      } else {
+        systems = await storage.getAllGrowingSystems();
+      }
+      
       res.json(systems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch growing systems" });
