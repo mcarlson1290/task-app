@@ -18,6 +18,7 @@ import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { getStoredAuth } from "@/lib/auth";
 import Confetti from "@/components/Confetti";
+import { LocationProvider } from "@/contexts/LocationContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = getStoredAuth();
@@ -26,7 +27,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Login />;
   }
   
-  return <Layout>{children}</Layout>;
+  return (
+    <LocationProvider>
+      <Layout>{children}</Layout>
+    </LocationProvider>
+  );
 }
 
 function Router() {

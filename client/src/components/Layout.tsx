@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStoredAuth, clearStoredAuth, setStoredAuth } from "@/lib/auth";
 import { DashboardAnalytics } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LocationSelector } from "@/components/LocationSelector";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -168,14 +169,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Bottom Section */}
         <div className="p-4 border-t border-[#2D8028] space-y-4">
-          {/* Location Display */}
+          {/* Location Selector */}
           <div className="space-y-2">
             <div className="flex items-center text-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="text-sm">Location:</span>
             </div>
-            <div className="bg-[#2D8028] px-3 py-2 rounded-md text-white text-sm">
-              Grow Space
+            <div className="sidebar-location-selector">
+              <LocationSelector />
             </div>
           </div>
 
@@ -241,6 +242,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
                 
                 <div className="flex items-center space-x-4">
+                  <LocationSelector />
                   <span className="text-sm text-gray-600">Welcome, {currentUser.name}</span>
                   <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5 text-gray-600" />
