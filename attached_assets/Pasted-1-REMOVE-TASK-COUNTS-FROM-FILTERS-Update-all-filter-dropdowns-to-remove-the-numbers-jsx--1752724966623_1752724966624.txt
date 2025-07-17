@@ -1,0 +1,170 @@
+1. REMOVE TASK COUNTS FROM FILTERS:
+   Update all filter dropdowns to remove the numbers:
+   ```jsx
+   // Category dropdown - remove counts
+   <option value="all">All Categories</option>
+   <option value="Seeding - Microgreens">Seeding - Microgreens</option>
+   <option value="Seeding - Leafy Greens">Seeding - Leafy Greens</option>
+   <option value="Harvest - Microgreens">Harvest - Microgreens</option>
+   <option value="Harvest - Leafy Greens">Harvest - Leafy Greens</option>
+   <option value="Blackout Tasks">Blackout Tasks</option>
+   <option value="Moving">Moving</option>
+   <option value="Packing">Packing</option>
+   <option value="Cleaning">Cleaning</option>
+   <option value="Inventory">Inventory</option>
+   <option value="Equipment Maintenance">Equipment Maintenance</option>
+   <option value="Other">Other</option>
+   
+   // Same for Status and Priority dropdowns - no counts
+
+FIX MODAL BUTTONS:
+The modal should NOT show "Start Task" - the task is already started:
+jsxconst TaskModal = ({ task, onClose, onComplete, onPause, onSkip }) => {
+  const [notes, setNotes] = useState('');
+  const [showSkipReason, setShowSkipReason] = useState(false);
+  const [skipReason, setSkipReason] = useState('');
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>{task.title}</h2>
+        <p>{task.assignedTo} • Est. {task.estimatedTime}</p>
+        
+        <div className="time-elapsed">
+          ⏱️ Time Elapsed: {calculateElapsed(task.startTime)}
+        </div>
+        
+        <textarea
+          placeholder="Add notes..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={4}
+        />
+        
+        {!showSkipReason ? (
+          <div className="modal-buttons">
+            <button 
+              onClick={() => onComplete(task.id, notes)} 
+              className="btn-complete"
+            >
+              ✅ Complete Task
+            </button>
+            
+            <button 
+              onClick={() => onPause(task.id)} 
+              className="btn-pause"
+            >
+              ⏸️ Pause Task
+            </button>
+            
+            <button 
+              onClick={() => setShowSkipReason(true)} 
+              className="btn-skip"
+            >
+              ⏭️ Skip Task
+            </button>
+          </div>
+        ) : (
+          <div className="skip-reason-section">
+            <label>Reason for skipping:</label>
+            <textarea
+              placeholder="Please provide a reason..."
+              value={skipReason}
+              onChange={(e) => setSkipReason(e.target.value)}
+              required
+            />
+            <button 
+              onClick={() => onSkip(task.id, skipReason)}
+              disabled={!skipReason.trim()}
+            >
+              Confirm Skip
+            </button>
+            <button onClick={() => setShowSkipReason(false)}>
+              Cancel
+            </button>
+          </div>
+        )}
+        
+        <button onClick={onClose} className="close-modal">✕</button>
+      </div>
+    </div>
+  );
+};
+
+FIX OVERDUE TASK DATE DISPLAY:
+Make sure BOTH the due date AND overdue warning show:
+jsx// In TaskCard component
+<div className={`task-card ${task.isOverdue ? 'overdue' : ''}`}>
+  {/* ... other task content ... */}
+  
+  <div className="task-footer">
+    <div className="due-date">
+      📅 Due: {formatDate(task.completionDate)}
+    </div>
+    
+    {task.isOverdue && (
+      <div className="overdue-warning">
+        ⚠️ Overdue by {calculateOverdueDays(task.completionDate)} days
+      </div>
+    )}
+  </div>
+</div>
+CSS to ensure both show:
+css.task-footer {
+  margin-top: 12px;
+}
+
+.due-date {
+  font-size: 14px;
+  color: #666;
+}
+
+.task-card.overdue .due-date {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.overdue-warning {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+IMPLEMENT PAUSE AND SKIP HANDLERS:
+typescriptconst handlePauseTask = (taskId: number) => {
+  setTasks(prevTasks => 
+    prevTasks.map(task => 
+      task.id === taskId 
+        ? { 
+            ...task, 
+            status: 'paused',
+            pausedAt: new Date().toISOString()
+          }
+        : task
+    )
+  );
+  setShowTaskModal(false);
+};
+
+const handleSkipTask = (taskId: number, reason: string) => {
+  setTasks(prevTasks => 
+    prevTasks.map(task => 
+      task.id === taskId 
+        ? { 
+            ...task, 
+            status: 'skipped',
+            skipReason: reason,
+            skippedAt: new Date().toISOString()
+          }
+        : task
+    )
+  );
+  setShowTaskModal(false);
+  
+  // Send alert to managers about skipped task
+  console.log(`Task skipped: ${taskId}, Reason: ${reason}`);
+};
+
+
+This should fix all the issues - no counts in filters, proper modal buttons, and both dates showing on overdue tasks!

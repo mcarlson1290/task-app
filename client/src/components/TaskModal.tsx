@@ -21,12 +21,16 @@ interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTaskUpdate: (task: Task) => void;
+  onPause?: (taskId: number) => void;
+  onSkip?: (taskId: number, reason: string) => void;
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpdate }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpdate, onPause, onSkip }) => {
   const [checklist, setChecklist] = React.useState<ChecklistItem[]>([]);
   const [timeStarted, setTimeStarted] = React.useState<Date | null>(null);
   const [notes, setNotes] = React.useState<string>('');
+  const [showSkipReason, setShowSkipReason] = React.useState(false);
+  const [skipReason, setSkipReason] = React.useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -338,24 +342,74 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            {task.status === 'pending' && (
-              <Button
-                onClick={handleStartTask}
-                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
-                disabled={updateTaskMutation.isPending}
-              >
-                Start Task
-              </Button>
+            {!showSkipReason && task.status === 'in_progress' && (
+              <>
+                {canComplete && (
+                  <Button
+                    onClick={handleCompleteTask}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    disabled={updateTaskMutation.isPending}
+                  >
+                    ✅ Complete Task
+                  </Button>
+                )}
+                
+                <Button
+                  onClick={() => onPause?.(task.id)}
+                  variant="outline"
+                  className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                  disabled={updateTaskMutation.isPending}
+                >
+                  ⏸️ Pause Task
+                </Button>
+                
+                <Button
+                  onClick={() => setShowSkipReason(true)}
+                  variant="outline"
+                  className="border-red-500 text-red-600 hover:bg-red-50"
+                  disabled={updateTaskMutation.isPending}
+                >
+                  ⏭️ Skip Task
+                </Button>
+              </>
             )}
             
-            {canComplete && (
-              <Button
-                onClick={handleCompleteTask}
-                className="bg-green-600 hover:bg-green-700 text-white"
-                disabled={updateTaskMutation.isPending}
-              >
-                Complete Task
-              </Button>
+            {showSkipReason && (
+              <div className="w-full space-y-3">
+                <Label className="text-sm font-medium text-[#203B17]">
+                  Reason for skipping:
+                </Label>
+                <Textarea
+                  placeholder="Please provide a reason for skipping this task..."
+                  value={skipReason}
+                  onChange={(e) => setSkipReason(e.target.value)}
+                  className="min-h-[80px]"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      if (skipReason.trim()) {
+                        onSkip?.(task.id, skipReason);
+                        setShowSkipReason(false);
+                        setSkipReason('');
+                      }
+                    }}
+                    disabled={!skipReason.trim()}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Confirm Skip
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowSkipReason(false);
+                      setSkipReason('');
+                    }}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             )}
             
             <Button variant="outline" onClick={onClose}>

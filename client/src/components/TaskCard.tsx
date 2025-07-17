@@ -186,17 +186,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onCollaborate, onVie
           )}
 
           {task.dueDate && (
-            <div className={`flex items-center text-sm mb-2 ${
-              isOverdue ? 'text-red-600' : 'text-gray-600'
-            }`}>
-              {isOverdue ? (
-                <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
-              ) : (
+            <div className="space-y-1">
+              <div className={`flex items-center text-sm ${
+                isOverdue ? 'text-red-600' : 'text-gray-600'
+              }`}>
                 <Calendar className="h-4 w-4 mr-1" />
+                <span className={isOverdue ? 'font-semibold' : ''}>
+                  📅 Due: {formatDueDate(new Date(task.dueDate))}
+                </span>
+              </div>
+              {isOverdue && (
+                <div className="flex items-center text-sm text-red-600">
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  <span className="font-semibold">
+                    ⚠️ Overdue by {Math.abs(differenceInDays(new Date(), new Date(task.dueDate)))} days
+                  </span>
+                </div>
               )}
-              <span className={isOverdue ? 'font-semibold' : ''}>
-                {formatDueDate(new Date(task.dueDate))}
-              </span>
             </div>
           )}
 

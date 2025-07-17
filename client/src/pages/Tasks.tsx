@@ -247,6 +247,67 @@ const Tasks: React.FC = () => {
     completeTaskMutation.mutate(task.id);
   };
 
+  const handlePauseTask = (taskId: number) => {
+    console.log('Pausing task:', taskId);
+    // Implement pause functionality
+    const mutation = useMutation({
+      mutationFn: async () => {
+        const response = await apiRequest("PATCH", `/api/tasks/${taskId}`, {
+          status: 'paused',
+          pausedAt: new Date().toISOString()
+        });
+        return response.json();
+      },
+      onSuccess: () => {
+        refetch();
+        setModalOpen(false);
+        toast({
+          title: "Task Paused",
+          description: "The task has been paused and can be resumed later.",
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to pause task. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+    mutation.mutate();
+  };
+
+  const handleSkipTask = (taskId: number, reason: string) => {
+    console.log('Skipping task:', taskId, 'Reason:', reason);
+    // Implement skip functionality
+    const mutation = useMutation({
+      mutationFn: async () => {
+        const response = await apiRequest("PATCH", `/api/tasks/${taskId}`, {
+          status: 'skipped',
+          skipReason: reason,
+          skippedAt: new Date().toISOString()
+        });
+        return response.json();
+      },
+      onSuccess: () => {
+        refetch();
+        setModalOpen(false);
+        toast({
+          title: "Task Skipped",
+          description: "The task has been skipped and managers have been notified.",
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to skip task. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+    mutation.mutate();
+  };
+
   const handleNewTask = () => {
     setNewTaskModalOpen(true);
   };
@@ -305,7 +366,7 @@ const Tasks: React.FC = () => {
               : "text-gray-600 hover:text-[#2D8028]"
             }
           >
-            📋 All Tasks ({taskCounts.all || 0})
+            📋 All Tasks
           </Button>
 
           {/* Category Dropdown */}
@@ -350,9 +411,6 @@ const Tasks: React.FC = () => {
                       <span className="flex items-center gap-2">
                         <span>{type.emoji}</span>
                         {type.label}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        ({taskCounts[type.value] || 0})
                       </span>
                     </button>
                   ))}
@@ -519,6 +577,8 @@ const Tasks: React.FC = () => {
         isOpen={modalOpen}
         onClose={handleCloseModal}
         onTaskUpdate={handleTaskUpdate}
+        onPause={handlePauseTask}
+        onSkip={handleSkipTask}
       />
 
       {/* New Task Modal */}
