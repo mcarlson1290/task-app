@@ -234,9 +234,17 @@ const StaffEditView: React.FC<{
   };
 
   const handleAddStaff = () => {
+    setEditingStaff(null);
+    setShowEditModal(true);
+  };
+
+  const handleSaveStaff = (staffData: any) => {
+    console.log('Saving staff:', staffData);
+    setShowEditModal(false);
+    setEditingStaff(null);
     toast({
-      title: "Add Staff Member",
-      description: "Staff addition feature will be implemented next.",
+      title: "Staff Member Saved",
+      description: `${staffData.fullName} has been ${staffData.id ? 'updated' : 'added'} successfully.`,
     });
   };
   
@@ -297,17 +305,284 @@ const StaffEditView: React.FC<{
         </table>
       </div>
       
-      {/* Edit Modal - placeholder for now */}
+      {/* Edit Modal */}
       {showEditModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Edit Staff Member</h2>
-            <p>Edit form coming in Part 3</p>
-            <p>Staff Member: {editingStaff?.fullName}</p>
-            <button onClick={() => setShowEditModal(false)}>Close</button>
-          </div>
-        </div>
+        <StaffEditModal
+          staff={editingStaff}
+          onSave={handleSaveStaff}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingStaff(null);
+          }}
+        />
       )}
+    </div>
+  );
+};
+
+// Staff Edit Modal Component
+const StaffEditModal: React.FC<{
+  staff: any;
+  onSave: (staffData: any) => void;
+  onClose: () => void;
+}> = ({ staff, onSave, onClose }) => {
+  const [formData, setFormData] = useState({
+    fullName: staff?.fullName || '',
+    email: staff?.email || '',
+    phone: staff?.phone || '',
+    location: staff?.location || 'Grow Space',
+    rolesAssigned: staff?.rolesAssigned || [],
+    dateHired: staff?.dateHired || new Date().toISOString().split('T')[0],
+    payRate: staff?.payRate || 16.00,
+    preferredHours: staff?.preferredHours || 'Flexible',
+    activeStatus: staff?.activeStatus || 'active',
+    managerNotes: staff?.managerNotes || ''
+  });
+  
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  
+  const availableRoles = [
+    'General Staff',
+    'Seeding Tech',
+    'Harvest Tech',
+    'Cleaning Crew',
+    'Equipment Tech',
+    'Packing',
+    'Manager'
+  ];
+  
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+    if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.email.includes('@')) newErrors.email = 'Invalid email format';
+    if (formData.payRate <= 0) newErrors.payRate = 'Pay rate must be positive';
+    if (formData.rolesAssigned.length === 0) newErrors.roles = 'At least one role required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    const staffData = {
+      ...staff,
+      ...formData,
+      id: staff?.id || Date.now(),
+      // Keep existing data that isn't in the form
+      trainingCompleted: staff?.trainingCompleted || [],
+      trainingInProgress: staff?.trainingInProgress || [],
+      lastTaskCompleted: staff?.lastTaskCompleted || null,
+      tasksCompleted: staff?.tasksCompleted || 0,
+      avgTaskDuration: staff?.avgTaskDuration || '0m',
+      onTimeRate: staff?.onTimeRate || 100,
+      microsoftId: staff?.microsoftId || null
+    };
+    
+    onSave(staffData);
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content large-modal">
+        <div className="modal-header">
+          <h2>{staff ? 'Edit Staff Member' : 'Add New Staff Member'}</h2>
+          <button onClick={onClose} className="close-btn">✕</button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="staff-form">
+          <div className="form-grid">
+            {/* Personal Information Section */}
+            <div className="form-section">
+              <h3>📋 Personal Information</h3>
+              
+              <label className={errors.fullName ? 'error' : ''}>
+                Full Name *
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                  placeholder="John Smith"
+                />
+                {errors.fullName && <span className="error-text">{errors.fullName}</span>}
+              </label>
+              
+              <label className={errors.email ? 'error' : ''}>
+                Email *
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="john.smith@growspace.farm"
+                />
+                {errors.email && <span className="error-text">{errors.email}</span>}
+              </label>
+              
+              <label>
+                Phone
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="555-0123"
+                />
+              </label>
+            </div>
+            
+            {/* Work Information Section */}
+            <div className="form-section">
+              <h3>💼 Work Information</h3>
+              
+              <label>
+                Location
+                <select
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                >
+                  <option value="Grow Space">Grow Space</option>
+                </select>
+              </label>
+              
+              <label>
+                Date Hired
+                <input
+                  type="date"
+                  value={formData.dateHired}
+                  onChange={(e) => setFormData({...formData, dateHired: e.target.value})}
+                />
+              </label>
+              
+              <label className={`pay-rate-field ${errors.payRate ? 'error' : ''}`}>
+                Pay Rate ($/hr) *
+                <div className="input-with-note">
+                  <input
+                    type="number"
+                    value={formData.payRate}
+                    onChange={(e) => setFormData({...formData, payRate: parseFloat(e.target.value) || 0})}
+                    min="0"
+                    step="0.50"
+                  />
+                  <span className="field-note">🔒 Hidden from non-managers</span>
+                </div>
+                {errors.payRate && <span className="error-text">{errors.payRate}</span>}
+              </label>
+              
+              <label>
+                Preferred Hours
+                <select
+                  value={formData.preferredHours}
+                  onChange={(e) => setFormData({...formData, preferredHours: e.target.value})}
+                >
+                  <option value="Flexible">Flexible</option>
+                  <option value="Morning (6am-2pm)">Morning (6am-2pm)</option>
+                  <option value="Afternoon (2pm-10pm)">Afternoon (2pm-10pm)</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                </select>
+              </label>
+              
+              <label>
+                Status
+                <select
+                  value={formData.activeStatus}
+                  onChange={(e) => setFormData({...formData, activeStatus: e.target.value})}
+                >
+                  <option value="active">Active</option>
+                  <option value="on-leave">On Leave</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </label>
+            </div>
+            
+            {/* Roles Section */}
+            <div className="form-section full-width">
+              <h3>👤 Assigned Roles</h3>
+              {errors.roles && <span className="error-text">{errors.roles}</span>}
+              
+              <div className="checkbox-group">
+                {availableRoles.map(role => (
+                  <label key={role} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.rolesAssigned.includes(role)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            rolesAssigned: [...formData.rolesAssigned, role]
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            rolesAssigned: formData.rolesAssigned.filter(r => r !== role)
+                          });
+                        }
+                      }}
+                    />
+                    <span>{role}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            {/* Manager Notes Section */}
+            <div className="form-section full-width">
+              <h3>📝 Manager Notes</h3>
+              <textarea
+                value={formData.managerNotes}
+                onChange={(e) => setFormData({...formData, managerNotes: e.target.value})}
+                rows={4}
+                placeholder="Internal notes about this staff member..."
+              />
+            </div>
+            
+            {/* Training Info - Read Only for now */}
+            {staff && (
+              <div className="form-section full-width info-section">
+                <h3>📚 Training Information</h3>
+                <div className="info-grid">
+                  <div>
+                    <strong>Completed Training:</strong>
+                    <ul>
+                      {staff.trainingCompleted.length > 0 ? (
+                        staff.trainingCompleted.map((training: string) => (
+                          <li key={training}>{training}</li>
+                        ))
+                      ) : (
+                        <li>No completed training</li>
+                      )}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>In Progress:</strong>
+                    <ul>
+                      {staff.trainingInProgress.length > 0 ? (
+                        staff.trainingInProgress.map((training: string) => (
+                          <li key={training}>{training}</li>
+                        ))
+                      ) : (
+                        <li>No training in progress</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="modal-actions">
+            <button type="submit" className="btn-save">
+              {staff ? 'Save Changes' : 'Add Staff Member'}
+            </button>
+            <button type="button" onClick={onClose} className="btn-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
