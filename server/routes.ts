@@ -145,6 +145,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/tasks/reset", async (req, res) => {
+    try {
+      const success = await storage.resetTasks();
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to reset tasks" });
+      }
+
+      res.json({ message: "Tasks reset successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reset tasks" });
+    }
+  });
+
   // Inventory routes
   app.get("/api/inventory", async (req, res) => {
     try {

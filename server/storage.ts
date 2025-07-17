@@ -23,6 +23,7 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
+  resetTasks(): Promise<boolean>;
 
   // Inventory methods
   getInventoryItem(id: number): Promise<InventoryItem | undefined>;
@@ -384,6 +385,125 @@ export class MemStorage implements IStorage {
     return this.tasks.delete(id);
   }
 
+  async resetTasks(): Promise<boolean> {
+    // Clear existing tasks
+    this.tasks.clear();
+    
+    // Reset task ID counter
+    this.currentTaskId = 1;
+    
+    // Recreate the original mock tasks
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    
+    const sampleTasks = [
+      {
+        title: "Seed Arugula Trays",
+        description: "Plant arugula seeds in designated trays for microgreens production",
+        type: "seeding-microgreens",
+        status: "pending",
+        priority: "high",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 180,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Prepare seed trays", completed: false },
+          { id: "2", text: "Fill with growing medium", completed: false },
+          { id: "3", text: "Plant arugula seeds", completed: false },
+          { id: "4", text: "Label trays with date", completed: false },
+          { id: "5", text: "Place in germination area", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: today
+      },
+      {
+        title: "Remove Covers - Microgreens",
+        description: "Day 2 blackout removal for proper stem height",
+        type: "blackout-tasks",
+        status: "pending",
+        priority: "high",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 45,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Check seedling height", completed: false },
+          { id: "2", text: "Remove blackout covers", completed: false },
+          { id: "3", text: "Adjust lighting schedule", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: yesterday
+      },
+      {
+        title: "Harvest Lettuce - Section A",
+        description: "Harvest mature lettuce from designated growing area",
+        type: "harvesting-leafy-greens",
+        status: "pending",
+        priority: "medium",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 90,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Prepare harvest containers", completed: false },
+          { id: "2", text: "Cut lettuce at base", completed: false },
+          { id: "3", text: "Weigh and record harvest", completed: false },
+          { id: "4", text: "Transport to cold storage", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: tomorrow
+      },
+      {
+        title: "System Maintenance Check",
+        description: "Weekly maintenance of growing systems and equipment",
+        type: "equipment-monitoring",
+        status: "pending",
+        priority: "medium",
+        assignedTo: 1,
+        createdBy: 2,
+        location: null,
+        estimatedTime: 120,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Check water pH levels", completed: false },
+          { id: "2", text: "Inspect grow lights", completed: false },
+          { id: "3", text: "Clean air filters", completed: false },
+          { id: "4", text: "Update maintenance log", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null,
+        dueDate: today
+      }
+    ];
+
+    // Add tasks to storage
+    sampleTasks.forEach(taskData => {
+      const task: Task = {
+        ...taskData,
+        id: this.currentTaskId++,
+        data: {},
+        createdAt: new Date()
+      };
+      this.tasks.set(task.id, task);
+    });
+
+    return true;
+  }
+
   // Inventory methods
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
     return this.inventoryItems.get(id);
@@ -523,6 +643,126 @@ export class DatabaseStorage implements IStorage {
   async deleteTask(id: number): Promise<boolean> {
     const result = await db.delete(tasks).where(eq(tasks.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async resetTasks(): Promise<boolean> {
+    try {
+      // Clear existing tasks
+      await db.delete(tasks);
+      
+      // Recreate the original mock tasks
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+      
+      const sampleTasks = [
+        {
+          title: "Seed Arugula Trays",
+          description: "Plant arugula seeds in designated trays for microgreens production",
+          type: "seeding-microgreens",
+          status: "pending",
+          priority: "high",
+          assignedTo: 1,
+          createdBy: 2,
+          location: null,
+          estimatedTime: 180,
+          actualTime: null,
+          progress: 0,
+          checklist: [
+            { id: "1", text: "Prepare seed trays", completed: false },
+            { id: "2", text: "Fill with growing medium", completed: false },
+            { id: "3", text: "Plant arugula seeds", completed: false },
+            { id: "4", text: "Label trays with date", completed: false },
+            { id: "5", text: "Place in germination area", completed: false }
+          ] as ChecklistItem[],
+          startedAt: null,
+          completedAt: null,
+          dueDate: today,
+          data: {},
+          createdAt: new Date()
+        },
+        {
+          title: "Remove Covers - Microgreens",
+          description: "Day 2 blackout removal for proper stem height",
+          type: "blackout-tasks",
+          status: "pending",
+          priority: "high",
+          assignedTo: 1,
+          createdBy: 2,
+          location: null,
+          estimatedTime: 45,
+          actualTime: null,
+          progress: 0,
+          checklist: [
+            { id: "1", text: "Check seedling height", completed: false },
+            { id: "2", text: "Remove blackout covers", completed: false },
+            { id: "3", text: "Adjust lighting schedule", completed: false }
+          ] as ChecklistItem[],
+          startedAt: null,
+          completedAt: null,
+          dueDate: yesterday,
+          data: {},
+          createdAt: new Date()
+        },
+        {
+          title: "Harvest Lettuce - Section A",
+          description: "Harvest mature lettuce from designated growing area",
+          type: "harvesting-leafy-greens",
+          status: "pending",
+          priority: "medium",
+          assignedTo: 1,
+          createdBy: 2,
+          location: null,
+          estimatedTime: 90,
+          actualTime: null,
+          progress: 0,
+          checklist: [
+            { id: "1", text: "Prepare harvest containers", completed: false },
+            { id: "2", text: "Cut lettuce at base", completed: false },
+            { id: "3", text: "Weigh and record harvest", completed: false },
+            { id: "4", text: "Transport to cold storage", completed: false }
+          ] as ChecklistItem[],
+          startedAt: null,
+          completedAt: null,
+          dueDate: tomorrow,
+          data: {},
+          createdAt: new Date()
+        },
+        {
+          title: "System Maintenance Check",
+          description: "Weekly maintenance of growing systems and equipment",
+          type: "equipment-monitoring",
+          status: "pending",
+          priority: "medium",
+          assignedTo: 1,
+          createdBy: 2,
+          location: null,
+          estimatedTime: 120,
+          actualTime: null,
+          progress: 0,
+          checklist: [
+            { id: "1", text: "Check water pH levels", completed: false },
+            { id: "2", text: "Inspect grow lights", completed: false },
+            { id: "3", text: "Clean air filters", completed: false },
+            { id: "4", text: "Update maintenance log", completed: false }
+          ] as ChecklistItem[],
+          startedAt: null,
+          completedAt: null,
+          dueDate: today,
+          data: {},
+          createdAt: new Date()
+        }
+      ];
+
+      // Insert tasks
+      await db.insert(tasks).values(sampleTasks);
+      return true;
+    } catch (error) {
+      console.error("Error resetting tasks:", error);
+      return false;
+    }
   }
 
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {

@@ -138,6 +138,27 @@ const Tasks: React.FC = () => {
     },
   });
 
+  const resetTasksMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/tasks/reset", {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        title: "Tasks Reset",
+        description: "All tasks have been reset to their original state.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error resetting tasks:", error);
+      toast({
+        title: "Failed to reset tasks",
+        description: "There was an error resetting the tasks. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
@@ -366,17 +387,14 @@ const Tasks: React.FC = () => {
               setModalOpen(false);
               setSelectedTask(null);
               setNewTaskModalOpen(false);
-              // Refetch tasks
-              refetch();
-              toast({
-                title: "Filters Reset",
-                description: "All filters have been cleared.",
-              });
+              // Reset tasks to original state
+              resetTasksMutation.mutate();
             }}
             variant="outline"
             className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+            disabled={resetTasksMutation.isPending}
           >
-            🔄 Reset (Dev)
+            {resetTasksMutation.isPending ? "Resetting..." : "🔄 Reset (Dev)"}
           </Button>
         </div>
       </div>
