@@ -1,0 +1,132 @@
+The task workflow has gotten confused. Let's rebuild it correctly from scratch. Here's the complete task flow:
+
+TASK WORKFLOW STATES:
+1. "pending" → Shows "Start Task" button
+2. "in-progress" → Shows "Collaborate" button  
+3. "completed" → Shows "View Details" button
+
+REBUILD THE TASK FLOW:
+
+1. CREATE A SINGLE TASK ACTION HANDLER:
+```javascript
+const handleTaskAction = (taskId: number, action: 'start' | 'complete' | 'pause' | 'skip' | 'view') => {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  switch (action) {
+    case 'start':
+      // Update task to in-progress
+      setTasks(prev => prev.map(t => 
+        t.id === taskId 
+          ? { ...t, status: 'in-progress', startTime: new Date().toISOString() }
+          : t
+      ));
+      // Open modal to show task details and checklist
+      setSelectedTask({ ...task, status: 'in-progress' });
+      setShowTaskModal(true);
+      break;
+      
+    case 'complete':
+      // Update task to completed
+      setTasks(prev => prev.map(t => 
+        t.id === taskId 
+          ? { ...t, status: 'completed', completedAt: new Date().toISOString() }
+          : t
+      ));
+      // Close modal
+      setShowTaskModal(false);
+      break;
+      
+    case 'view':
+      // Just open modal in read-only mode
+      setSelectedTask(task);
+      setShowTaskModal(true);
+      setModalReadOnly(true);
+      break;
+  }
+};
+
+SIMPLIFY TASK CARD BUTTONS:
+
+jsxconst TaskCard = ({ task }) => {
+  return (
+    <div className="task-card">
+      {/* Task content */}
+      
+      {/* Single button based on status */}
+      {task.status === 'pending' && (
+        <button onClick={() => handleTaskAction(task.id, 'start')}>
+          Start Task
+        </button>
+      )}
+      
+      {task.status === 'in-progress' && (
+        <button onClick={() => handleTaskAction(task.id, 'start')}>
+          🤝 Collaborate
+        </button>
+      )}
+      
+      {task.status === 'completed' && (
+        <button onClick={() => handleTaskAction(task.id, 'view')}>
+          View Details
+        </button>
+      )}
+    </div>
+  );
+};
+
+SIMPLIFY THE MODAL:
+
+jsxconst TaskModal = ({ task, onClose }) => {
+  if (!task) return null;
+  
+  const isReadOnly = task.status === 'completed';
+  
+  return (
+    <div className="modal">
+      <h2>{task.title}</h2>
+      
+      {/* ALWAYS show checklist if task has one */}
+      {task.checklistItems && task.checklistItems > 0 && (
+        <div className="checklist">
+          <h3>Checklist</h3>
+          {/* Checklist items here */}
+        </div>
+      )}
+      
+      {/* Show action buttons only if in-progress */}
+      {task.status === 'in-progress' && (
+        <div className="actions">
+          <button onClick={() => handleTaskAction(task.id, 'complete')}>
+            ✅ Complete Task
+          </button>
+          <button onClick={() => handleTaskAction(task.id, 'pause')}>
+            ⏸️ Pause Task
+          </button>
+          <button onClick={() => handleTaskAction(task.id, 'skip')}>
+            ⏭️ Skip Task
+          </button>
+        </div>
+      )}
+      
+      {/* Show completion info if completed */}
+      {task.status === 'completed' && (
+        <div className="completion-info">
+          <p>✅ Completed at: {formatDate(task.completedAt)}</p>
+        </div>
+      )}
+      
+      <button onClick={onClose}>
+        {isReadOnly ? 'Close' : 'Cancel'}
+      </button>
+    </div>
+  );
+};
+This rebuilds the entire flow with a simpler, clearer structure. The key points:
+
+One handler function manages all state changes
+Task cards show only one button based on status
+Modal always shows checklist if available
+Complete Task actually changes the status
+
+Replace the existing task action handling with this cleaner approach.
