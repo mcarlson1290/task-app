@@ -271,7 +271,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                   <Label>Min Value</Label>
                   <Input
                     type="number"
-                    value={step.config.min || 0}
+                    value={step.config.min || ''}
                     onChange={(e) => onUpdate({
                       ...step,
                       config: { ...step.config, min: parseInt(e.target.value) || 0 }
@@ -282,7 +282,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                   <Label>Max Value</Label>
                   <Input
                     type="number"
-                    value={step.config.max || 100}
+                    value={step.config.max || ''}
                     onChange={(e) => onUpdate({
                       ...step,
                       config: { ...step.config, max: parseInt(e.target.value) || 100 }
