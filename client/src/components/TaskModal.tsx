@@ -44,18 +44,28 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
   const updateTaskMutation = useMutation({
     mutationFn: async (updates: Partial<Task>) => {
       if (!task) return;
+      console.log("Updating task with:", updates);
       const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
-      return response.json();
+      const result = await response.json();
+      console.log("Task update response:", result);
+      return result;
     },
     onSuccess: (updatedTask) => {
+      console.log("Task updated successfully:", updatedTask);
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      onTaskUpdate(updatedTask);
-      toast({
-        title: "Task updated successfully",
-        description: "Your changes have been saved.",
-      });
+      if (updatedTask) {
+        onTaskUpdate(updatedTask);
+      }
+      // Only show toast for completed tasks, not for checklist updates
+      if (updatedTask?.status === 'completed') {
+        toast({
+          title: "🎉 Task Completed!",
+          description: "Great job! The task has been marked as completed.",
+        });
+      }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error updating task:", error);
       toast({
         title: "Error",
         description: "Failed to update task. Please try again.",
@@ -144,11 +154,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
-    });
-
-    toast({
-      title: "🎉 Task Completed!",
-      description: "Great job! The task has been marked as completed.",
     });
 
     onClose();
