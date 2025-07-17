@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,13 +24,13 @@ interface RecurringTaskModalProps {
 const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    type: task?.type || 'seeding-microgreens',
-    frequency: task?.frequency || 'daily',
-    daysOfWeek: task?.daysOfWeek || [],
-    isActive: task?.isActive ?? true,
-    automation: task?.automation || {
+    title: '',
+    description: '',
+    type: 'seeding-microgreens',
+    frequency: 'daily',
+    daysOfWeek: [],
+    isActive: true,
+    automation: {
       enabled: false,
       generateTrays: false,
       trayCount: 1,
@@ -40,8 +40,54 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         stages: []
       }
     },
-    checklistTemplate: task?.checklistTemplate || { steps: [] }
+    checklistTemplate: { steps: [] }
   });
+
+  // Update form data when task changes
+  React.useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title || '',
+        description: task.description || '',
+        type: task.type || 'seeding-microgreens',
+        frequency: task.frequency || 'daily',
+        daysOfWeek: task.daysOfWeek || [],
+        isActive: task.isActive ?? true,
+        automation: task.automation || {
+          enabled: false,
+          generateTrays: false,
+          trayCount: 1,
+          cropType: 'microgreen',
+          flow: {
+            type: 'microgreen',
+            stages: []
+          }
+        },
+        checklistTemplate: task.checklistTemplate || { steps: [] }
+      });
+    } else {
+      // Reset form for new task
+      setFormData({
+        title: '',
+        description: '',
+        type: 'seeding-microgreens',
+        frequency: 'daily',
+        daysOfWeek: [],
+        isActive: true,
+        automation: {
+          enabled: false,
+          generateTrays: false,
+          trayCount: 1,
+          cropType: 'microgreen',
+          flow: {
+            type: 'microgreen',
+            stages: []
+          }
+        },
+        checklistTemplate: { steps: [] }
+      });
+    }
+  }, [task]);
 
   const { data: systems = [] } = useQuery<GrowingSystem[]>({
     queryKey: ['/api/growing-systems'],
@@ -162,6 +208,9 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
           <DialogTitle>
             {task ? 'Edit Recurring Task' : 'Create Recurring Task'}
           </DialogTitle>
+          <DialogDescription>
+            {task ? 'Modify the recurring task settings and checklist.' : 'Create a new recurring task with custom scheduling and automation.'}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
