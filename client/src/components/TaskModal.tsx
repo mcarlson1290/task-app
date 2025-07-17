@@ -46,32 +46,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
         console.error("No task found for update!");
         return null;
       }
-      console.log("Updating task with:", updates);
-      try {
-        const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
-        const result = await response.json();
-        console.log("Task update response:", result);
-        return result;
-      } catch (error) {
-        console.error("Error in mutation function:", error);
-        throw error;
-      }
+      const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
+      return response.json();
     },
-    onSuccess: (updatedTask) => {
-      console.log("Task updated successfully:", updatedTask);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      if (updatedTask) {
-        onTaskUpdate(updatedTask);
-      }
-      // Only show toast for completed tasks, not for checklist updates
-      if (updatedTask?.status === 'completed') {
-        toast({
-          title: "🎉 Task Completed!",
-          description: "Great job! The task has been marked as completed.",
-        });
-        // Close modal after successful completion
-        onClose();
-      }
     },
     onError: (error) => {
       console.error("Error updating task:", error);

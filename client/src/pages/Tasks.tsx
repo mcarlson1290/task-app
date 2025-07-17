@@ -251,15 +251,35 @@ const Tasks: React.FC = () => {
         break;
         
       case 'pause':
-        // Handle pause logic
-        console.log("Pausing task:", taskId);
+        // Update task to paused
+        updateTaskMutation.mutate({
+          taskId,
+          updates: { 
+            status: 'pending',
+            pausedAt: new Date().toISOString()
+          }
+        });
         setModalOpen(false);
+        toast({
+          title: "Task Paused",
+          description: "The task has been paused and can be resumed later.",
+        });
         break;
         
       case 'skip':
-        // Handle skip logic
-        console.log("Skipping task:", taskId);
+        // Update task to skipped
+        updateTaskMutation.mutate({
+          taskId,
+          updates: { 
+            status: 'pending',
+            skippedAt: new Date().toISOString()
+          }
+        });
         setModalOpen(false);
+        toast({
+          title: "Task Skipped",
+          description: "The task has been skipped and returned to pending status.",
+        });
         break;
     }
   };
