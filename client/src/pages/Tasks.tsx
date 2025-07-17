@@ -9,7 +9,6 @@ import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import NewTaskModal from "@/components/NewTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
-import TaskPerformanceWidget from "@/components/TaskPerformanceWidget";
 import { Task } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
@@ -61,50 +60,6 @@ const Tasks: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle shortcuts when not in input fields
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      // Ctrl/Cmd + N: New Task
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
-        event.preventDefault();
-        handleNewTask();
-      }
-
-      // Ctrl/Cmd + R: Reset Tasks (dev feature)
-      if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
-        event.preventDefault();
-        resetTasksMutation.mutate();
-      }
-
-      // Escape: Close modals
-      if (event.key === 'Escape') {
-        setModalOpen(false);
-        setNewTaskModalOpen(false);
-        setTaskActionModalOpen(false);
-        setSelectedTask(null);
-      }
-
-      // Number keys 1-4: Filter by status
-      if (event.key >= '1' && event.key <= '4') {
-        const statusMap = {
-          '1': 'all',
-          '2': 'pending',
-          '3': 'in_progress',
-          '4': 'completed'
-        };
-        setStatusFilter(statusMap[event.key as keyof typeof statusMap]);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleNewTask, resetTasksMutation]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/tasks", auth.user?.id],
@@ -281,22 +236,12 @@ const Tasks: React.FC = () => {
           title: "🎉 Task completed!",
           description: "Great job! The task has been marked as completed.",
         });
-        // Celebrate with enhanced confetti!
+        // Celebrate with confetti!
         confetti({
-          particleCount: 150,
+          particleCount: 100,
           spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#2D8028', '#4ADE80', '#FEF3C7', '#FCD34D']
+          origin: { y: 0.6 }
         });
-        
-        // Add a second wave of confetti for extra celebration
-        setTimeout(() => {
-          confetti({
-            particleCount: 50,
-            spread: 90,
-            origin: { y: 0.8 }
-          });
-        }, 300);
         break;
         
       case 'view':
@@ -393,16 +338,6 @@ const Tasks: React.FC = () => {
           >
             {resetTasksMutation.isPending ? "Resetting..." : "🔄 Reset (Dev)"}
           </Button>
-        </div>
-      </div>
-
-      {/* Performance Widget */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
-          <TaskPerformanceWidget tasks={tasks || []} />
-        </div>
-        <div className="lg:col-span-1">
-          {/* Quick Actions could go here */}
         </div>
       </div>
 
@@ -597,40 +532,6 @@ const Tasks: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Task Performance Summary */}
-      {filteredTasks.length > 0 && (
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="text-sm">
-                <span className="font-medium text-[#203B17]">
-                  {filteredTasks.filter(t => t.status === 'completed').length}
-                </span>
-                <span className="text-gray-600"> of {filteredTasks.length} tasks completed</span>
-              </div>
-              <div className="text-sm">
-                <span className="font-medium text-amber-600">
-                  {filteredTasks.filter(t => t.status === 'in_progress').length}
-                </span>
-                <span className="text-gray-600"> in progress</span>
-              </div>
-              <div className="text-sm">
-                <span className="font-medium text-blue-600">
-                  {filteredTasks.filter(t => t.status === 'pending').length}
-                </span>
-                <span className="text-gray-600"> pending</span>
-              </div>
-            </div>
-            <div className="text-sm">
-              <span className="font-medium text-[#203B17]">
-                {filteredTasks.length > 0 ? Math.round((filteredTasks.filter(t => t.status === 'completed').length / filteredTasks.length) * 100) : 0}%
-              </span>
-              <span className="text-gray-600"> completion rate</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Task Grid */}
       {filteredTasks.length === 0 ? (

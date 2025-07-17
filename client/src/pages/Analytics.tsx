@@ -67,13 +67,6 @@ const Analytics: React.FC = () => {
     ? Math.round(analytics.totalTimeLogged / analytics.completedTasks)
     : 0;
 
-  const productivityScore = analytics.totalTasks > 0 
-    ? Math.round((analytics.completedTasks / analytics.totalTasks) * 100)
-    : 0;
-
-  const tasksCompletedToday = analytics.completedTasks; // This could be filtered by date
-  const tasksOverdue = analytics.overdueTasks || 0;
-
   return (
     <div className="space-y-6">
       {/* Header */}

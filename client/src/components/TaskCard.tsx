@@ -41,16 +41,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return colors[status] || "bg-gray-500 text-white";
   };
 
-  const getStatusIcon = (status: TaskStatus): React.ReactNode => {
-    const icons = {
-      pending: <Clock className="h-4 w-4" />,
-      in_progress: <User className="h-4 w-4" />,
-      completed: <CheckCircle className="h-4 w-4" />,
-      approved: <CheckCircle className="h-4 w-4" />
-    };
-    return icons[status] || <Info className="h-4 w-4" />;
-  };
-
   const getStatusLabel = (status: TaskStatus): string => {
     const labels = {
       pending: "Pending",
@@ -130,8 +120,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
         {/* Status and Priority Badges - Properly positioned */}
         <div className="absolute top-3 right-3 flex flex-col gap-1">
           {/* Status Badge */}
-          <div className={`px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${getStatusColor(task.status as TaskStatus)}`}>
-            {getStatusIcon(task.status as TaskStatus)}
+          <div className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(task.status as TaskStatus)}`}>
             {getStatusLabel(task.status as TaskStatus)}
           </div>
           {/* Priority Badge */}
