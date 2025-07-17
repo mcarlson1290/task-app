@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,6 +54,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', taskData);
+    
     // Validate required fields
     if (!taskData.title || !taskData.type || !taskData.assignedTo || !taskData.dueDate || !taskData.estimatedTime) {
       toast({
@@ -89,14 +91,9 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
       data: {}
     };
 
+    console.log('Calling onSave with:', newTask);
     onSave(newTask);
     resetForm();
-    onClose();
-    
-    toast({
-      title: "Task Created",
-      description: "New task has been added successfully",
-    });
   };
 
   const parseEstimatedTime = (timeStr: string): number => {
@@ -148,6 +145,9 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[#203B17]">Add New Task</DialogTitle>
+          <DialogDescription>
+            Create a new task for your team to complete
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

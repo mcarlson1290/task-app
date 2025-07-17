@@ -334,12 +334,10 @@ const Tasks: React.FC = () => {
 
   // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: (taskData: any) => apiRequest('/api/tasks', {
-      method: 'POST',
-      body: JSON.stringify(taskData)
-    }),
+    mutationFn: (taskData: any) => apiRequest('POST', '/api/tasks', taskData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      setAddTaskModalOpen(false);
       toast({
         title: "Task Created",
         description: "New task has been added successfully",
@@ -356,12 +354,15 @@ const Tasks: React.FC = () => {
   });
 
   const handleAddTask = (taskData: any) => {
+    console.log('handleAddTask called with:', taskData);
+    
     const newTask = {
       ...taskData,
       dueDate: new Date(taskData.dueDate).toISOString(),
       createdAt: new Date().toISOString()
     };
     
+    console.log('Calling createTaskMutation with:', newTask);
     createTaskMutation.mutate(newTask);
   };
 
