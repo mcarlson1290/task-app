@@ -102,13 +102,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
       return `Overdue by ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
     }
     
-    if (isToday(dueDate)) {
-      return "Due: Today";
-    } else if (isTomorrow(dueDate)) {
-      return "Due: Tomorrow";
-    } else {
-      return `Due: ${format(dueDate, 'MMM d')}`;
-    }
+    return `Due: ${format(dueDate, 'MMM d, yyyy')}`;
   };
 
   const isCompleted = task.status === 'completed' || task.status === 'approved';
@@ -150,7 +144,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
             <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
             <div>
               <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
-              <p className="text-sm text-gray-600">{task.location}</p>
+              {task.assignedTo && (
+                <p className="text-sm text-gray-600">Assigned to: User {task.assignedTo}</p>
+              )}
             </div>
           </div>
         </div>

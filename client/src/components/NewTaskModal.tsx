@@ -39,7 +39,6 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
       priority: "medium",
       assignedTo: auth.user?.id || 1,
       createdBy: auth.user?.id || 1,
-      location: "Main Growing Area",
       estimatedTime: 60,
       status: "pending",
       progress: 0,

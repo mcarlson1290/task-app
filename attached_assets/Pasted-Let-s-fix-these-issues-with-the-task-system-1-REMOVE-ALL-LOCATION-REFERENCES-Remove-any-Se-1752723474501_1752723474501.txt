@@ -1,0 +1,109 @@
+Let's fix these issues with the task system:
+
+1. REMOVE ALL LOCATION REFERENCES:
+   - Remove any "Section A", "Towers 1-5", etc. from task cards
+   - Remove any location fields from the Add Task modal
+   - Tasks should only show:
+     * Title
+     * Quick info/description
+     * Task type
+     * Priority
+     * Status
+     * Completion date
+     * Assigned to (role/person, NOT location)
+
+2. FIX COMPLETION DATE DISPLAY:
+   Replace "Tomorrow" with actual dates:
+   ```typescript
+   // Instead of relative dates, show actual dates
+   const formatCompletionDate = (date: string | DateRange) => {
+     if (typeof date === 'string') {
+       return `Due: ${format(new Date(date), 'MMM d, yyyy')}`;
+     } else {
+       return `Due: ${format(new Date(date.start), 'MMM d')} - ${format(new Date(date.end), 'MMM d')}`;
+     }
+   };
+
+ADD COMPLETION DATE FILTER:
+In the filter bar, add a date picker that:
+
+Defaults to "Today" (shows today's date, e.g., "Mar 15, 2024")
+When a date is selected, only show tasks due on that date
+For date ranges, show tasks if the selected date falls within the range
+Add "All Dates" option to see everything
+
+
+UPDATE MOCK TASKS FOR TESTING:
+typescriptconst today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const yesterday = new Date(today);
+yesterday.setDate(yesterday.getDate() - 1);
+
+const mockTasks = [
+  {
+    id: 1,
+    title: "Seed Lettuce Trays",
+    type: "Seeding - Leafy Greens",
+    priority: "Medium",
+    assignedTo: "Seeding Tech",
+    status: "in-progress",
+    completionDate: format(today, 'yyyy-MM-dd'), // Today
+    estimatedTime: "2h 30m"
+  },
+  {
+    id: 2,
+    title: "Harvest Spinach",
+    type: "Harvest - Leafy Greens",
+    priority: "High",
+    assignedTo: "Harvest Team",
+    status: "pending",
+    completionDate: format(today, 'yyyy-MM-dd'), // Today
+    estimatedTime: "3h"
+  },
+  {
+    id: 3,
+    title: "Remove Blackout Covers",
+    type: "Blackout Tasks",
+    priority: "High",
+    assignedTo: "All Staff",
+    status: "overdue",
+    completionDate: format(yesterday, 'yyyy-MM-dd'), // Yesterday (overdue)
+    isOverdue: true,
+    estimatedTime: "45m"
+  },
+  {
+    id: 4,
+    title: "Monthly Inventory Audit",
+    type: "Inventory",
+    priority: "Low",
+    assignedTo: "Manager",
+    status: "pending",
+    completionDate: format(tomorrow, 'yyyy-MM-dd'), // Tomorrow
+    estimatedTime: "1h 30m"
+  }
+];
+
+DATE FILTER LOGIC:
+typescriptconst filterTasksByDate = (tasks: Task[], selectedDate: Date) => {
+  return tasks.filter(task => {
+    if (typeof task.completionDate === 'string') {
+      return isSameDay(new Date(task.completionDate), selectedDate);
+    } else {
+      // For date ranges, check if selected date is within range
+      const start = new Date(task.completionDate.start);
+      const end = new Date(task.completionDate.end);
+      return isWithinInterval(selectedDate, { start, end });
+    }
+  });
+};
+
+VISUAL UPDATES:
+
+Overdue task card: Light red background (#fee2e2)
+Show actual date on each card: "Due: Mar 15, 2024"
+Date filter shows selected date: "📅 Mar 15, 2024 ▼"
+
+
+
+This will give you a clean, location-free task system with proper date filtering!

@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Filter, Search, ChevronDown, X } from "lucide-react";
+import { Plus, Filter, Search, ChevronDown, X, Calendar } from "lucide-react";
+import { format, isSameDay } from "date-fns";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import NewTaskModal from "@/components/NewTaskModal";
@@ -28,9 +29,12 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
+  const [dateFilter, setDateFilter] = React.useState<Date | null>(new Date());
+  const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
   const priorityDropdownRef = React.useRef<HTMLDivElement>(null);
+  const dateDropdownRef = React.useRef<HTMLDivElement>(null);
   
   const auth = getStoredAuth();
   const { toast } = useToast();
@@ -47,6 +51,9 @@ const Tasks: React.FC = () => {
       }
       if (priorityDropdownRef.current && !priorityDropdownRef.current.contains(event.target as Node)) {
         setPriorityDropdownOpen(false);
+      }
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(event.target as Node)) {
+        setDateDropdownOpen(false);
       }
     };
 
@@ -174,7 +181,7 @@ const Tasks: React.FC = () => {
     if (searchTerm) {
       filtered = filtered.filter(task => 
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.location?.toLowerCase().includes(searchTerm.toLowerCase())
+        task.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -193,8 +200,18 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
+    // Date filter
+    if (dateFilter) {
+      filtered = filtered.filter(task => {
+        if (task.dueDate) {
+          return isSameDay(new Date(task.dueDate), dateFilter);
+        }
+        return false;
+      });
+    }
+
     return filtered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   const handleTaskStart = (task: Task) => {
     startTaskMutation.mutate(task.id);
@@ -415,6 +432,74 @@ const Tasks: React.FC = () => {
                       {option.label}
                     </button>
                   ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Date Filter Dropdown */}
+          <div className="relative" ref={dateDropdownRef}>
+            <Button
+              variant="outline"
+              onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+              className="flex items-center gap-2"
+            >
+              {dateFilter ? (
+                <>
+                  <Calendar className="h-4 w-4" />
+                  {format(dateFilter, 'MMM d, yyyy')}
+                  <X 
+                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDateFilter(null);
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Calendar className="h-4 w-4" />
+                  All Dates
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            
+            {dateDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
+                <div className="p-2">
+                  <button
+                    onClick={() => {
+                      setDateFilter(new Date());
+                      setDateDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Today
+                  </button>
+                  <button
+                    onClick={() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      setDateFilter(tomorrow);
+                      setDateDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Tomorrow
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDateFilter(null);
+                      setDateDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    All Dates
+                  </button>
                 </div>
               </div>
             )}

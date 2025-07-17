@@ -74,7 +74,8 @@ export class MemStorage implements IStorage {
       const newUser: User = {
         ...user,
         id: this.currentUserId++,
-        createdAt: new Date()
+        createdAt: new Date(),
+        approved: user.approved || null
       };
       this.users.set(newUser.id, newUser);
     });
@@ -89,7 +90,7 @@ export class MemStorage implements IStorage {
         priority: "high",
         assignedTo: 1,
         createdBy: 2,
-        location: "Section A - Towers 1-5",
+        location: null,
         estimatedTime: 180,
         actualTime: 135,
         progress: 60,
@@ -111,7 +112,7 @@ export class MemStorage implements IStorage {
         priority: "high",
         assignedTo: 1,
         createdBy: 2,
-        location: "Section A - Tower 3",
+        location: null,
         estimatedTime: 45,
         actualTime: null,
         progress: 0,
@@ -131,7 +132,7 @@ export class MemStorage implements IStorage {
         priority: "medium",
         assignedTo: 1,
         createdBy: 2,
-        location: "Section B - Towers 6-10",
+        location: null,
         estimatedTime: 150,
         actualTime: null,
         progress: 0,
@@ -151,7 +152,7 @@ export class MemStorage implements IStorage {
         priority: "medium",
         assignedTo: 1,
         createdBy: 2,
-        location: "Section C - Full sanitization",
+        location: null,
         estimatedTime: 120,
         actualTime: 105,
         progress: 100,
@@ -170,7 +171,18 @@ export class MemStorage implements IStorage {
         id: this.currentTaskId++,
         data: {},
         dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Due tomorrow
-        createdAt: new Date()
+        createdAt: new Date(),
+        description: task.description || null,
+        location: task.location || null,
+        estimatedTime: task.estimatedTime || null,
+        actualTime: task.actualTime || null,
+        progress: task.progress || 0,
+        checklist: task.checklist || null,
+        startedAt: task.startedAt || null,
+        completedAt: task.completedAt || null,
+        assignedTo: task.assignedTo || null,
+        createdBy: task.createdBy || null,
+        priority: task.priority || null
       };
       this.tasks.set(newTask.id, newTask);
     });
@@ -188,7 +200,10 @@ export class MemStorage implements IStorage {
         ...item,
         id: this.currentInventoryId++,
         lastRestocked: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-        createdAt: new Date()
+        createdAt: new Date(),
+        currentStock: item.currentStock || null,
+        minimumStock: item.minimumStock || null,
+        supplier: item.supplier || null
       };
       this.inventoryItems.set(newItem.id, newItem);
     });
