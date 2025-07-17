@@ -1,0 +1,1117 @@
+1. CREATE TRAY TRACKING DATA STRUCTURE:
+Create src/data/trayTracking.ts:
+typescriptexport interface Tray {
+  id: string; // e.g., "K071725-MG-BROC-1A"
+  barcode?: string;
+  cropType: string;
+  cropCategory: 'microgreens' | 'leafyGreens';
+  datePlanted: Date;
+  expectedHarvest: Date;
+  status: 'seeded' | 'germinating' | 'growing' | 'ready' | 'harvested' | 'discarded';
+  currentLocation: {
+    systemId: string;
+    systemType: string;
+    spotIds: string[];
+    movedDate: Date;
+  };
+  locationHistory: Array<{
+    systemId: string;
+    systemType: string;
+    spotIds: string[];
+    movedDate: Date;
+    movedBy: string;
+    reason?: string;
+  }>;
+  parentTrayId?: string; // For split trays
+  childTrayIds?: string[]; // For parent trays that were split
+  plantCount: number;
+  notes: string;
+  createdBy: string;
+  createdDate: Date;
+}
+
+export interface TrayMovement {
+  id: string;
+  trayId: string;
+  fromSystem: string;
+  toSystem: string;
+  movementType: 'automatic' | 'manual' | 'split';
+  scheduledDate?: Date;
+  completedDate?: Date;
+  status: 'pending' | 'in-progress' | 'completed' | 'failed';
+  reason?: string;
+  splitDetails?: {
+    parentTrayId: string;
+    newTrayIds: string[];
+    distribution: Array<{
+      trayId: string;
+      systemId: string;
+      plantCount: number;
+    }>;
+  };
+}
+
+// Tray ID generator
+export const generateTrayId = (
+  location: string,
+  cropType: string,
+  category: 'microgreens' | 'leafyGreens'
+): string => {
+  const locationCode = location.charAt(0).toUpperCase();
+  const date = new Date();
+  const dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getFullYear().toString().slice(-2)}`;
+  const categoryCode = category === 'microgreens' ? 'MG' : 'LG';
+  const cropCode = cropType.substring(0, 4).toUpperCase();
+  const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  const section = String.fromCharCode(65 + Math.floor(Math.random() * 4)); // A-D
+  
+  return `${locationCode}${dateStr}-${categoryCode}-${cropCode}-${random}${section}`;
+};
+2. CREATE TRAY MOVEMENT SERVICE:
+Create src/services/trayMovement.ts:
+typescriptimport { Tray, TrayMovement, generateTrayId } from '../data/trayTracking';
+import { GrowingSystem } from '../data/systemsData';
+import { findAvailableSpots, assignToSystem } from '../utils/systemAvailability';
+
+export class TrayMovementService {
+  // Create new tray from seeding task
+  static createTray(
+    cropType: string,
+    category: 'microgreens' | 'leafyGreens',
+    plantCount: number,
+    systemId: string,
+    spotIds: string[],
+    location: string,
+    createdBy: string
+  ): Tray {
+    const cropData = this.getCropData(cropType);
+    const trayId = generateTrayId(location, cropType, category);
+    
+    const newTray: Tray = {
+      id: trayId,
+      cropType,
+      cropCategory: category,
+      datePlanted: new Date(),
+      expectedHarvest: new Date(Date.now() + cropData.growthTime * 24 * 60 * 60 * 1000),
+      status: 'seeded',
+      currentLocation: {
+        systemId,
+        systemType: category === 'microgreens' ? 'nursery' : 'ebbFlow',
+        spotIds,
+        movedDate: new Date()
+      },
+      locationHistory: [{
+        systemId,
+        systemType: category === 'microgreens' ? 'nursery' : 'ebbFlow',
+        spotIds,
+        movedDate: new Date(),
+        movedBy: createdBy,
+        reason: 'Initial seeding'
+      }],
+      plantCount,
+      notes: '',
+      createdBy,
+      createdDate: new Date()
+    };
+    
+    return newTray;
+  }
+  
+  // Move tray to new location
+  static moveTray(
+    tray: Tray,
+    toSystemId: string,
+    toSystemType: string,
+    toSpotIds: string[],
+    movedBy: string,
+    reason?: string
+  ): Tray {
+    const updatedTray: Tray = {
+      ...tray,
+      currentLocation: {
+        systemId: toSystemId,
+        systemType: toSystemType,
+        spotIds: toSpotIds,
+        movedDate: new Date()
+      },
+      locationHistory: [
+        ...tray.locationHistory,
+        {
+          systemId: toSystemId,
+          systemType: toSystemType,
+          spotIds: toSpotIds,
+          movedDate: new Date(),
+          movedBy,
+          reason: reason || 'Manual movement'
+        }
+      ],
+      status: this.getStatusForLocation(toSystemType, tray.cropCategory)
+    };
+    
+    return updatedTray;
+  }
+  
+  // Split tray into multiple trays
+  static splitTray(
+    parentTray: Tray,
+    splits: Array<{
+      systemId: string;
+      systemType: string;
+      spotIds: string[];
+      plantCount: number;
+    }>,
+    location: string,
+    splitBy: string
+  ): { parentTray: Tray; childTrays: Tray[] } {
+    const childTrays: Tray[] = [];
+    const childTrayIds: string[] = [];
+    
+    // Create child trays
+    splits.forEach((split, index) => {
+      const childId = `${parentTray.id}-S${index + 1}`;
+      childTrayIds.push(childId);
+      
+      const childTray: Tray = {
+        ...parentTray,
+        id: childId,
+        parentTrayId: parentTray.id,
+        plantCount: split.plantCount,
+        currentLocation: {
+          systemId: split.systemId,
+          systemType: split.systemType,
+          spotIds: split.spotIds,
+          movedDate: new Date()
+        },
+        locationHistory: [
+          ...parentTray.locationHistory,
+          {
+            systemId: split.systemId,
+            systemType: split.systemType,
+            spotIds: split.spotIds,
+            movedDate: new Date(),
+            movedBy: splitBy,
+            reason: `Split from parent tray ${parentTray.id}`
+          }
+        ],
+        status: this.getStatusForLocation(split.systemType, parentTray.cropCategory)
+      };
+      
+      childTrays.push(childTray);
+    });
+    
+    // Update parent tray
+    const updatedParentTray: Tray = {
+      ...parentTray,
+      childTrayIds,
+      status: 'harvested', // Parent tray is considered harvested after split
+      notes: `${parentTray.notes}\nSplit into ${childTrays.length} trays on ${new Date().toLocaleDateString()}`
+    };
+    
+    return { parentTray: updatedParentTray, childTrays };
+  }
+  
+  // Check for automatic movements (microgreens)
+  static checkAutomaticMovements(
+    trays: Tray[],
+    systems: GrowingSystem[]
+  ): TrayMovement[] {
+    const movements: TrayMovement[] = [];
+    const now = new Date();
+    
+    trays
+      .filter(tray => tray.cropCategory === 'microgreens' && tray.status !== 'harvested')
+      .forEach(tray => {
+        const daysSincePlanted = Math.floor(
+          (now.getTime() - tray.datePlanted.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (tray.currentLocation.systemType === 'nursery' && daysSincePlanted >= 0) {
+          // Move to blackout immediately
+          movements.push({
+            id: `move-${tray.id}-${Date.now()}`,
+            trayId: tray.id,
+            fromSystem: tray.currentLocation.systemId,
+            toSystem: 'blackout',
+            movementType: 'automatic',
+            scheduledDate: now,
+            status: 'pending',
+            reason: 'Automatic movement: Nursery to Blackout'
+          });
+        } else if (tray.currentLocation.systemType === 'blackout' && daysSincePlanted >= 2) {
+          // Move to racks after 2 days
+          const availableRacks = findAvailableSpots(
+            systems.filter(s => s.type === 'microgreens'),
+            'microgreens',
+            1
+          );
+          
+          if (availableRacks.length > 0) {
+            movements.push({
+              id: `move-${tray.id}-${Date.now()}`,
+              trayId: tray.id,
+              fromSystem: tray.currentLocation.systemId,
+              toSystem: availableRacks[0].systemId,
+              movementType: 'automatic',
+              scheduledDate: now,
+              status: 'pending',
+              reason: 'Automatic movement: Blackout to Racks'
+            });
+          }
+        }
+      });
+    
+    return movements;
+  }
+  
+  private static getStatusForLocation(
+    systemType: string,
+    category: 'microgreens' | 'leafyGreens'
+  ): Tray['status'] {
+    if (category === 'microgreens') {
+      switch (systemType) {
+        case 'nursery': return 'seeded';
+        case 'blackout': return 'germinating';
+        case 'microgreens': return 'growing';
+        default: return 'growing';
+      }
+    } else {
+      switch (systemType) {
+        case 'ebbFlow': return 'seeded';
+        case 'towers':
+        case 'nft': return 'growing';
+        default: return 'growing';
+      }
+    }
+  }
+  
+  private static getCropData(cropType: string) {
+    // This would come from your crop configuration
+    const cropDatabase: { [key: string]: { growthTime: number } } = {
+      'Broccoli Microgreens': { growthTime: 7 },
+      'Arugula': { growthTime: 21 },
+      'Romaine Lettuce': { growthTime: 28 },
+      'Basil': { growthTime: 25 }
+    };
+    
+    return cropDatabase[cropType] || { growthTime: 21 };
+  }
+}
+3. CREATE TRAY SPLIT UI COMPONENT:
+Create src/components/TraySplitInterface.tsx:
+typescriptimport React, { useState, useEffect } from 'react';
+import { Tray } from '../data/trayTracking';
+import { GrowingSystem } from '../data/systemsData';
+import { findAvailableSpots } from '../utils/systemAvailability';
+
+interface TraySplitInterfaceProps {
+  tray: Tray;
+  systems: GrowingSystem[];
+  onSplit: (splits: Array<{
+    systemId: string;
+    systemType: string;
+    spotIds: string[];
+    plantCount: number;
+  }>) => void;
+  onCancel: () => void;
+}
+
+export const TraySplitInterface: React.FC<TraySplitInterfaceProps> = ({
+  tray,
+  systems,
+  onSplit,
+  onCancel
+}) => {
+  const [splits, setSplits] = useState<Array<{
+    id: string;
+    systemId: string;
+    systemType: string;
+    plantCount: number;
+    availableSpots: any[];
+  }>>([
+    { id: '1', systemId: '', systemType: 'towers', plantCount: 0, availableSpots: [] },
+    { id: '2', systemId: '', systemType: 'towers', plantCount: 0, availableSpots: [] }
+  ]);
+  
+  const totalPlants = tray.plantCount;
+  const allocatedPlants = splits.reduce((sum, split) => sum + split.plantCount, 0);
+  const remainingPlants = totalPlants - allocatedPlants;
+  
+  useEffect(() => {
+    // Update available spots for each split
+    const updatedSplits = splits.map(split => {
+      const spots = findAvailableSpots(
+        systems,
+        split.systemType,
+        split.plantCount || 1,
+        tray.cropType
+      );
+      return { ...split, availableSpots: spots };
+    });
+    setSplits(updatedSplits);
+  }, [splits.map(s => `${s.systemType}-${s.plantCount}`).join(','), systems, tray.cropType]);
+  
+  const handleAddSplit = () => {
+    setSplits([
+      ...splits,
+      {
+        id: Date.now().toString(),
+        systemId: '',
+        systemType: 'towers',
+        plantCount: 0,
+        availableSpots: []
+      }
+    ]);
+  };
+  
+  const handleRemoveSplit = (id: string) => {
+    setSplits(splits.filter(s => s.id !== id));
+  };
+  
+  const handleUpdateSplit = (id: string, field: string, value: any) => {
+    setSplits(splits.map(split =>
+      split.id === id ? { ...split, [field]: value } : split
+    ));
+  };
+  
+  const handleConfirmSplit = () => {
+    const validSplits = splits
+      .filter(s => s.systemId && s.plantCount > 0)
+      .map(split => {
+        const spot = split.availableSpots.find(a => a.systemId === split.systemId);
+        return {
+          systemId: split.systemId,
+          systemType: split.systemType,
+          spotIds: spot?.spotIds || [],
+          plantCount: split.plantCount
+        };
+      });
+    
+    onSplit(validSplits);
+  };
+  
+  const isValid = allocatedPlants === totalPlants && 
+    splits.every(s => s.systemId && s.plantCount > 0);
+  
+  return (
+    <div className="tray-split-interface">
+      <div className="split-header">
+        <h3>🔀 Split Tray: {tray.id}</h3>
+        <p className="split-info">
+          Total plants to distribute: <strong>{totalPlants}</strong>
+        </p>
+      </div>
+      
+      <div className="splits-container">
+        {splits.map((split, index) => (
+          <div key={split.id} className="split-card">
+            <div className="split-card-header">
+              <h4>Destination {index + 1}</h4>
+              {splits.length > 2 && (
+                <button
+                  className="btn-remove"
+                  onClick={() => handleRemoveSplit(split.id)}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            
+            <div className="split-form">
+              <label>
+                System Type:
+                <select
+                  value={split.systemType}
+                  onChange={(e) => handleUpdateSplit(split.id, 'systemType', e.target.value)}
+                >
+                  <option value="towers">Towers</option>
+                  <option value="nft">NFT</option>
+                </select>
+              </label>
+              
+              <label>
+                Number of Plants:
+                <input
+                  type="number"
+                  min="0"
+                  max={remainingPlants + split.plantCount}
+                  value={split.plantCount}
+                  onChange={(e) => handleUpdateSplit(
+                    split.id,
+                    'plantCount',
+                    parseInt(e.target.value) || 0
+                  )}
+                />
+              </label>
+              
+              {split.availableSpots.length > 0 && (
+                <label>
+                  Select Location:
+                  <select
+                    value={split.systemId}
+                    onChange={(e) => handleUpdateSplit(split.id, 'systemId', e.target.value)}
+                  >
+                    <option value="">-- Select --</option>
+                    {split.availableSpots.map(spot => (
+                      <option key={spot.systemId} value={spot.systemId}>
+                        {spot.systemName} ({spot.spotIds.length} spots available)
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              
+              {split.availableSpots.length === 0 && split.plantCount > 0 && (
+                <p className="no-spots-warning">
+                  ⚠️ No available {split.systemType} spots for {split.plantCount} plants
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <button className="btn-add-split" onClick={handleAddSplit}>
+        + Add Another Destination
+      </button>
+      
+      <div className={`allocation-summary ${remainingPlants === 0 ? 'complete' : 'incomplete'}`}>
+        <p>
+          Allocated: <strong>{allocatedPlants}</strong> / {totalPlants} plants
+        </p>
+        {remainingPlants > 0 && (
+          <p className="remaining-warning">
+            ⚠️ {remainingPlants} plants still need to be assigned
+          </p>
+        )}
+      </div>
+      
+      <div className="split-actions">
+        <button
+          className="btn-confirm"
+          onClick={handleConfirmSplit}
+          disabled={!isValid}
+        >
+          Confirm Split
+        </button>
+        <button className="btn-cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+};
+4. CREATE TRAY MOVEMENT DASHBOARD:
+Create src/components/TrayMovementDashboard.tsx:
+typescriptimport React, { useState, useEffect } from 'react';
+import { Tray, TrayMovement } from '../data/trayTracking';
+import { TrayMovementService } from '../services/trayMovement';
+
+export const TrayMovementDashboard: React.FC = () => {
+  const [movements, setMovements] = useState<TrayMovement[]>([]);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
+  
+  useEffect(() => {
+    // Check for automatic movements every minute
+    const interval = setInterval(() => {
+      const autoMovements = TrayMovementService.checkAutomaticMovements(trays, systems);
+      setMovements(prev => [...prev, ...autoMovements]);
+    }, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const executeMovement = async (movement: TrayMovement) => {
+    try {
+      // Update movement status
+      setMovements(movements.map(m =>
+        m.id === movement.id ? { ...m, status: 'in-progress' } : m
+      ));
+      
+      // Execute the movement
+      // ... movement logic ...
+      
+      // Mark as completed
+      setMovements(movements.map(m =>
+        m.id === movement.id 
+          ? { ...m, status: 'completed', completedDate: new Date() } 
+          : m
+      ));
+    } catch (error) {
+      // Mark as failed
+      setMovements(movements.map(m =>
+        m.id === movement.id 
+          ? { ...m, status: 'failed', reason: error.message } 
+          : m
+      ));
+    }
+  };
+  
+  const filteredMovements = movements.filter(m => {
+    if (filter === 'all') return true;
+    if (filter === 'pending') return m.status === 'pending';
+    if (filter === 'completed') return m.status === 'completed';
+    return true;
+  });
+  
+  return (
+    <div className="tray-movement-dashboard">
+      <div className="dashboard-header">
+        <h2>📦 Tray Movement Queue</h2>
+        <div className="filter-tabs">
+          <button
+            className={filter === 'all' ? 'active' : ''}
+            onClick={() => setFilter('all')}
+          >
+            All ({movements.length})
+          </button>
+          <button
+            className={filter === 'pending' ? 'active' : ''}
+            onClick={() => setFilter('pending')}
+          >
+            Pending ({movements.filter(m => m.status === 'pending').length})
+          </button>
+          <button
+            className={filter === 'completed' ? 'active' : ''}
+            onClick={() => setFilter('completed')}
+          >
+            Completed ({movements.filter(m => m.status === 'completed').length})
+          </button>
+        </div>
+      </div>
+      
+      <div className="movements-list">
+        {filteredMovements.map(movement => (
+          <div key={movement.id} className={`movement-card ${movement.status}`}>
+            <div className="movement-info">
+              <h4>
+                {movement.movementType === 'automatic' && '🤖'} 
+                Tray {movement.trayId}
+              </h4>
+              <p className="movement-route">
+                {movement.fromSystem} → {movement.toSystem}
+              </p>
+              <p className="movement-reason">{movement.reason}</p>
+            </div>
+            
+            <div className="movement-status">
+              <span className={`status-badge ${movement.status}`}>
+                {movement.status}
+              </span>
+              {movement.status === 'pending' && (
+                <button
+                  className="btn-execute"
+                  onClick={() => executeMovement(movement)}
+                >
+                  Execute Move
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+5. ADD BARCODE SCANNING SUPPORT:
+Create src/components/BarcodeScanner.tsx:
+typescriptimport React, { useState } from 'react';
+
+interface BarcodeScannerProps {
+  onScan: (barcode: string) => void;
+  placeholder?: string;
+}
+
+export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
+  onScan,
+  placeholder = 'Scan or type tray barcode...'
+}) => {
+  const [inputValue, setInputValue] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue) {
+      onScan(inputValue);
+      setInputValue('');
+    }
+  };
+  
+  // Detect barcode scanner input (rapid key events)
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    
+    // Most barcode scanners input very quickly
+    if (!isScanning) {
+      setIsScanning(true);
+      setTimeout(() => {
+        if (inputValue.length > 5) {
+          onScan(inputValue);
+          setInputValue('');
+        }
+        setIsScanning(false);
+      }, 100);
+    }
+  };
+  
+  return (
+    <div className="barcode-scanner">
+      <div className="scanner-input-wrapper">
+        <span className="scanner-icon">📷</span>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInput}
+          onKeyPress={handleKeyPress}
+          placeholder={placeholder}
+          className="scanner-input"
+          autoFocus
+        />
+        {isScanning && <span className="scanning-indicator">Scanning...</span>}
+      </div>
+    </div>
+  );
+};
+6. ADD CSS STYLES:
+css/* Tray Movement Styles */
+.tray-split-interface {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.split-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.split-info {
+  color: #6b7280;
+  margin-top: 8px;
+}
+
+.splits-container {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.split-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.split-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.split-card h4 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.btn-remove {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.split-form {
+  display: grid;
+  gap: 12px;
+}
+
+.split-form label {
+  display: block;
+  color: #374151;
+  font-weight: 500;
+}
+
+.split-form select,
+.split-form input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.no-spots-warning {
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.btn-add-split {
+  width: 100%;
+  padding: 12px;
+  background: #f3f4f6;
+  border: 2px dashed #9ca3af;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #4b5563;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.btn-add-split:hover {
+  background: #e5e7eb;
+  border-color: #6b7280;
+}
+
+.allocation-summary {
+  padding: 16px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.allocation-summary.complete {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.allocation-summary.incomplete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.remaining-warning {
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.split-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-confirm,
+.btn-cancel {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-confirm {
+  background: #2D8028;
+  color: white;
+}
+
+.btn-confirm:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Movement Dashboard */
+.tray-movement-dashboard {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.filter-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.filter-tabs button.active {
+  background: white;
+  color: #1f2937;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.movements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.movement-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.movement-card.pending {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+
+.movement-card.completed {
+  background: #d1fae5;
+  border-color: #34d399;
+}
+
+.movement-card.in-progress {
+  background: #dbeafe;
+  border-color: #60a5fa;
+}
+
+.movement-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+}
+
+.movement-route {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.movement-reason {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.movement-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.in-progress {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-execute {
+  padding: 6px 16px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Barcode Scanner */
+.barcode-scanner {
+  margin-bottom: 20px;
+}
+
+.scanner-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scanner-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 20px;
+}
+
+.scanner-input {
+  width: 100%;
+  padding: 12px 12px 12px 44px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.scanner-input:focus {
+  outline: none;
+  border-color: #2D8028;
+}
+
+.scanning-indicator {
+  position: absolute;
+  right: 12px;
+  color: #2D8028;
+  font-size: 14px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Tray Info Card */
+.tray-info-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.tray-info-card.microgreens {
+  border-left: 4px solid #10b981;
+}
+
+.tray-info-card.leafyGreens {
+  border-left: 4px solid #3b82f6;
+}
+
+.tray-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+.tray-id {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.tray-status {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tray-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.tray-detail-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tray-detail-item strong {
+  color: #374151;
+}
+
+.tray-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.tray-actions button {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tray-actions button:hover {
+  background: #f9fafb;
+  border-color: #2D8028;
+}
+7. INTEGRATE WITH CHECKLIST EXECUTION:
+Update your checklist execution to create and track trays:
+typescript// In ChecklistExecution component
+const handleChecklistComplete = (checklistData: any) => {
+  const task = tasks.find(t => t.id === currentTaskId);
+  
+  if (task?.type.includes('Seeding')) {
+    // Extract data from checklist
+    const cropType = checklistData['crop-select'];
+    const plantCount = checklistData['plant-count'];
+    const systemAssignment = checklistData['system-assignment'];
+    
+    // Create new tray
+    const newTray = TrayMovementService.createTray(
+      cropType,
+      task.type.includes('Microgreens') ? 'microgreens' : 'leafyGreens',
+      plantCount,
+      systemAssignment.systemId,
+      systemAssignment.spotIds,
+      currentLocation,
+      currentUser.name
+    );
+    
+    // Save tray to database
+    saveTray(newTray);
+    
+    // If microgreens, schedule automatic movements
+    if (newTray.cropCategory === 'microgreens') {
+      scheduleAutomaticMovements(newTray);
+    }
+  }
+  
+  // Complete the task
+  completeTask(currentTaskId, checklistData);
+};
+SUMMARY:
+Phase 4 implements:
+
+✅ Tray tracking system with unique IDs and barcodes
+✅ Movement workflows for both automatic (microgreens) and manual (leafy greens)
+✅ Split tray functionality with visual interface
+✅ Movement dashboard showing pending and completed movements
+✅ Barcode scanning support for quick tray lookup
+✅ Location history tracking for full traceability
+
+Key features:
+
+Automatic tray ID generation (K071725-MG-BROC-1A format)
+Microgreen automation: Nursery → Blackout (immediate) → Racks (after 2 days)
+Leafy green splitting: One tray can split to multiple systems
+Real-time movement queue with manual execution
+Complete movement history for each tray
+Barcode scanner integration

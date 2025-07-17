@@ -240,3 +240,29 @@ Preferred communication style: Simple, everyday language.
       - Timed movement triggers based on growth timelines
       - Automated tray movement execution with system integration
       - Error handling for capacity constraints and system availability
+  - **Tray Tracking System Implementation**: Complete tray lifecycle management with automated workflows:
+    - **Tray Data Structure**: Comprehensive tray tracking with unique ID generation, location history, and status progression
+      - Support for barcode generation and parent/child relationships for split trays
+      - Automated tray ID format: LocationDateCode-Category-CropCode-RandomSection (e.g., K071725-MG-BROC-01A)
+      - Complete location history tracking with timestamps and responsible personnel
+      - Plant count tracking and status progression through growth stages
+    - **TrayMovementService**: Automated tray creation and movement management
+      - Tray creation from seeding tasks with system integration
+      - Automatic movement scheduling based on growth timelines
+      - Tray splitting functionality for leafy greens with child tray generation
+      - Intelligent movement checking for microgreens automation
+    - **TraySplitInterface**: Visual tray splitting with system capacity management
+      - Multi-destination splitting with plant count validation
+      - Real-time system availability checking and capacity indicators
+      - Smart system assignment with compatibility validation
+    - **TrayTracking Dashboard**: Complete tray monitoring and management interface
+      - Three-tab interface: Active Trays, Pending Movements, Location History
+      - Advanced filtering by status, crop type, and search functionality
+      - Visual status indicators with system-specific icons
+      - Detailed tray information modals with complete location history
+      - Automated movement queue with pending system transfers
+    - **TrayIntegration Utilities**: Seamless integration with existing task and inventory systems
+      - Automatic tray creation upon seeding task completion
+      - Inventory deduction based on crop type and plant count
+      - System assignment integration with capacity management
+      - Smart crop type extraction from task titles

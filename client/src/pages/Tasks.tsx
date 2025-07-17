@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
+import { TrayIntegration } from "@/utils/trayIntegration";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);

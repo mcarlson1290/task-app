@@ -13,6 +13,7 @@ import RecurringTasks from "@/pages/RecurringTasks";
 import TaskData from "@/pages/TaskData";
 import StaffData from "@/pages/StaffData";
 import ProductionData from "@/pages/ProductionData";
+import TrayTracking from "@/pages/TrayTracking";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { getStoredAuth } from "@/lib/auth";
@@ -75,6 +76,11 @@ function Router() {
       <Route path="/production-data">
         <ProtectedRoute>
           <ProductionData />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/tray-tracking">
+        <ProtectedRoute>
+          <TrayTracking />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
