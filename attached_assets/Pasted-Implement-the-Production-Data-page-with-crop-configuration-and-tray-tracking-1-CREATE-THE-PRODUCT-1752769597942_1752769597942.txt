@@ -1,0 +1,170 @@
+Implement the Production Data page with crop configuration and tray tracking:
+
+1. CREATE THE PRODUCTION DATA PAGE STRUCTURE:
+   ```jsx
+   const ProductionData = () => {
+     const currentUser = getCurrentUser();
+     const isCorporateManager = currentUser.role === 'Corporate';
+     const isManager = currentUser.role === 'Manager' || isCorporateManager;
+     
+     const [activeTab, setActiveTab] = useState('dashboard');
+     const [crops, setCrops] = useState(mockCrops);
+     const [trays, setTrays] = useState(mockTrays);
+     const [showCropModal, setShowCropModal] = useState(false);
+     const [editingCrop, setEditingCrop] = useState(null);
+     
+     // Mock data
+     const mockCrops = [
+       {
+         id: 1,
+         name: 'Romaine Lettuce',
+         category: 'Leafy Green',
+         expectedYieldPerTray: 2.5, // lbs
+         averageGrowthTime: 35, // days
+         lightRequirements: 'Medium (14-16 hours)',
+         status: 'active',
+         checklistTemplate: null
+       },
+       {
+         id: 2,
+         name: 'Broccoli Microgreens',
+         category: 'Microgreen',
+         expectedYieldPerTray: 0.75, // lbs
+         averageGrowthTime: 7, // days
+         lightRequirements: 'Low (8-10 hours)',
+         status: 'active',
+         checklistTemplate: null
+       },
+       {
+         id: 3,
+         name: 'Arugula',
+         category: 'Leafy Green',
+         expectedYieldPerTray: 1.8, // lbs
+         averageGrowthTime: 28, // days
+         lightRequirements: 'Medium (12-14 hours)',
+         status: 'active',
+         checklistTemplate: null
+       },
+       {
+         id: 4,
+         name: 'Basil',
+         category: 'Herb',
+         expectedYieldPerTray: 1.2, // lbs
+         averageGrowthTime: 42, // days
+         lightRequirements: 'High (16-18 hours)',
+         status: 'active',
+         checklistTemplate: null
+       }
+     ];
+     
+     const mockTrays = [
+       {
+         id: 'K071725-MG-BROC-1C',
+         cropType: 'Broccoli Microgreens',
+         cropId: 2,
+         datePlanted: '2024-03-10',
+         assignedSystem: 'Tower 3 - Level A',
+         estimatedHarvestDate: '2024-03-17',
+         status: 'growing',
+         actualYield: null,
+         notes: ''
+       },
+       {
+         id: 'K071725-LG-ROM-2A',
+         cropType: 'Romaine Lettuce',
+         cropId: 1,
+         datePlanted: '2024-02-15',
+         assignedSystem: 'NFT System 1',
+         estimatedHarvestDate: '2024-03-22',
+         status: 'growing',
+         actualYield: null,
+         notes: 'Looking healthy'
+       },
+       {
+         id: 'K071725-LG-ARU-3B',
+         cropType: 'Arugula',
+         cropId: 3,
+         datePlanted: '2024-03-01',
+         assignedSystem: 'Tower 2 - Level B',
+         estimatedHarvestDate: '2024-03-29',
+         status: 'growing',
+         actualYield: null,
+         notes: ''
+       },
+       {
+         id: 'K071725-MG-BROC-2C',
+         cropType: 'Broccoli Microgreens',
+         cropId: 2,
+         datePlanted: '2024-03-08',
+         assignedSystem: 'Tower 3 - Level B',
+         estimatedHarvestDate: '2024-03-15',
+         status: 'ready-to-harvest',
+         actualYield: null,
+         notes: 'Ready for harvest'
+       },
+       {
+         id: 'K071725-LG-ROM-1A',
+         cropType: 'Romaine Lettuce',
+         cropId: 1,
+         datePlanted: '2024-02-10',
+         assignedSystem: 'NFT System 2',
+         estimatedHarvestDate: '2024-03-17',
+         status: 'harvested',
+         actualYield: 2.3,
+         harvestDate: '2024-03-16',
+         notes: 'Good yield'
+       }
+     ];
+     
+     if (!isManager) {
+       return (
+         <div className="access-denied">
+           <h2>Access Denied</h2>
+           <p>This page is only available to managers.</p>
+         </div>
+       );
+     }
+     
+     return (
+       <div className="production-data-page">
+         <div className="page-header">
+           <h1>🌱 Production Data</h1>
+           <div className="header-actions">
+             <button className="btn-export">📊 Export Report</button>
+           </div>
+         </div>
+         
+         {/* Tab Navigation */}
+         <div className="tab-navigation">
+           <button 
+             className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`}
+             onClick={() => setActiveTab('dashboard')}
+           >
+             📊 Live Dashboard
+           </button>
+           {isCorporateManager && (
+             <button 
+               className={`tab ${activeTab === 'crops' ? 'active' : ''}`}
+               onClick={() => setActiveTab('crops')}
+             >
+               🌾 Crop Configuration
+             </button>
+           )}
+         </div>
+         
+         {/* Content based on active tab */}
+         {activeTab === 'dashboard' ? (
+           <ProductionDashboard 
+             trays={trays}
+             crops={crops}
+             onUpdateTray={handleUpdateTray}
+           />
+         ) : (
+           <CropConfiguration
+             crops={crops}
+             onAddCrop={() => {
+               setEditingCrop(null);
+               setShowCropModal(true);
+             }}
+             onEditCrop={(crop) => {
+               setEditingCrop(crop);
