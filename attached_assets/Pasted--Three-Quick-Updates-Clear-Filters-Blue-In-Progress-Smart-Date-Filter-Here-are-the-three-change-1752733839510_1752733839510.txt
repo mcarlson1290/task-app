@@ -1,0 +1,99 @@
+📋 Three Quick Updates: Clear Filters, Blue In-Progress, Smart Date Filter
+Here are the three changes you need:
+Make these three specific updates to the Tasks page:
+
+1. ADD CLEAR FILTERS BUTTON:
+   Add a "Clear All" button next to the existing filters:
+   ```jsx
+   <div className="filters-container">
+     <button className="filter-btn active">📋 All Tasks</button>
+     <select className="filter-dropdown">{/* Category */}</select>
+     <select className="filter-dropdown">{/* Status */}</select>
+     <select className="filter-dropdown">{/* Priority */}</select>
+     <input type="date" className="date-picker" />
+     
+     {/* ADD THIS CLEAR BUTTON */}
+     <button 
+       onClick={clearAllFilters} 
+       className="btn-clear-all"
+       style={{
+         backgroundColor: '#6b7280',
+         color: 'white',
+         padding: '8px 16px',
+         borderRadius: '6px',
+         marginLeft: '8px'
+       }}
+     >
+       ✕ Clear Filters
+     </button>
+   </div>
+   
+   // Clear function
+   const clearAllFilters = () => {
+     setSelectedCategory('all');
+     setSelectedStatus('all');
+     setSelectedPriority('all');
+     setSelectedDate('');
+   };
+
+MAKE IN-PROGRESS TASKS BLUE:
+Add blue background for in-progress tasks:
+css/* In-progress tasks - blue background */
+.task-card[data-status="in-progress"],
+.task-card.in-progress {
+  background-color: #dbeafe; /* Light blue */
+  border-left: 4px solid #3b82f6; /* Blue border */
+}
+
+/* Update the existing status badge to match */
+.status-in-progress {
+  background-color: #3b82f6; /* Blue */
+  color: white;
+}
+
+UPDATE DATE FILTER LOGIC:
+Modify the filter function to include overdue tasks when "today" is selected:
+javascriptconst filterTasksByDate = (tasks, selectedDate) => {
+  if (!selectedDate) return tasks;
+  
+  const today = new Date().toISOString().split('T')[0];
+  const isToday = selectedDate === today;
+  
+  return tasks.filter(task => {
+    // If today is selected, show today's tasks AND overdue tasks
+    if (isToday) {
+      return task.completionDate === selectedDate || task.isOverdue;
+    }
+    
+    // For other dates, only show tasks due on that exact date
+    return task.completionDate === selectedDate;
+  });
+};
+Or update your existing filter logic:
+javascript// In your main filter function
+if (selectedDate) {
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (selectedDate === today) {
+    // Today: show today's tasks + overdue
+    filtered = filtered.filter(task => 
+      task.completionDate === selectedDate || task.isOverdue
+    );
+  } else {
+    // Other dates: only that date
+    filtered = filtered.filter(task => 
+      task.completionDate === selectedDate
+    );
+  }
+}
+
+
+Summary of changes:
+
+Clear Filters button resets all filters to default
+In-progress tasks get light blue background (#dbeafe)
+Today's date filter shows both today's tasks AND overdue tasks
+Other dates only show tasks due on that specific date
+
+
+These three changes will make the task list much easier to scan and manage!

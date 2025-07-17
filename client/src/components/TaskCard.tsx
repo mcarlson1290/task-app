@@ -33,8 +33,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
   const getStatusColor = (status: TaskStatus): string => {
     const colors = {
-      pending: "bg-blue-500 text-white",
-      in_progress: "bg-amber-500 text-white",
+      pending: "bg-gray-500 text-white",
+      in_progress: "bg-blue-500 text-white",
       completed: "bg-green-500 text-white",
       approved: "bg-green-600 text-white",
       paused: "bg-yellow-500 text-white",
@@ -118,7 +118,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
   return (
     <Card className={`relative shadow-sm hover:shadow-md transition-shadow ${
-      isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
+      isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
       isPaused ? 'bg-yellow-50 border-l-4 border-l-yellow-500' : ''
     } ${

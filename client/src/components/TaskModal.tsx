@@ -183,8 +183,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
 
   const getStatusColor = (status: TaskStatus): string => {
     const colors = {
-      pending: "bg-blue-100 text-blue-800",
-      in_progress: "bg-amber-100 text-amber-800",
+      pending: "bg-gray-100 text-gray-800",
+      in_progress: "bg-blue-100 text-blue-800",
       completed: "bg-green-100 text-green-800",
       approved: "bg-green-100 text-green-800",
       paused: "bg-yellow-100 text-yellow-800",

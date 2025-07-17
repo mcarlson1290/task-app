@@ -183,12 +183,23 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter
+    // Date filter - smart handling for today vs other dates
     if (dateFilter) {
+      const today = new Date().toISOString().split('T')[0];
+      const isToday = dateFilter === today;
+      
       filtered = filtered.filter(task => {
         if (task.dueDate) {
           const taskDate = new Date(task.dueDate);
           const taskDateString = taskDate.toISOString().split('T')[0];
+          
+          // If today is selected, show today's tasks AND overdue tasks
+          if (isToday) {
+            const isOverdue = taskDate < new Date() && task.status !== 'completed';
+            return taskDateString === dateFilter || isOverdue;
+          }
+          
+          // For other dates, only show tasks due on that exact date
           return taskDateString === dateFilter;
         }
         return false;
@@ -197,6 +208,15 @@ const Tasks: React.FC = () => {
 
     return filtered;
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
+
+  // Clear all filters function
+  const clearAllFilters = () => {
+    setActiveFilter("all");
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setDateFilter("");
+    setSearchTerm("");
+  };
 
   // Single task action handler
   const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view', reason?: string) => {
@@ -547,6 +567,15 @@ const Tasks: React.FC = () => {
               </Button>
             )}
           </div>
+
+          {/* Clear Filters Button */}
+          <Button
+            onClick={clearAllFilters}
+            variant="outline"
+            className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+          >
+            ✕ Clear Filters
+          </Button>
 
           {/* Search Bar */}
           <div className="relative flex-1">
