@@ -1,0 +1,86 @@
+🔧 Debug the Save Task Error
+Let's find out what's causing the error:
+Debug the Add Task save error by checking what's in the red error box:
+
+1. CHECK THE BROWSER CONSOLE:
+   - Open browser developer tools (F12)
+   - Look at the Console tab
+   - Click "Save Task" again
+   - Copy the error message that appears
+
+2. COMMON ISSUES TO CHECK:
+   
+   a) Check if all required fields have values:
+   ```javascript
+   const handleSubmit = (e) => {
+     e.preventDefault();
+     
+     // Log all values to see if something is missing
+     console.log('Task data before save:', taskData);
+     
+     // Validate required fields
+     if (!taskData.title || !taskData.type || !taskData.assignedTo || !taskData.completionDate) {
+       console.error('Missing required fields:', {
+         title: taskData.title,
+         type: taskData.type,
+         assignedTo: taskData.assignedTo,
+         completionDate: taskData.completionDate
+       });
+       alert('Please fill in all required fields');
+       return;
+     }
+     
+     const newTask = {
+       id: Date.now(),
+       ...taskData,
+       status: 'pending',
+       progress: 0,
+       checklistItems: 0,
+       checklistCompleted: 0,
+       isOverdue: false
+     };
+     
+     onSave(newTask);
+   };
+b) Check if setTasks exists:
+javascriptconst handleAddTask = (newTask) => {
+  try {
+    console.log('handleAddTask called');
+    console.log('setTasks type:', typeof setTasks);
+    console.log('newTask:', newTask);
+    
+    if (typeof setTasks !== 'function') {
+      console.error('setTasks is not a function!');
+      return;
+    }
+    
+    setTasks(prevTasks => [...prevTasks, newTask]);
+    setShowAddTaskModal(false);
+  } catch (error) {
+    console.error('Error in handleAddTask:', error);
+  }
+};
+
+SIMPLER APPROACH - TRY A BASIC TEST:
+Replace the handleAddTask with this simple version temporarily:
+javascriptconst handleAddTask = (newTask) => {
+  // Just try to add a hardcoded task first
+  const testTask = {
+    id: Date.now(),
+    title: "Test Task",
+    type: "Cleaning",
+    priority: "medium",
+    assignedTo: "All Staff",
+    status: "pending",
+    completionDate: "2024-03-15",
+    estimatedTime: "1h"
+  };
+  
+  console.log('Adding test task');
+  setTasks([...tasks, testTask]);
+  setShowAddTaskModal(false);
+};
+
+
+The red error box usually means there's a JavaScript error. Check the console for the specific error message and let me know what it says!
+RetryClaude can make mistakes. Please double-check responses.

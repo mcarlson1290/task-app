@@ -102,11 +102,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", async (req, res) => {
     try {
+      console.log("Creating task with data:", req.body);
       const taskData = insertTaskSchema.parse(req.body);
+      console.log("Parsed task data:", taskData);
       const task = await storage.createTask(taskData);
+      console.log("Created task:", task);
       res.json(task);
     } catch (error) {
-      res.status(400).json({ message: "Failed to create task" });
+      console.error("Create task error:", error);
+      console.error("Request body:", req.body);
+      res.status(400).json({ message: "Failed to create task", error: error.message });
     }
   });
 
