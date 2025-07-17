@@ -600,6 +600,329 @@ const StaffEditModal: React.FC<{
   );
 };
 
+// Staff Ranking Row Component
+const StaffRankingRow: React.FC<{
+  person: any;
+  rank: number;
+  metric: string;
+}> = ({ person, rank, metric }) => {
+  const getRankEmoji = (rank: number) => {
+    switch (rank) {
+      case 1: return '🥇';
+      case 2: return '🥈';
+      case 3: return '🥉';
+      default: return `#${rank}`;
+    }
+  };
+  
+  const getMetricValue = () => {
+    switch (metric) {
+      case 'tasks':
+        return `${person.tasksCompleted} tasks`;
+      case 'efficiency':
+        return `${person.onTimeRate}% on-time`;
+      case 'cost':
+        const costPerTask = person.payRate / (person.tasksCompleted / 100);
+        return `$${costPerTask.toFixed(2)}/task`;
+      default:
+        return person.tasksCompleted;
+    }
+  };
+  
+  return (
+    <div className="ranking-row">
+      <span className="rank">{getRankEmoji(rank)}</span>
+      <div className="person-info">
+        <span className="name">{person.fullName}</span>
+        <span className="roles">{person.rolesAssigned.join(', ')}</span>
+      </div>
+      <span className="metric-value">{getMetricValue()}</span>
+    </div>
+  );
+};
+
+// Staff Performance Card Component
+const StaffPerformanceCard: React.FC<{
+  staff: any;
+}> = ({ staff }) => {
+  // Calculate individual metrics
+  const hoursWorked = staff.tasksCompleted * 0.75; // Rough estimate
+  const laborCost = hoursWorked * staff.payRate;
+  const costPerTask = staff.tasksCompleted > 0 ? laborCost / staff.tasksCompleted : 0;
+  
+  // Task type breakdown (mock data)
+  const taskBreakdown = {
+    'Seeding': Math.floor(staff.tasksCompleted * 0.3),
+    'Harvesting': Math.floor(staff.tasksCompleted * 0.25),
+    'Cleaning': Math.floor(staff.tasksCompleted * 0.2),
+    'Packing': Math.floor(staff.tasksCompleted * 0.15),
+    'Other': Math.floor(staff.tasksCompleted * 0.1)
+  };
+  
+  return (
+    <div className="performance-card">
+      <div className="card-header">
+        <h4>{staff.fullName}</h4>
+        <span className={`status-indicator ${staff.activeStatus}`}>
+          {staff.activeStatus}
+        </span>
+      </div>
+      
+      <div className="performance-metrics">
+        <div className="metric-row">
+          <span className="label">Tasks Completed:</span>
+          <span className="value">{staff.tasksCompleted}</span>
+        </div>
+        <div className="metric-row">
+          <span className="label">Avg Task Duration:</span>
+          <span className="value">{staff.avgTaskDuration}</span>
+        </div>
+        <div className="metric-row">
+          <span className="label">On-Time Rate:</span>
+          <span className={`value ${staff.onTimeRate > 95 ? 'good' : staff.onTimeRate > 85 ? 'warning' : 'poor'}`}>
+            {staff.onTimeRate}%
+          </span>
+        </div>
+        <div className="metric-row">
+          <span className="label">Est. Labor Cost:</span>
+          <span className="value">${laborCost.toFixed(2)}</span>
+        </div>
+        <div className="metric-row">
+          <span className="label">Cost per Task:</span>
+          <span className="value">${costPerTask.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      {/* Mini Task Breakdown Chart */}
+      <div className="task-breakdown">
+        <h5>Tasks by Type</h5>
+        <div className="breakdown-bars">
+          {Object.entries(taskBreakdown).map(([type, count]) => (
+            <div key={type} className="breakdown-item">
+              <span className="type-label">{type}</span>
+              <div className="bar-container">
+                <div 
+                  className="bar" 
+                  style={{ width: `${(count / staff.tasksCompleted) * 100}%` }}
+                />
+              </div>
+              <span className="count">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Training Overview Component
+const TrainingOverview: React.FC<{
+  staff: any[];
+}> = ({ staff }) => {
+  // Get all unique training courses
+  const allCourses = [
+    'Basic Safety & Orientation',
+    'Seeding Technician Certification',
+    'Harvest Operations Training',
+    'Equipment Operation & Maintenance',
+    'Manager Fundamentals'
+  ];
+  
+  return (
+    <div className="training-overview">
+      <h3>🎓 Training Completion Matrix</h3>
+      <div className="training-matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>Staff Member</th>
+              {allCourses.map(course => (
+                <th key={course} className="course-header">
+                  {course.split(' ').map(word => word[0]).join('')}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {staff.map(person => (
+              <tr key={person.id}>
+                <td className="staff-name-cell">{person.fullName}</td>
+                {allCourses.map(course => (
+                  <td key={course} className="status-cell">
+                    {person.trainingCompleted.includes(course) ? (
+                      <span className="completed">✅</span>
+                    ) : person.trainingInProgress.includes(course) ? (
+                      <span className="in-progress">📚</span>
+                    ) : (
+                      <span className="not-started">-</span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Course name legend */}
+      <div className="course-legend">
+        <h4>Course Abbreviations:</h4>
+        <ul>
+          {allCourses.map(course => (
+            <li key={course}>
+              <strong>{course.split(' ').map(word => word[0]).join('')}:</strong> {course}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+// Staff Analytics View Component
+const StaffAnalyticsView: React.FC<{
+  staff: any[];
+}> = ({ staff }) => {
+  const [dateRange, setDateRange] = useState('last30days');
+  const [selectedMetric, setSelectedMetric] = useState('tasks');
+  
+  // Calculate summary metrics
+  const activeStaff = staff.filter(s => s.activeStatus === 'active');
+  const totalStaff = staff.length;
+  const avgPayRate = staff.reduce((sum, s) => sum + s.payRate, 0) / staff.length;
+  
+  // Calculate total labor cost (simplified)
+  const calculateTotalLaborCost = () => {
+    let totalCost = 0;
+    staff.forEach(person => {
+      const hoursWorked = person.tasksCompleted * 0.75; // Rough estimate
+      totalCost += hoursWorked * person.payRate;
+    });
+    return totalCost;
+  };
+  
+  const totalLaborCost = calculateTotalLaborCost();
+  
+  // Calculate average on-time rate
+  const avgOnTimeRate = staff.reduce((sum, s) => sum + s.onTimeRate, 0) / staff.length;
+  
+  return (
+    <div className="staff-analytics-view">
+      {/* Date Range Filter */}
+      <div className="analytics-toolbar">
+        <select 
+          value={dateRange} 
+          onChange={(e) => setDateRange(e.target.value)}
+          className="date-range-select"
+        >
+          <option value="last7days">Last 7 Days</option>
+          <option value="last30days">Last 30 Days</option>
+          <option value="last90days">Last 90 Days</option>
+        </select>
+        
+        <select 
+          value={selectedMetric} 
+          onChange={(e) => setSelectedMetric(e.target.value)}
+          className="metric-select"
+        >
+          <option value="tasks">Tasks Completed</option>
+          <option value="hours">Hours Worked</option>
+          <option value="efficiency">Efficiency</option>
+          <option value="cost">Labor Cost</option>
+        </select>
+      </div>
+      
+      {/* Summary Cards */}
+      <div className="analytics-cards">
+        <div className="analytics-card">
+          <div className="card-icon">👥</div>
+          <div className="card-content">
+            <h3>Total Staff</h3>
+            <div className="metric">{totalStaff}</div>
+            <div className="sub-metric">{activeStaff.length} active</div>
+          </div>
+        </div>
+        
+        <div className="analytics-card">
+          <div className="card-icon">💰</div>
+          <div className="card-content">
+            <h3>Avg Pay Rate</h3>
+            <div className="metric">${avgPayRate.toFixed(2)}</div>
+            <div className="sub-metric">per hour</div>
+          </div>
+        </div>
+        
+        <div className="analytics-card">
+          <div className="card-icon">⏱️</div>
+          <div className="card-content">
+            <h3>On-Time Rate</h3>
+            <div className="metric">{avgOnTimeRate.toFixed(1)}%</div>
+            <div className="sub-metric">average</div>
+          </div>
+        </div>
+        
+        <div className="analytics-card">
+          <div className="card-icon">💵</div>
+          <div className="card-content">
+            <h3>Labor Cost (30d)</h3>
+            <div className="metric">${totalLaborCost.toFixed(2)}</div>
+            <div className="sub-metric">estimated</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Performance Rankings */}
+      <div className="performance-section">
+        <h3>🏆 Top Performers by {selectedMetric === 'tasks' ? 'Tasks Completed' : 
+                                   selectedMetric === 'hours' ? 'Hours Worked' :
+                                   selectedMetric === 'efficiency' ? 'Efficiency Rate' :
+                                   'Cost Efficiency'}</h3>
+        <div className="rankings-list">
+          {activeStaff
+            .sort((a, b) => {
+              switch (selectedMetric) {
+                case 'tasks':
+                  return b.tasksCompleted - a.tasksCompleted;
+                case 'efficiency':
+                  return b.onTimeRate - a.onTimeRate;
+                case 'cost':
+                  return (a.tasksCompleted / a.payRate) - (b.tasksCompleted / b.payRate);
+                default:
+                  return b.tasksCompleted - a.tasksCompleted;
+              }
+            })
+            .slice(0, 10)
+            .map((person, index) => (
+              <StaffRankingRow 
+                key={person.id}
+                person={person}
+                rank={index + 1}
+                metric={selectedMetric}
+              />
+            ))
+          }
+        </div>
+      </div>
+      
+      {/* Individual Performance Cards */}
+      <div className="individual-performance">
+        <h3>📊 Individual Performance Details</h3>
+        <div className="performance-grid">
+          {activeStaff.map(person => (
+            <StaffPerformanceCard 
+              key={person.id}
+              staff={person}
+            />
+          ))}
+        </div>
+      </div>
+      
+      {/* Training Overview */}
+      <TrainingOverview staff={staff} />
+    </div>
+  );
+};
+
 const StaffData: React.FC = () => {
   const auth = getStoredAuth();
   const { toast } = useToast();
@@ -657,15 +980,9 @@ const StaffData: React.FC = () => {
             onUpdateStaff={setStaff}
           />
         ) : (
-          <div>
-            <p>Staff Analytics View - Coming in Part 4</p>
-            <div className="analytics-summary">
-              <h3>Quick Analytics Preview</h3>
-              <p>Average Tasks Completed: {Math.round(staff.reduce((sum, s) => sum + s.tasksCompleted, 0) / staff.length)}</p>
-              <p>Average On-Time Rate: {Math.round(staff.reduce((sum, s) => sum + s.onTimeRate, 0) / staff.length)}%</p>
-              <p>Average Pay Rate: ${(staff.reduce((sum, s) => sum + s.payRate, 0) / staff.length).toFixed(2)}/hr</p>
-            </div>
-          </div>
+          <StaffAnalyticsView 
+            staff={staff}
+          />
         )}
       </div>
     </div>
