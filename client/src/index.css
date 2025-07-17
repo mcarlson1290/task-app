@@ -198,6 +198,291 @@
   }
 }
 
+/* Staff Edit View Styles */
+.staff-edit-view {
+  width: 100%;
+}
+
+/* Toolbar */
+.staff-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2D8028;
+  box-shadow: 0 0 0 3px rgba(45, 128, 40, 0.1);
+}
+
+.sort-select {
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #2D8028;
+}
+
+.btn-add-staff {
+  background: #2D8028;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-add-staff:hover {
+  background: #1a4f15;
+}
+
+/* Table */
+.staff-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.staff-table th {
+  background: #f3f4f6;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.staff-table tr:hover {
+  background: #f9fafb;
+}
+
+.staff-table tr:last-child td {
+  border-bottom: none;
+}
+
+.inactive-row {
+  opacity: 0.6;
+  background: #f9fafb !important;
+}
+
+/* Table cells */
+.staff-name {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+}
+
+.ms-connected {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.contact-info .email {
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.contact-info .phone {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.roles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.role-badge {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pay-rate {
+  font-weight: 600;
+  color: #059669;
+}
+
+.training-status {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.training-status .completed {
+  color: #059669;
+  font-weight: 500;
+}
+
+.training-status .in-progress {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-on-leave {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.last-active {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.btn-edit {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background: #d1d5db;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-content h2 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+}
+
+.modal-content p {
+  margin: 8px 0;
+  color: #6b7280;
+}
+
+.modal-content button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background: #4b5563;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .staff-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-input {
+    max-width: none;
+  }
+  
+  .staff-table {
+    min-width: 600px;
+  }
+  
+  .staff-table th,
+  .staff-table td {
+    padding: 8px;
+    font-size: 13px;
+  }
+  
+  .roles-list {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .role-badge {
+    font-size: 11px;
+  }
+}
+
 /* Custom animations for task completion */
 @keyframes celebrate {
   0% { transform: scale(1); }

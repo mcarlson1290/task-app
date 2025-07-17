@@ -106,6 +106,212 @@ const mockStaff = [
   }
 ];
 
+// Staff Table Row Component
+const StaffTableRow: React.FC<{
+  person: any;
+  isManager: boolean;
+  onEdit: (person: any) => void;
+}> = ({ person, isManager, onEdit }) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+  
+  const formatTimeAgo = (dateString: string) => {
+    if (!dateString) return 'Never';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 48) return 'Yesterday';
+    return `${Math.floor(diffHours / 24)}d ago`;
+  };
+  
+  return (
+    <tr className={person.activeStatus !== 'active' ? 'inactive-row' : ''}>
+      <td>
+        <div className="staff-name">
+          {person.fullName}
+          {person.microsoftId && (
+            <span className="ms-connected" title="Microsoft Teams Connected">
+              📧
+            </span>
+          )}
+        </div>
+      </td>
+      <td>
+        <div className="contact-info">
+          <div className="email">{person.email}</div>
+          <div className="phone">{person.phone}</div>
+        </div>
+      </td>
+      <td>
+        <div className="roles-list">
+          {person.rolesAssigned.map((role: string) => (
+            <span key={role} className="role-badge">{role}</span>
+          ))}
+        </div>
+      </td>
+      <td>{formatDate(person.dateHired)}</td>
+      {isManager && (
+        <td className="pay-rate">
+          ${person.payRate.toFixed(2)}/hr
+        </td>
+      )}
+      <td>
+        <div className="training-status">
+          <span className="completed" title="Completed courses">
+            ✅ {person.trainingCompleted.length}
+          </span>
+          {person.trainingInProgress.length > 0 && (
+            <span className="in-progress" title="In progress">
+              📚 {person.trainingInProgress.length}
+            </span>
+          )}
+        </div>
+      </td>
+      <td>
+        <span className={`status-badge status-${person.activeStatus}`}>
+          {person.activeStatus.replace('-', ' ')}
+        </span>
+      </td>
+      <td>
+        <span className="last-active">
+          {formatTimeAgo(person.lastTaskCompleted)}
+        </span>
+      </td>
+      <td>
+        <button 
+          onClick={() => onEdit(person)}
+          className="btn-edit"
+        >
+          Edit
+        </button>
+      </td>
+    </tr>
+  );
+};
+
+// Staff Edit View Component
+const StaffEditView: React.FC<{
+  staff: any[];
+  isManager: boolean;
+}> = ({ staff, isManager }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const { toast } = useToast();
+  
+  // Filter staff based on search
+  const filteredStaff = staff.filter(person =>
+    person.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    person.rolesAssigned.some((role: string) => role.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
+  // Sort staff
+  const sortedStaff = [...filteredStaff].sort((a, b) => {
+    switch (sortBy) {
+      case 'name':
+        return a.fullName.localeCompare(b.fullName);
+      case 'dateHired':
+        return new Date(b.dateHired).getTime() - new Date(a.dateHired).getTime();
+      case 'payRate':
+        return b.payRate - a.payRate;
+      case 'tasks':
+        return b.tasksCompleted - a.tasksCompleted;
+      default:
+        return 0;
+    }
+  });
+  
+  const handleEdit = (person: any) => {
+    setEditingStaff(person);
+    setShowEditModal(true);
+  };
+
+  const handleAddStaff = () => {
+    toast({
+      title: "Add Staff Member",
+      description: "Staff addition feature will be implemented next.",
+    });
+  };
+  
+  return (
+    <div className="staff-edit-view">
+      {/* Toolbar */}
+      <div className="staff-toolbar">
+        <input
+          type="text"
+          placeholder="🔍 Search by name, email, or role..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        
+        <select 
+          value={sortBy} 
+          onChange={(e) => setSortBy(e.target.value)}
+          className="sort-select"
+        >
+          <option value="name">Sort by Name</option>
+          <option value="dateHired">Sort by Hire Date</option>
+          <option value="payRate">Sort by Pay Rate</option>
+          <option value="tasks">Sort by Tasks Completed</option>
+        </select>
+        
+        <button className="btn-add-staff" onClick={handleAddStaff}>
+          + Add Staff Member
+        </button>
+      </div>
+      
+      {/* Staff Table */}
+      <div className="staff-table-container">
+        <table className={`staff-table ${isManager ? 'manager-view' : ''}`}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Roles</th>
+              <th>Hire Date</th>
+              {isManager && <th>Pay Rate</th>}
+              <th>Training</th>
+              <th>Status</th>
+              <th>Last Active</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedStaff.map(person => (
+              <StaffTableRow 
+                key={person.id}
+                person={person}
+                isManager={isManager}
+                onEdit={handleEdit}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Edit Modal - placeholder for now */}
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Edit Staff Member</h2>
+            <p>Edit form coming in Part 3</p>
+            <p>Staff Member: {editingStaff?.fullName}</p>
+            <button onClick={() => setShowEditModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const StaffData: React.FC = () => {
   const auth = getStoredAuth();
   const { toast } = useToast();
@@ -157,18 +363,13 @@ const StaffData: React.FC = () => {
       {/* Content will go here based on activeTab */}
       <div className="tab-content">
         {activeTab === 'edit' ? (
-          <div>
-            <p>Staff Edit View - Coming next</p>
-            <div className="staff-summary">
-              <h3>Current Staff Summary</h3>
-              <p>Total Staff: {staff.length}</p>
-              <p>Active Staff: {staff.filter(s => s.activeStatus === 'active').length}</p>
-              <p>On Leave: {staff.filter(s => s.activeStatus === 'on-leave').length}</p>
-            </div>
-          </div>
+          <StaffEditView 
+            staff={staff}
+            isManager={isManager}
+          />
         ) : (
           <div>
-            <p>Staff Analytics View - Coming next</p>
+            <p>Staff Analytics View - Coming in Part 4</p>
             <div className="analytics-summary">
               <h3>Quick Analytics Preview</h3>
               <p>Average Tasks Completed: {Math.round(staff.reduce((sum, s) => sum + s.tasksCompleted, 0) / staff.length)}</p>
