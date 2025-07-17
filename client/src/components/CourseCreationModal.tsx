@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,101 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus, Minus } from "lucide-react";
+
+// RequirementBuilder Component
+const RequirementBuilder: React.FC<{ onAdd: (req: any) => void }> = ({ onAdd }) => {
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [reqType, setReqType] = useState('age');
+  const [reqValue, setReqValue] = useState('');
+  const [reqLabel, setReqLabel] = useState('');
+
+  const handleAddRequirement = () => {
+    if (!reqLabel) return;
+    
+    onAdd({
+      type: reqType,
+      value: reqType === 'age' || reqType === 'tenure' ? parseInt(reqValue) : reqValue,
+      label: reqLabel
+    });
+    
+    // Reset
+    setReqValue('');
+    setReqLabel('');
+    setShowBuilder(false);
+  };
+
+  return (
+    <div>
+      {!showBuilder ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowBuilder(true)}
+          className="w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Requirement
+        </Button>
+      ) : (
+        <div className="border rounded p-3 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Type</Label>
+              <select
+                value={reqType}
+                onChange={(e) => setReqType(e.target.value)}
+                className="w-full p-1 border rounded text-sm"
+              >
+                <option value="age">Age Requirement</option>
+                <option value="tenure">Employment Duration</option>
+                <option value="license">License/Permit</option>
+                <option value="certification">Certification</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-xs">Value</Label>
+              <Input
+                value={reqValue}
+                onChange={(e) => setReqValue(e.target.value)}
+                placeholder={reqType === 'age' ? '18' : reqType === 'tenure' ? '30' : 'drivers'}
+                className="text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Display Label</Label>
+            <Input
+              value={reqLabel}
+              onChange={(e) => setReqLabel(e.target.value)}
+              placeholder="e.g., Must be 18 or older"
+              className="text-sm"
+            />
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAddRequirement}
+              className="flex-1"
+            >
+              Add
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBuilder(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface Course {
   id: number;
@@ -19,7 +114,14 @@ interface Course {
   completedDate?: string;
   icon: string;
   requiresApproval?: boolean;
-  prerequisites?: number[];
+  prerequisites?: {
+    courses: number[];
+    requirements: {
+      type: 'age' | 'tenure' | 'license' | 'certification';
+      value: number | string;
+      label: string;
+    }[];
+  };
 }
 
 interface CourseCreationModalProps {
@@ -27,6 +129,7 @@ interface CourseCreationModalProps {
   onClose: () => void;
   onSave: (course: Omit<Course, 'id' | 'status' | 'progress'>) => void;
   allCourses: Course[];
+  editingCourse?: Course | null;
 }
 
 interface CourseSection {
@@ -39,21 +142,47 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
   isOpen, 
   onClose, 
   onSave, 
-  allCourses 
+  allCourses,
+  editingCourse = null
 }) => {
   const [courseData, setCourseData] = useState({
-    title: '',
-    description: '',
-    roleAwarded: '',
-    estimatedTime: '',
-    icon: '📚',
-    prerequisites: [] as number[],
-    requiresApproval: false
+    title: editingCourse?.title || '',
+    description: editingCourse?.description || '',
+    roleAwarded: editingCourse?.roleAwarded || '',
+    estimatedTime: editingCourse?.estimatedTime || '',
+    icon: editingCourse?.icon || '📚',
+    prerequisites: editingCourse?.prerequisites || { courses: [], requirements: [] },
+    requiresApproval: editingCourse?.requiresApproval || false
   });
 
   const [sections, setSections] = useState<CourseSection[]>([
     { title: '', type: 'text' as const, content: '' }
   ]);
+
+  // Update form when editing course changes
+  useEffect(() => {
+    if (editingCourse) {
+      setCourseData({
+        title: editingCourse.title,
+        description: editingCourse.description,
+        roleAwarded: editingCourse.roleAwarded,
+        estimatedTime: editingCourse.estimatedTime,
+        icon: editingCourse.icon,
+        prerequisites: editingCourse.prerequisites || { courses: [], requirements: [] },
+        requiresApproval: editingCourse.requiresApproval || false
+      });
+    } else {
+      setCourseData({
+        title: '',
+        description: '',
+        roleAwarded: '',
+        estimatedTime: '',
+        icon: '📚',
+        prerequisites: { courses: [], requirements: [] },
+        requiresApproval: false
+      });
+    }
+  }, [editingCourse]);
 
   const availableIcons = ['📚', '🌱', '🌾', '🧹', '🔧', '🦺', '📊', '🌿', '👔', '⚙️', '🎯', '📋'];
 
@@ -77,14 +206,40 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
     if (checked) {
       setCourseData({
         ...courseData,
-        prerequisites: [...courseData.prerequisites, courseId]
+        prerequisites: {
+          ...courseData.prerequisites,
+          courses: [...courseData.prerequisites.courses, courseId]
+        }
       });
     } else {
       setCourseData({
         ...courseData,
-        prerequisites: courseData.prerequisites.filter(id => id !== courseId)
+        prerequisites: {
+          ...courseData.prerequisites,
+          courses: courseData.prerequisites.courses.filter(id => id !== courseId)
+        }
       });
     }
+  };
+
+  const handleAddRequirement = (requirement: { type: string; value: number | string; label: string }) => {
+    setCourseData({
+      ...courseData,
+      prerequisites: {
+        ...courseData.prerequisites,
+        requirements: [...courseData.prerequisites.requirements, requirement]
+      }
+    });
+  };
+
+  const handleRemoveRequirement = (index: number) => {
+    setCourseData({
+      ...courseData,
+      prerequisites: {
+        ...courseData.prerequisites,
+        requirements: courseData.prerequisites.requirements.filter((_, i) => i !== index)
+      }
+    });
   };
 
   const handleSave = () => {
@@ -108,7 +263,7 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
       roleAwarded: '',
       estimatedTime: '',
       icon: '📚',
-      prerequisites: [],
+      prerequisites: { courses: [], requirements: [] },
       requiresApproval: false
     });
     setSections([{ title: '', type: 'text', content: '' }]);
@@ -119,7 +274,7 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-[#203B17]">
-            Create New Course
+            {editingCourse ? 'Edit Course' : 'Create New Course'}
           </DialogTitle>
         </DialogHeader>
 
@@ -193,13 +348,15 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
 
           {/* Prerequisites */}
           <div>
-            <Label>Prerequisites</Label>
+            <Label>Course Prerequisites</Label>
             <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
-              {allCourses.map(course => (
+              {allCourses
+                .filter(course => course.id !== editingCourse?.id)
+                .map(course => (
                 <div key={course.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`prereq-${course.id}`}
-                    checked={courseData.prerequisites.includes(course.id)}
+                    checked={courseData.prerequisites.courses.includes(course.id)}
                     onCheckedChange={(checked) => 
                       handlePrerequisiteToggle(course.id, checked as boolean)
                     }
@@ -209,6 +366,28 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
                   </Label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Additional Requirements */}
+          <div>
+            <Label>Additional Requirements</Label>
+            <div className="mt-2 space-y-2">
+              {courseData.prerequisites.requirements.map((req, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                  <span className="text-sm">{req.label}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveRequirement(index)}
+                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <RequirementBuilder onAdd={handleAddRequirement} />
             </div>
           </div>
 
@@ -304,7 +483,7 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
             Cancel
           </Button>
           <Button onClick={handleSave} className="bg-[#2D8028] hover:bg-[#203B17]">
-            Create Course
+            {editingCourse ? 'Save Changes' : 'Create Course'}
           </Button>
         </div>
       </DialogContent>

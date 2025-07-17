@@ -24,7 +24,14 @@ interface Course {
   completedDate?: string;
   icon: string;
   requiresApproval?: boolean;
-  prerequisites?: number[];
+  prerequisites?: {
+    courses: number[];
+    requirements: {
+      type: 'age' | 'tenure' | 'license' | 'certification';
+      value: number | string;
+      label: string;
+    }[];
+  };
 }
 
 const Education: React.FC = () => {
@@ -33,6 +40,7 @@ const Education: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const isCorporateManager = auth.user?.role === 'corporate';
   const [courses, setCourses] = useState<Course[]>([
     {
@@ -46,7 +54,10 @@ const Education: React.FC = () => {
       progress: 3,
       completedDate: new Date().toISOString(),
       icon: '🦺',
-      prerequisites: []
+      prerequisites: {
+        courses: [],
+        requirements: []
+      }
     },
     {
       id: 2,
@@ -58,7 +69,10 @@ const Education: React.FC = () => {
       status: 'not-started',
       progress: 0,
       icon: '🌱',
-      prerequisites: [1]
+      prerequisites: {
+        courses: [1],
+        requirements: []
+      }
     },
     {
       id: 3,
@@ -70,23 +84,50 @@ const Education: React.FC = () => {
       status: 'in-progress',
       progress: 3,
       icon: '🌾',
-      prerequisites: [1]
+      prerequisites: {
+        courses: [1],
+        requirements: []
+      }
     },
     {
       id: 4,
-      title: 'Sanitation & Safety Protocols',
-      description: 'Essential cleaning procedures and safety standards for farm operations',
-      roleAwarded: 'Sanitation Specialist',
-      sections: 4,
-      estimatedTime: '30 minutes',
-      status: 'completed',
-      progress: 4,
-      completedDate: new Date().toISOString(),
-      icon: '🧹',
-      prerequisites: [1]
+      title: 'Forklift Operation Certificate',
+      description: 'Learn to safely operate warehouse equipment and material handling',
+      roleAwarded: 'Equipment Operator',
+      sections: 8,
+      estimatedTime: '3 hours',
+      status: 'not-started',
+      progress: 0,
+      icon: '🚜',
+      prerequisites: {
+        courses: [1],
+        requirements: [
+          { type: 'age', value: 18, label: 'Must be 18 or older' },
+          { type: 'license', value: 'drivers', label: 'Valid driver\'s license required' },
+          { type: 'tenure', value: 30, label: 'Employed for at least 30 days' }
+        ]
+      }
     },
     {
       id: 5,
+      title: 'Chemical Handling Certification',
+      description: 'Safe handling of nutrients, pH solutions, and cleaning chemicals',
+      roleAwarded: 'Chemical Handler',
+      sections: 6,
+      estimatedTime: '2 hours',
+      status: 'not-started',
+      progress: 0,
+      icon: '⚗️',
+      prerequisites: {
+        courses: [1],
+        requirements: [
+          { type: 'age', value: 21, label: 'Must be 21 or older' },
+          { type: 'certification', value: 'hazmat', label: 'HAZMAT certification preferred' }
+        ]
+      }
+    },
+    {
+      id: 6,
       title: 'Advanced Growing Systems',
       description: 'Deep dive into hydroponic systems and optimization techniques',
       roleAwarded: 'Senior Grower',
@@ -95,10 +136,13 @@ const Education: React.FC = () => {
       status: 'not-started',
       progress: 0,
       icon: '🌿',
-      prerequisites: [2, 3]
+      prerequisites: {
+        courses: [2, 3],
+        requirements: []
+      }
     },
     {
-      id: 6,
+      id: 7,
       title: 'Farm Manager Fundamentals',
       description: 'Leadership, scheduling, and operations management for farm supervisors',
       roleAwarded: 'Farm Manager',
@@ -108,7 +152,12 @@ const Education: React.FC = () => {
       progress: 0,
       requiresApproval: true,
       icon: '👔',
-      prerequisites: [2, 3, 4]
+      prerequisites: {
+        courses: [2, 3, 6],
+        requirements: [
+          { type: 'tenure', value: 180, label: 'Employed for at least 6 months' }
+        ]
+      }
     }
   ]);
 
@@ -186,14 +235,60 @@ const Education: React.FC = () => {
     setShowCreateModal(false);
   };
 
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setShowCreateModal(true);
+  };
+
+  const handleUpdateCourse = (updatedCourse: Omit<Course, 'id'>) => {
+    if (editingCourse) {
+      setCourses(prevCourses => 
+        prevCourses.map(course => 
+          course.id === editingCourse.id 
+            ? { ...updatedCourse, id: editingCourse.id }
+            : course
+        )
+      );
+      setEditingCourse(null);
+      setShowCreateModal(false);
+    }
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    setEditingCourse(null);
+  };
+
   const checkPrerequisites = (course: Course) => {
-    if (!course.prerequisites || course.prerequisites.length === 0) {
+    if (!course.prerequisites) {
       return true;
     }
-    return course.prerequisites.every(prereqId => {
+    
+    // Check course prerequisites
+    const coursePrereqsMet = course.prerequisites.courses.every(prereqId => {
       const prereqCourse = courses.find(c => c.id === prereqId);
       return prereqCourse?.status === 'completed';
     });
+    
+    // Check additional requirements (mock implementation for demo)
+    const requirementsMet = course.prerequisites.requirements.every(req => {
+      switch (req.type) {
+        case 'age':
+          // Mock: assume user meets age requirement
+          return true;
+        case 'tenure':
+          // Mock: assume user has sufficient tenure
+          return true;
+        case 'license':
+        case 'certification':
+          // Mock: simulate some users having certifications
+          return Math.random() > 0.3;
+        default:
+          return true;
+      }
+    });
+    
+    return coursePrereqsMet && requirementsMet;
   };
 
   const getAvailableCourses = () => {
@@ -292,8 +387,10 @@ const Education: React.FC = () => {
             course={course}
             onStart={handleStartCourse}
             onResume={handleResumeCourse}
+            onEdit={handleEditCourse}
             allCourses={courses}
             isLocked={!checkPrerequisites(course)}
+            isCorporateManager={isCorporateManager}
           />
         ))}
       </div>
@@ -321,9 +418,10 @@ const Education: React.FC = () => {
       {/* Course Creation Modal */}
       <CourseCreationModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSave={handleCreateCourse}
+        onClose={handleCloseCreateModal}
+        onSave={editingCourse ? handleUpdateCourse : handleCreateCourse}
         allCourses={courses}
+        editingCourse={editingCourse}
       />
     </div>
   );

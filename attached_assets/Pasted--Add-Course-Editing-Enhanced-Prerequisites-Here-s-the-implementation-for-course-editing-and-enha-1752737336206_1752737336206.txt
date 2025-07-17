@@ -1,0 +1,603 @@
+🎓 Add Course Editing & Enhanced Prerequisites
+Here's the implementation for course editing and enhanced prerequisites:
+Add course editing for corporate managers and enhanced prerequisite types:
+
+1. UPDATE PREREQUISITE STRUCTURE TO SUPPORT MULTIPLE TYPES:
+   ```javascript
+   // Update course data structure with different prerequisite types
+   const mockCourses = [
+     {
+       id: 1,
+       title: 'Basic Safety & Orientation',
+       description: 'Introduction to farm safety and procedures',
+       roleAwarded: 'General Staff',
+       sections: 3,
+       estimatedTime: '20 minutes',
+       status: 'completed',
+       progress: 3,
+       icon: '🦺',
+       prerequisites: {
+         courses: [],
+         requirements: [] // No additional requirements
+       }
+     },
+     {
+       id: 2,
+       title: 'Forklift Operation Certificate',
+       description: 'Learn to safely operate warehouse equipment',
+       roleAwarded: 'Equipment Operator',
+       sections: 8,
+       estimatedTime: '3 hours',
+       status: 'locked',
+       progress: 0,
+       icon: '🚜',
+       prerequisites: {
+         courses: [1], // Basic Safety
+         requirements: [
+           { type: 'age', value: 18, label: 'Must be 18 or older' },
+           { type: 'license', value: 'drivers', label: 'Valid driver\'s license required' },
+           { type: 'tenure', value: 30, label: 'Employed for at least 30 days' }
+         ]
+       }
+     },
+     {
+       id: 3,
+       title: 'Chemical Handling Certification',
+       description: 'Safe handling of nutrients and pH solutions',
+       roleAwarded: 'Chemical Handler',
+       sections: 6,
+       estimatedTime: '2 hours',
+       status: 'locked',
+       progress: 0,
+       icon: '⚗️',
+       prerequisites: {
+         courses: [1],
+         requirements: [
+           { type: 'age', value: 21, label: 'Must be 21 or older' },
+           { type: 'certification', value: 'hazmat', label: 'HAZMAT certification' }
+         ]
+       }
+     }
+   ];
+
+ADD EDIT BUTTON TO COURSE CARDS FOR CORPORATE MANAGERS:
+jsxconst CourseCard = ({ course, onStart, onResume, onEdit, allCourses }) => {
+  const currentUser = getCurrentUser();
+  const isCorporateManager = currentUser.role === 'Corporate';
+  
+  // Check if all prerequisites are met
+  const checkPrerequisites = () => {
+    // Check course prerequisites
+    const coursePrereqsMet = course.prerequisites.courses.every(prereqId => {
+      const prereqCourse = allCourses.find(c => c.id === prereqId);
+      return prereqCourse?.status === 'completed';
+    });
+    
+    // Check other requirements (mock implementation)
+    const requirementsMet = course.prerequisites.requirements.every(req => {
+      switch (req.type) {
+        case 'age':
+          // Mock: assume user is old enough
+          return true;
+        case 'tenure':
+          // Mock: assume user has been employed long enough
+          return true;
+        case 'license':
+        case 'certification':
+          // Mock: would check user's certifications
+          return Math.random() > 0.5; // Random for demo
+        default:
+          return true;
+      }
+    });
+    
+    return coursePrereqsMet && requirementsMet;
+  };
+  
+  const prerequisitesMet = checkPrerequisites();
+  const isLocked = !prerequisitesMet || course.status === 'locked';
+  
+  return (
+    <div className={`course-card ${getStatusColor()} ${isLocked ? 'locked' : ''}`}>
+      {/* Add edit button for corporate managers */}
+      {isCorporateManager && (
+        <button
+          onClick={() => onEdit(course)}
+          className="btn-edit-course"
+          title="Edit Course"
+        >
+          ✏️
+        </button>
+      )}
+      
+      {/* ... existing card content ... */}
+      
+      {/* Enhanced prerequisites display */}
+      {(course.prerequisites.courses.length > 0 || course.prerequisites.requirements.length > 0) && (
+        <div className="prerequisites-section">
+          <div className="prereq-label">
+            {prerequisitesMet ? '✅ All Requirements Met' : '🔒 Requirements:'}
+          </div>
+          {!prerequisitesMet && (
+            <>
+              {course.prerequisites.courses.length > 0 && (
+                <div className="prereq-group">
+                  <strong>Required Courses:</strong>
+                  <ul className="prereq-list">
+                    {course.prerequisites.courses.map(prereqId => {
+                      const prereq = allCourses.find(c => c.id === prereqId);
+                      return <li key={prereqId}>{prereq?.title || 'Unknown'}</li>;
+                    })}
+                  </ul>
+                </div>
+              )}
+              {course.prerequisites.requirements.length > 0 && (
+                <div className="prereq-group">
+                  <strong>Additional Requirements:</strong>
+                  <ul className="prereq-list">
+                    {course.prerequisites.requirements.map((req, idx) => (
+                      <li key={idx}>{req.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+UPDATE COURSE CREATION/EDIT MODAL WITH SECTION TYPES:
+jsxconst CourseCreationModal = ({ course, allCourses, onSave, onClose, mode = 'create' }) => {
+  const [courseData, setCourseData] = useState({
+    title: course?.title || '',
+    description: course?.description || '',
+    roleAwarded: course?.roleAwarded || '',
+    estimatedTime: course?.estimatedTime || '',
+    icon: course?.icon || '📚',
+    prerequisites: {
+      courses: course?.prerequisites?.courses || [],
+      requirements: course?.prerequisites?.requirements || []
+    },
+    requiresApproval: course?.requiresApproval || false
+  });
+  
+  const [sections, setSections] = useState(course?.sectionDetails || [{ 
+    title: '', 
+    type: 'text', 
+    content: '' 
+  }]);
+  
+  const [showRequirementModal, setShowRequirementModal] = useState(false);
+  
+  // Render different content based on section type
+  const renderSectionContent = (section, index) => {
+    switch (section.type) {
+      case 'video':
+        return (
+          <input
+            type="url"
+            placeholder="Video URL (YouTube, Vimeo, etc.)"
+            value={section.content}
+            onChange={(e) => updateSectionContent(index, e.target.value)}
+          />
+        );
+        
+      case 'quiz':
+        return (
+          <div className="quiz-builder">
+            <textarea
+              placeholder="Question"
+              value={section.question || ''}
+              onChange={(e) => updateSectionField(index, 'question', e.target.value)}
+              rows={2}
+            />
+            <div className="quiz-options">
+              {['A', 'B', 'C', 'D'].map(option => (
+                <input
+                  key={option}
+                  type="text"
+                  placeholder={`Option ${option}`}
+                  value={section[`option${option}`] || ''}
+                  onChange={(e) => updateSectionField(index, `option${option}`, e.target.value)}
+                />
+              ))}
+            </div>
+            <select
+              value={section.correctAnswer || 'A'}
+              onChange={(e) => updateSectionField(index, 'correctAnswer', e.target.value)}
+            >
+              <option value="A">Correct Answer: A</option>
+              <option value="B">Correct Answer: B</option>
+              <option value="C">Correct Answer: C</option>
+              <option value="D">Correct Answer: D</option>
+            </select>
+          </div>
+        );
+        
+      case 'checklist':
+        return (
+          <div className="checklist-builder">
+            <p className="hint">Enter checklist items, one per line</p>
+            <textarea
+              placeholder="☐ First checklist item&#10;☐ Second checklist item&#10;☐ Third checklist item"
+              value={section.content}
+              onChange={(e) => updateSectionContent(index, e.target.value)}
+              rows={5}
+            />
+          </div>
+        );
+        
+      default: // text
+        return (
+          <textarea
+            placeholder="Section content/instructions..."
+            value={section.content}
+            onChange={(e) => updateSectionContent(index, e.target.value)}
+            rows={4}
+          />
+        );
+    }
+  };
+  
+  const updateSectionContent = (index, value) => {
+    const newSections = [...sections];
+    newSections[index].content = value;
+    setSections(newSections);
+  };
+  
+  const updateSectionField = (index, field, value) => {
+    const newSections = [...sections];
+    newSections[index][field] = value;
+    setSections(newSections);
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content large-modal">
+        <h2>{mode === 'edit' ? 'Edit Course' : 'Create New Course'}</h2>
+        
+        {/* ... existing form fields ... */}
+        
+        {/* Enhanced Requirements Section */}
+        <div className="requirements-section">
+          <h3>Prerequisites & Requirements</h3>
+          
+          {/* Course Prerequisites */}
+          <label>
+            Required Courses
+            <div className="prerequisites-selector">
+              {allCourses.filter(c => c.id !== course?.id).map(c => (
+                <label key={c.id} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={courseData.prerequisites.courses.includes(c.id)}
+                    onChange={(e) => {
+                      const courses = e.target.checked
+                        ? [...courseData.prerequisites.courses, c.id]
+                        : courseData.prerequisites.courses.filter(id => id !== c.id);
+                      setCourseData({
+                        ...courseData,
+                        prerequisites: { ...courseData.prerequisites, courses }
+                      });
+                    }}
+                  />
+                  {c.title}
+                </label>
+              ))}
+            </div>
+          </label>
+          
+          {/* Additional Requirements */}
+          <div className="additional-requirements">
+            <label>Additional Requirements</label>
+            <div className="requirements-list">
+              {courseData.prerequisites.requirements.map((req, idx) => (
+                <div key={idx} className="requirement-item">
+                  <span>{req.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeRequirement(idx)}
+                    className="btn-remove-small"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowRequirementModal(true)}
+              className="btn-add-requirement"
+            >
+              + Add Requirement
+            </button>
+          </div>
+        </div>
+        
+        {/* ... sections builder with renderSectionContent ... */}
+        <div className="sections-builder">
+          <h3>Course Sections</h3>
+          {sections.map((section, index) => (
+            <div key={index} className="section-builder">
+              <div className="section-header">
+                <h4>Section {index + 1}</h4>
+                <select
+                  value={section.type}
+                  onChange={(e) => {
+                    const newSections = [...sections];
+                    newSections[index].type = e.target.value;
+                    setSections(newSections);
+                  }}
+                >
+                  <option value="text">📝 Text Content</option>
+                  <option value="video">🎥 Video</option>
+                  <option value="quiz">❓ Quiz</option>
+                  <option value="checklist">✅ Checklist</option>
+                </select>
+                {sections.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSection(index)}
+                    className="btn-remove"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              
+              <input
+                type="text"
+                placeholder="Section title"
+                value={section.title}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index].title = e.target.value;
+                  setSections(newSections);
+                }}
+              />
+              
+              {renderSectionContent(section, index)}
+            </div>
+          ))}
+          
+          <button
+            type="button"
+            onClick={handleAddSection}
+            className="btn-add-section"
+          >
+            + Add Section
+          </button>
+        </div>
+        
+        <div className="modal-actions">
+          <button onClick={handleSave} className="btn-save">
+            {mode === 'edit' ? 'Save Changes' : 'Create Course'}
+          </button>
+          {mode === 'edit' && (
+            <button onClick={() => handleDelete(course.id)} className="btn-delete">
+              Delete Course
+            </button>
+          )}
+          <button onClick={onClose} className="btn-cancel">
+            Cancel
+          </button>
+        </div>
+      </div>
+      
+      {/* Requirement Modal */}
+      {showRequirementModal && (
+        <RequirementModal
+          onAdd={(requirement) => {
+            setCourseData({
+              ...courseData,
+              prerequisites: {
+                ...courseData.prerequisites,
+                requirements: [...courseData.prerequisites.requirements, requirement]
+              }
+            });
+            setShowRequirementModal(false);
+          }}
+          onClose={() => setShowRequirementModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+CREATE REQUIREMENT MODAL:
+jsxconst RequirementModal = ({ onAdd, onClose }) => {
+  const [type, setType] = useState('age');
+  const [value, setValue] = useState('');
+  const [customLabel, setCustomLabel] = useState('');
+  
+  const requirementTypes = {
+    age: { label: 'Minimum Age', unit: 'years' },
+    tenure: { label: 'Employment Duration', unit: 'days' },
+    license: { label: 'License/Certification', options: ['drivers', 'forklift', 'hazmat'] },
+    certification: { label: 'Special Certification', custom: true },
+    approval: { label: 'Manager Approval', noValue: true },
+    training: { label: 'External Training', custom: true }
+  };
+  
+  const handleAdd = () => {
+    let label = '';
+    
+    switch (type) {
+      case 'age':
+        label = `Must be ${value} or older`;
+        break;
+      case 'tenure':
+        label = `Employed for at least ${value} days`;
+        break;
+      case 'license':
+        label = `Valid ${value} license required`;
+        break;
+      case 'approval':
+        label = 'Requires manager approval';
+        break;
+      default:
+        label = customLabel || `${requirementTypes[type].label} required`;
+    }
+    
+    onAdd({ type, value, label });
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content small-modal">
+        <h3>Add Requirement</h3>
+        
+        <label>
+          Requirement Type
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            {Object.entries(requirementTypes).map(([key, config]) => (
+              <option key={key} value={key}>{config.label}</option>
+            ))}
+          </select>
+        </label>
+        
+        {!requirementTypes[type].noValue && (
+          <label>
+            {requirementTypes[type].custom ? 'Description' : 'Value'}
+            {requirementTypes[type].options ? (
+              <select value={value} onChange={(e) => setValue(e.target.value)}>
+                <option value="">Select...</option>
+                {requirementTypes[type].options.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={requirementTypes[type].custom ? 'text' : 'number'}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={requirementTypes[type].unit || 'Enter value'}
+              />
+            )}
+          </label>
+        )}
+        
+        {requirementTypes[type].custom && (
+          <label>
+            Display Label
+            <input
+              type="text"
+              value={customLabel}
+              onChange={(e) => setCustomLabel(e.target.value)}
+              placeholder="e.g., First Aid Certification required"
+            />
+          </label>
+        )}
+        
+        <div className="modal-actions">
+          <button onClick={handleAdd} className="btn-primary">
+            Add
+          </button>
+          <button onClick={onClose} className="btn-cancel">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ADD STYLING:
+css/* Edit button on course card */
+.btn-edit-course {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #e5e7eb;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-edit-course:hover {
+  background: #d1d5db;
+}
+
+/* Requirements */
+.requirements-section {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.requirement-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-add-requirement {
+  background: #dbeafe;
+  color: #1e40af;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Section type specific */
+.quiz-builder {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.checklist-builder .hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.small-modal {
+  max-width: 500px;
+}
+
+.prereq-group {
+  margin-bottom: 8px;
+}
+
+.prereq-group strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+
+This adds:
+
+Edit button on course cards for corporate managers
+Enhanced prerequisites (age, tenure, licenses, certifications)
+Different content types for sections (video, quiz, checklist)
+Requirement builder modal
+Proper edit mode for existing courses
+
+RetryClaude can make mistakes. Please double-check responses.

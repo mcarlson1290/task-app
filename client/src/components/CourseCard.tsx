@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Clock, Users, Award } from "lucide-react";
+import { CheckCircle, Clock, Users, Award, Edit3 } from "lucide-react";
 
 interface Course {
   id: number;
@@ -17,26 +17,54 @@ interface Course {
   completedDate?: string;
   icon: string;
   requiresApproval?: boolean;
-  prerequisites?: number[];
+  prerequisites?: {
+    courses: number[];
+    requirements: {
+      type: 'age' | 'tenure' | 'license' | 'certification';
+      value: number | string;
+      label: string;
+    }[];
+  };
 }
 
 interface CourseCardProps {
   course: Course;
   onStart: (course: Course) => void;
   onResume: (course: Course) => void;
+  onEdit?: (course: Course) => void;
   allCourses?: Course[];
   isLocked?: boolean;
+  isCorporateManager?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, allCourses = [], isLocked = false }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEdit, allCourses = [], isLocked = false, isCorporateManager = false }) => {
   const checkPrerequisites = () => {
-    if (!course.prerequisites || course.prerequisites.length === 0) {
+    if (!course.prerequisites) {
       return true;
     }
-    return course.prerequisites.every(prereqId => {
+    
+    // Check course prerequisites
+    const coursePrereqsMet = course.prerequisites.courses.every(prereqId => {
       const prereqCourse = allCourses.find(c => c.id === prereqId);
       return prereqCourse?.status === 'completed';
     });
+    
+    // Check additional requirements (mock implementation for demo)
+    const requirementsMet = course.prerequisites.requirements.every(req => {
+      switch (req.type) {
+        case 'age':
+          return true; // Mock: assume user meets age requirement
+        case 'tenure':
+          return true; // Mock: assume user has sufficient tenure
+        case 'license':
+        case 'certification':
+          return Math.random() > 0.3; // Mock: simulate some users having certifications
+        default:
+          return true;
+      }
+    });
+    
+    return coursePrereqsMet && requirementsMet;
   };
 
   const prerequisitesMet = checkPrerequisites();
@@ -98,10 +126,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, allC
   };
 
   const getPrerequisiteNames = () => {
-    if (!course.prerequisites || course.prerequisites.length === 0) {
+    if (!course.prerequisites || course.prerequisites.courses.length === 0) {
       return [];
     }
-    return course.prerequisites.map(prereqId => {
+    return course.prerequisites.courses.map(prereqId => {
       const prereq = allCourses.find(c => c.id === prereqId);
       return prereq?.title || 'Unknown Course';
     });
@@ -114,7 +142,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, allC
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="text-4xl mb-2">{course.icon}</div>
-          {getStatusBadge()}
+          <div className="flex items-center space-x-2">
+            {isCorporateManager && onEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(course)}
+                className="h-8 w-8 p-0 text-gray-500 hover:text-[#203B17]"
+                title="Edit Course"
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
+            )}
+            {getStatusBadge()}
+          </div>
         </div>
         <CardTitle className="text-lg text-[#203B17] leading-tight">
           {course.title}
@@ -152,22 +193,42 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, allC
           </div>
         )}
 
-        {course.prerequisites && course.prerequisites.length > 0 && (
+        {course.prerequisites && (course.prerequisites.courses.length > 0 || course.prerequisites.requirements.length > 0) && (
           <div className={`p-3 rounded-lg mb-4 ${prerequisitesMet ? 'bg-green-50' : 'bg-red-50'}`}>
             <div className="flex items-center text-sm mb-2">
               <span className="font-medium">
-                {prerequisitesMet ? '✅ Prerequisites Met' : '🔒 Prerequisites Required:'}
+                {prerequisitesMet ? '✅ All Requirements Met' : '🔒 Requirements:'}
               </span>
             </div>
             {!prerequisitesMet && (
-              <ul className="text-sm text-red-700 space-y-1">
-                {getPrerequisiteNames().map((name, idx) => (
-                  <li key={idx} className="flex items-center">
-                    <span className="w-2 h-2 bg-red-400 rounded-full mr-2 flex-shrink-0"></span>
-                    {name}
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-2">
+                {course.prerequisites.courses.length > 0 && (
+                  <div>
+                    <div className="text-xs font-medium text-red-800 mb-1">Required Courses:</div>
+                    <ul className="text-sm text-red-700 space-y-1">
+                      {getPrerequisiteNames().map((name, idx) => (
+                        <li key={idx} className="flex items-center">
+                          <span className="w-2 h-2 bg-red-400 rounded-full mr-2 flex-shrink-0"></span>
+                          {name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {course.prerequisites.requirements.length > 0 && (
+                  <div>
+                    <div className="text-xs font-medium text-red-800 mb-1">Additional Requirements:</div>
+                    <ul className="text-sm text-red-700 space-y-1">
+                      {course.prerequisites.requirements.map((req, idx) => (
+                        <li key={idx} className="flex items-center">
+                          <span className="w-2 h-2 bg-red-400 rounded-full mr-2 flex-shrink-0"></span>
+                          {req.label}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
