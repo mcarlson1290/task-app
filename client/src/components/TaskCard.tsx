@@ -104,12 +104,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
       isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
     } ${isCompleted ? 'opacity-75' : ''}`}>
       <CardContent className="p-6">
-        {/* Priority Badge */}
-        <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
-          {task.priority.toUpperCase()}
+        {/* Status and Priority Badges - Properly positioned */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1">
+          {/* Priority Badge */}
+          <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
+            {task.priority.toUpperCase()}
+          </div>
+          {/* Status Text */}
+          <div className="text-xs text-gray-600 text-right">
+            {getStatusLabel(task.status as TaskStatus)}
+          </div>
         </div>
 
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start mb-4 pr-20">
           <div className="flex items-center">
             <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
             <div>
@@ -117,9 +124,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
               <p className="text-sm text-gray-600">{task.location}</p>
             </div>
           </div>
-          <Badge className={`${getStatusColor(task.status as TaskStatus)} border-none`}>
-            {getStatusLabel(task.status as TaskStatus)}
-          </Badge>
         </div>
 
         {/* Progress Bar (for in-progress tasks) */}

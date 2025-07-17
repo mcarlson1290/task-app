@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Filter, Search } from "lucide-react";
+import { Plus, Filter, Search, ChevronDown, X } from "lucide-react";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import NewTaskModal from "@/components/NewTaskModal";
@@ -23,10 +23,24 @@ const Tasks: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const [activeFilter, setActiveFilter] = React.useState<string>("all");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
   
   const auth = getStoredAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/tasks", auth.user?.id],
@@ -215,49 +229,85 @@ const Tasks: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={filters.status || ""} onValueChange={(value) => setFilters({ ...filters, status: value || undefined })}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Task Type Filters */}
-      <div className="flex flex-wrap gap-2">
-        {taskTypes.map((type) => (
+      <div className="flex flex-col gap-4">
+        {/* Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          {/* All Tasks Button */}
           <Button
-            key={type.value}
-            variant={activeFilter === type.value ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter(type.value)}
-            className={activeFilter === type.value 
+            variant={activeFilter === "all" ? "default" : "outline"}
+            onClick={() => setActiveFilter("all")}
+            className={activeFilter === "all" 
               ? "bg-[#2D8028] text-white hover:bg-[#203B17]" 
               : "text-gray-600 hover:text-[#2D8028]"
             }
           >
-            <span className="mr-1">{type.emoji}</span>
-            {type.label}
-            <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">
-              {taskCounts[type.value] || 0}
-            </span>
+            📋 All Tasks ({taskCounts.all || 0})
           </Button>
-        ))}
+
+          {/* Category Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <Button
+              variant="outline"
+              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+              className="flex items-center gap-2"
+            >
+              {activeFilter !== "all" ? (
+                <>
+                  <span>{taskTypes.find(t => t.value === activeFilter)?.emoji}</span>
+                  Category: {taskTypes.find(t => t.value === activeFilter)?.label}
+                  <X 
+                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveFilter("all");
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  Category
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            
+            {categoryDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-50">
+                <div className="p-2 max-h-64 overflow-y-auto">
+                  {taskTypes.filter(type => type.value !== "all").map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => {
+                        setActiveFilter(type.value);
+                        setCategoryDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{type.emoji}</span>
+                        {type.label}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ({taskCounts[type.value] || 0})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Task Grid */}
