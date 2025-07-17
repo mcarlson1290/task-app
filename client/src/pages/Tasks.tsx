@@ -132,7 +132,9 @@ const Tasks: React.FC = () => {
     { value: "pending", label: "Assigned" },
     { value: "in_progress", label: "In Progress" },
     { value: "completed", label: "Completed" },
-    { value: "approved", label: "Approved" }
+    { value: "approved", label: "Approved" },
+    { value: "paused", label: "Paused" },
+    { value: "skipped", label: "Skipped" }
   ];
 
   const priorityOptions = [
@@ -197,7 +199,7 @@ const Tasks: React.FC = () => {
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   // Single task action handler
-  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view') => {
+  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view', reason?: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -255,7 +257,7 @@ const Tasks: React.FC = () => {
         updateTaskMutation.mutate({
           taskId,
           updates: { 
-            status: 'pending',
+            status: 'paused',
             pausedAt: new Date().toISOString()
           }
         });
@@ -267,18 +269,37 @@ const Tasks: React.FC = () => {
         break;
         
       case 'skip':
-        // Update task to skipped
+        // Update task to skipped with reason
         updateTaskMutation.mutate({
           taskId,
           updates: { 
-            status: 'pending',
+            status: 'skipped',
+            skipReason: reason || 'No reason provided',
             skippedAt: new Date().toISOString()
           }
         });
         setModalOpen(false);
         toast({
           title: "Task Skipped",
-          description: "The task has been skipped and returned to pending status.",
+          description: reason ? `Task skipped: ${reason}` : "Task has been skipped.",
+        });
+        break;
+        
+      case 'resume':
+        // Update paused task back to in-progress
+        updateTaskMutation.mutate({
+          taskId,
+          updates: { 
+            status: 'in_progress',
+            resumedAt: new Date().toISOString()
+          }
+        });
+        // Reopen the modal
+        setSelectedTask(task);
+        setModalOpen(true);
+        toast({
+          title: "Task Resumed",
+          description: "The task has been resumed and is now in progress.",
         });
         break;
     }

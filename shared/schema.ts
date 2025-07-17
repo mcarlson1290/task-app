@@ -17,7 +17,7 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   type: text("type").notNull(), // 'seeding-microgreens', 'seeding-leafy-greens', 'harvest-microgreens', 'harvest-leafy-greens', 'blackout-tasks', 'moving', 'packing', 'cleaning', 'inventory', 'equipment-maintenance', 'other'
-  status: text("status").notNull().default('pending'), // 'pending', 'in_progress', 'completed', 'approved'
+  status: text("status").notNull().default('pending'), // 'pending', 'in_progress', 'completed', 'approved', 'paused', 'skipped'
   priority: text("priority").default('medium'), // 'low', 'medium', 'high'
   assignedTo: integer("assigned_to").references(() => users.id),
   createdBy: integer("created_by").references(() => users.id),
@@ -30,6 +30,10 @@ export const tasks = pgTable("tasks", {
   dueDate: timestamp("due_date"),
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
+  pausedAt: timestamp("paused_at"),
+  resumedAt: timestamp("resumed_at"),
+  skippedAt: timestamp("skipped_at"),
+  skipReason: text("skip_reason"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -87,6 +91,12 @@ export type ChecklistItem = {
     value?: any;
   };
 };
+
+// Task status type
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'approved' | 'paused' | 'skipped';
+
+// Task type
+export type TaskType = 'seeding-microgreens' | 'seeding-leafy-greens' | 'harvest-microgreens' | 'harvest-leafy-greens' | 'blackout-tasks' | 'moving' | 'packing' | 'cleaning' | 'inventory' | 'equipment-maintenance' | 'other';
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({

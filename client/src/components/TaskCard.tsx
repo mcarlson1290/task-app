@@ -36,7 +36,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       pending: "bg-blue-500 text-white",
       in_progress: "bg-amber-500 text-white",
       completed: "bg-green-500 text-white",
-      approved: "bg-green-600 text-white"
+      approved: "bg-green-600 text-white",
+      paused: "bg-yellow-500 text-white",
+      skipped: "bg-gray-500 text-white"
     };
     return colors[status] || "bg-gray-500 text-white";
   };
@@ -46,7 +48,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       pending: "Pending",
       in_progress: "In Progress",
       completed: "Completed",
-      approved: "Approved"
+      approved: "Approved",
+      paused: "Paused",
+      skipped: "Skipped"
     };
     return labels[status] || status;
   };
@@ -98,6 +102,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
   const isPending = task.status === 'pending';
+  const isPaused = task.status === 'paused';
+  const isSkipped = task.status === 'skipped';
   const isOverdue = task.dueDate ? checkIfOverdue(new Date(task.dueDate)) : false;
 
   const getCardClassName = () => {
@@ -114,6 +120,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     <Card className={`relative shadow-sm hover:shadow-md transition-shadow ${
       isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
+      isPaused ? 'bg-yellow-50 border-l-4 border-l-yellow-500' : ''
+    } ${
+      isSkipped ? 'bg-gray-50 border-l-4 border-l-gray-500' : ''
+    } ${
       isOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
     }`}>
       <CardContent className="p-6">
@@ -241,6 +251,25 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             )}
             
             {task.status === 'completed' && (
+              <Button
+                variant="outline"
+                onClick={() => onTaskAction(task.id, 'view')}
+                className="text-gray-600"
+              >
+                View Details
+              </Button>
+            )}
+            
+            {task.status === 'paused' && (
+              <Button
+                onClick={() => onTaskAction(task.id, 'resume')}
+                className="bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                ▶️ Resume
+              </Button>
+            )}
+            
+            {task.status === 'skipped' && (
               <Button
                 variant="outline"
                 onClick={() => onTaskAction(task.id, 'view')}

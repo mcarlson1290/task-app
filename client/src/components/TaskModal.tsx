@@ -20,7 +20,7 @@ interface TaskModalProps {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
-  onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view') => void;
+  onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view', reason?: string) => void;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskAction }) => {
@@ -246,6 +246,14 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
             </div>
           )}
 
+          {/* Skip Reason */}
+          {task.status === 'skipped' && task.skipReason && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-[#203B17] mb-2">Skip Reason</h4>
+              <p className="text-sm text-gray-600">{task.skipReason}</p>
+            </div>
+          )}
+
           {/* Checklist */}
           {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && (
             <div className="bg-gray-50 rounded-lg p-4">
@@ -420,7 +428,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                   <Button
                     onClick={() => {
                       if (skipReason.trim()) {
-                        onTaskAction(task.id, 'skip');
+                        onTaskAction(task.id, 'skip', skipReason);
                         setShowSkipReason(false);
                         setSkipReason('');
                       }
