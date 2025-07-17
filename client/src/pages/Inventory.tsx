@@ -5,12 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, Package, Search, Plus, TrendingDown } from "lucide-react";
+import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
+import { getStoredAuth } from "@/lib/auth";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
+  const [showLowStockOnly, setShowLowStockOnly] = React.useState(false);
+  const [sortBy, setSortBy] = React.useState<string>("name");
+  const auth = getStoredAuth();
+  const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
 
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
     queryKey: ["/api/inventory"],
@@ -42,8 +47,26 @@ const Inventory: React.FC = () => {
       filtered = filtered.filter(item => item.category === categoryFilter);
     }
 
+    if (showLowStockOnly) {
+      filtered = filtered.filter(item => item.currentStock <= item.minimumStock);
+    }
+
+    // Sort the filtered items
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "stock":
+          return a.currentStock - b.currentStock;
+        case "category":
+          return a.category.localeCompare(b.category);
+        default:
+          return 0;
+      }
+    });
+
     return filtered;
-  }, [inventory, searchTerm, categoryFilter]);
+  }, [inventory, searchTerm, categoryFilter, showLowStockOnly, sortBy]);
 
   const getStockStatus = (item: InventoryItem) => {
     if (item.currentStock <= item.minimumStock) {
@@ -63,6 +86,25 @@ const Inventory: React.FC = () => {
       equipment: "⚙️",
     };
     return icons[category as keyof typeof icons] || "📋";
+  };
+
+  const handleReorder = (item: InventoryItem) => {
+    const reorderAmount = item.minimumStock * 2; // Default reorder amount
+    const subject = `Reorder Request: ${item.name}`;
+    const body = `Item: ${item.name}
+Current Quantity: ${item.currentStock} ${item.unit}
+Minimum Quantity: ${item.minimumStock} ${item.unit}
+Requested Reorder Amount: ${reorderAmount} ${item.unit}
+Supplier: ${item.supplier || 'TBD'}
+
+Requesting Location: Grow Space Vertical Farm
+Requested By: ${auth.user?.name}
+Date: ${new Date().toLocaleDateString()}
+
+Please process this reorder request at your earliest convenience.`;
+
+    const mailtoLink = `mailto:accounting@growspace.farm?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoLink, '_blank');
   };
 
   if (isLoading) {
@@ -119,7 +161,13 @@ const Inventory: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" className="text-red-600 border-red-200">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={() => handleReorder(item)}
+                  >
+                    <Mail className="h-3 w-3 mr-1" />
                     Reorder
                   </Button>
                 </div>
@@ -134,7 +182,7 @@ const Inventory: React.FC = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search inventory..."
+            placeholder="Search inventory items or suppliers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -152,6 +200,29 @@ const Inventory: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Sort by Name</SelectItem>
+            <SelectItem value="stock">Sort by Stock Level</SelectItem>
+            <SelectItem value="category">Sort by Category</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="lowStock"
+            checked={showLowStockOnly}
+            onChange={(e) => setShowLowStockOnly(e.target.checked)}
+            className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
+          />
+          <label htmlFor="lowStock" className="text-sm text-gray-700 flex items-center whitespace-nowrap">
+            <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
+            Low Stock Only
+          </label>
+        </div>
       </div>
 
       {/* Inventory Grid */}
@@ -222,15 +293,26 @@ const Inventory: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
-                      disabled={stockStatus.status === "good"}
+                      className="flex-1 text-[#2D8028] border-[#2D8028] hover:bg-[#2D8028] hover:text-white"
+                      onClick={() => handleReorder(item)}
                     >
-                      <Package className="h-4 w-4 mr-1" />
-                      Restock
+                      <Mail className="h-4 w-4 mr-1" />
+                      Reorder
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Edit
-                    </Button>
+                    {isManager && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => {
+                          // TODO: Implement edit functionality
+                          console.log("Edit item:", item);
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

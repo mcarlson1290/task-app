@@ -149,6 +149,13 @@ Preferred communication style: Simple, everyday language.
     - Training progress tracking with role-specific completion rates
     - Recent activity feed showing last 5 user tasks with relative timestamps
     - Responsive design with proper card layout and visual hierarchy
+  - **Inventory Page Enhancement**: Enhanced existing inventory management with:
+    - Email-based reorder functionality with pre-filled request details
+    - Advanced filtering including low stock only and sorting options
+    - Role-based access control for edit functionality (managers only)
+    - Improved toolbar with search, category filter, sort, and low stock toggle
+    - Enhanced reorder buttons in both main grid and low stock alerts
+    - Professional reorder email templates with all item details
   - **Added pause and skip functionality**: Tasks can now be paused (with resume capability) or skipped (with mandatory reason)
   - Enhanced database schema with pause/skip fields (pausedAt, resumedAt, skippedAt, skipReason)
   - Added visual styling for paused (yellow) and skipped (gray) task states
