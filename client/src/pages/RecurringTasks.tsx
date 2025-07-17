@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Settings, Calendar, Clock, RotateCcw } from 'lucide-react';
+import { Plus, Edit, Trash2, Settings, Calendar, Clock, RotateCcw, Building2, CheckSquare } from 'lucide-react';
 import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { RecurringTask } from '@shared/schema';
+import RecurringTaskModal from '@/components/RecurringTaskModal';
 
 const RecurringTasks: React.FC = () => {
   const auth = getStoredAuth();
@@ -50,6 +51,25 @@ const RecurringTasks: React.FC = () => {
         title: 'Task Deleted',
         description: 'Recurring task has been deleted successfully.',
       });
+    },
+  });
+
+  const saveTaskMutation = useMutation({
+    mutationFn: async (taskData: any) => {
+      if (taskData.id) {
+        return await apiRequest('PATCH', `/api/recurring-tasks/${taskData.id}`, taskData);
+      } else {
+        return await apiRequest('POST', '/api/recurring-tasks', taskData);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      toast({
+        title: 'Task Saved',
+        description: 'Recurring task has been saved successfully.',
+      });
+      setShowAddModal(false);
+      setEditingTask(null);
     },
   });
 
@@ -150,6 +170,24 @@ const RecurringTasks: React.FC = () => {
                   </div>
                 )}
                 
+                {task.checklistTemplate?.steps?.length > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckSquare className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-blue-600">
+                      {task.checklistTemplate.steps.length} checklist steps
+                    </span>
+                  </div>
+                )}
+
+                {task.automation?.flow?.stages?.length > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-600">
+                      {task.automation.flow.stages.length} stage flow
+                    </span>
+                  </div>
+                )}
+                
                 <div className="flex justify-end gap-2 pt-2">
                   <Button
                     variant="outline"
@@ -192,8 +230,16 @@ const RecurringTasks: React.FC = () => {
         </div>
       )}
 
-      {/* Add/Edit Modal would go here */}
-      {/* Implementation for RecurringTaskModal component needed */}
+      {/* Add/Edit Modal */}
+      <RecurringTaskModal
+        task={editingTask}
+        isOpen={showAddModal || !!editingTask}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingTask(null);
+        }}
+        onSave={saveTaskMutation.mutate}
+      />
     </div>
   );
 };
