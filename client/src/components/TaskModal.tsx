@@ -38,6 +38,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
     if (task) {
       setChecklist(task.checklist || []);
       setTimeStarted(task.startedAt ? new Date(task.startedAt) : null);
+      setNotes('');
     }
   }, [task]);
 
@@ -86,7 +87,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
   });
 
   const handleChecklistChange = (itemId: string, completed: boolean, dataValue?: any) => {
-    const updatedChecklist = checklist.map(item => {
+    const currentChecklist = checklist.length > 0 ? checklist : task?.checklist || [];
+    const updatedChecklist = currentChecklist.map(item => {
       if (item.id === itemId) {
         const updated = { ...item, completed };
         if (dataValue !== undefined && item.dataCollection) {
@@ -136,6 +138,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
       ? Math.round((now.getTime() - timeStarted.getTime()) / (1000 * 60))
       : task?.estimatedTime || 0;
 
+    console.log('Completing task with status change to completed');
     updateTaskMutation.mutate({
       status: 'completed',
       completedAt: now,
@@ -239,11 +242,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskUpda
           )}
 
           {/* Checklist */}
-          {checklist.length > 0 && (
+          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && (
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-[#203B17] mb-4">Checklist</h4>
               <div className="space-y-4">
-                {checklist.map((item) => (
+                {(checklist.length > 0 ? checklist : task.checklist || []).map((item) => (
                   <div key={item.id} className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox

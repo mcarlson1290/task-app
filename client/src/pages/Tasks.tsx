@@ -338,6 +338,8 @@ const Tasks: React.FC = () => {
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
+    // Update the selected task state to reflect the changes
+    setSelectedTask(updatedTask);
     refetch();
   };
 
