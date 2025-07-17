@@ -17,12 +17,17 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDetails }) => {
   const getTaskEmoji = (type: TaskType): string => {
     const emojis = {
-      seeding: "🌱",
-      moving: "🌿",
-      harvesting: "🥬",
-      packing: "📦",
-      cleaning: "🧹",
-      inventory: "📋"
+      "seeding-microgreens": "🌱",
+      "seeding-leafy-greens": "🌿",
+      "harvest-microgreens": "🌾",
+      "harvest-leafy-greens": "🥬",
+      "blackout-tasks": "🌑",
+      "moving": "📦",
+      "packing": "📦",
+      "cleaning": "🧹",
+      "inventory": "📊",
+      "equipment-maintenance": "🔧",
+      "other": "📝"
     };
     return emojis[type] || "📋";
   };

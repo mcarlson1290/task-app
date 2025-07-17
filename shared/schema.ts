@@ -16,7 +16,7 @@ export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").notNull(), // 'seeding', 'moving', 'harvesting', 'packing', 'cleaning', 'inventory'
+  type: text("type").notNull(), // 'seeding-microgreens', 'seeding-leafy-greens', 'harvest-microgreens', 'harvest-leafy-greens', 'blackout-tasks', 'moving', 'packing', 'cleaning', 'inventory', 'equipment-maintenance', 'other'
   status: text("status").notNull().default('pending'), // 'pending', 'in_progress', 'completed', 'approved'
   priority: text("priority").default('medium'), // 'low', 'medium', 'high'
   assignedTo: integer("assigned_to").references(() => users.id),

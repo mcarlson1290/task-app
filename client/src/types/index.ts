@@ -17,6 +17,6 @@ export interface TaskFilters {
   assignedTo?: number;
 }
 
-export type TaskType = 'seeding' | 'moving' | 'harvesting' | 'packing' | 'cleaning' | 'inventory';
+export type TaskType = 'seeding-microgreens' | 'seeding-leafy-greens' | 'harvest-microgreens' | 'harvest-leafy-greens' | 'blackout-tasks' | 'moving' | 'packing' | 'cleaning' | 'inventory' | 'equipment-maintenance' | 'other';
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'approved';
 export type UserRole = 'technician' | 'manager' | 'corporate';

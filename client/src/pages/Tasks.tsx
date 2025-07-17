@@ -101,12 +101,17 @@ const Tasks: React.FC = () => {
 
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
-    { value: "seeding", label: "Seeding", emoji: "🌱" },
-    { value: "moving", label: "Growing", emoji: "🌿" },
-    { value: "harvesting", label: "Harvest", emoji: "🥬" },
+    { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
+    { value: "seeding-leafy-greens", label: "Seeding - Leafy Greens", emoji: "🌿" },
+    { value: "harvest-microgreens", label: "Harvest - Microgreens", emoji: "🌾" },
+    { value: "harvest-leafy-greens", label: "Harvest - Leafy Greens", emoji: "🥬" },
+    { value: "blackout-tasks", label: "Blackout Tasks", emoji: "🌑" },
+    { value: "moving", label: "Moving", emoji: "📦" },
     { value: "packing", label: "Packing", emoji: "📦" },
     { value: "cleaning", label: "Cleaning", emoji: "🧹" },
-    { value: "inventory", label: "Inventory", emoji: "📋" },
+    { value: "inventory", label: "Inventory", emoji: "📊" },
+    { value: "equipment-maintenance", label: "Equipment Maintenance", emoji: "🔧" },
+    { value: "other", label: "Other", emoji: "📝" },
   ];
 
   // Calculate task counts

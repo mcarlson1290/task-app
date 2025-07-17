@@ -35,7 +35,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
     defaultValues: {
       title: "",
       description: "",
-      type: "seeding",
+      type: "seeding-microgreens",
       priority: "medium",
       assignedTo: auth.user?.id || 1,
       createdBy: auth.user?.id || 1,
@@ -109,12 +109,17 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
                   <SelectValue placeholder="Select task type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="seeding">🌱 Seeding</SelectItem>
-                  <SelectItem value="moving">🌿 Moving</SelectItem>
-                  <SelectItem value="harvesting">🥬 Harvesting</SelectItem>
+                  <SelectItem value="seeding-microgreens">🌱 Seeding - Microgreens</SelectItem>
+                  <SelectItem value="seeding-leafy-greens">🌿 Seeding - Leafy Greens</SelectItem>
+                  <SelectItem value="harvest-microgreens">🌾 Harvest - Microgreens</SelectItem>
+                  <SelectItem value="harvest-leafy-greens">🥬 Harvest - Leafy Greens</SelectItem>
+                  <SelectItem value="blackout-tasks">🌑 Blackout Tasks</SelectItem>
+                  <SelectItem value="moving">📦 Moving</SelectItem>
                   <SelectItem value="packing">📦 Packing</SelectItem>
                   <SelectItem value="cleaning">🧹 Cleaning</SelectItem>
-                  <SelectItem value="inventory">📋 Inventory</SelectItem>
+                  <SelectItem value="inventory">📊 Inventory</SelectItem>
+                  <SelectItem value="equipment-maintenance">🔧 Equipment Maintenance</SelectItem>
+                  <SelectItem value="other">📝 Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

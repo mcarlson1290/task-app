@@ -82,11 +82,11 @@ export class MemStorage implements IStorage {
     // Create sample tasks
     const sampleTasks = [
       {
-        title: "Seed Lettuce Trays",
-        description: "Plant lettuce seeds in designated trays",
-        type: "seeding",
+        title: "Seed Arugula Trays",
+        description: "Plant arugula seeds in designated trays for microgreens production",
+        type: "seeding-microgreens",
         status: "in_progress",
-        priority: "medium",
+        priority: "high",
         assignedTo: 1,
         createdBy: 2,
         location: "Section A - Towers 1-5",
@@ -96,7 +96,7 @@ export class MemStorage implements IStorage {
         checklist: [
           { id: "1", text: "Prepare seed trays", completed: true },
           { id: "2", text: "Fill with growing medium", completed: true },
-          { id: "3", text: "Plant lettuce seeds", completed: true },
+          { id: "3", text: "Plant arugula seeds", completed: true },
           { id: "4", text: "Label trays with date", completed: false },
           { id: "5", text: "Place in germination area", completed: false }
         ] as ChecklistItem[],
@@ -104,21 +104,43 @@ export class MemStorage implements IStorage {
         completedAt: null
       },
       {
-        title: "Harvest Spinach",
-        description: "Harvest mature spinach plants",
-        type: "harvesting",
+        title: "Remove Covers - Tower 3",
+        description: "Day 2 blackout removal for proper stem height",
+        type: "blackout-tasks",
         status: "pending",
         priority: "high",
         assignedTo: 1,
         createdBy: 2,
+        location: "Section A - Tower 3",
+        estimatedTime: 45,
+        actualTime: null,
+        progress: 0,
+        checklist: [
+          { id: "1", text: "Check seedling height", completed: false },
+          { id: "2", text: "Remove blackout covers", completed: false },
+          { id: "3", text: "Adjust lighting schedule", completed: false }
+        ] as ChecklistItem[],
+        startedAt: null,
+        completedAt: null
+      },
+      {
+        title: "Harvest Spinach",
+        description: "Harvest mature spinach plants in leafy greens section",
+        type: "harvest-leafy-greens",
+        status: "pending",
+        priority: "medium",
+        assignedTo: 1,
+        createdBy: 2,
         location: "Section B - Towers 6-10",
         estimatedTime: 150,
+        actualTime: null,
         progress: 0,
         checklist: [
           { id: "1", text: "Check plant maturity", completed: false },
           { id: "2", text: "Harvest plants", completed: false, dataCollection: { type: "number", label: "Weight (lbs)" } },
           { id: "3", text: "Clean harvested area", completed: false }
         ] as ChecklistItem[],
+        startedAt: null,
         completedAt: null
       },
       {
@@ -139,24 +161,6 @@ export class MemStorage implements IStorage {
           { id: "3", text: "Replace filters", completed: true }
         ] as ChecklistItem[],
         completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-      },
-      {
-        title: "Inventory Check - Nutrients",
-        description: "Check stock levels and quality of nutrient solutions",
-        type: "inventory",
-        status: "pending",
-        priority: "low",
-        assignedTo: 1,
-        createdBy: 2,
-        location: "Storage Room A",
-        estimatedTime: 90,
-        progress: 0,
-        checklist: [
-          { id: "1", text: "Check nutrient levels", completed: false, dataCollection: { type: "number", label: "Containers remaining" } },
-          { id: "2", text: "Inspect for damage", completed: false },
-          { id: "3", text: "Update inventory records", completed: false }
-        ] as ChecklistItem[],
-        completedAt: null
       }
     ];
 
