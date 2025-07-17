@@ -5,6 +5,8 @@ import {
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
   type TaskLog, type InsertTaskLog, type ChecklistItem
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -375,4 +377,130 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
+  }
+
+  async getTasksByUser(userId: number): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.assignedTo, userId));
+  }
+
+  async getAllTasks(): Promise<Task[]> {
+    return await db.select().from(tasks);
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const [task] = await db.insert(tasks).values(insertTask).returning();
+    return task;
+  }
+
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
+    const [task] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
+    return task || undefined;
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    const result = await db.delete(tasks).where(eq(tasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
+    return item || undefined;
+  }
+
+  async getAllInventoryItems(): Promise<InventoryItem[]> {
+    return await db.select().from(inventoryItems);
+  }
+
+  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
+    const [item] = await db.insert(inventoryItems).values(insertItem).returning();
+    return item;
+  }
+
+  async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
+    const [item] = await db.update(inventoryItems).set(updates).where(eq(inventoryItems.id, id)).returning();
+    return item || undefined;
+  }
+
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return await db.select().from(inventoryItems).where(
+      sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`
+    );
+  }
+
+  async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
+    const [module] = await db.select().from(trainingModules).where(eq(trainingModules.id, id));
+    return module || undefined;
+  }
+
+  async getAllTrainingModules(): Promise<TrainingModule[]> {
+    return await db.select().from(trainingModules);
+  }
+
+  async createTrainingModule(insertModule: InsertTrainingModule): Promise<TrainingModule> {
+    const [module] = await db.insert(trainingModules).values(insertModule).returning();
+    return module;
+  }
+
+  async getUserProgress(userId: number): Promise<UserProgress[]> {
+    return await db.select().from(userProgress).where(eq(userProgress.userId, userId));
+  }
+
+  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
+    const existing = await db.select().from(userProgress).where(
+      and(
+        eq(userProgress.userId, insertProgress.userId!),
+        eq(userProgress.moduleId, insertProgress.moduleId!)
+      )
+    );
+
+    if (existing.length > 0) {
+      const [updated] = await db.update(userProgress)
+        .set(insertProgress)
+        .where(eq(userProgress.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(userProgress).values(insertProgress).returning();
+      return created;
+    }
+  }
+
+  async createTaskLog(insertLog: InsertTaskLog): Promise<TaskLog> {
+    const [log] = await db.insert(taskLogs).values(insertLog).returning();
+    return log;
+  }
+
+  async getTaskLogs(taskId: number): Promise<TaskLog[]> {
+    return await db.select().from(taskLogs).where(eq(taskLogs.taskId, taskId));
+  }
+}
+
+export const storage = new DatabaseStorage();
