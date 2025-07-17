@@ -1,0 +1,100 @@
+Let's fix the Start Task error and add the completion date functionality:
+
+1. FIX START TASK ERROR:
+   Debug the Start Task button click handler:
+   - Check if the task ID is being passed correctly
+   - Ensure the status update function exists
+   - Add error handling to prevent crashes
+   
+   Example fix:
+   ```typescript
+   const handleStartTask = (taskId: number) => {
+     try {
+       // Update task status
+       setTasks(prevTasks => 
+         prevTasks.map(task => 
+           task.id === taskId 
+             ? { ...task, status: 'in-progress', startTime: new Date() }
+             : task
+         )
+       );
+     } catch (error) {
+       console.error('Error starting task:', error);
+     }
+   };
+
+ADD COMPLETION DATE TO TASK CARDS:
+Each task card should display:
+
+Single date: "Due: March 15" or "Due: Today"
+Date range: "Due: March 15-17"
+Overdue: "Overdue by 2 days"
+
+Add to task card UI:
+jsx<div className="task-due-date">
+  📅 {task.dueDate ? formatDueDate(task.dueDate) : 'No due date'}
+</div>
+
+OVERDUE TASK STYLING:
+Add visual indicator for overdue tasks:
+css.task-card.overdue {
+  background-color: #fee2e2; /* Light red background */
+  border-left: 4px solid #ef4444; /* Red border accent */
+}
+
+.task-card.overdue .task-due-date {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+UPDATE TASK DATA STRUCTURE:
+typescriptinterface Task {
+  id: number;
+  title: string;
+  // ... other fields
+  completionDate?: string | { start: string; end: string };
+  isOverdue?: boolean;
+}
+
+UPDATE MOCK TASKS WITH DUE DATES:
+typescriptconst mockTasks = [
+  {
+    id: 1,
+    title: "Seed Lettuce Trays",
+    completionDate: "2024-03-15", // Single date
+    // ... other fields
+  },
+  {
+    id: 2,
+    title: "Harvest Spinach",
+    completionDate: { start: "2024-03-14", end: "2024-03-16" }, // Date range
+    // ... other fields
+  },
+  {
+    id: 3,
+    title: "Clean Tower Systems",
+    completionDate: "2024-03-10", // This would be overdue
+    isOverdue: true,
+    // ... other fields
+  }
+];
+
+OVERDUE LOGIC:
+Tasks become overdue at 8:27 PM on their due date (per the requirements doc):
+typescriptconst checkIfOverdue = (dueDate: string) => {
+  const now = new Date();
+  const due = new Date(dueDate);
+  due.setHours(20, 27, 0); // 8:27 PM
+  return now > due;
+};
+
+UPDATE NEW TASK MODAL:
+Add completion date field that allows:
+
+Single date selection
+Date range selection (with start and end date)
+Visual calendar picker
+
+
+
+This will make task deadlines much more visible and help staff prioritize overdue work!

@@ -70,12 +70,9 @@ const Tasks: React.FC = () => {
   // Task mutations
   const startTaskMutation = useMutation({
     mutationFn: async (taskId: number) => {
-      return await apiRequest(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status: "in_progress",
-          startedAt: new Date().toISOString(),
-        }),
+      return await apiRequest("PATCH", `/api/tasks/${taskId}`, {
+        status: "in_progress",
+        startedAt: new Date().toISOString(),
       });
     },
     onSuccess: () => {
@@ -85,14 +82,19 @@ const Tasks: React.FC = () => {
         description: "You've successfully started the task.",
       });
     },
+    onError: (error) => {
+      console.error("Error starting task:", error);
+      toast({
+        title: "Failed to start task",
+        description: "There was an error starting the task. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
-      return await apiRequest(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
-      });
+      return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
@@ -101,13 +103,10 @@ const Tasks: React.FC = () => {
 
   const completeTaskMutation = useMutation({
     mutationFn: async (taskId: number) => {
-      return await apiRequest(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status: "completed",
-          completedAt: new Date().toISOString(),
-          progress: 100,
-        }),
+      return await apiRequest("PATCH", `/api/tasks/${taskId}`, {
+        status: "completed",
+        completedAt: new Date().toISOString(),
+        progress: 100,
       });
     },
     onSuccess: () => {

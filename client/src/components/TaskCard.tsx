@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Weight, Info, CheckCircle, User } from "lucide-react";
+import { Clock, Weight, Info, CheckCircle, User, Calendar, AlertTriangle } from "lucide-react";
+import { format, isAfter, isToday, isTomorrow, differenceInDays } from "date-fns";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
 
@@ -85,9 +86,35 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
     return "Just now";
   };
 
+  const checkIfOverdue = (dueDate: Date): boolean => {
+    const now = new Date();
+    const due = new Date(dueDate);
+    due.setHours(20, 27, 0, 0); // 8:27 PM
+    return now > due;
+  };
+
+  const formatDueDate = (dueDate: Date): string => {
+    const now = new Date();
+    const isOverdue = checkIfOverdue(dueDate);
+    
+    if (isOverdue) {
+      const daysDiff = differenceInDays(now, dueDate);
+      return `Overdue by ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
+    }
+    
+    if (isToday(dueDate)) {
+      return "Due: Today";
+    } else if (isTomorrow(dueDate)) {
+      return "Due: Tomorrow";
+    } else {
+      return `Due: ${format(dueDate, 'MMM d')}`;
+    }
+  };
+
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
   const isPending = task.status === 'pending';
+  const isOverdue = task.dueDate ? checkIfOverdue(new Date(task.dueDate)) : false;
 
   const getCardClassName = () => {
     let baseClass = "hover:shadow-lg transition-all duration-200 cursor-pointer";
@@ -102,7 +129,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
   return (
     <Card className={`relative shadow-sm hover:shadow-md transition-shadow ${
       isInProgress ? 'border-l-4 border-l-[#2D8028]' : ''
-    } ${isCompleted ? 'opacity-75' : ''}`}>
+    } ${isCompleted ? 'opacity-75' : ''} ${
+      isOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
+    }`}>
       <CardContent className="p-6">
         {/* Status and Priority Badges - Properly positioned */}
         <div className="absolute top-3 right-3 flex flex-col gap-1">
@@ -157,6 +186,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
                   {task.checklist.length} checklist items
                 </span>
               </div>
+            </div>
+          )}
+
+          {task.dueDate && (
+            <div className={`flex items-center text-sm mb-2 ${
+              isOverdue ? 'text-red-600' : 'text-gray-600'
+            }`}>
+              {isOverdue ? (
+                <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
+              ) : (
+                <Calendar className="h-4 w-4 mr-1" />
+              )}
+              <span className={isOverdue ? 'font-semibold' : ''}>
+                {formatDueDate(new Date(task.dueDate))}
+              </span>
             </div>
           )}
 
