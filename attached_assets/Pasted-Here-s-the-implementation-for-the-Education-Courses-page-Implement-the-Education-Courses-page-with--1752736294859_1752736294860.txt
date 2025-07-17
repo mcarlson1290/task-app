@@ -1,0 +1,512 @@
+Here's the implementation for the Education Courses page:
+Implement the Education Courses page with course listing, progress tracking, and role assignment:
+
+1. CREATE THE EDUCATION COURSES PAGE:
+   Replace the empty Education page with a course management system:
+   
+   ```jsx
+   const Education = () => {
+     const currentUser = getCurrentUser();
+     const [courses, setCourses] = useState(mockCourses);
+     const [selectedCourse, setSelectedCourse] = useState(null);
+     const [showCourseModal, setShowCourseModal] = useState(false);
+     
+     // Mock course data
+     const mockCourses = [
+       {
+         id: 1,
+         title: 'Seeding Technician Certification',
+         description: 'Learn proper seeding techniques for microgreens and leafy greens',
+         roleAwarded: 'Seeding Tech',
+         sections: 5,
+         estimatedTime: '45 minutes',
+         status: 'not-started', // not-started, in-progress, completed
+         progress: 0,
+         icon: '🌱'
+       },
+       {
+         id: 2,
+         title: 'Harvest Operations Training',
+         description: 'Master harvesting techniques, timing, and quality control',
+         roleAwarded: 'Harvest Tech',
+         sections: 6,
+         estimatedTime: '1 hour',
+         status: 'in-progress',
+         progress: 3, // 3 of 6 sections completed
+         icon: '🌾'
+       },
+       {
+         id: 3,
+         title: 'Sanitation & Safety Protocols',
+         description: 'Essential cleaning procedures and safety standards',
+         roleAwarded: 'Cleaning Crew',
+         sections: 4,
+         estimatedTime: '30 minutes',
+         status: 'completed',
+         progress: 4,
+         completedDate: '2024-03-10',
+         icon: '🧹'
+       },
+       {
+         id: 4,
+         title: 'Equipment Operation & Maintenance',
+         description: 'Learn to operate and maintain growing systems',
+         roleAwarded: 'Equipment Tech',
+         sections: 8,
+         estimatedTime: '2 hours',
+         status: 'not-started',
+         progress: 0,
+         icon: '🔧'
+       },
+       {
+         id: 5,
+         title: 'Manager Fundamentals',
+         description: 'Leadership, scheduling, and operations management',
+         roleAwarded: 'Manager',
+         sections: 10,
+         estimatedTime: '3 hours',
+         status: 'not-started',
+         progress: 0,
+         requiresApproval: true,
+         icon: '👔'
+       }
+     ];
+     
+     const startCourse = (course) => {
+       setSelectedCourse(course);
+       setShowCourseModal(true);
+     };
+     
+     const resumeCourse = (course) => {
+       setSelectedCourse(course);
+       setShowCourseModal(true);
+     };
+     
+     return (
+       <div className="education-page">
+         <div className="page-header">
+           <h1>🎓 Education & Training</h1>
+           <div className="header-stats">
+             <span>📚 {courses.filter(c => c.status === 'completed').length} Courses Completed</span>
+             <span>🏆 {currentUser.roles?.length || 1} Roles Earned</span>
+           </div>
+         </div>
+         
+         {/* Filter Tabs */}
+         <div className="course-filters">
+           <button className="filter-tab active">All Courses</button>
+           <button className="filter-tab">In Progress</button>
+           <button className="filter-tab">Completed</button>
+           <button className="filter-tab">Not Started</button>
+         </div>
+         
+         {/* Course Grid */}
+         <div className="courses-grid">
+           {courses.map(course => (
+             <CourseCard
+               key={course.id}
+               course={course}
+               onStart={startCourse}
+               onResume={resumeCourse}
+             />
+           ))}
+         </div>
+         
+         {/* Course Modal */}
+         {showCourseModal && selectedCourse && (
+           <CourseModal
+             course={selectedCourse}
+             onClose={() => {
+               setShowCourseModal(false);
+               setSelectedCourse(null);
+             }}
+             onComplete={(courseId) => {
+               handleCourseComplete(courseId);
+               setShowCourseModal(false);
+             }}
+           />
+         )}
+       </div>
+     );
+   };
+
+CREATE THE COURSE CARD COMPONENT:
+jsxconst CourseCard = ({ course, onStart, onResume }) => {
+  const getStatusColor = () => {
+    switch (course.status) {
+      case 'completed': return 'status-completed';
+      case 'in-progress': return 'status-progress';
+      default: return 'status-not-started';
+    }
+  };
+  
+  const getActionButton = () => {
+    switch (course.status) {
+      case 'completed':
+        return (
+          <button className="btn-completed" disabled>
+            ✅ Completed
+          </button>
+        );
+      case 'in-progress':
+        return (
+          <button onClick={() => onResume(course)} className="btn-resume">
+            ▶️ Resume Course
+          </button>
+        );
+      default:
+        return (
+          <button onClick={() => onStart(course)} className="btn-start">
+            Start Course
+          </button>
+        );
+    }
+  };
+  
+  return (
+    <div className={`course-card ${getStatusColor()}`}>
+      <div className="course-icon">{course.icon}</div>
+      
+      <div className="course-header">
+        <h3>{course.title}</h3>
+        {course.requiresApproval && (
+          <span className="approval-badge">Manager Approval Required</span>
+        )}
+      </div>
+      
+      <p className="course-description">{course.description}</p>
+      
+      <div className="course-meta">
+        <span>📑 {course.sections} sections</span>
+        <span>⏱️ {course.estimatedTime}</span>
+      </div>
+      
+      {course.status === 'in-progress' && (
+        <div className="progress-section">
+          <div className="progress-text">
+            Progress: {course.progress}/{course.sections} sections
+          </div>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill"
+              style={{ width: `${(course.progress / course.sections) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+      
+      {course.roleAwarded && (
+        <div className="role-award">
+          🏅 Awards: <strong>{course.roleAwarded}</strong> role
+        </div>
+      )}
+      
+      <div className="course-actions">
+        {getActionButton()}
+        {course.status === 'completed' && course.completedDate && (
+          <span className="completed-date">
+            Completed {new Date(course.completedDate).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+CREATE A SIMPLE COURSE MODAL:
+jsxconst CourseModal = ({ course, onClose, onComplete }) => {
+  const [currentSection, setCurrentSection] = useState(course.progress || 0);
+  const [sectionCompleted, setSectionCompleted] = useState(false);
+  
+  const totalSections = course.sections;
+  const isLastSection = currentSection === totalSections - 1;
+  
+  const handleNext = () => {
+    if (isLastSection && sectionCompleted) {
+      // Course complete!
+      onComplete(course.id);
+    } else if (sectionCompleted) {
+      // Move to next section
+      setCurrentSection(currentSection + 1);
+      setSectionCompleted(false);
+    }
+  };
+  
+  const handleSectionComplete = () => {
+    setSectionCompleted(true);
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content course-modal">
+        <div className="modal-header">
+          <h2>{course.title}</h2>
+          <button onClick={onClose} className="close-btn">✕</button>
+        </div>
+        
+        <div className="section-progress">
+          Section {currentSection + 1} of {totalSections}
+        </div>
+        
+        <div className="section-content">
+          {/* Placeholder content for now */}
+          <div className="placeholder-lesson">
+            <h3>Section {currentSection + 1}: {getSectionTitle(course.id, currentSection)}</h3>
+            <div className="lesson-content">
+              <p>This is where the actual course content would go:</p>
+              <ul>
+                <li>📹 Video tutorials</li>
+                <li>📄 Text instructions</li>
+                <li>🖼️ Diagrams and images</li>
+                <li>✅ Interactive checklists</li>
+                <li>❓ Quiz questions</li>
+              </ul>
+              
+              <div className="demo-complete">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={sectionCompleted}
+                    onChange={(e) => setSectionCompleted(e.target.checked)}
+                  />
+                  I have reviewed this section
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="modal-footer">
+          <div className="progress-indicator">
+            {[...Array(totalSections)].map((_, i) => (
+              <span
+                key={i}
+                className={`progress-dot ${i <= currentSection ? 'completed' : ''}`}
+              />
+            ))}
+          </div>
+          
+          <button
+            onClick={handleNext}
+            disabled={!sectionCompleted}
+            className={`btn-next ${isLastSection ? 'btn-complete' : ''}`}
+          >
+            {isLastSection ? '🎉 Complete Course' : 'Next Section →'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Helper function for demo section titles
+const getSectionTitle = (courseId, sectionIndex) => {
+  const titles = {
+    1: ['Safety First', 'Seed Types', 'Tray Preparation', 'Seeding Technique', 'Record Keeping'],
+    2: ['Timing Recognition', 'Cutting Tools', 'Harvest Methods', 'Quality Control', 'Packaging', 'Storage'],
+    // Add more as needed
+  };
+  return titles[courseId]?.[sectionIndex] || `Lesson ${sectionIndex + 1}`;
+};
+
+ADD COURSE COMPLETION HANDLER:
+javascriptconst handleCourseComplete = (courseId) => {
+  // Update course status
+  setCourses(prevCourses =>
+    prevCourses.map(course =>
+      course.id === courseId
+        ? {
+            ...course,
+            status: 'completed',
+            progress: course.sections,
+            completedDate: new Date().toISOString()
+          }
+        : course
+    )
+  );
+  
+  // Get the completed course
+  const completedCourse = courses.find(c => c.id === courseId);
+  
+  if (completedCourse) {
+    // Award the role (in real app, this would update user permissions)
+    console.log(`Role awarded: ${completedCourse.roleAwarded}`);
+    
+    // Show success message
+    alert(`🎉 Congratulations! You've completed "${completedCourse.title}" and earned the ${completedCourse.roleAwarded} role!`);
+    
+    // Optional: Trigger confetti animation
+    // triggerConfetti();
+  }
+};
+
+ADD THE STYLING:
+css.education-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.course-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-tab {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filter-tab.active {
+  background: #203B17;
+  color: white;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+
+.course-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.course-card.status-completed {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.course-card.status-progress {
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+.course-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.course-header h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+}
+
+.course-description {
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.course-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.progress-section {
+  margin: 16px 0;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2D8028;
+  transition: width 0.3s ease;
+}
+
+.role-award {
+  background: #dbeafe;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* Course Modal Styles */
+.course-modal {
+  max-width: 800px;
+}
+
+.section-progress {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.placeholder-lesson {
+  background: #f9fafb;
+  padding: 24px;
+  border-radius: 8px;
+  min-height: 400px;
+}
+
+.demo-complete {
+  margin-top: 24px;
+  padding: 16px;
+  background: #e0f2fe;
+  border-radius: 6px;
+}
+
+.progress-indicator {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e5e7eb;
+}
+
+.progress-dot.completed {
+  background: #2D8028;
+}
+
+
+This creates a functional education system where users can:
+
+View available courses
+Start and resume courses
+Track progress through sections
+Complete courses and earn roles
+See which roles they've earned
+
+The course content is placeholder for now but can be expanded to include actual videos, quizzes, etc.
