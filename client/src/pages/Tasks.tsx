@@ -24,7 +24,13 @@ const Tasks: React.FC = () => {
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const [activeFilter, setActiveFilter] = React.useState<string>("all");
   const [categoryDropdownOpen, setCategoryDropdownOpen] = React.useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = React.useState(false);
+  const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const statusDropdownRef = React.useRef<HTMLDivElement>(null);
+  const priorityDropdownRef = React.useRef<HTMLDivElement>(null);
   
   const auth = getStoredAuth();
   const { toast } = useToast();
@@ -35,6 +41,12 @@ const Tasks: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setCategoryDropdownOpen(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setStatusDropdownOpen(false);
+      }
+      if (priorityDropdownRef.current && !priorityDropdownRef.current.contains(event.target as Node)) {
+        setPriorityDropdownOpen(false);
       }
     };
 
@@ -128,6 +140,21 @@ const Tasks: React.FC = () => {
     { value: "other", label: "Other", emoji: "📝" },
   ];
 
+  const statusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "pending", label: "Assigned" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "approved", label: "Approved" }
+  ];
+
+  const priorityOptions = [
+    { value: "all", label: "All Priorities" },
+    { value: "high", label: "High" },
+    { value: "medium", label: "Medium" },
+    { value: "low", label: "Low" }
+  ];
+
   // Calculate task counts
   const taskCounts = React.useMemo(() => {
     const counts: Record<string, number> = {};
@@ -158,12 +185,17 @@ const Tasks: React.FC = () => {
     }
 
     // Status filter
-    if (filters.status && filters.status !== "all") {
-      filtered = filtered.filter(task => task.status === filters.status);
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(task => task.status === statusFilter);
+    }
+
+    // Priority filter
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
     return filtered;
-  }, [tasks, searchTerm, activeFilter, filters]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter]);
 
   const handleTaskStart = (task: Task) => {
     startTaskMutation.mutate(task.id);
@@ -297,6 +329,98 @@ const Tasks: React.FC = () => {
             )}
           </div>
 
+          {/* Status Dropdown */}
+          <div className="relative" ref={statusDropdownRef}>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+              className="flex items-center gap-2"
+            >
+              {statusFilter !== "all" ? (
+                <>
+                  Status: {statusOptions.find(s => s.value === statusFilter)?.label}
+                  <X 
+                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStatusFilter("all");
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  Status
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            
+            {statusDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
+                <div className="p-2">
+                  {statusOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setStatusFilter(option.value);
+                        setStatusDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Priority Dropdown */}
+          <div className="relative" ref={priorityDropdownRef}>
+            <Button
+              variant="outline"
+              onClick={() => setPriorityDropdownOpen(!priorityDropdownOpen)}
+              className="flex items-center gap-2"
+            >
+              {priorityFilter !== "all" ? (
+                <>
+                  Priority: {priorityOptions.find(p => p.value === priorityFilter)?.label}
+                  <X 
+                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPriorityFilter("all");
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  Priority
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            
+            {priorityDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
+                <div className="p-2">
+                  {priorityOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setPriorityFilter(option.value);
+                        setPriorityDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Search Bar */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -316,7 +440,7 @@ const Tasks: React.FC = () => {
           <div className="text-4xl mb-4">🌱</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
           <p className="text-gray-600">
-            {searchTerm || filters.status || activeFilter !== "all" 
+            {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || activeFilter !== "all" 
               ? "Try adjusting your filters or search term"
               : "You're all caught up! No tasks available right now."
             }

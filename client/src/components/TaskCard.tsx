@@ -34,12 +34,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
 
   const getStatusColor = (status: TaskStatus): string => {
     const colors = {
-      pending: "bg-blue-100 text-blue-800",
-      in_progress: "bg-amber-100 text-amber-800",
-      completed: "bg-green-100 text-green-800",
-      approved: "bg-green-100 text-green-800"
+      pending: "bg-blue-500 text-white",
+      in_progress: "bg-amber-500 text-white",
+      completed: "bg-green-500 text-white",
+      approved: "bg-green-600 text-white"
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[status] || "bg-gray-500 text-white";
   };
 
   const getStatusLabel = (status: TaskStatus): string => {
@@ -106,13 +106,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStart, onContinue, onViewDe
       <CardContent className="p-6">
         {/* Status and Priority Badges - Properly positioned */}
         <div className="absolute top-3 right-3 flex flex-col gap-1">
+          {/* Status Badge */}
+          <div className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(task.status as TaskStatus)}`}>
+            {getStatusLabel(task.status as TaskStatus)}
+          </div>
           {/* Priority Badge */}
           <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
             {task.priority.toUpperCase()}
-          </div>
-          {/* Status Text */}
-          <div className="text-xs text-gray-600 text-right">
-            {getStatusLabel(task.status as TaskStatus)}
           </div>
         </div>
 
