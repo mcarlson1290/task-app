@@ -373,11 +373,16 @@ export class MemStorage implements IStorage {
   }
 
   async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
+    console.log("MemStorage updateTask called with id:", id, "updates:", updates);
     const task = this.tasks.get(id);
-    if (!task) return undefined;
+    if (!task) {
+      console.log("Task not found for id:", id);
+      return undefined;
+    }
     
     const updatedTask = { ...task, ...updates };
     this.tasks.set(id, updatedTask);
+    console.log("MemStorage updateTask result:", updatedTask);
     return updatedTask;
   }
 
