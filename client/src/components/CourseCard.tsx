@@ -161,7 +161,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEd
                     e.stopPropagation();
                     onEdit(course);
                   }}
-                  className="h-8 w-8 p-0 hover:bg-blue-100"
+                  className="h-8 w-8 p-0 hover:bg-blue-100 bg-gray-50 border border-gray-200"
                   title="Edit Course"
                 >
                   <Edit3 className="h-4 w-4 text-blue-600" />
@@ -172,7 +172,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEd
                   variant="ghost"
                   size="sm"
                   onClick={handleQuickDelete}
-                  className="h-8 w-8 p-0 hover:bg-red-100"
+                  className="h-8 w-8 p-0 hover:bg-red-100 bg-gray-50 border border-gray-200"
                   title="Delete Course"
                 >
                   <Trash2 className="h-4 w-4 text-red-600" />
@@ -181,17 +181,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEd
             </div>
           )}
           <div className="flex items-center space-x-2">
-            {isCorporateManager && onEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(course)}
-                className="h-8 w-8 p-0 text-gray-500 hover:text-[#203B17]"
-                title="Edit Course"
-              >
-                <Edit3 className="h-4 w-4" />
-              </Button>
-            )}
             {getStatusBadge()}
           </div>
         </div>

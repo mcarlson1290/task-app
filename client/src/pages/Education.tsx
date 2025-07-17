@@ -338,14 +338,14 @@ const Education: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 education-page">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between education-header">
         <div>
           <h1 className="text-2xl font-bold text-[#203B17] mb-2">Education & Training</h1>
           <p className="text-gray-600">Complete training courses to unlock new roles and skills</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+        <div className="mt-4 sm:mt-0 flex items-center space-x-3 education-header-stats">
           <div className="flex items-center space-x-4 text-sm">
             <span className="flex items-center">
               📚 {completedCourses} Courses Completed
@@ -357,7 +357,7 @@ const Education: React.FC = () => {
           {isCorporateManager && (
             <Button 
               onClick={() => setShowCreateModal(true)}
-              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+              className="bg-[#2D8028] hover:bg-[#203B17] text-white btn-create-course"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Course
@@ -366,35 +366,33 @@ const Education: React.FC = () => {
         </div>
       </div>
 
-      {/* Overall Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Award className="h-5 w-5 mr-2 text-[#2D8028]" />
-            Your Learning Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Courses Completed</span>
-              <span className="font-medium text-[#203B17]">
-                {completedCourses}/{totalCourses}
-              </span>
-            </div>
-            <Progress value={overallProgress} className="h-2" />
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>{Math.round(overallProgress)}% Complete</span>
-              <span>{totalCourses - completedCourses} remaining</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Learning Progress Summary */}
+      <div className="learning-progress-card">
+        <h2>
+          <span>🎓</span> Your Learning Progress
+        </h2>
+        <div className="progress-summary">
+          <span>Courses Completed</span>
+          <span>{completedCourses}/{courses.length}</span>
+        </div>
+        <div className="progress-bar-container">
+          <div 
+            className="progress-bar-fill" 
+            style={{ width: `${courses.length > 0 ? (completedCourses / courses.length) * 100 : 0}%` }}
+          />
+        </div>
+        <div className="progress-details">
+          <span>{courses.length > 0 ? Math.round((completedCourses / courses.length) * 100) : 0}% Complete</span>
+          <span>{courses.length - completedCourses} remaining</span>
+        </div>
+      </div>
+
+
 
       {/* Filter Tabs */}
       <div className="flex items-center space-x-2">
         <Filter className="h-4 w-4 text-gray-500" />
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 course-filters">
           {[
             { key: 'all', label: 'All Courses' },
             { key: 'in-progress', label: 'In Progress' },
@@ -415,7 +413,7 @@ const Education: React.FC = () => {
       </div>
 
       {/* Course Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 courses-grid">
         {filteredCourses.map((course) => (
           <CourseCard
             key={course.id}
