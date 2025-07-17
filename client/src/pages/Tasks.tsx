@@ -236,12 +236,22 @@ const Tasks: React.FC = () => {
           title: "🎉 Task completed!",
           description: "Great job! The task has been marked as completed.",
         });
-        // Celebrate with confetti!
+        // Celebrate with enhanced confetti!
         confetti({
-          particleCount: 100,
+          particleCount: 150,
           spread: 70,
-          origin: { y: 0.6 }
+          origin: { y: 0.6 },
+          colors: ['#2D8028', '#4ADE80', '#FEF3C7', '#FCD34D']
         });
+        
+        // Add a second wave of confetti for extra celebration
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            spread: 90,
+            origin: { y: 0.8 }
+          });
+        }, 300);
         break;
         
       case 'view':
@@ -532,6 +542,40 @@ const Tasks: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Task Performance Summary */}
+      {filteredTasks.length > 0 && (
+        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="text-sm">
+                <span className="font-medium text-[#203B17]">
+                  {filteredTasks.filter(t => t.status === 'completed').length}
+                </span>
+                <span className="text-gray-600"> of {filteredTasks.length} tasks completed</span>
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-amber-600">
+                  {filteredTasks.filter(t => t.status === 'in_progress').length}
+                </span>
+                <span className="text-gray-600"> in progress</span>
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-blue-600">
+                  {filteredTasks.filter(t => t.status === 'pending').length}
+                </span>
+                <span className="text-gray-600"> pending</span>
+              </div>
+            </div>
+            <div className="text-sm">
+              <span className="font-medium text-[#203B17]">
+                {filteredTasks.length > 0 ? Math.round((filteredTasks.filter(t => t.status === 'completed').length / filteredTasks.length) * 100) : 0}%
+              </span>
+              <span className="text-gray-600"> completion rate</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Task Grid */}
       {filteredTasks.length === 0 ? (
