@@ -10,7 +10,7 @@ import { InventoryItem } from "@shared/schema";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [categoryFilter, setCategoryFilter] = React.useState<string>("");
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
 
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
     queryKey: ["/api/inventory"],
@@ -21,7 +21,7 @@ const Inventory: React.FC = () => {
   });
 
   const categories = [
-    { value: "", label: "All Categories" },
+    { value: "all", label: "All Categories" },
     { value: "seeds", label: "Seeds" },
     { value: "nutrients", label: "Nutrients" },
     { value: "supplies", label: "Supplies" },
@@ -38,7 +38,7 @@ const Inventory: React.FC = () => {
       );
     }
 
-    if (categoryFilter) {
+    if (categoryFilter && categoryFilter !== "all") {
       filtered = filtered.filter(item => item.category === categoryFilter);
     }
 
