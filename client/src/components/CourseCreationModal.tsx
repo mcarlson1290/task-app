@@ -221,6 +221,7 @@ interface CourseCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (course: Omit<Course, 'id' | 'status' | 'progress'>) => void;
+  onDelete?: (courseId: number) => void;
   allCourses: Course[];
   editingCourse?: Course | null;
 }
@@ -236,6 +237,7 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
   isOpen, 
   onClose, 
   onSave, 
+  onDelete,
   allCourses,
   editingCourse = null
 }) => {
@@ -643,6 +645,17 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
     }
   };
 
+  const handleDelete = () => {
+    if (!editingCourse || !onDelete) return;
+    
+    const confirmMessage = `Are you sure you want to delete "${courseData.title}"?\n\nThis will permanently remove the course and cannot be undone.`;
+    
+    if (confirm(confirmMessage)) {
+      onDelete(editingCourse.id);
+      onClose();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -848,13 +861,26 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="bg-[#2D8028] hover:bg-[#203B17]">
-            {editingCourse ? 'Save Changes' : 'Create Course'}
-          </Button>
+        <div className="flex justify-between items-center pt-4 border-t">
+          <div className="flex-1">
+            {editingCourse && onDelete && (
+              <Button 
+                variant="destructive" 
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                🗑️ Delete Course
+              </Button>
+            )}
+          </div>
+          <div className="flex space-x-3">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} className="bg-[#2D8028] hover:bg-[#203B17]">
+              {editingCourse ? 'Save Changes' : 'Create Course'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

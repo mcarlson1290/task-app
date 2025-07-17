@@ -254,6 +254,41 @@ const Education: React.FC = () => {
     }
   };
 
+  const handleDeleteCourse = (courseId: number) => {
+    const courseToDelete = courses.find(c => c.id === courseId);
+    if (!courseToDelete) return;
+    
+    // Check if any other courses have this as a prerequisite
+    const dependentCourses = courses.filter(course => 
+      course.prerequisites?.courses?.includes(courseId)
+    );
+    
+    if (dependentCourses.length > 0) {
+      const dependentTitles = dependentCourses.map(c => `• ${c.title}`).join('\n');
+      alert(`Cannot delete this course. The following courses require it as a prerequisite:\n\n${dependentTitles}\n\nRemove this prerequisite from these courses first.`);
+      return;
+    }
+    
+    // Final confirmation
+    if (confirm(`Delete "${courseToDelete.title}"?\n\nThis action cannot be undone.`)) {
+      setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
+      
+      // Log the deletion
+      console.log(`Course deleted:`, {
+        courseId,
+        title: courseToDelete.title,
+        deletedBy: currentUser.name,
+        deletedAt: new Date().toISOString()
+      });
+      
+      // If in edit modal, close it
+      if (showCreateModal && editingCourse?.id === courseId) {
+        setShowCreateModal(false);
+        setEditingCourse(null);
+      }
+    }
+  };
+
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);
     setEditingCourse(null);
@@ -388,6 +423,7 @@ const Education: React.FC = () => {
             onStart={handleStartCourse}
             onResume={handleResumeCourse}
             onEdit={handleEditCourse}
+            onDelete={isCorporateManager ? handleDeleteCourse : undefined}
             allCourses={courses}
             isLocked={!checkPrerequisites(course)}
             isCorporateManager={isCorporateManager}
@@ -420,6 +456,7 @@ const Education: React.FC = () => {
         isOpen={showCreateModal}
         onClose={handleCloseCreateModal}
         onSave={editingCourse ? handleUpdateCourse : handleCreateCourse}
+        onDelete={isCorporateManager ? handleDeleteCourse : undefined}
         allCourses={courses}
         editingCourse={editingCourse}
       />

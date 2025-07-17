@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Clock, Users, Award, Edit3 } from "lucide-react";
+import { CheckCircle, Clock, Users, Award, Edit3, Trash2 } from "lucide-react";
 
 interface Course {
   id: number;
@@ -32,12 +32,13 @@ interface CourseCardProps {
   onStart: (course: Course) => void;
   onResume: (course: Course) => void;
   onEdit?: (course: Course) => void;
+  onDelete?: (courseId: number) => void;
   allCourses?: Course[];
   isLocked?: boolean;
   isCorporateManager?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEdit, allCourses = [], isLocked = false, isCorporateManager = false }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEdit, onDelete, allCourses = [], isLocked = false, isCorporateManager = false }) => {
   const checkPrerequisites = () => {
     if (!course.prerequisites) {
       return true;
@@ -137,11 +138,48 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEd
 
   const progressPercentage = course.sections > 0 ? (course.progress / course.sections) * 100 : 0;
 
+  const handleQuickDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (onDelete && confirm(`Delete "${course.title}"?`)) {
+      onDelete(course.id);
+    }
+  };
+
   return (
-    <Card className={`h-full transition-all duration-200 hover:shadow-lg ${getStatusColor()}`}>
+    <Card className={`h-full transition-all duration-200 hover:shadow-lg ${getStatusColor()} relative`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="text-4xl mb-2">{course.icon}</div>
+          {isCorporateManager && (onEdit || onDelete) && (
+            <div className="flex gap-1">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(course);
+                  }}
+                  className="h-8 w-8 p-0 hover:bg-blue-100"
+                  title="Edit Course"
+                >
+                  <Edit3 className="h-4 w-4 text-blue-600" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleQuickDelete}
+                  className="h-8 w-8 p-0 hover:bg-red-100"
+                  title="Delete Course"
+                >
+                  <Trash2 className="h-4 w-4 text-red-600" />
+                </Button>
+              )}
+            </div>
+          )}
           <div className="flex items-center space-x-2">
             {isCorporateManager && onEdit && (
               <Button
