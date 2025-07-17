@@ -1,0 +1,245 @@
+📋 Instructions for Replit Agent - Add Task Modal
+Here's the implementation instructions for the Add Task modal:
+Implement the "Add New Task" functionality that opens when clicking the "+ New Task" button:
+
+1. CREATE THE ADD TASK MODAL:
+   When the "+ New Task" button is clicked, open a modal with these fields:
+   
+   ```jsx
+   const AddTaskModal = ({ onClose, onSave }) => {
+     const [taskData, setTaskData] = useState({
+       title: '',
+       quickInfo: '',
+       description: '',
+       type: '',
+       priority: 'medium',
+       assignedTo: '',
+       completionDate: new Date().toISOString().split('T')[0], // Default to today
+       estimatedTime: ''
+     });
+     
+     return (
+       <div className="modal-overlay">
+         <div className="modal-content">
+           <h2>Add New Task</h2>
+           
+           <form onSubmit={handleSubmit}>
+             {/* Title - Required */}
+             <label>
+               Title *
+               <input
+                 type="text"
+                 value={taskData.title}
+                 onChange={(e) => setTaskData({...taskData, title: e.target.value})}
+                 required
+                 placeholder="e.g., Seed Lettuce Trays"
+               />
+             </label>
+             
+             {/* Quick Info - Optional */}
+             <label>
+               Quick Info
+               <input
+                 type="text"
+                 value={taskData.quickInfo}
+                 onChange={(e) => setTaskData({...taskData, quickInfo: e.target.value})}
+                 placeholder="Brief description shown on card"
+               />
+             </label>
+             
+             {/* Description - Optional */}
+             <label>
+               Description
+               <textarea
+                 value={taskData.description}
+                 onChange={(e) => setTaskData({...taskData, description: e.target.value})}
+                 placeholder="Detailed task instructions..."
+                 rows={3}
+               />
+             </label>
+             
+             {/* Task Type - Required */}
+             <label>
+               Task Type *
+               <select
+                 value={taskData.type}
+                 onChange={(e) => setTaskData({...taskData, type: e.target.value})}
+                 required
+               >
+                 <option value="">Select Type</option>
+                 <option value="Seeding - Microgreens">Seeding - Microgreens</option>
+                 <option value="Seeding - Leafy Greens">Seeding - Leafy Greens</option>
+                 <option value="Harvest - Microgreens">Harvest - Microgreens</option>
+                 <option value="Harvest - Leafy Greens">Harvest - Leafy Greens</option>
+                 <option value="Blackout Tasks">Blackout Tasks</option>
+                 <option value="Moving">Moving</option>
+                 <option value="Packing">Packing</option>
+                 <option value="Cleaning">Cleaning</option>
+                 <option value="Inventory">Inventory</option>
+                 <option value="Equipment Maintenance">Equipment Maintenance</option>
+                 <option value="Other">Other</option>
+               </select>
+             </label>
+             
+             {/* Priority */}
+             <label>
+               Priority
+               <select
+                 value={taskData.priority}
+                 onChange={(e) => setTaskData({...taskData, priority: e.target.value})}
+               >
+                 <option value="high">High</option>
+                 <option value="medium">Medium</option>
+                 <option value="low">Low</option>
+               </select>
+             </label>
+             
+             {/* Assign To - Required */}
+             <label>
+               Assign To *
+               <select
+                 value={taskData.assignedTo}
+                 onChange={(e) => setTaskData({...taskData, assignedTo: e.target.value})}
+                 required
+               >
+                 <option value="">Select Assignee</option>
+                 <option value="All Staff">All Staff</option>
+                 <option value="Seeding Tech">Seeding Tech</option>
+                 <option value="Harvest Team">Harvest Team</option>
+                 <option value="Cleaning Crew">Cleaning Crew</option>
+                 <option value="Manager">Manager</option>
+                 <option value="User 1">User 1</option>
+               </select>
+             </label>
+             
+             {/* Due Date - Required */}
+             <label>
+               Due Date *
+               <input
+                 type="date"
+                 value={taskData.completionDate}
+                 onChange={(e) => setTaskData({...taskData, completionDate: e.target.value})}
+                 required
+               />
+             </label>
+             
+             {/* Estimated Duration - Required */}
+             <label>
+               Estimated Duration *
+               <input
+                 type="text"
+                 value={taskData.estimatedTime}
+                 onChange={(e) => setTaskData({...taskData, estimatedTime: e.target.value})}
+                 placeholder="e.g., 2h 30m"
+                 required
+               />
+             </label>
+             
+             <div className="modal-actions">
+               <button type="submit" className="btn-save">
+                 Save Task
+               </button>
+               <button type="button" onClick={onClose} className="btn-cancel">
+                 Cancel
+               </button>
+             </div>
+           </form>
+         </div>
+       </div>
+     );
+   };
+
+CONNECT THE NEW TASK BUTTON:
+Update the "+ New Task" button to open the modal:
+jsxconst [showAddTaskModal, setShowAddTaskModal] = useState(false);
+
+<button 
+  onClick={() => setShowAddTaskModal(true)} 
+  className="btn-new-task"
+>
+  + New Task
+</button>
+
+{showAddTaskModal && (
+  <AddTaskModal
+    onClose={() => setShowAddTaskModal(false)}
+    onSave={handleAddTask}
+  />
+)}
+
+IMPLEMENT THE SAVE HANDLER:
+javascriptconst handleAddTask = (taskData) => {
+  const newTask = {
+    id: Date.now(), // Simple ID generation
+    ...taskData,
+    status: 'pending',
+    progress: 0,
+    checklistItems: 0, // No checklist for manually added tasks
+    isOverdue: false
+  };
+  
+  setTasks(prevTasks => [...prevTasks, newTask]);
+  setShowAddTaskModal(false);
+  
+  // Optional: Show success message
+  console.log('Task added successfully');
+};
+
+STYLE THE MODAL:
+css.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: #203B17;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-save {
+  background-color: #2D8028;
+  color: white;
+}
+
+.btn-cancel {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+
+This creates a fully functional Add Task modal that saves new tasks to the task list. The tasks will appear immediately and can be started, completed, etc. just like the mock tasks.

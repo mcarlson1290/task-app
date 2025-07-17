@@ -7,7 +7,7 @@ import { Plus, Filter, Search, ChevronDown, X, Calendar } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
-import NewTaskModal from "@/components/NewTaskModal";
+import { AddTaskModal } from "@/components/AddTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
 import { Task } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
@@ -19,7 +19,7 @@ import confetti from "canvas-confetti";
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [newTaskModalOpen, setNewTaskModalOpen] = React.useState(false);
+  const [addTaskModalOpen, setAddTaskModalOpen] = React.useState(false);
   const [taskActionModalOpen, setTaskActionModalOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filters, setFilters] = React.useState<TaskFilters>({});
@@ -332,8 +332,41 @@ const Tasks: React.FC = () => {
     }
   };
 
+  // Create task mutation
+  const createTaskMutation = useMutation({
+    mutationFn: (taskData: any) => apiRequest('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(taskData)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      toast({
+        title: "Task Created",
+        description: "New task has been added successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Create task error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleAddTask = (taskData: any) => {
+    const newTask = {
+      ...taskData,
+      dueDate: new Date(taskData.dueDate).toISOString(),
+      createdAt: new Date().toISOString()
+    };
+    
+    createTaskMutation.mutate(newTask);
+  };
+
   const handleNewTask = () => {
-    setNewTaskModalOpen(true);
+    setAddTaskModalOpen(true);
   };
 
   if (isLoading) {
@@ -622,10 +655,11 @@ const Tasks: React.FC = () => {
         onTaskAction={handleTaskAction}
       />
 
-      {/* New Task Modal */}
-      <NewTaskModal
-        open={newTaskModalOpen}
-        onClose={() => setNewTaskModalOpen(false)}
+      {/* Add Task Modal */}
+      <AddTaskModal
+        open={addTaskModalOpen}
+        onClose={() => setAddTaskModalOpen(false)}
+        onSave={handleAddTask}
       />
 
       {/* Task Action Modal */}
