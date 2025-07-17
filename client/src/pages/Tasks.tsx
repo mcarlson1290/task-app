@@ -9,6 +9,7 @@ import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import NewTaskModal from "@/components/NewTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
+import TaskPerformanceWidget from "@/components/TaskPerformanceWidget";
 import { Task } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
@@ -60,6 +61,50 @@ const Tasks: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when not in input fields
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Ctrl/Cmd + N: New Task
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
+        event.preventDefault();
+        handleNewTask();
+      }
+
+      // Ctrl/Cmd + R: Reset Tasks (dev feature)
+      if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+        event.preventDefault();
+        resetTasksMutation.mutate();
+      }
+
+      // Escape: Close modals
+      if (event.key === 'Escape') {
+        setModalOpen(false);
+        setNewTaskModalOpen(false);
+        setTaskActionModalOpen(false);
+        setSelectedTask(null);
+      }
+
+      // Number keys 1-4: Filter by status
+      if (event.key >= '1' && event.key <= '4') {
+        const statusMap = {
+          '1': 'all',
+          '2': 'pending',
+          '3': 'in_progress',
+          '4': 'completed'
+        };
+        setStatusFilter(statusMap[event.key as keyof typeof statusMap]);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleNewTask, resetTasksMutation]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/tasks", auth.user?.id],
@@ -348,6 +393,16 @@ const Tasks: React.FC = () => {
           >
             {resetTasksMutation.isPending ? "Resetting..." : "🔄 Reset (Dev)"}
           </Button>
+        </div>
+      </div>
+
+      {/* Performance Widget */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <TaskPerformanceWidget tasks={tasks || []} />
+        </div>
+        <div className="lg:col-span-1">
+          {/* Quick Actions could go here */}
         </div>
       </div>
 
