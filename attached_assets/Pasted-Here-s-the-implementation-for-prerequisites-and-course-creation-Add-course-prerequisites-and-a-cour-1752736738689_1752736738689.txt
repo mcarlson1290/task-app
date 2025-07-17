@@ -1,0 +1,552 @@
+Here's the implementation for prerequisites and course creation:
+Add course prerequisites and a course creation system for corporate managers:
+
+1. UPDATE THE COURSE DATA STRUCTURE WITH PREREQUISITES:
+   Update the mockCourses to include prerequisites:
+   
+   ```javascript
+   const mockCourses = [
+     {
+       id: 1,
+       title: 'Basic Safety & Orientation',
+       description: 'Introduction to farm safety and procedures',
+       roleAwarded: 'General Staff',
+       sections: 3,
+       estimatedTime: '20 minutes',
+       status: 'completed',
+       progress: 3,
+       icon: '🦺',
+       prerequisites: [] // No prerequisites
+     },
+     {
+       id: 2,
+       title: 'Seeding Technician Certification',
+       description: 'Learn proper seeding techniques for microgreens and leafy greens',
+       roleAwarded: 'Seeding Tech',
+       sections: 5,
+       estimatedTime: '45 minutes',
+       status: 'not-started',
+       progress: 0,
+       icon: '🌱',
+       prerequisites: [1] // Requires Basic Safety
+     },
+     {
+       id: 3,
+       title: 'Harvest Operations Training',
+       description: 'Master harvesting techniques, timing, and quality control',
+       roleAwarded: 'Harvest Tech',
+       sections: 6,
+       estimatedTime: '1 hour',
+       status: 'locked', // New status for locked courses
+       progress: 0,
+       icon: '🌾',
+       prerequisites: [1] // Requires Basic Safety
+     },
+     {
+       id: 4,
+       title: 'Advanced Growing Systems',
+       description: 'Deep dive into hydroponic systems and optimization',
+       roleAwarded: 'Senior Grower',
+       sections: 8,
+       estimatedTime: '2 hours',
+       status: 'locked',
+       progress: 0,
+       icon: '🌿',
+       prerequisites: [2, 3] // Requires both Seeding AND Harvest
+     },
+     {
+       id: 5,
+       title: 'Manager Fundamentals',
+       description: 'Leadership, scheduling, and operations management',
+       roleAwarded: 'Manager',
+       sections: 10,
+       estimatedTime: '3 hours',
+       status: 'locked',
+       progress: 0,
+       requiresApproval: true,
+       icon: '👔',
+       prerequisites: [2, 3, 4] // Requires all technical courses
+     }
+   ];
+
+UPDATE COURSE CARD TO SHOW PREREQUISITES:
+jsxconst CourseCard = ({ course, onStart, onResume, allCourses }) => {
+  // Check if prerequisites are met
+  const prerequisitesMet = course.prerequisites.every(prereqId => {
+    const prereqCourse = allCourses.find(c => c.id === prereqId);
+    return prereqCourse?.status === 'completed';
+  });
+  
+  const isLocked = !prerequisitesMet || course.status === 'locked';
+  
+  const getActionButton = () => {
+    if (isLocked) {
+      return (
+        <button className="btn-locked" disabled>
+          🔒 Locked
+        </button>
+      );
+    }
+    
+    switch (course.status) {
+      case 'completed':
+        return (
+          <button className="btn-completed" disabled>
+            ✅ Completed
+          </button>
+        );
+      case 'in-progress':
+        return (
+          <button onClick={() => onResume(course)} className="btn-resume">
+            ▶️ Resume Course
+          </button>
+        );
+      default:
+        return (
+          <button onClick={() => onStart(course)} className="btn-start">
+            Start Course
+          </button>
+        );
+    }
+  };
+  
+  const getPrerequisiteNames = () => {
+    return course.prerequisites.map(prereqId => {
+      const prereq = allCourses.find(c => c.id === prereqId);
+      return prereq?.title || 'Unknown';
+    });
+  };
+  
+  return (
+    <div className={`course-card ${getStatusColor()} ${isLocked ? 'locked' : ''}`}>
+      {/* ... existing content ... */}
+      
+      {course.prerequisites.length > 0 && (
+        <div className="prerequisites-section">
+          <div className="prereq-label">
+            {prerequisitesMet ? '✅ Prerequisites Met' : '🔒 Prerequisites Required:'}
+          </div>
+          {!prerequisitesMet && (
+            <ul className="prereq-list">
+              {getPrerequisiteNames().map((name, idx) => (
+                <li key={idx}>{name}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      
+      {/* ... rest of card ... */}
+    </div>
+  );
+};
+
+ADD COURSE CREATION BUTTON FOR CORPORATE MANAGERS:
+Update the Education page header:
+jsxconst Education = () => {
+  const currentUser = getCurrentUser();
+  const isCorporateManager = currentUser.role === 'Corporate';
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  return (
+    <div className="education-page">
+      <div className="page-header">
+        <h1>🎓 Education & Training</h1>
+        <div className="header-right">
+          <div className="header-stats">
+            <span>📚 {courses.filter(c => c.status === 'completed').length} Completed</span>
+            <span>🏆 {currentUser.roles?.length || 1} Roles</span>
+          </div>
+          {isCorporateManager && (
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="btn-create-course"
+            >
+              + Create Course
+            </button>
+          )}
+        </div>
+      </div>
+      
+      {/* ... existing content ... */}
+      
+      {showCreateModal && (
+        <CourseCreationModal
+          allCourses={courses}
+          onSave={handleCreateCourse}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+CREATE THE COURSE CREATION MODAL:
+jsxconst CourseCreationModal = ({ allCourses, onSave, onClose }) => {
+  const [courseData, setCourseData] = useState({
+    title: '',
+    description: '',
+    roleAwarded: '',
+    sections: 1,
+    estimatedTime: '',
+    icon: '📚',
+    prerequisites: [],
+    requiresApproval: false
+  });
+  
+  const [sections, setSections] = useState([{ 
+    title: '', 
+    type: 'text', 
+    content: '' 
+  }]);
+  
+  const availableIcons = ['📚', '🌱', '🌾', '🧹', '🔧', '🦺', '📊', '🌿', '👔'];
+  
+  const handleAddSection = () => {
+    setSections([...sections, { title: '', type: 'text', content: '' }]);
+    setCourseData({ ...courseData, sections: sections.length + 1 });
+  };
+  
+  const handleRemoveSection = (index) => {
+    const newSections = sections.filter((_, i) => i !== index);
+    setSections(newSections);
+    setCourseData({ ...courseData, sections: newSections.length });
+  };
+  
+  const handleSave = () => {
+    if (!courseData.title || !courseData.roleAwarded) {
+      alert('Please fill in required fields');
+      return;
+    }
+    
+    const newCourse = {
+      ...courseData,
+      id: Date.now(),
+      status: 'not-started',
+      progress: 0,
+      sections: sections.length,
+      createdBy: getCurrentUser().name,
+      createdAt: new Date().toISOString()
+    };
+    
+    onSave(newCourse);
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content large-modal">
+        <h2>Create New Course</h2>
+        
+        <div className="form-grid">
+          {/* Course Title */}
+          <label className="full-width">
+            Course Title *
+            <input
+              type="text"
+              value={courseData.title}
+              onChange={(e) => setCourseData({...courseData, title: e.target.value})}
+              placeholder="e.g., Advanced Hydroponics Training"
+            />
+          </label>
+          
+          {/* Description */}
+          <label className="full-width">
+            Description *
+            <textarea
+              value={courseData.description}
+              onChange={(e) => setCourseData({...courseData, description: e.target.value})}
+              placeholder="Brief description of what students will learn..."
+              rows={3}
+            />
+          </label>
+          
+          {/* Role Awarded */}
+          <label>
+            Role Awarded *
+            <input
+              type="text"
+              value={courseData.roleAwarded}
+              onChange={(e) => setCourseData({...courseData, roleAwarded: e.target.value})}
+              placeholder="e.g., Senior Technician"
+            />
+          </label>
+          
+          {/* Estimated Time */}
+          <label>
+            Estimated Time *
+            <input
+              type="text"
+              value={courseData.estimatedTime}
+              onChange={(e) => setCourseData({...courseData, estimatedTime: e.target.value})}
+              placeholder="e.g., 2 hours"
+            />
+          </label>
+          
+          {/* Icon Selection */}
+          <label>
+            Course Icon
+            <div className="icon-selector">
+              {availableIcons.map(icon => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`icon-option ${courseData.icon === icon ? 'selected' : ''}`}
+                  onClick={() => setCourseData({...courseData, icon})}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </label>
+          
+          {/* Prerequisites */}
+          <label>
+            Prerequisites
+            <div className="prerequisites-selector">
+              {allCourses.map(course => (
+                <label key={course.id} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={courseData.prerequisites.includes(course.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setCourseData({
+                          ...courseData,
+                          prerequisites: [...courseData.prerequisites, course.id]
+                        });
+                      } else {
+                        setCourseData({
+                          ...courseData,
+                          prerequisites: courseData.prerequisites.filter(id => id !== course.id)
+                        });
+                      }
+                    }}
+                  />
+                  {course.title}
+                </label>
+              ))}
+            </div>
+          </label>
+          
+          {/* Manager Approval */}
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={courseData.requiresApproval}
+              onChange={(e) => setCourseData({...courseData, requiresApproval: e.target.checked})}
+            />
+            Requires Manager Approval
+          </label>
+        </div>
+        
+        {/* Sections */}
+        <div className="sections-builder">
+          <h3>Course Sections</h3>
+          {sections.map((section, index) => (
+            <div key={index} className="section-builder">
+              <div className="section-header">
+                <h4>Section {index + 1}</h4>
+                {sections.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSection(index)}
+                    className="btn-remove"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              
+              <input
+                type="text"
+                placeholder="Section title"
+                value={section.title}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index].title = e.target.value;
+                  setSections(newSections);
+                }}
+              />
+              
+              <select
+                value={section.type}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index].type = e.target.value;
+                  setSections(newSections);
+                }}
+              >
+                <option value="text">Text Content</option>
+                <option value="video">Video</option>
+                <option value="quiz">Quiz</option>
+                <option value="checklist">Checklist</option>
+              </select>
+              
+              <textarea
+                placeholder="Section content/instructions..."
+                value={section.content}
+                onChange={(e) => {
+                  const newSections = [...sections];
+                  newSections[index].content = e.target.value;
+                  setSections(newSections);
+                }}
+                rows={3}
+              />
+            </div>
+          ))}
+          
+          <button
+            type="button"
+            onClick={handleAddSection}
+            className="btn-add-section"
+          >
+            + Add Section
+          </button>
+        </div>
+        
+        <div className="modal-actions">
+          <button onClick={handleSave} className="btn-save">
+            Create Course
+          </button>
+          <button onClick={onClose} className="btn-cancel">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ADD STYLING FOR PREREQUISITES AND CREATION:
+css/* Prerequisites */
+.course-card.locked {
+  opacity: 0.7;
+  background: #f9fafb;
+}
+
+.prerequisites-section {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.prereq-label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.prereq-list {
+  margin: 4px 0 0 20px;
+  padding: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.btn-locked {
+  background: #9ca3af;
+  color: white;
+  cursor: not-allowed;
+}
+
+/* Course Creation */
+.btn-create-course {
+  background: #2D8028;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.large-modal {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.icon-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.icon-option {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.icon-option.selected {
+  border-color: #2D8028;
+  background: #f0fdf4;
+}
+
+.prerequisites-selector {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.sections-builder {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.section-builder {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn-add-section {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+
+This adds:
+
+Prerequisites system that locks courses until requirements are met
+Course creation interface for corporate managers only
+Section builder for course content
+Icon selection and approval settings
+Visual indicators for locked courses

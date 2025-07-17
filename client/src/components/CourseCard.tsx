@@ -17,16 +17,33 @@ interface Course {
   completedDate?: string;
   icon: string;
   requiresApproval?: boolean;
+  prerequisites?: number[];
 }
 
 interface CourseCardProps {
   course: Course;
   onStart: (course: Course) => void;
   onResume: (course: Course) => void;
+  allCourses?: Course[];
+  isLocked?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, allCourses = [], isLocked = false }) => {
+  const checkPrerequisites = () => {
+    if (!course.prerequisites || course.prerequisites.length === 0) {
+      return true;
+    }
+    return course.prerequisites.every(prereqId => {
+      const prereqCourse = allCourses.find(c => c.id === prereqId);
+      return prereqCourse?.status === 'completed';
+    });
+  };
+
+  const prerequisitesMet = checkPrerequisites();
+  const courseIsLocked = isLocked || !prerequisitesMet;
+
   const getStatusColor = () => {
+    if (courseIsLocked) return 'bg-gray-50 border-gray-300';
     switch (course.status) {
       case 'completed': return 'bg-green-50 border-green-200';
       case 'in-progress': return 'bg-yellow-50 border-yellow-200';
@@ -35,6 +52,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume }) =>
   };
 
   const getStatusBadge = () => {
+    if (courseIsLocked) {
+      return <Badge className="bg-gray-100 text-gray-800">🔒 Locked</Badge>;
+    }
     switch (course.status) {
       case 'completed': 
         return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
@@ -46,6 +66,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume }) =>
   };
 
   const getActionButton = () => {
+    if (courseIsLocked) {
+      return (
+        <Button disabled className="w-full bg-gray-200 text-gray-500">
+          🔒 Locked
+        </Button>
+      );
+    }
+    
     switch (course.status) {
       case 'completed':
         return (
@@ -67,6 +95,16 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume }) =>
           </Button>
         );
     }
+  };
+
+  const getPrerequisiteNames = () => {
+    if (!course.prerequisites || course.prerequisites.length === 0) {
+      return [];
+    }
+    return course.prerequisites.map(prereqId => {
+      const prereq = allCourses.find(c => c.id === prereqId);
+      return prereq?.title || 'Unknown Course';
+    });
   };
 
   const progressPercentage = course.sections > 0 ? (course.progress / course.sections) * 100 : 0;
@@ -111,6 +149,26 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume }) =>
               <span>{course.progress}/{course.sections} sections</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
+          </div>
+        )}
+
+        {course.prerequisites && course.prerequisites.length > 0 && (
+          <div className={`p-3 rounded-lg mb-4 ${prerequisitesMet ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div className="flex items-center text-sm mb-2">
+              <span className="font-medium">
+                {prerequisitesMet ? '✅ Prerequisites Met' : '🔒 Prerequisites Required:'}
+              </span>
+            </div>
+            {!prerequisitesMet && (
+              <ul className="text-sm text-red-700 space-y-1">
+                {getPrerequisiteNames().map((name, idx) => (
+                  <li key={idx} className="flex items-center">
+                    <span className="w-2 h-2 bg-red-400 rounded-full mr-2 flex-shrink-0"></span>
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

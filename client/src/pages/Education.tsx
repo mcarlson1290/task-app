@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, BookOpen, Award, CheckCircle, Play, Filter } from "lucide-react";
+import { Clock, BookOpen, Award, CheckCircle, Play, Filter, Plus } from "lucide-react";
 import { TrainingModule, UserProgress } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import CourseCard from "@/components/CourseCard";
 import CourseModal from "@/components/CourseModal";
+import CourseCreationModal from "@/components/CourseCreationModal";
 import confetti from "canvas-confetti";
 
 interface Course {
@@ -23,6 +24,7 @@ interface Course {
   completedDate?: string;
   icon: string;
   requiresApproval?: boolean;
+  prerequisites?: number[];
 }
 
 const Education: React.FC = () => {
@@ -30,9 +32,24 @@ const Education: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const isCorporateManager = auth.user?.role === 'corporate';
   const [courses, setCourses] = useState<Course[]>([
     {
       id: 1,
+      title: 'Basic Safety & Orientation',
+      description: 'Introduction to farm safety procedures and basic orientation',
+      roleAwarded: 'General Staff',
+      sections: 3,
+      estimatedTime: '20 minutes',
+      status: 'completed',
+      progress: 3,
+      completedDate: new Date().toISOString(),
+      icon: '🦺',
+      prerequisites: []
+    },
+    {
+      id: 2,
       title: 'Seeding Technician Certification',
       description: 'Learn proper seeding techniques for microgreens and leafy greens production',
       roleAwarded: 'Seeding Technician',
@@ -40,10 +57,11 @@ const Education: React.FC = () => {
       estimatedTime: '45 minutes',
       status: 'not-started',
       progress: 0,
-      icon: '🌱'
+      icon: '🌱',
+      prerequisites: [1]
     },
     {
-      id: 2,
+      id: 3,
       title: 'Harvest Operations Training',
       description: 'Master harvesting techniques, timing, and quality control procedures',
       roleAwarded: 'Harvest Technician',
@@ -51,10 +69,11 @@ const Education: React.FC = () => {
       estimatedTime: '1 hour',
       status: 'in-progress',
       progress: 3,
-      icon: '🌾'
+      icon: '🌾',
+      prerequisites: [1]
     },
     {
-      id: 3,
+      id: 4,
       title: 'Sanitation & Safety Protocols',
       description: 'Essential cleaning procedures and safety standards for farm operations',
       roleAwarded: 'Sanitation Specialist',
@@ -63,21 +82,23 @@ const Education: React.FC = () => {
       status: 'completed',
       progress: 4,
       completedDate: new Date().toISOString(),
-      icon: '🧹'
+      icon: '🧹',
+      prerequisites: [1]
     },
     {
-      id: 4,
-      title: 'Equipment Operation & Maintenance',
-      description: 'Learn to operate and maintain growing systems and equipment',
-      roleAwarded: 'Equipment Technician',
+      id: 5,
+      title: 'Advanced Growing Systems',
+      description: 'Deep dive into hydroponic systems and optimization techniques',
+      roleAwarded: 'Senior Grower',
       sections: 8,
       estimatedTime: '2 hours',
       status: 'not-started',
       progress: 0,
-      icon: '🔧'
+      icon: '🌿',
+      prerequisites: [2, 3]
     },
     {
-      id: 5,
+      id: 6,
       title: 'Farm Manager Fundamentals',
       description: 'Leadership, scheduling, and operations management for farm supervisors',
       roleAwarded: 'Farm Manager',
@@ -86,7 +107,8 @@ const Education: React.FC = () => {
       status: 'not-started',
       progress: 0,
       requiresApproval: true,
-      icon: '👔'
+      icon: '👔',
+      prerequisites: [2, 3, 4]
     }
   ]);
 
@@ -153,6 +175,38 @@ const Education: React.FC = () => {
     setSelectedCourse(null);
   };
 
+  const handleCreateCourse = (newCourse: Omit<Course, 'id'>) => {
+    const courseWithId = {
+      ...newCourse,
+      id: Date.now(),
+      status: 'not-started' as const,
+      progress: 0
+    };
+    setCourses(prevCourses => [...prevCourses, courseWithId]);
+    setShowCreateModal(false);
+  };
+
+  const checkPrerequisites = (course: Course) => {
+    if (!course.prerequisites || course.prerequisites.length === 0) {
+      return true;
+    }
+    return course.prerequisites.every(prereqId => {
+      const prereqCourse = courses.find(c => c.id === prereqId);
+      return prereqCourse?.status === 'completed';
+    });
+  };
+
+  const getAvailableCourses = () => {
+    return courses.filter(course => {
+      const prerequisitesMet = checkPrerequisites(course);
+      return prerequisitesMet;
+    });
+  };
+
+  const getLockedCourses = () => {
+    return courses.filter(course => !checkPrerequisites(course));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -170,6 +224,15 @@ const Education: React.FC = () => {
               🏆 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role
             </span>
           </div>
+          {isCorporateManager && (
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Course
+            </Button>
+          )}
         </div>
       </div>
 
@@ -229,6 +292,8 @@ const Education: React.FC = () => {
             course={course}
             onStart={handleStartCourse}
             onResume={handleResumeCourse}
+            allCourses={courses}
+            isLocked={!checkPrerequisites(course)}
           />
         ))}
       </div>
@@ -251,6 +316,14 @@ const Education: React.FC = () => {
         isOpen={showCourseModal}
         onClose={handleCloseModal}
         onComplete={handleCourseComplete}
+      />
+
+      {/* Course Creation Modal */}
+      <CourseCreationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={handleCreateCourse}
+        allCourses={courses}
       />
     </div>
   );
