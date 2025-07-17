@@ -51,7 +51,7 @@ const Tasks: React.FC = () => {
     }
 
     // Status filter
-    if (filters.status) {
+    if (filters.status && filters.status !== "all") {
       filtered = filtered.filter(task => task.status === filters.status);
     }
 
@@ -130,7 +130,7 @@ const Tasks: React.FC = () => {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>

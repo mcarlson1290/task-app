@@ -8,6 +8,11 @@ import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
 import Education from "@/pages/Education";
 import Analytics from "@/pages/Analytics";
+import Account from "@/pages/Account";
+import RecurringTasks from "@/pages/RecurringTasks";
+import TaskData from "@/pages/TaskData";
+import StaffData from "@/pages/StaffData";
+import ProductionData from "@/pages/ProductionData";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { getStoredAuth } from "@/lib/auth";
@@ -45,6 +50,31 @@ function Router() {
       <Route path="/analytics">
         <ProtectedRoute>
           <Analytics />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/account">
+        <ProtectedRoute>
+          <Account />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/recurring-tasks">
+        <ProtectedRoute>
+          <RecurringTasks />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/task-data">
+        <ProtectedRoute>
+          <TaskData />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/staff-data">
+        <ProtectedRoute>
+          <StaffData />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/production-data">
+        <ProtectedRoute>
+          <ProductionData />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
