@@ -236,6 +236,7 @@ const Tasks: React.FC = () => {
 
   const handleTaskCollaborate = (task: Task) => {
     console.log('Collaborating on task:', task);
+    // For in-progress tasks, show the same modal with action buttons
     setSelectedTask(task);
     setModalOpen(true);
   };
@@ -352,6 +353,30 @@ const Tasks: React.FC = () => {
           <Button onClick={handleNewTask} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
             <Plus className="h-4 w-4 mr-2" />
             New Task
+          </Button>
+          <Button
+            onClick={() => {
+              // Reset all filters
+              setActiveFilter("all");
+              setStatusFilter("all");
+              setPriorityFilter("all");
+              setDateFilter("");
+              setSearchTerm("");
+              // Close modals
+              setModalOpen(false);
+              setSelectedTask(null);
+              setNewTaskModalOpen(false);
+              // Refetch tasks
+              refetch();
+              toast({
+                title: "Filters Reset",
+                description: "All filters have been cleared.",
+              });
+            }}
+            variant="outline"
+            className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+          >
+            🔄 Reset (Dev)
           </Button>
         </div>
       </div>

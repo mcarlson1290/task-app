@@ -1,0 +1,141 @@
+📋 Fix Collaborate Modal & Add Reset Button
+Let's fix the Collaborate modal to show the same buttons as Start Task, and add the missing reset button:
+
+1. FIX COLLABORATE MODAL - Should Show Complete/Pause/Skip:
+   The collaborate function should open the same modal with all action buttons:
+   
+   ```jsx
+   const handleCollaborate = (taskId: number) => {
+     const task = tasks.find(t => t.id === taskId);
+     if (!task) return;
+     
+     // Add current user as collaborator
+     const updatedTask = {
+       ...task,
+       collaborators: [...(task.collaborators || []), currentUser.name]
+     };
+     
+     setTasks(prevTasks => 
+       prevTasks.map(t => 
+         t.id === taskId ? updatedTask : t
+       )
+     );
+     
+     // Open the SAME modal as Start Task with all action buttons
+     setSelectedTask(updatedTask);
+     setShowTaskModal(true);
+   };
+
+ENSURE MODAL SHOWS BUTTONS FOR IN-PROGRESS TASKS:
+Update the modal to always show action buttons when task is in-progress:
+jsxconst TaskModal = ({ task, onClose, onComplete, onPause, onSkip }) => {
+  // Show action buttons if task is in-progress (regardless of how modal was opened)
+  const showActionButtons = task && task.status === 'in-progress';
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>{task.title}</h2>
+        {/* ... other task details ... */}
+        
+        {showActionButtons && (
+          <div className="modal-actions">
+            <button 
+              onClick={() => onComplete(task.id)} 
+              className="btn btn-complete"
+            >
+              ✅ Complete Task
+            </button>
+            <button 
+              onClick={() => onPause(task.id)} 
+              className="btn btn-pause"
+            >
+              ⏸️ Pause Task
+            </button>
+            <button 
+              onClick={() => onSkip(task.id)} 
+              className="btn btn-skip"
+            >
+              ⏭️ Skip Task
+            </button>
+          </div>
+        )}
+        
+        <button onClick={onClose} className="btn-close">
+          {showActionButtons ? 'Cancel' : 'Close'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+ADD THE RESET BUTTON TO THE UI:
+In the Tasks component, add this after the filter bar:
+jsx// Inside the Tasks component, after the filters
+<div className="filters-container">
+  <button className="filter-btn active">📋 All Tasks</button>
+  <select className="filter-dropdown">
+    <option>Category</option>
+    {/* ... options ... */}
+  </select>
+  <select className="filter-dropdown">
+    <option>Status</option>
+    {/* ... options ... */}
+  </select>
+  <select className="filter-dropdown">
+    <option>Priority</option>
+    {/* ... options ... */}
+  </select>
+  <input type="date" className="date-picker" />
+  <button onClick={() => setSelectedDate('')} className="btn-clear">
+    Clear
+  </button>
+  
+  {/* ADD RESET BUTTON HERE */}
+  <button 
+    onClick={resetTasks} 
+    className="btn-reset"
+    style={{
+      marginLeft: 'auto',
+      backgroundColor: '#6b7280',
+      color: 'white',
+      padding: '8px 16px',
+      borderRadius: '6px',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '14px'
+    }}
+  >
+    🔄 Reset Tasks (Dev)
+  </button>
+</div>
+
+// Reset function
+const resetTasks = () => {
+  // Reset tasks to initial state
+  setTasks(generateMockTasks());
+  // Close any open modals
+  setShowTaskModal(false);
+  setSelectedTask(null);
+  // Reset all filters
+  setSelectedCategory('all');
+  setSelectedStatus('all');
+  setSelectedPriority('all');
+  setSelectedDate('');
+  // Show success message
+  console.log('Tasks reset to initial state');
+};
+
+ENSURE BOTH START AND COLLABORATE USE SAME LOGIC:
+jsx// Both buttons should use similar logic
+<button onClick={() => handleStartTask(task.id)}>
+  Start Task
+</button>
+
+<button onClick={() => handleCollaborate(task.id)}>
+  🤝 Collaborate
+</button>
+
+// Both handlers open the same modal with the same buttons
+
+
