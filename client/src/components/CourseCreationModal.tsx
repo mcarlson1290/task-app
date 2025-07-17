@@ -12,20 +12,82 @@ const RequirementBuilder: React.FC<{ onAdd: (req: any) => void }> = ({ onAdd }) 
   const [showBuilder, setShowBuilder] = useState(false);
   const [reqType, setReqType] = useState('age');
   const [reqValue, setReqValue] = useState('');
-  const [reqLabel, setReqLabel] = useState('');
+  const [customLabel, setCustomLabel] = useState('');
+
+  const requirementTypes = {
+    age: { label: 'Minimum Age', unit: 'years', valueType: 'number' },
+    tenure: { label: 'Employment Duration', unit: 'days', valueType: 'number' },
+    license: { label: 'License/Certification', options: ['drivers', 'forklift', 'hazmat', 'food-handler'] },
+    certification: { label: 'Special Certification', custom: true },
+    approval: { label: 'Manager Approval', noValue: true },
+    training: { label: 'External Training', custom: true },
+    physical: { label: 'Physical Requirement', custom: true }
+  };
 
   const handleAddRequirement = () => {
-    if (!reqLabel) return;
+    // Validation
+    if (!requirementTypes[reqType].noValue && !reqValue) {
+      alert('Please enter a value');
+      return;
+    }
     
-    onAdd({
+    if (requirementTypes[reqType].custom && !customLabel) {
+      alert('Please enter a description');
+      return;
+    }
+    
+    // Generate label based on type
+    let label = '';
+    
+    switch (reqType) {
+      case 'age':
+        label = `Must be ${reqValue} years or older`;
+        break;
+      case 'tenure':
+        const days = parseInt(reqValue);
+        if (days >= 365) {
+          const years = Math.floor(days / 365);
+          label = `Employed for at least ${years} year${years > 1 ? 's' : ''}`;
+        } else if (days >= 30) {
+          const months = Math.floor(days / 30);
+          label = `Employed for at least ${months} month${months > 1 ? 's' : ''}`;
+        } else {
+          label = `Employed for at least ${days} days`;
+        }
+        break;
+      case 'license':
+        const licenseLabels = {
+          'drivers': "Valid driver's license",
+          'forklift': 'Forklift operator certification',
+          'hazmat': 'HAZMAT certification',
+          'food-handler': "Food handler's permit"
+        };
+        label = licenseLabels[reqValue] || `${reqValue} license required`;
+        break;
+      case 'approval':
+        label = 'Requires manager approval';
+        break;
+      case 'certification':
+      case 'training':
+      case 'physical':
+        label = customLabel;
+        break;
+      default:
+        label = customLabel || `${requirementTypes[reqType].label} required`;
+    }
+    
+    const requirement = {
       type: reqType,
-      value: reqType === 'age' || reqType === 'tenure' ? parseInt(reqValue) : reqValue,
-      label: reqLabel
-    });
+      value: requirementTypes[reqType].noValue ? null : reqValue,
+      label
+    };
+    
+    console.log('Adding requirement:', requirement);
+    onAdd(requirement);
     
     // Reset
     setReqValue('');
-    setReqLabel('');
+    setCustomLabel('');
     setShowBuilder(false);
   };
 
@@ -43,40 +105,71 @@ const RequirementBuilder: React.FC<{ onAdd: (req: any) => void }> = ({ onAdd }) 
           Add Requirement
         </Button>
       ) : (
-        <div className="border rounded p-3 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Type</Label>
-              <select
-                value={reqType}
-                onChange={(e) => setReqType(e.target.value)}
-                className="w-full p-1 border rounded text-sm"
-              >
-                <option value="age">Age Requirement</option>
-                <option value="tenure">Employment Duration</option>
-                <option value="license">License/Permit</option>
-                <option value="certification">Certification</option>
-              </select>
-            </div>
-            <div>
-              <Label className="text-xs">Value</Label>
-              <Input
-                value={reqValue}
-                onChange={(e) => setReqValue(e.target.value)}
-                placeholder={reqType === 'age' ? '18' : reqType === 'tenure' ? '30' : 'drivers'}
-                className="text-sm"
-              />
-            </div>
-          </div>
+        <div className="border rounded p-3 space-y-3">
           <div>
-            <Label className="text-xs">Display Label</Label>
-            <Input
-              value={reqLabel}
-              onChange={(e) => setReqLabel(e.target.value)}
-              placeholder="e.g., Must be 18 or older"
-              className="text-sm"
-            />
+            <Label className="text-xs">Requirement Type</Label>
+            <select
+              value={reqType}
+              onChange={(e) => {
+                setReqType(e.target.value);
+                setReqValue('');
+                setCustomLabel('');
+              }}
+              className="w-full p-2 border rounded text-sm"
+            >
+              {Object.entries(requirementTypes).map(([key, config]) => (
+                <option key={key} value={key}>{config.label}</option>
+              ))}
+            </select>
           </div>
+          
+          {!requirementTypes[reqType].noValue && (
+            <>
+              {requirementTypes[reqType].options ? (
+                <div>
+                  <Label className="text-xs">Select {requirementTypes[reqType].label}</Label>
+                  <select
+                    value={reqValue}
+                    onChange={(e) => setReqValue(e.target.value)}
+                    className="w-full p-2 border rounded text-sm"
+                    required
+                  >
+                    <option value="">Choose...</option>
+                    {requirementTypes[reqType].options.map(opt => (
+                      <option key={opt} value={opt}>
+                        {opt.charAt(0).toUpperCase() + opt.slice(1).replace('-', ' ')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : requirementTypes[reqType].custom ? (
+                <div>
+                  <Label className="text-xs">Requirement Description</Label>
+                  <Input
+                    value={customLabel}
+                    onChange={(e) => setCustomLabel(e.target.value)}
+                    placeholder="e.g., Must be able to lift 50 lbs"
+                    className="text-sm"
+                    required
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label className="text-xs">{requirementTypes[reqType].label} ({requirementTypes[reqType].unit})</Label>
+                  <Input
+                    type="number"
+                    value={reqValue}
+                    onChange={(e) => setReqValue(e.target.value)}
+                    placeholder={`Enter ${requirementTypes[reqType].unit}`}
+                    min="0"
+                    className="text-sm"
+                    required
+                  />
+                </div>
+              )}
+            </>
+          )}
+          
           <div className="flex space-x-2">
             <Button
               type="button"
@@ -84,7 +177,7 @@ const RequirementBuilder: React.FC<{ onAdd: (req: any) => void }> = ({ onAdd }) 
               onClick={handleAddRequirement}
               className="flex-1"
             >
-              Add
+              Add Requirement
             </Button>
             <Button
               type="button"
@@ -491,26 +584,30 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
   };
 
   const handleAddRequirement = (requirement: { type: string; value: number | string; label: string }) => {
-    setCourseData({
-      ...courseData,
+    console.log('Received requirement:', requirement);
+    
+    setCourseData(prevData => ({
+      ...prevData,
       prerequisites: {
-        ...courseData.prerequisites,
-        requirements: [...courseData.prerequisites.requirements, requirement]
+        ...prevData.prerequisites,
+        requirements: [...prevData.prerequisites.requirements, requirement]
       }
-    });
+    }));
   };
 
   const handleRemoveRequirement = (index: number) => {
-    setCourseData({
-      ...courseData,
+    setCourseData(prevData => ({
+      ...prevData,
       prerequisites: {
-        ...courseData.prerequisites,
-        requirements: courseData.prerequisites.requirements.filter((_, i) => i !== index)
+        ...prevData.prerequisites,
+        requirements: prevData.prerequisites.requirements.filter((_, i) => i !== index)
       }
-    });
+    }));
   };
 
   const handleSave = () => {
+    console.log('Saving course with prerequisites:', courseData.prerequisites);
+    
     if (!courseData.title || !courseData.roleAwarded || !courseData.estimatedTime) {
       alert('Please fill in all required fields');
       return;
@@ -518,23 +615,32 @@ const CourseCreationModal: React.FC<CourseCreationModalProps> = ({
 
     const newCourse = {
       ...courseData,
+      id: editingCourse?.id || Date.now(),
+      status: editingCourse?.status || 'not-started',
+      progress: editingCourse?.progress || 0,
       sections: sections.length,
-      completedDate: undefined
+      sectionDetails: sections,
+      completedDate: editingCourse?.completedDate || undefined,
+      createdBy: editingCourse?.createdBy || 'Current User',
+      createdAt: editingCourse?.createdAt || new Date().toISOString()
     };
 
+    console.log('Final course object:', newCourse);
     onSave(newCourse);
     
-    // Reset form
-    setCourseData({
-      title: '',
-      description: '',
-      roleAwarded: '',
-      estimatedTime: '',
-      icon: '📚',
-      prerequisites: { courses: [], requirements: [] },
-      requiresApproval: false
-    });
-    setSections([{ title: '', type: 'text', content: '' }]);
+    // Reset form only if creating new course
+    if (!editingCourse) {
+      setCourseData({
+        title: '',
+        description: '',
+        roleAwarded: '',
+        estimatedTime: '',
+        icon: '📚',
+        prerequisites: { courses: [], requirements: [] },
+        requiresApproval: false
+      });
+      setSections([{ title: '', type: 'text', content: '' }]);
+    }
   };
 
   return (
