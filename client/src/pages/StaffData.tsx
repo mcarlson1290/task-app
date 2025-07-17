@@ -198,7 +198,8 @@ const StaffTableRow: React.FC<{
 const StaffEditView: React.FC<{
   staff: any[];
   isManager: boolean;
-}> = ({ staff, isManager }) => {
+  onUpdateStaff: (updatedStaff: any[]) => void;
+}> = ({ staff, isManager, onUpdateStaff }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [showEditModal, setShowEditModal] = useState(false);
@@ -239,12 +240,24 @@ const StaffEditView: React.FC<{
   };
 
   const handleSaveStaff = (staffData: any) => {
-    console.log('Saving staff:', staffData);
+    let updatedStaff;
+    
+    if (editingStaff) {
+      // Update existing staff member
+      updatedStaff = staff.map(person => 
+        person.id === staffData.id ? staffData : person
+      );
+    } else {
+      // Add new staff member
+      updatedStaff = [...staff, { ...staffData, id: Date.now() }];
+    }
+    
+    onUpdateStaff(updatedStaff);
     setShowEditModal(false);
     setEditingStaff(null);
     toast({
       title: "Staff Member Saved",
-      description: `${staffData.fullName} has been ${staffData.id ? 'updated' : 'added'} successfully.`,
+      description: `${staffData.fullName} has been ${editingStaff ? 'updated' : 'added'} successfully.`,
     });
   };
   
@@ -641,6 +654,7 @@ const StaffData: React.FC = () => {
           <StaffEditView 
             staff={staff}
             isManager={isManager}
+            onUpdateStaff={setStaff}
           />
         ) : (
           <div>
