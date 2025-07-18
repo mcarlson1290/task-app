@@ -5,8 +5,10 @@
   top: 64px; /* Adjust this to match YOUR main header height */
   z-index: 100;
   
-  /* Full width - edge to edge */
-  width: 100%;
+  /* Full width - edge to edge with NO gaps */
+  width: 100vw;
+  margin: 0 !important;
+  padding: 0 !important;
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
@@ -14,10 +16,12 @@
 
 .sub-header-container {
   /* Inner container for consistent padding with main header */
-  padding: 0 24px; /* Match your main header's horizontal padding */
+  padding: 12px 24px; /* Match your main header's horizontal padding */
   min-height: 56px;
   display: flex;
   align-items: center;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .sub-header-content {
@@ -26,7 +30,6 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 12px 0; /* Vertical padding only */
 }
 
 /* PRIMARY BUTTON - Green action buttons */

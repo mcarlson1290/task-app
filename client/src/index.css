@@ -64,6 +64,22 @@
   padding-top: 0; /* No extra space needed for attached design */
 }
 
+/* ENSURE NO GAPS AROUND SUB-HEADER */
+.sub-header-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* FORCE FULL-WIDTH SUB-HEADER */
+.main-content .sub-header-wrapper {
+  width: 100vw !important;
+  position: relative !important;
+  left: 50% !important;
+  right: 50% !important;
+  margin-left: -50vw !important;
+  margin-right: -50vw !important;
+}
+
 .dark {
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);
