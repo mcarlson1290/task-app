@@ -11,6 +11,7 @@ import { getStoredAuth } from "@/lib/auth";
 import CourseCard from "@/components/CourseCard";
 import CourseModal from "@/components/CourseModal";
 import CourseCreationModal from "@/components/CourseCreationModal";
+import SubHeader from "@/components/SubHeader";
 import confetti from "canvas-confetti";
 
 interface Course {
@@ -340,17 +341,41 @@ const Education: React.FC = () => {
 
   return (
     <div className="education-page">
-      {/* Action button in top right */}
-      {isCorporateManager && (
-        <div className="page-actions">
-          <button 
-            className="btn-create-course"
-            onClick={() => setShowCreateModal(true)}
+      <SubHeader>
+        {isCorporateManager && (
+          <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4" />
+            Create Course
+          </button>
+        )}
+        
+        <div className="sub-tabs">
+          <button
+            className={`sub-tab ${filterTab === 'all' ? 'active' : ''}`}
+            onClick={() => setFilterTab('all')}
           >
-            + Create Course
+            📚 All Courses
+          </button>
+          <button
+            className={`sub-tab ${filterTab === 'in-progress' ? 'active' : ''}`}
+            onClick={() => setFilterTab('in-progress')}
+          >
+            🔄 In Progress
+          </button>
+          <button
+            className={`sub-tab ${filterTab === 'completed' ? 'active' : ''}`}
+            onClick={() => setFilterTab('completed')}
+          >
+            ✅ Completed
+          </button>
+          <button
+            className={`sub-tab ${filterTab === 'not-started' ? 'active' : ''}`}
+            onClick={() => setFilterTab('not-started')}
+          >
+            📋 Not Started
           </button>
         </div>
-      )}
+      </SubHeader>
       
       {/* Progress Summary Card */}
       <div className="learning-progress-card">
@@ -374,34 +399,6 @@ const Education: React.FC = () => {
             {courses.length > 0 ? Math.round((completedCourses / courses.length) * 100) : 0}% Complete
           </span>
         </div>
-      </div>
-      
-      {/* Filter tabs matching sub-tab style */}
-      <div className="course-filter-tabs">
-        <button
-          className={`filter-tab ${filterTab === 'all' ? 'active' : ''}`}
-          onClick={() => setFilterTab('all')}
-        >
-          📚 All Courses
-        </button>
-        <button
-          className={`filter-tab ${filterTab === 'in-progress' ? 'active' : ''}`}
-          onClick={() => setFilterTab('in-progress')}
-        >
-          🔄 In Progress
-        </button>
-        <button
-          className={`filter-tab ${filterTab === 'completed' ? 'active' : ''}`}
-          onClick={() => setFilterTab('completed')}
-        >
-          ✅ Completed
-        </button>
-        <button
-          className={`filter-tab ${filterTab === 'not-started' ? 'active' : ''}`}
-          onClick={() => setFilterTab('not-started')}
-        >
-          📋 Not Started
-        </button>
       </div>
 
       {/* Course Grid */}

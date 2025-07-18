@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
-import { SubTabNavigation } from '@/components/SubTabNavigation';
+import SubHeader from '@/components/SubHeader';
 
 // Mock staff data with location codes
 const mockStaff = [
@@ -1034,20 +1034,25 @@ const StaffData: React.FC = () => {
 
   return (
     <div className="staff-data-page">
-      {/* Navigation and Actions on same line */}
-      <div className="nav-with-actions">
-        <SubTabNavigation 
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-        
-        <div className="nav-actions">
-          <button className="btn-export" onClick={handleExport}>
-            📊 Export Staff Report
+      <SubHeader>
+        <div className="tab-group">
+          <button 
+            className={`tab-button ${activeTab === 'edit' ? 'active' : ''}`}
+            onClick={() => setActiveTab('edit')}
+          >
+            ✏️ Staff Edit
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            📊 Staff Analytics
           </button>
         </div>
-      </div>
+        <button className="btn-primary ml-auto" onClick={handleExport}>
+          📊 Export Staff Report
+        </button>
+      </SubHeader>
       
       {/* Content will go here based on activeTab */}
       <div className="tab-content">
