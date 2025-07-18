@@ -69,6 +69,9 @@ export interface IStorage {
   // Tray movements
   createTrayMovement(movement: InsertTrayMovement): Promise<TrayMovement>;
   getTrayMovements(trayId: string): Promise<TrayMovement[]>;
+  
+  // Clear all data
+  clearAllData(): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -95,29 +98,11 @@ export class MemStorage implements IStorage {
   private currentCropId = 1;
 
   constructor() {
-    this.seedInitialData();
+    // Start with empty data - no seeding
   }
 
   private seedInitialData() {
-    // Create test users
-    const testUsers = [
-      { username: "alex", password: "password", name: "Alex Martinez", role: "technician", approved: true },
-      { username: "sarah", password: "password", name: "Sarah Johnson", role: "manager", approved: true },
-      { username: "mike", password: "password", name: "Mike Chen", role: "corporate", approved: true }
-    ];
-
-    testUsers.forEach(user => {
-      const newUser: User = {
-        ...user,
-        id: this.currentUserId++,
-        createdAt: new Date(),
-        approved: user.approved || null
-      };
-      this.users.set(newUser.id, newUser);
-    });
-
-    // Create location-specific data
-    this.seedLocationData();
+    // No initial data - start with empty system
   }
 
   private seedLocationData() {
@@ -881,6 +866,39 @@ export class MemStorage implements IStorage {
 
   async deleteCrop(id: number): Promise<boolean> {
     return this.crops.delete(id);
+  }
+
+  // Clear all data method
+  async clearAllData(): Promise<boolean> {
+    try {
+      this.users.clear();
+      this.tasks.clear();
+      this.inventoryItems.clear();
+      this.trainingModules.clear();
+      this.userProgress.clear();
+      this.taskLogs.clear();
+      this.recurringTasks.clear();
+      this.growingSystems.clear();
+      this.trayMovements.clear();
+      this.crops.clear();
+      
+      // Reset all counters
+      this.currentUserId = 1;
+      this.currentTaskId = 1;
+      this.currentInventoryId = 1;
+      this.currentModuleId = 1;
+      this.currentProgressId = 1;
+      this.currentLogId = 1;
+      this.currentRecurringTaskId = 1;
+      this.currentGrowingSystemId = 1;
+      this.currentTrayMovementId = 1;
+      this.currentCropId = 1;
+      
+      return true;
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      return false;
+    }
   }
 }
 
