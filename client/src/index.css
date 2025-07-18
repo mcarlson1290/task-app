@@ -1555,3 +1555,22 @@ label.error select {
   padding: 24px;
   color: #f59e0b;
 }
+
+/* Horizontal Scrolling Tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+.tab-navigation-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.tab-navigation-wrapper > div {
+  scroll-behavior: smooth;
+}

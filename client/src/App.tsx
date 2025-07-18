@@ -7,7 +7,7 @@ import Layout from "@/components/Layout";
 import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
 import Education from "@/pages/Education";
-import Analytics from "@/pages/Analytics";
+
 import Account from "@/pages/Account";
 import RecurringTasks from "@/pages/RecurringTasks";
 import TaskData from "@/pages/TaskData";
@@ -53,11 +53,7 @@ function Router() {
           <Education />
         </ProtectedRoute>
       </Route>
-      <Route path="/analytics">
-        <ProtectedRoute>
-          <Analytics />
-        </ProtectedRoute>
-      </Route>
+
       <Route path="/account">
         <ProtectedRoute>
           <Account />

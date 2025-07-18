@@ -1,0 +1,743 @@
+# 🏢 Location Management & Switching Implementation
+
+## Implement location switching with corporate-level multi-location data access
+
+### 1. UPDATE LOCATION DATA STRUCTURE:
+
+Create `src/data/locationsData.ts`:
+
+```typescript
+export interface Location {
+  id: string;
+  name: string;
+  code: string; // Short code for IDs (K for Kenosha, R for Racine)
+  address?: string;
+  isActive: boolean;
+  createdDate: Date;
+  settings?: {
+    timezone?: string;
+    workingHours?: {
+      start: string;
+      end: string;
+    };
+  };
+}
+
+export const locations: Location[] = [
+  {
+    id: 'kenosha',
+    name: 'Kenosha',
+    code: 'K',
+    address: '123 Farm Road, Kenosha, WI',
+    isActive: true,
+    createdDate: new Date('2023-01-01')
+  },
+  {
+    id: 'racine-dev',
+    name: 'Racine (Dev)',
+    code: 'R',
+    address: '456 Test Street, Racine, WI',
+    isActive: true,
+    createdDate: new Date('2024-01-01')
+  }
+];
+
+// Update user mock data
+export const mockUsers = [
+  {
+    id: '1',
+    name: 'Sarah Johnson',
+    email: 'sarah@farm.com',
+    role: 'Staff',
+    assignedLocation: 'kenosha',
+    permissions: ['view_tasks', 'complete_tasks']
+  },
+  {
+    id: '2',
+    name: 'Dan Smith',
+    email: 'dan@farm.com',
+    role: 'Manager',
+    assignedLocation: 'kenosha',
+    permissions: ['view_tasks', 'complete_tasks', 'manage_staff', 'view_analytics']
+  },
+  {
+    id: '3',
+    name: 'Matt Wilson',
+    email: 'matt@farm.com',
+    role: 'Corporate',
+    assignedLocation: null, // Corporate can access all
+    permissions: ['all']
+  }
+];
+```
+
+### 2. CREATE LOCATION CONTEXT:
+
+Create `src/contexts/LocationContext.tsx`:
+
+```typescript
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Location, locations } from '../data/locationsData';
+import { getCurrentUser } from '../utils/auth';
+
+interface LocationContextType {
+  currentLocation: Location;
+  availableLocations: Location[];
+  switchLocation: (locationId: string) => void;
+  viewMode: 'single' | 'all'; // For corporate managers
+  setViewMode: (mode: 'single' | 'all') => void;
+  canSwitchLocations: boolean;
+  isViewingAllLocations: boolean;
+}
+
+const LocationContext = createContext<LocationContextType | undefined>(undefined);
+
+export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const currentUser = getCurrentUser();
+  const isCorporate = currentUser.role === 'Corporate';
+  
+  // Get initial location
+  const getInitialLocation = () => {
+    if (isCorporate) {
+      // Corporate users default to first location but can switch
+      const saved = localStorage.getItem('selectedLocation');
+      return locations.find(l => l.id === saved) || locations[0];
+    } else {
+      // Non-corporate users are locked to their assigned location
+      return locations.find(l => l.id === currentUser.assignedLocation) || locations[0];
+    }
+  };
+  
+  const [currentLocation, setCurrentLocation] = useState<Location>(getInitialLocation());
+  const [viewMode, setViewMode] = useState<'single' | 'all'>('single');
+  
+  const switchLocation = (locationId: string) => {
+    if (!isCorporate && locationId !== currentUser.assignedLocation) {
+      console.warn('Non-corporate users cannot switch locations');
+      return;
+    }
+    
+    const newLocation = locations.find(l => l.id === locationId);
+    if (newLocation) {
+      setCurrentLocation(newLocation);
+      localStorage.setItem('selectedLocation', locationId);
+      setViewMode('single'); // Reset to single view when switching
+    }
+  };
+  
+  const contextValue: LocationContextType = {
+    currentLocation,
+    availableLocations: isCorporate ? locations : locations.filter(l => l.id === currentUser.assignedLocation),
+    switchLocation,
+    viewMode,
+    setViewMode: isCorporate ? setViewMode : () => {},
+    canSwitchLocations: isCorporate,
+    isViewingAllLocations: isCorporate && viewMode === 'all'
+  };
+  
+  return (
+    <LocationContext.Provider value={contextValue}>
+      {children}
+    </LocationContext.Provider>
+  );
+};
+
+export const useLocation = () => {
+  const context = useContext(LocationContext);
+  if (!context) {
+    throw new Error('useLocation must be used within LocationProvider');
+  }
+  return context;
+};
+```
+
+### 3. UPDATE SIDEBAR LOCATION SELECTOR:
+
+Update your `Sidebar.tsx` component:
+
+```typescript
+import { useLocation } from '../contexts/LocationContext';
+
+const Sidebar: React.FC = () => {
+  const { 
+    currentLocation, 
+    availableLocations, 
+    switchLocation, 
+    canSwitchLocations,
+    viewMode,
+    setViewMode,
+    isViewingAllLocations 
+  } = useLocation();
+  
+  const [showLocationMenu, setShowLocationMenu] = useState(false);
+  
+  return (
+    <div className="sidebar">
+      {/* Navigation items... */}
+      
+      {/* Location Selector */}
+      <div className="sidebar-bottom">
+        <div className="location-selector">
+          <button 
+            className="location-button"
+            onClick={() => canSwitchLocations && setShowLocationMenu(!showLocationMenu)}
+            disabled={!canSwitchLocations}
+          >
+            <MapPin size={16} />
+            <span>
+              {isViewingAllLocations ? 'All Locations' : currentLocation.name}
+            </span>
+            {canSwitchLocations && <ChevronDown size={16} />}
+          </button>
+          
+          {showLocationMenu && canSwitchLocations && (
+            <div className="location-menu">
+              <div className="location-menu-header">
+                <h4>Select Location</h4>
+              </div>
+              
+              {/* View Mode Toggle for Corporate */}
+              <div className="view-mode-toggle">
+                <label className="toggle-option">
+                  <input
+                    type="radio"
+                    name="viewMode"
+                    value="single"
+                    checked={viewMode === 'single'}
+                    onChange={() => setViewMode('single')}
+                  />
+                  <span>Single Location</span>
+                </label>
+                <label className="toggle-option">
+                  <input
+                    type="radio"
+                    name="viewMode"
+                    value="all"
+                    checked={viewMode === 'all'}
+                    onChange={() => {
+                      setViewMode('all');
+                      setShowLocationMenu(false);
+                    }}
+                  />
+                  <span>All Locations</span>
+                </label>
+              </div>
+              
+              {viewMode === 'single' && (
+                <>
+                  <div className="location-divider" />
+                  <div className="location-list">
+                    {availableLocations.map(location => (
+                      <button
+                        key={location.id}
+                        className={`location-item ${currentLocation.id === location.id ? 'active' : ''}`}
+                        onClick={() => {
+                          switchLocation(location.id);
+                          setShowLocationMenu(false);
+                        }}
+                      >
+                        <span className="location-name">{location.name}</span>
+                        {currentLocation.id === location.id && <Check size={16} />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* User selector... */}
+      </div>
+    </div>
+  );
+};
+```
+
+### 4. UPDATE DATA FETCHING HOOKS:
+
+Create `src/hooks/useLocationData.ts`:
+
+```typescript
+import { useLocation } from '../contexts/LocationContext';
+import { useEffect, useState } from 'react';
+
+export function useLocationData<T>(
+  fetchSingleLocation: (locationId: string) => Promise<T>,
+  fetchAllLocations?: () => Promise<T>,
+  dependencies: any[] = []
+) {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        let result: T;
+        
+        if (isViewingAllLocations && fetchAllLocations) {
+          result = await fetchAllLocations();
+        } else {
+          result = await fetchSingleLocation(currentLocation.id);
+        }
+        
+        setData(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [currentLocation.id, isViewingAllLocations, ...dependencies]);
+  
+  return { data, loading, error };
+}
+```
+
+### 5. UPDATE TASK MANAGER TO FILTER BY LOCATION:
+
+```typescript
+// In TaskManager component
+const TaskManager: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  // Fetch tasks based on location
+  const { data: tasks, loading } = useLocationData(
+    (locationId) => fetchTasksByLocation(locationId),
+    () => fetchAllTasks(), // For corporate viewing all
+    []
+  );
+  
+  return (
+    <div className="task-manager">
+      <div className="task-header">
+        <h1>Task Manager</h1>
+        {isViewingAllLocations && (
+          <div className="viewing-all-badge">
+            Viewing All Locations
+          </div>
+        )}
+      </div>
+      
+      {/* Task list with location indicators when viewing all */}
+      <div className="task-list">
+        {tasks?.map(task => (
+          <TaskCard 
+            key={task.id} 
+            task={task}
+            showLocation={isViewingAllLocations}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Update TaskCard to show location
+const TaskCard: React.FC<{ task: Task; showLocation?: boolean }> = ({ task, showLocation }) => {
+  return (
+    <div className="task-card">
+      <div className="task-title">{task.title}</div>
+      {showLocation && (
+        <div className="task-location">
+          <MapPin size={12} />
+          <span>{task.location}</span>
+        </div>
+      )}
+      {/* Rest of task card... */}
+    </div>
+  );
+};
+```
+
+### 6. UPDATE ANALYTICS PAGES:
+
+```typescript
+// In TaskData component
+const TaskData: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  const { data: analytics } = useLocationData(
+    (locationId) => fetchTaskAnalytics(locationId),
+    () => fetchTaskAnalyticsAllLocations()
+  );
+  
+  return (
+    <div className="task-data-page">
+      <div className="page-header">
+        <h1>📊 Task Data</h1>
+        <div className="header-info">
+          {isViewingAllLocations ? (
+            <span className="location-indicator all">All Locations Combined</span>
+          ) : (
+            <span className="location-indicator">{currentLocation.name}</span>
+          )}
+        </div>
+      </div>
+      
+      {/* When viewing all locations, show breakdown by location */}
+      {isViewingAllLocations && analytics && (
+        <div className="location-breakdown">
+          <h2>Performance by Location</h2>
+          <div className="location-cards">
+            {locations.map(location => (
+              <div key={location.id} className="location-performance-card">
+                <h3>{location.name}</h3>
+                <div className="location-metrics">
+                  <div className="metric">
+                    <span className="value">{analytics[location.id]?.tasksCompleted || 0}</span>
+                    <span className="label">Tasks Completed</span>
+                  </div>
+                  <div className="metric">
+                    <span className="value">{analytics[location.id]?.avgCompletionTime || '0m'}</span>
+                    <span className="label">Avg. Time</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Regular analytics... */}
+    </div>
+  );
+};
+```
+
+### 7. ADD CSS STYLES:
+
+```css
+/* Location Selector Styles */
+.location-selector {
+  position: relative;
+  margin: 16px;
+  margin-top: auto;
+}
+
+.location-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.location-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.location-button svg {
+  opacity: 0.8;
+}
+
+.location-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.location-menu-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.location-menu-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.view-mode-toggle {
+  padding: 12px 16px;
+  background: #f9fafb;
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.toggle-option input[type="radio"] {
+  cursor: pointer;
+}
+
+.toggle-option span {
+  font-size: 14px;
+  color: #374151;
+}
+
+.location-divider {
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.location-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.location-item {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+.location-item:hover {
+  background: #f3f4f6;
+}
+
+.location-item.active {
+  background: #f0fdf4;
+  color: #2D8028;
+}
+
+.location-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Viewing All Badge */
+.viewing-all-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Location Indicators */
+.location-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.location-indicator.all {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Task Location Display */
+.task-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Location Breakdown Cards */
+.location-breakdown {
+  margin-bottom: 32px;
+}
+
+.location-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.location-performance-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.location-performance-card h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.location-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.location-metrics .metric {
+  text-align: center;
+}
+
+.location-metrics .value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2D8028;
+  margin-bottom: 4px;
+}
+
+.location-metrics .label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Multi-Location Table Headers */
+.data-table.multi-location th.location-column,
+.data-table.multi-location td.location-column {
+  background: #f9fafb;
+  font-weight: 500;
+}
+
+/* Location Filter Pills */
+.location-filter-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.location-pill {
+  padding: 6px 16px;
+  background: #e5e7eb;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-pill:hover {
+  background: #d1d5db;
+}
+
+.location-pill.active {
+  background: #2D8028;
+  color: white;
+}
+
+/* Tray ID Updates */
+.tray-id {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.tray-id .location-prefix {
+  color: #2D8028;
+  font-weight: 700;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .location-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .location-cards {
+    grid-template-columns: 1fr;
+  }
+}
+```
+
+### 8. UPDATE TRAY ID GENERATION:
+
+Update the tray ID generator to use location codes:
+
+```typescript
+// In trayTracking.ts
+export const generateTrayId = (
+  location: Location, // Pass full location object now
+  cropType: string,
+  category: 'microgreens' | 'leafyGreens'
+): string => {
+  const locationCode = location.code; // Use location code (K or R)
+  const date = new Date();
+  const dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getFullYear().toString().slice(-2)}`;
+  const categoryCode = category === 'microgreens' ? 'MG' : 'LG';
+  const cropCode = cropType.substring(0, 4).toUpperCase();
+  const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  const section = String.fromCharCode(65 + Math.floor(Math.random() * 4)); // A-D
+  
+  return `${locationCode}${dateStr}-${categoryCode}-${cropCode}-${random}${section}`;
+};
+```
+
+### 9. UPDATE APP.TSX TO WRAP WITH LOCATION PROVIDER:
+
+```typescript
+// In App.tsx
+import { LocationProvider } from './contexts/LocationContext';
+
+function App() {
+  return (
+    <LocationProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            {/* Your routes */}
+          </Routes>
+        </Layout>
+      </Router>
+    </LocationProvider>
+  );
+}
+```
+
+### SUMMARY:
+
+This implementation adds:
+
+✅ **Location switching** - Corporate managers can switch between locations
+✅ **View all locations** - Corporate can view aggregated data from all locations
+✅ **Location restrictions** - Non-corporate users locked to assigned location
+✅ **Location indicators** - Shows current location context throughout app
+✅ **Multi-location analytics** - Breakdown by location when viewing all
+✅ **Location-aware IDs** - Tray IDs now start with location code (K/R)
+
+Key features:
+- Two locations: Kenosha (K) and Racine Dev (R)
+- Corporate managers see radio toggle for Single/All locations
+- Location indicator badges throughout the app
+- Data automatically filters based on selected location
+- Analytics show location breakdowns when viewing all
+- Smooth transitions between location contexts

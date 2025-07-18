@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, AlertTriangle, Sprout, Calendar, TrendingUp, Plus, Edit2, Trash2 } from "lucide-react";
+import { Download, AlertTriangle, Sprout, Calendar, TrendingUp, Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/trayService";
 import SystemConfiguration from "@/components/SystemConfiguration";
 import { EquipmentManagement } from "@/components/EquipmentManagement";
+import TrayTracking from "@/pages/TrayTracking";
 
 interface Crop extends CropType {
   checklistTemplate: any;
@@ -460,11 +461,59 @@ const ProductionData: React.FC = () => {
   const isCorporateManager = auth.user?.role === 'corporate';
   const isManager = auth.user?.role === 'manager' || isCorporateManager;
   const { toast } = useToast();
+  
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [showLeftScroll, setShowLeftScroll] = useState(false);
+  const [showRightScroll, setShowRightScroll] = useState(false);
 
   const [crops, setCrops] = useState<Crop[]>(mockCrops);
   const [trays, setTrays] = useState<Tray[]>([]);
   const [showCropModal, setShowCropModal] = useState(false);
   const [editingCrop, setEditingCrop] = useState<Crop | null>(null);
+  
+  const tabs = [
+    { id: 'dashboard', label: '📊 Live Dashboard', icon: '📊' },
+    { id: 'trays', label: '📦 Tray Tracking', icon: '📦' },
+    { id: 'equipment', label: '🏭 Equipment', icon: '🏭' },
+    ...(isCorporateManager ? [{ id: 'crops', label: '🌾 Crop Config', icon: '🌾' }] : []),
+    ...(isCorporateManager ? [{ id: 'systems', label: '⚙️ System Config', icon: '⚙️' }] : [])
+  ];
+
+  // Check scroll indicators
+  useEffect(() => {
+    const checkScroll = () => {
+      if (tabsRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+        setShowLeftScroll(scrollLeft > 0);
+        setShowRightScroll(scrollLeft + clientWidth < scrollWidth - 5);
+      }
+    };
+    
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [tabs.length]);
+  
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsRef.current) {
+      const scrollAmount = 200;
+      tabsRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      
+      // Check scroll indicators after scrolling
+      setTimeout(() => {
+        if (tabsRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+          setShowLeftScroll(scrollLeft > 0);
+          setShowRightScroll(scrollLeft + clientWidth < scrollWidth - 5);
+        }
+      }, 300);
+    }
+  };
 
   // Initialize trays from TrayService
   useEffect(() => {
@@ -589,44 +638,84 @@ const ProductionData: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className={`grid w-full ${isCorporateManager ? 'grid-cols-4' : 'grid-cols-2'}`}>
-          <TabsTrigger value="dashboard">📊 Live Dashboard</TabsTrigger>
-          {isCorporateManager && <TabsTrigger value="crops">🌾 Crop Configuration</TabsTrigger>}
-          {isCorporateManager && <TabsTrigger value="systems">⚙️ System Configuration</TabsTrigger>}
-          <TabsTrigger value="equipment">🏭 Equipment Management</TabsTrigger>
-        </TabsList>
+      {/* Horizontal Scrolling Tabs */}
+      <div className="tab-navigation-wrapper relative">
+        {showLeftScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('left')}
+          >
+            <ChevronLeft size={20} />
+          </Button>
+        )}
         
-        <TabsContent value="dashboard" className="space-y-4">
+        <div 
+          className="flex overflow-x-auto scrollbar-hide space-x-2 px-8 pb-2"
+          ref={tabsRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setShowLeftScroll(target.scrollLeft > 0);
+            setShowRightScroll(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
+          {tabs.map(tab => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "default" : "outline"}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 whitespace-nowrap ${activeTab === tab.id ? 'bg-[#2D8028] text-white' : 'bg-white text-gray-600'}`}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        
+        {showRightScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('right')}
+          >
+            <ChevronRight size={20} />
+          </Button>
+        )}
+      </div>
+      
+      {/* Tab Content */}
+      <div className="tab-content mt-6">
+        {activeTab === 'dashboard' && (
           <ProductionDashboard 
             trays={trays}
             crops={crops}
             onUpdateTray={handleUpdateTray}
           />
-        </TabsContent>
-        
-        {isCorporateManager && (
-          <TabsContent value="crops" className="space-y-4">
-            <CropConfiguration
-              crops={crops}
-              onAddCrop={handleAddCrop}
-              onEditCrop={handleEditCrop}
-              onDeleteCrop={handleDeleteCrop}
-            />
-          </TabsContent>
         )}
         
-        {isCorporateManager && (
-          <TabsContent value="systems" className="space-y-4">
-            <SystemConfiguration isCorporateManager={isCorporateManager} />
-          </TabsContent>
+        {activeTab === 'trays' && (
+          <TrayTracking />
         )}
         
-        <TabsContent value="equipment" className="space-y-4">
+        {activeTab === 'equipment' && (
           <EquipmentManagement />
-        </TabsContent>
-      </Tabs>
+        )}
+        
+        {activeTab === 'crops' && isCorporateManager && (
+          <CropConfiguration
+            crops={crops}
+            onAddCrop={handleAddCrop}
+            onEditCrop={handleEditCrop}
+            onDeleteCrop={handleDeleteCrop}
+          />
+        )}
+        
+        {activeTab === 'systems' && isCorporateManager && (
+          <SystemConfiguration isCorporateManager={isCorporateManager} />
+        )}
+      </div>
 
       {/* Crop Modal */}
       <CropModal
