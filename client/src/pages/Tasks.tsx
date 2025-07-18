@@ -397,7 +397,13 @@ const Tasks: React.FC = () => {
   const createTaskMutation = useMutation({
     mutationFn: (taskData: any) => apiRequest('POST', '/api/tasks', taskData),
     onSuccess: () => {
+      // Invalidate all task queries to ensure proper cache refresh
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
+      
+      // Force refetch of current task query
+      refetch();
+      
       setAddTaskModalOpen(false);
       toast({
         title: "Task Created",
@@ -421,6 +427,8 @@ const Tasks: React.FC = () => {
       ...taskData,
       // Send date as string, server will handle conversion
       dueDate: taskData.dueDate,
+      // Add location to the task
+      location: currentLocation.code,
     };
     
     console.log('Calling createTaskMutation with:', newTask);
