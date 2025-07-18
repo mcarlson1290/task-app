@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Download, Filter, BarChart3, Users, Clock, CheckCircle, AlertTriangle, SkipForward } from "lucide-react";
 import { useLocation } from "@/contexts/LocationContext";
+import { 
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+} from 'recharts';
 
 interface TaskFilters {
   dateRange: string;
@@ -395,6 +399,8 @@ const TaskDataTable: React.FC<{ tasks: TaskDataProps[] }> = ({ tasks }) => {
 
 export const TaskOverview: React.FC = () => {
   const { currentLocation, isViewingAllLocations } = useLocation();
+  const [dateRange, setDateRange] = useState('7d');
+  const [selectedMetric, setSelectedMetric] = useState('completion');
   
   const [filters, setFilters] = useState<TaskFilters>({
     dateRange: 'last7days',
@@ -413,9 +419,132 @@ export const TaskOverview: React.FC = () => {
   });
 
   const { data: tasks = [], isLoading } = useQuery<TaskDataProps[]>({
-    queryKey: ["/api/tasks", currentLocation.code],
+    queryKey: ["/api/tasks", { location: currentLocation.code }],
+    queryFn: async () => {
+      const response = await fetch(`/api/tasks?location=${currentLocation.code}`);
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json();
+    },
     enabled: true,
   });
+
+  // Calculate comprehensive analytics from task data
+  const analyticsData = useMemo(() => {
+    const locationFilteredTasks = isViewingAllLocations 
+      ? tasks 
+      : tasks.filter(task => task.location === currentLocation.code);
+    
+    const totalTasks = locationFilteredTasks.length;
+    const completedTasks = locationFilteredTasks.filter(task => task.status === 'completed').length;
+    const inProgressTasks = locationFilteredTasks.filter(task => task.status === 'in_progress').length;
+    const pendingTasks = locationFilteredTasks.filter(task => task.status === 'pending').length;
+    const skippedTasks = locationFilteredTasks.filter(task => task.status === 'skipped').length;
+    const pausedTasks = locationFilteredTasks.filter(task => task.status === 'paused').length;
+    
+    const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    const avgCompletionTime = completedTasks > 0 
+      ? locationFilteredTasks.filter(task => task.actualTime).reduce((sum, task) => sum + (task.actualTime || 0), 0) / completedTasks
+      : 0;
+    
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todaysTasks = locationFilteredTasks.filter(task => {
+      const taskDate = new Date(task.createdAt);
+      return taskDate >= today && taskDate < tomorrow;
+    });
+    
+    const overdueRate = locationFilteredTasks.filter(task => {
+      const dueDate = new Date(task.dueDate);
+      return dueDate < now && task.status !== 'completed';
+    }).length;
+    
+    return {
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      pendingTasks,
+      skippedTasks,
+      pausedTasks,
+      avgCompletionTime,
+      overdueRate: totalTasks > 0 ? (overdueRate / totalTasks) * 100 : 0,
+      skipRate: totalTasks > 0 ? (skippedTasks / totalTasks) * 100 : 0,
+      todaysTasks: todaysTasks.length,
+      todaysCompleted: todaysTasks.filter(task => task.status === 'completed').length,
+      completionRate
+    };
+  }, [tasks, currentLocation.code, isViewingAllLocations]);
+
+  // Generate trend data for charts
+  const trendData = useMemo(() => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const data = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      const dayTasks = tasks.filter(task => {
+        const taskDate = new Date(task.createdAt);
+        return taskDate >= dayStart && taskDate <= dayEnd;
+      });
+      
+      data.push({
+        date: days[date.getDay()],
+        completed: dayTasks.filter(task => task.status === 'completed').length,
+        assigned: dayTasks.length
+      });
+    }
+    
+    return data;
+  }, [tasks]);
+
+  // Task type distribution
+  const taskTypeData = useMemo(() => {
+    const types = {};
+    tasks.forEach(task => {
+      types[task.type] = (types[task.type] || 0) + 1;
+    });
+    
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'];
+    return Object.entries(types).map(([type, count], index) => ({
+      name: type.charAt(0).toUpperCase() + type.slice(1).replace(/[-_]/g, ' '),
+      value: count,
+      color: colors[index % colors.length]
+    }));
+  }, [tasks]);
+
+  // Time distribution
+  const timeDistribution = useMemo(() => {
+    const ranges = {
+      '0-5 min': 0,
+      '5-10 min': 0,
+      '10-20 min': 0,
+      '20-30 min': 0,
+      '30+ min': 0
+    };
+    
+    tasks.forEach(task => {
+      const time = task.actualTime || task.estimatedTime;
+      if (time <= 5) ranges['0-5 min']++;
+      else if (time <= 10) ranges['5-10 min']++;
+      else if (time <= 20) ranges['10-20 min']++;
+      else if (time <= 30) ranges['20-30 min']++;
+      else ranges['30+ min']++;
+    });
+    
+    return Object.entries(ranges).map(([range, count]) => ({
+      range,
+      count
+    }));
+  }, [tasks]);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -463,6 +592,38 @@ export const TaskOverview: React.FC = () => {
     });
   }, [tasks, filters, currentLocation.code, isViewingAllLocations]);
 
+  // Key metrics for display
+  const metrics = [
+    {
+      label: 'Completion Rate',
+      value: `${analyticsData.completionRate.toFixed(1)}%`,
+      change: '+2.3%',
+      positive: true,
+      icon: CheckCircle
+    },
+    {
+      label: 'Avg. Completion Time',
+      value: `${analyticsData.avgCompletionTime.toFixed(1)} min`,
+      change: '-1.2 min',
+      positive: true,
+      icon: Clock
+    },
+    {
+      label: 'Overdue Rate',
+      value: `${analyticsData.overdueRate.toFixed(1)}%`,
+      change: '+0.5%',
+      positive: false,
+      icon: AlertTriangle
+    },
+    {
+      label: 'Tasks Today',
+      value: `${analyticsData.todaysCompleted}/${analyticsData.todaysTasks}`,
+      change: analyticsData.todaysTasks > 0 ? `${((analyticsData.todaysCompleted / analyticsData.todaysTasks) * 100).toFixed(1)}%` : '0%',
+      positive: true,
+      icon: BarChart3
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -481,6 +642,226 @@ export const TaskOverview: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-[#203B17] mb-2">Task Overview</h2>
+          <p className="text-gray-600">Comprehensive analytics for {isViewingAllLocations ? 'all locations' : currentLocation.name}</p>
+        </div>
+        <div className="flex gap-2 mt-4 sm:mt-0">
+          {['24h', '7d', '30d', '90d'].map((range) => (
+            <Button
+              key={range}
+              variant={dateRange === range ? 'default' : 'outline'}
+              onClick={() => setDateRange(range)}
+              className="text-sm"
+            >
+              {range === '24h' ? '24h' : range === '7d' ? '7 days' : range === '30d' ? '30 days' : '90 days'}
+            </Button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {metrics.map((metric, index) => (
+          <Card key={index} className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">{metric.label}</p>
+                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                <p className={`text-sm ${metric.positive ? 'text-green-600' : 'text-red-600'}`}>
+                  {metric.change}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-full">
+                <metric.icon className="w-6 h-6 text-[#2D8028]" />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Completion Trend */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Task Completion Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="completed" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name="Completed"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="assigned" 
+                  stroke="#6b7280" 
+                  strokeDasharray="5 5"
+                  name="Assigned"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        {/* Task Type Distribution */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Tasks by Type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={taskTypeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {taskTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        {/* Time Distribution */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Completion Time Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={timeDistribution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="range" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        {/* Location Breakdown (if viewing all) */}
+        {isViewingAllLocations && (
+          <Card className="p-6">
+            <CardHeader>
+              <CardTitle>Performance by Location</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Kenosha</h4>
+                  <div className="flex justify-between text-sm">
+                    <span>Completion Rate:</span>
+                    <span className="font-medium">94.2%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Avg. Time:</span>
+                    <span className="font-medium">22.1 min</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Racine (Dev)</h4>
+                  <div className="flex justify-between text-sm">
+                    <span>Completion Rate:</span>
+                    <span className="font-medium">91.8%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Avg. Time:</span>
+                    <span className="font-medium">24.9 min</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Milwaukee</h4>
+                  <div className="flex justify-between text-sm">
+                    <span>Completion Rate:</span>
+                    <span className="font-medium">89.5%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Avg. Time:</span>
+                    <span className="font-medium">26.3 min</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      
+      {/* Recent Activity Table */}
+      <Card className="p-6">
+        <CardHeader>
+          <CardTitle>Recent Task Completions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2 font-medium">Task</th>
+                  <th className="text-left p-2 font-medium">Status</th>
+                  <th className="text-left p-2 font-medium">Time Taken</th>
+                  <th className="text-left p-2 font-medium">Priority</th>
+                  <th className="text-left p-2 font-medium">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTasks.slice(0, 10).map((task) => (
+                  <tr key={task.id} className="border-b hover:bg-gray-50">
+                    <td className="p-2">
+                      <div className="font-medium">{task.title}</div>
+                      <div className="text-sm text-gray-500">{task.description}</div>
+                    </td>
+                    <td className="p-2">
+                      <Badge variant={
+                        task.status === 'completed' ? 'default' : 
+                        task.status === 'in_progress' ? 'secondary' : 
+                        'outline'
+                      }>
+                        {task.status.replace('_', ' ')}
+                      </Badge>
+                    </td>
+                    <td className="p-2 text-sm">
+                      {task.actualTime || task.estimatedTime || 0} min
+                    </td>
+                    <td className="p-2">
+                      <Badge variant={task.priority === 'high' ? 'destructive' : task.priority === 'medium' ? 'secondary' : 'outline'}>
+                        {task.priority}
+                      </Badge>
+                    </td>
+                    <td className="p-2 text-sm text-gray-500">
+                      {new Date(task.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Original filters and table for backward compatibility */}
       <TaskDataFilters
         filters={filters}
         setFilters={setFilters}

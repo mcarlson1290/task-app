@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -9,17 +10,209 @@ import {
 } from "recharts";
 import { 
   TrendingUp, Clock, CheckCircle, AlertTriangle, Users, 
-  Target, Award, Activity 
+  Target, Award, Activity, RotateCcw, Zap 
 } from "lucide-react";
 import { DashboardAnalytics } from "@/types";
 import { useLocation } from "@/contexts/LocationContext";
+import { RecurringTaskAnalytics } from "./RecurringTaskAnalytics";
+
+// Staff Comparison Component
+const StaffComparison: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  // Mock staff performance data - replace with real data
+  const staffData = [
+    { name: 'Sarah Johnson', tasksCompleted: 45, avgTime: 22.5, efficiency: 96.2, location: 'K' },
+    { name: 'Dan Smith', tasksCompleted: 42, avgTime: 24.1, efficiency: 94.8, location: 'K' },
+    { name: 'Mike Wilson', tasksCompleted: 38, avgTime: 26.3, efficiency: 92.1, location: 'R' },
+    { name: 'Lisa Brown', tasksCompleted: 41, avgTime: 23.7, efficiency: 95.4, location: 'R' },
+    { name: 'Tom Davis', tasksCompleted: 39, avgTime: 25.8, efficiency: 93.6, location: 'MKE' },
+    { name: 'Emma Clark', tasksCompleted: 44, avgTime: 21.9, efficiency: 97.1, location: 'MKE' },
+  ];
+
+  const filteredStaffData = isViewingAllLocations 
+    ? staffData 
+    : staffData.filter(staff => staff.location === currentLocation.code);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Staff Performance Chart */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Staff Performance Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={filteredStaffData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="tasksCompleted" fill="#10b981" name="Tasks Completed" />
+                <Bar dataKey="avgTime" fill="#3b82f6" name="Avg. Time (min)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Efficiency Ratings */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Efficiency Ratings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filteredStaffData.map((staff, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <div className="font-medium">{staff.name}</div>
+                    <div className="text-sm text-gray-600">{staff.tasksCompleted} tasks</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-lg">{staff.efficiency.toFixed(1)}%</div>
+                    <div className="text-sm text-gray-600">{staff.avgTime.toFixed(1)} min avg</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+// Task Efficiency Component
+const TaskEfficiency: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  // Mock efficiency data - replace with real data
+  const efficiencyData = [
+    { task: 'Seeding', planned: 30, actual: 25, efficiency: 120 },
+    { task: 'Harvesting', planned: 45, actual: 42, efficiency: 107 },
+    { task: 'Cleaning', planned: 20, actual: 22, efficiency: 91 },
+    { task: 'Maintenance', planned: 35, actual: 38, efficiency: 92 },
+    { task: 'Packaging', planned: 25, actual: 23, efficiency: 109 },
+  ];
+
+  const timeAnalysis = [
+    { hour: '8:00', tasks: 12, efficiency: 95 },
+    { hour: '9:00', tasks: 15, efficiency: 98 },
+    { hour: '10:00', tasks: 18, efficiency: 102 },
+    { hour: '11:00', tasks: 16, efficiency: 99 },
+    { hour: '12:00', tasks: 8, efficiency: 85 },
+    { hour: '13:00', tasks: 14, efficiency: 96 },
+    { hour: '14:00', tasks: 17, efficiency: 101 },
+    { hour: '15:00', tasks: 15, efficiency: 97 },
+    { hour: '16:00', tasks: 12, efficiency: 94 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Efficiency Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Overall Efficiency</p>
+              <p className="text-2xl font-bold text-green-600">104.2%</p>
+            </div>
+            <div className="p-3 bg-green-50 rounded-full">
+              <TrendingUp className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Time Saved</p>
+              <p className="text-2xl font-bold text-blue-600">2.4 hrs</p>
+            </div>
+            <div className="p-3 bg-blue-50 rounded-full">
+              <Clock className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Peak Hour</p>
+              <p className="text-2xl font-bold text-purple-600">10:00 AM</p>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-full">
+              <Activity className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Task Efficiency */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Task Type Efficiency</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={efficiencyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="task" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="planned" fill="#e5e7eb" name="Planned Time" />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Time" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Hourly Analysis */}
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Hourly Efficiency Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={timeAnalysis}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="hour" />
+                <YAxis yAxisId="left" orientation="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <Tooltip />
+                <Bar yAxisId="left" dataKey="tasks" fill="#10b981" name="Tasks Completed" />
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="efficiency" 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  name="Efficiency %"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
 export const TaskAnalytics: React.FC = () => {
+  const [activeView, setActiveView] = React.useState<'recurring' | 'staff' | 'efficiency'>('recurring');
   const [timePeriod, setTimePeriod] = React.useState("7d");
   const { currentLocation, isViewingAllLocations } = useLocation();
 
   const { data: analytics, isLoading } = useQuery<DashboardAnalytics>({
-    queryKey: ["/api/analytics/dashboard", currentLocation.code],
+    queryKey: ["/api/analytics/dashboard", { location: currentLocation.code }],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/dashboard?location=${currentLocation.code}`);
+      if (!response.ok) throw new Error('Failed to fetch analytics');
+      return response.json();
+    },
   });
 
   const COLORS = ['#2D8028', '#203B17', '#4ADE80', '#F59E0B', '#EF4444'];
@@ -91,151 +284,38 @@ export const TaskAnalytics: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Tasks</p>
-                <p className="text-2xl font-bold text-[#203B17]">{analytics.totalTasks}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Target className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Completion Rate</p>
-                <p className="text-2xl font-bold text-[#203B17]">{completionRate}%</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Avg Time/Task</p>
-                <p className="text-2xl font-bold text-[#203B17]">{avgTimePerTask}m</p>
-              </div>
-              <div className="bg-amber-100 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Stock Alerts</p>
-                <p className="text-2xl font-bold text-[#203B17]">{analytics.lowStockAlerts}</p>
-              </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Sub-navigation */}
+      <div className="flex flex-wrap gap-2 border-b border-gray-200">
+        <Button
+          variant={activeView === 'recurring' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('recurring')}
+          className="flex items-center gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Recurring Task Analysis
+        </Button>
+        <Button
+          variant={activeView === 'staff' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('staff')}
+          className="flex items-center gap-2"
+        >
+          <Users className="w-4 h-4" />
+          Staff Comparison
+        </Button>
+        <Button
+          variant={activeView === 'efficiency' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('efficiency')}
+          className="flex items-center gap-2"
+        >
+          <Zap className="w-4 h-4" />
+          Efficiency Metrics
+        </Button>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Task Status Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2" />
-              Task Status Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={taskStatusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {taskStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Task Types */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart className="h-5 w-5 mr-2" />
-              Tasks by Type
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={taskTypeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#2D8028" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2" />
-            Performance Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-[#203B17] mb-2">
-                {Math.round(analytics.totalTimeLogged / 60 * 10) / 10}h
-              </div>
-              <p className="text-sm text-gray-600">Total Time Logged</p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-[#203B17] mb-2">
-                {analytics.totalUsers}
-              </div>
-              <p className="text-sm text-gray-600">Active Users</p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-[#203B17] mb-2">
-                {analytics.totalInventoryItems}
-              </div>
-              <p className="text-sm text-gray-600">Inventory Items</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Content based on active view */}
+      {activeView === 'recurring' && <RecurringTaskAnalytics />}
+      {activeView === 'staff' && <StaffComparison />}
+      {activeView === 'efficiency' && <TaskEfficiency />}
     </div>
   );
 };

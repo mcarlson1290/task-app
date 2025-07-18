@@ -66,11 +66,16 @@ const Tasks: React.FC = () => {
   }, []);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", auth.user?.id, currentLocation.code],
+    queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.code }],
     queryFn: async () => {
-      const url = auth.user?.role === 'technician' 
-        ? `/api/tasks?userId=${auth.user.id}`
-        : '/api/tasks';
+      const params = new URLSearchParams();
+      if (auth.user?.role === 'technician') {
+        params.append('userId', auth.user.id.toString());
+      }
+      if (!isViewingAllLocations) {
+        params.append('location', currentLocation.code);
+      }
+      const url = `/api/tasks?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tasks');
       return response.json();
