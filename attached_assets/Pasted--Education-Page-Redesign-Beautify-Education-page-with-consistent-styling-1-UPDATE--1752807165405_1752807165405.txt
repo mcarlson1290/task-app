@@ -1,0 +1,589 @@
+# 🎓 Education Page Redesign
+
+## Beautify Education page with consistent styling
+
+### 1. UPDATE EDUCATION PAGE LAYOUT:
+
+```typescript
+export const Education: React.FC = () => {
+  const [filterTab, setFilterTab] = useState('all');
+  const currentUser = getCurrentUser();
+  const isCorporate = currentUser.role === 'Corporate';
+  
+  return (
+    <div className="education-page">
+      {/* Action button in top right */}
+      {isCorporate && (
+        <div className="page-actions">
+          <button className="btn-create-course">
+            + Create Course
+          </button>
+        </div>
+      )}
+      
+      {/* Progress Summary Card */}
+      <div className="learning-progress-card">
+        <div className="progress-icon">🎓</div>
+        <div className="progress-content">
+          <h3>Your Learning Progress</h3>
+          <div className="progress-stats">
+            <span className="completed">1 Courses Completed</span>
+            <span className="separator">•</span>
+            <span className="remaining">6 remaining</span>
+            <span className="separator">•</span>
+            <span className="role">👤 Technician Role</span>
+          </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '14%' }} />
+          </div>
+          <span className="progress-text">14% Complete</span>
+        </div>
+      </div>
+      
+      {/* Filter tabs matching sub-tab style */}
+      <div className="course-filter-tabs">
+        <button
+          className={`filter-tab ${filterTab === 'all' ? 'active' : ''}`}
+          onClick={() => setFilterTab('all')}
+        >
+          📚 All Courses
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'in-progress' ? 'active' : ''}`}
+          onClick={() => setFilterTab('in-progress')}
+        >
+          🔄 In Progress
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'completed' ? 'active' : ''}`}
+          onClick={() => setFilterTab('completed')}
+        >
+          ✅ Completed
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'not-started' ? 'active' : ''}`}
+          onClick={() => setFilterTab('not-started')}
+        >
+          📋 Not Started
+        </button>
+      </div>
+      
+      {/* Course Grid */}
+      <div className="courses-grid">
+        {/* Course cards... */}
+        <CourseCard
+          icon="🦺"
+          title="Basic Safety & Orientation"
+          description="Introduction to farm safety procedures and basic orientation"
+          sections={3}
+          duration="20 minutes"
+          status="completed"
+          completedDate="7/17/2025"
+          awards={['General Staff role']}
+        />
+        
+        <CourseCard
+          icon="🌱"
+          title="Seeding Technician Certification"
+          description="Learn proper seeding techniques for microgreens and leafy greens production"
+          sections={5}
+          duration="45 minutes"
+          status="not-started"
+          awards={['Seeding Technician role']}
+          requirementsMet={true}
+        />
+        
+        {/* More course cards... */}
+      </div>
+    </div>
+  );
+};
+```
+
+### 2. COURSE CARD COMPONENT:
+
+```typescript
+const CourseCard: React.FC<CourseCardProps> = ({
+  icon,
+  title,
+  description,
+  sections,
+  duration,
+  status,
+  completedDate,
+  awards,
+  requirementsMet,
+  progress
+}) => {
+  const getStatusBadge = () => {
+    switch (status) {
+      case 'completed':
+        return <span className="status-badge completed">✅ Completed</span>;
+      case 'in-progress':
+        return <span className="status-badge in-progress">🔄 In Progress</span>;
+      case 'locked':
+        return <span className="status-badge locked">🔒 Locked</span>;
+      default:
+        return <span className="status-badge not-started">📋 Not Started</span>;
+    }
+  };
+  
+  return (
+    <div className={`course-card ${status}`}>
+      <div className="course-header">
+        <div className="course-icon">{icon}</div>
+        {getStatusBadge()}
+      </div>
+      
+      <h3 className="course-title">{title}</h3>
+      <p className="course-description">{description}</p>
+      
+      <div className="course-meta">
+        <span className="meta-item">
+          📚 {sections} sections
+        </span>
+        <span className="meta-item">
+          ⏱️ {duration}
+        </span>
+      </div>
+      
+      {awards && (
+        <div className="course-awards">
+          <span className="award-label">🏆 Awards:</span>
+          {awards.map((award, i) => (
+            <span key={i} className="award-badge">{award}</span>
+          ))}
+        </div>
+      )}
+      
+      {status === 'completed' && completedDate && (
+        <div className="completion-info">
+          <span className="completion-date">
+            Completed on {completedDate}
+          </span>
+        </div>
+      )}
+      
+      {status === 'in-progress' && progress && (
+        <div className="course-progress">
+          <div className="progress-bar-small">
+            <div className="progress-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <span className="progress-text">{progress}% complete</span>
+        </div>
+      )}
+      
+      {requirementsMet && status === 'not-started' && (
+        <div className="requirements-met">
+          ✅ All Requirements Met
+        </div>
+      )}
+      
+      <div className="course-actions">
+        {status === 'completed' ? (
+          <button className="btn-course completed">
+            ✅ Completed
+          </button>
+        ) : status === 'in-progress' ? (
+          <button className="btn-course resume">
+            Resume Course
+          </button>
+        ) : status === 'locked' ? (
+          <button className="btn-course locked" disabled>
+            🔒 Locked
+          </button>
+        ) : (
+          <button className="btn-course start">
+            Start Course
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. BEAUTIFUL CSS STYLING:
+
+```css
+/* Education Page */
+.education-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Page Actions */
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+.btn-create-course {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-create-course:hover {
+  background: #236020;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 128, 40, 0.2);
+}
+
+/* Learning Progress Card */
+.learning-progress-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.progress-icon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.progress-content {
+  flex: 1;
+}
+
+.progress-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: #065f46;
+}
+
+.progress-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #047857;
+}
+
+.progress-stats .separator {
+  color: #10b981;
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #10b981;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Course Filter Tabs - Matching Production Data Style */
+.course-filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.course-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filter-tab:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.filter-tab.active {
+  background: #2D8028;
+  color: white;
+}
+
+/* Courses Grid */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* Course Card */
+.course-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #e5e7eb;
+}
+
+.course-card.completed::before {
+  background: #10b981;
+}
+
+.course-card.in-progress::before {
+  background: #f59e0b;
+}
+
+.course-card.locked {
+  opacity: 0.7;
+}
+
+.course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.course-icon {
+  font-size: 36px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.in-progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.not-started {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-badge.locked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.course-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.course-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.course-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.course-awards {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.award-label {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.award-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e0e7ff;
+  color: #3730a3;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.completion-info {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #059669;
+}
+
+.course-progress {
+  margin-bottom: 16px;
+}
+
+.progress-bar-small {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.requirements-met {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Course Action Buttons */
+.course-actions {
+  margin-top: auto;
+}
+
+.btn-course {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-course.start {
+  background: #2D8028;
+  color: white;
+}
+
+.btn-course.start:hover {
+  background: #236020;
+}
+
+.btn-course.resume {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-course.resume:hover {
+  background: #d97706;
+}
+
+.btn-course.completed {
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: default;
+}
+
+.btn-course.locked {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .learning-progress-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .progress-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+```
+
+### SUMMARY:
+
+The Education page is now beautiful with:
+
+✅ **Clean filter tabs** matching the Production Data style
+✅ **Beautiful progress card** with gradient background
+✅ **Modern course cards** with:
+  - Status badges
+  - Icons and metadata
+  - Progress bars for in-progress courses
+  - Award badges
+  - Hover effects and shadows
+✅ **Consistent spacing** and professional design
+✅ **Mobile responsive** layout
+✅ **Action button** in top right for Corporate users
+
+Everything now looks polished and professional!

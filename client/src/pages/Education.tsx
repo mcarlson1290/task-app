@@ -37,7 +37,7 @@ interface Course {
 
 const Education: React.FC = () => {
   const auth = getStoredAuth();
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [filterTab, setFilterTab] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -167,7 +167,7 @@ const Education: React.FC = () => {
   const overallProgress = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
 
   const filteredCourses = courses.filter(course => {
-    switch (activeFilter) {
+    switch (filterTab) {
       case 'in-progress':
         return course.status === 'in-progress';
       case 'completed':
@@ -339,89 +339,69 @@ const Education: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 education-page">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between education-header">
-        <div className="flex items-center space-x-4 text-sm">
-          <span className="flex items-center">
-            📚 {completedCourses} Courses Completed
-          </span>
-          <span className="flex items-center">
-            🏆 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role
-          </span>
-        </div>
-        {isCorporateManager && (
-          <Button 
+    <div className="education-page">
+      {/* Action button in top right */}
+      {isCorporateManager && (
+        <div className="page-actions">
+          <button 
+            className="btn-create-course"
             onClick={() => setShowCreateModal(true)}
-            className="bg-[#2D8028] hover:bg-[#203B17] text-white btn-create-course"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Course
-          </Button>
-        )}
-      </div>
-
-      {/* Learning Progress Summary */}
+            + Create Course
+          </button>
+        </div>
+      )}
+      
+      {/* Progress Summary Card */}
       <div className="learning-progress-card">
-        <h2>
-          <span>🎓</span> Your Learning Progress
-        </h2>
-        <div className="progress-summary">
-          <span>Courses Completed</span>
-          <span>{completedCourses}/{courses.length}</span>
-        </div>
-        <div className="progress-bar-container">
-          <div 
-            className="progress-bar-fill" 
-            style={{ width: `${courses.length > 0 ? (completedCourses / courses.length) * 100 : 0}%` }}
-          />
-        </div>
-        <div className="progress-details">
-          <span>{courses.length > 0 ? Math.round((completedCourses / courses.length) * 100) : 0}% Complete</span>
-          <span>{courses.length - completedCourses} remaining</span>
+        <div className="progress-icon">🎓</div>
+        <div className="progress-content">
+          <h3>Your Learning Progress</h3>
+          <div className="progress-stats">
+            <span className="completed">{completedCourses} Courses Completed</span>
+            <span className="separator">•</span>
+            <span className="remaining">{courses.length - completedCourses} remaining</span>
+            <span className="separator">•</span>
+            <span className="role">👤 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role</span>
+          </div>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${courses.length > 0 ? (completedCourses / courses.length) * 100 : 0}%` }} 
+            />
+          </div>
+          <span className="progress-text">
+            {courses.length > 0 ? Math.round((completedCourses / courses.length) * 100) : 0}% Complete
+          </span>
         </div>
       </div>
-
-
-
-      {/* Filter Tabs */}
-      <div className="flex items-center space-x-2">
-        <Filter className="h-4 w-4 text-gray-500" />
-        
-        {/* Desktop Filters */}
-        <div className="hidden md:flex space-x-2 course-filters">
-          {[
-            { key: 'all', label: 'All Courses' },
-            { key: 'in-progress', label: 'In Progress' },
-            { key: 'completed', label: 'Completed' },
-            { key: 'not-started', label: 'Not Started' }
-          ].map((filter) => (
-            <Button
-              key={filter.key}
-              variant={activeFilter === filter.key ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveFilter(filter.key)}
-              className={activeFilter === filter.key ? 'bg-[#203B17] hover:bg-[#2D8028]' : ''}
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Mobile Dropdown Filter */}
-        <div className="md:hidden flex-1 mobile-filter-dropdown">
-          <Select value={activeFilter} onValueChange={setActiveFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Filter courses..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Courses</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="not-started">Not Started</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      
+      {/* Filter tabs matching sub-tab style */}
+      <div className="course-filter-tabs">
+        <button
+          className={`filter-tab ${filterTab === 'all' ? 'active' : ''}`}
+          onClick={() => setFilterTab('all')}
+        >
+          📚 All Courses
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'in-progress' ? 'active' : ''}`}
+          onClick={() => setFilterTab('in-progress')}
+        >
+          🔄 In Progress
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'completed' ? 'active' : ''}`}
+          onClick={() => setFilterTab('completed')}
+        >
+          ✅ Completed
+        </button>
+        <button
+          className={`filter-tab ${filterTab === 'not-started' ? 'active' : ''}`}
+          onClick={() => setFilterTab('not-started')}
+        >
+          📋 Not Started
+        </button>
       </div>
 
       {/* Course Grid */}
@@ -445,7 +425,7 @@ const Education: React.FC = () => {
         <div className="text-center py-12">
           <div className="text-4xl mb-4">🎓</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No courses found for "{activeFilter}" filter
+            No courses found for "{filterTab}" filter
           </h3>
           <p className="text-gray-600">
             Try selecting a different filter or check back later for new courses.
