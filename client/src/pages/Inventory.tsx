@@ -61,11 +61,15 @@ const Inventory: React.FC = () => {
   });
 
   const addInventoryMutation = useMutation({
-    mutationFn: (data: AddInventoryData) => apiRequest("POST", "/api/inventory/add-stock", data),
+    mutationFn: (data: { itemId: number; quantity: number; unitCost: number; notes: string }) => 
+      apiRequest("POST", "/api/inventory/add-stock", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
       queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
       setShowAddInventoryModal(false);
+    },
+    onError: (error) => {
+      console.error("Failed to add inventory:", error);
     },
   });
 
@@ -200,7 +204,14 @@ Please process this reorder request at your earliest convenience.`;
   };
 
   const handleAddInventory = async (data: AddInventoryData) => {
-    await addInventoryMutation.mutateAsync(data);
+    // Transform the data to match API expectations
+    const apiData = {
+      itemId: data.itemId,
+      quantity: data.quantity,
+      unitCost: data.costPerUnit, // API expects unitCost, not costPerUnit
+      notes: data.notes
+    };
+    await addInventoryMutation.mutateAsync(apiData);
   };
 
   if (isLoading) {

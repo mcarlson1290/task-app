@@ -1,0 +1,205 @@
+# Implement "Add to Inventory" Button Functionality
+
+The modal looks great but the "Add to Inventory" button doesn't save the data. Here's how to make it functional:
+
+## 1. Add Form Submit Handler
+
+In the AddInventoryModal component, add the handleSubmit function:
+
+```jsx
+const AddInventoryModal = ({ items, onClose, onSave }) => {
+  // ... existing state ...
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validate the form data
+    if (!inventoryData.itemId || !inventoryData.quantity || !inventoryData.totalCost) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Prepare the data to save
+    const dataToSave = {
+      itemId: inventoryData.itemId,
+      itemName: items.find(i => i.id === inventoryData.itemId)?.name,
+      quantity: parseFloat(inventoryData.quantity),
+      totalCost: parseFloat(inventoryData.totalCost),
+      costPerUnit: parseFloat(inventoryData.costPerUnit),
+      notes: inventoryData.notes,
+      addedBy: currentUser.name,
+      addedAt: new Date().toISOString()
+    };
+    
+    // Call the onSave function passed from parent
+    onSave(dataToSave);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>📥 Add to Inventory</h2>
+        
+        <form onSubmit={handleSubmit}> {/* Connect the handler here */}
+          {/* ... existing form fields ... */}
+          
+          <div className="modal-actions">
+            <button type="submit" className="btn-save">
+              Add to Inventory
+            </button>
+            <button type="button" onClick={onClose} className="btn-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+```
+
+## 2. Implement the Save Handler in Parent Component
+
+In the Inventory component, add the handleAddInventory function:
+
+```jsx
+const Inventory = () => {
+  // ... existing state ...
+
+  const handleAddInventory = (inventoryData) => {
+    try {
+      // Find the item being updated
+      const itemIndex = items.findIndex(item => item.id === inventoryData.itemId);
+      if (itemIndex === -1) {
+        alert('Item not found');
+        return;
+      }
+
+      const item = items[itemIndex];
+      
+      // Calculate new weighted average cost
+      const oldStock = item.currentStock || 0;
+      const oldValue = item.totalValue || 0;
+      const newQuantity = inventoryData.quantity;
+      const newCost = inventoryData.totalCost;
+      
+      // New totals
+      const newTotalStock = oldStock + newQuantity;
+      const newTotalValue = oldValue + newCost;
+      const newAvgCost = newTotalValue / newTotalStock;
+      
+      // Create updated item
+      const updatedItem = {
+        ...item,
+        currentStock: newTotalStock,
+        totalValue: newTotalValue,
+        avgCostPerUnit: newAvgCost,
+        lastUpdated: new Date().toISOString(),
+        transactions: [
+          ...(item.transactions || []),
+          {
+            id: Date.now(),
+            type: 'purchase',
+            quantity: newQuantity,
+            totalCost: newCost,
+            costPerUnit: inventoryData.costPerUnit,
+            notes: inventoryData.notes,
+            addedBy: inventoryData.addedBy,
+            addedAt: inventoryData.addedAt
+          }
+        ]
+      };
+      
+      // Update the items array
+      const newItems = [...items];
+      newItems[itemIndex] = updatedItem;
+      setItems(newItems);
+      
+      // Close the modal
+      setShowAddInventoryModal(false);
+      
+      // Show success message
+      console.log(`✅ Added ${newQuantity} units of ${item.name} at $${inventoryData.costPerUnit}/unit`);
+      alert(`Successfully added ${newQuantity} units to ${item.name}`);
+      
+    } catch (error) {
+      console.error('Error adding inventory:', error);
+      alert('Failed to add inventory. Please try again.');
+    }
+  };
+
+  // ... rest of component ...
+  
+  return (
+    <>
+      {/* ... existing JSX ... */}
+      
+      {showAddInventoryModal && (
+        <AddInventoryModal
+          items={items}
+          onClose={() => setShowAddInventoryModal(false)}
+          onSave={handleAddInventory}  // Pass the handler here
+        />
+      )}
+    </>
+  );
+};
+```
+
+## 3. Update Item Display to Show New Values
+
+Make sure the inventory cards display the updated stock levels:
+
+```jsx
+// In the inventory item card
+<div className="item-details">
+  <p>Current Stock: {item.currentStock || 0} {item.unitType}</p>
+  <p>Minimum Stock: {item.minimumStock || 0} {item.unitType}</p>
+  <p>Cost per unit: ${item.avgCostPerUnit?.toFixed(2) || '0.00'}</p>
+  <p>Total Value: ${item.totalValue?.toFixed(2) || '0.00'}</p>
+</div>
+```
+
+## 4. Initialize Items with Cost Tracking Fields
+
+Make sure your inventory items have the necessary fields:
+
+```javascript
+const mockInventoryItems = [
+  {
+    id: 1,
+    name: 'Arugula Seeds',
+    category: 'Seeds',
+    currentStock: 20,
+    minimumStock: 100,
+    unitType: 'units',
+    supplier: 'TEST',
+    
+    // Cost tracking fields
+    totalValue: 0, // Will be calculated
+    avgCostPerUnit: 0, // Will be calculated
+    transactions: [], // Will store history
+    
+    isLowStock: true
+  },
+  // ... other items
+];
+```
+
+## Test the Implementation
+
+1. Click "Add to Inventory"
+2. Select an item (e.g., Hemp Mats)
+3. Enter quantity (e.g., 50)
+4. Enter total cost (e.g., $30)
+5. See calculated cost per unit ($0.60)
+6. Add notes if needed
+7. Click "Add to Inventory" button
+8. Verify:
+   - Modal closes
+   - Success message appears
+   - Item's current stock increases by 50
+   - Cost per unit is updated
+   - Total value reflects the addition
+
+The key is connecting the form submission to the save handler and properly updating the state with the new inventory values.

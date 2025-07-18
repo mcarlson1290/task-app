@@ -257,16 +257,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/inventory/add-stock", async (req, res) => {
     try {
       console.log("Add inventory request:", req.body);
-      const { itemId, quantity, unitCost, supplier, notes } = req.body;
+      const { itemId, quantity, unitCost, costPerUnit, supplier, notes } = req.body;
+      const finalUnitCost = unitCost || costPerUnit;
       
-      if (!itemId || !quantity || !unitCost) {
+      if (!itemId || !quantity || !finalUnitCost) {
         return res.status(400).json({ message: "Missing required fields: itemId, quantity, unitCost" });
       }
 
       const result = await storage.addInventoryStock({
         itemId: parseInt(itemId),
         quantity: parseFloat(quantity),
-        unitCost: parseFloat(unitCost),
+        unitCost: parseFloat(finalUnitCost),
         supplier,
         notes
       });
