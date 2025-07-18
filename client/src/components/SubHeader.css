@@ -189,6 +189,55 @@
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+.search-container {
+  /* Dimensions */
+  height: 36px;
+  min-width: 200px;
+  max-width: 400px;
+  flex: 1;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  /* Style */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  padding: 0 12px;
+  
+  /* Behavior */
+  transition: border-color 0.2s ease;
+}
+
+.search-container:hover {
+  border-color: #80bdff;
+}
+
+.search-container:focus-within {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.search-container input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  color: #495057;
+}
+
+.search-container input::placeholder {
+  color: #6c757d;
+}
+
+.search-container svg {
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
 /* TAB NAVIGATION SPECIFICATIONS */
 
 .tab-group {

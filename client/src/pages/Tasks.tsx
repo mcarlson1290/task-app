@@ -459,103 +459,86 @@ const Tasks: React.FC = () => {
             Category
           </button>
         </div>
-      </SubHeader>
-      <div className="task-manager">
-      {/* Updated filter bar with New Task button */}
-      <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
-        <div 
-          className="task-filters"
-          ref={filtersRef}
-          onScroll={(e) => {
-            const target = e.target as HTMLDivElement;
-            setCanScrollLeft(target.scrollLeft > 0);
-            setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
-          }}
+        
+        {/* Category Filter */}
+        <select 
+          value={activeFilter}
+          onChange={(e) => setActiveFilter(e.target.value)}
+          className="filter-dropdown"
         >
-          {/* All Tasks Button */}
-          <button className="btn-filter all-tasks">
-            All Tasks
-          </button>
+          <option value="all">Category</option>
+          {taskTypes.filter(type => type.value !== "all").map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
+        </select>
 
-          {/* Category Select */}
-          <select 
-            value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Category</option>
-            {taskTypes.filter(type => type.value !== "all").map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="all">Status</option>
+          {statusOptions.filter(option => option.value !== "all").map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
-          {/* Status Select */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Status</option>
-            {statusOptions.filter(option => option.value !== "all").map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        {/* Priority Filter */}
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+          className="filter-dropdown"
+        >
+          <option value="all">Priority</option>
+          {priorityOptions.filter(option => option.value !== "all").map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
-          {/* Priority Select */}
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Priority</option>
-            {priorityOptions.filter(option => option.value !== "all").map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        {/* Date Filter */}
+        <input
+          type="date"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="search-input"
+        />
 
-          {/* Date Input */}
+        {/* Search Box */}
+        <div className="search-container">
+          <Search size={16} />
           <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="date-input"
+            type="text"
+            placeholder="Search tasks..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
           />
-
-          {/* Clear Filters Button */}
-          <button 
-            className="btn-clear-filters"
-            onClick={clearAllFilters}
-          >
-            <X size={16} /> Clear Filters
-          </button>
-
-          {/* Search Box */}
-          <div className="search-box">
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-
-          {/* New Task Button */}
-          <button 
-            className="btn-new-task"
-            onClick={handleNewTask}
-          >
-            <Plus size={16} /> New Task
-          </button>
         </div>
-      </div>
+
+        {/* Action Buttons */}
+        <button 
+          className="btn-secondary"
+          onClick={clearAllFilters}
+        >
+          Clear Filters
+        </button>
+        
+        <button 
+          className="btn-primary"
+          onClick={handleNewTask}
+        >
+          <Plus size={16} /> New Task
+        </button>
+      </SubHeader>
+      
+      <div className="task-manager">
 
       {/* Task Content */}
       <div className="task-content">
