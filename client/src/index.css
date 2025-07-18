@@ -468,7 +468,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; /* No horizontal scroll */
-  padding: 24px;
+  padding: 0 24px 24px;
 }
 
 /* Utility Classes */
@@ -528,7 +528,7 @@ img {
 
 /* Page Layout Updates - Clean Headers */
 .page-content {
-  padding: 24px;
+  padding: 0 24px 24px;
   height: 100%;
 }
 
@@ -2653,7 +2653,7 @@ button {
 
 /* ========== SUB-HEADER SYSTEM ========== */
 
-/* Sub-header container */
+/* Sub-header container - attached to main header */
 .sub-header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
@@ -2661,7 +2661,12 @@ button {
   min-height: 56px;
   display: flex;
   align-items: center;
+  margin-top: 0;
   margin-bottom: var(--space-xl);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .sub-header-content {
