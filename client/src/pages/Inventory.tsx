@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit } from "lucide-react";
+import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit, DollarSign } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
@@ -66,6 +66,38 @@ const Inventory: React.FC = () => {
     { value: "equipment", label: "Equipment" },
   ];
 
+  // Cost calculation functions
+  const getItemCostPerUnit = (item: InventoryItem): number => {
+    // Mock cost data - in production, this would come from the database
+    const costs = {
+      'Arugula Seeds': 0.25,
+      'Basil Seeds': 0.30,
+      'Lettuce Seeds': 0.20,
+      'Spinach Seeds': 0.22,
+      'Broccoli Seeds': 0.28,
+      'Kale Seeds': 0.26,
+      'Hydroponic Nutrient Solution': 0.05,
+      'pH Test Kit': 15.00,
+      'Growing Trays': 2.50,
+      'Grow Lights': 45.00,
+      'Pruning Shears': 12.00,
+      'Harvesting Containers': 1.75,
+      'Seedling Trays': 1.25,
+      'Watering System': 85.00,
+      'Thermometer': 8.50,
+      'Humidity Sensor': 25.00,
+    };
+    return costs[item.name as keyof typeof costs] || 1.00;
+  };
+
+  const getItemTotalValue = (item: InventoryItem): number => {
+    return item.currentStock * getItemCostPerUnit(item);
+  };
+
+  const getTotalInventoryValue = (): number => {
+    return inventory.reduce((total, item) => total + getItemTotalValue(item), 0);
+  };
+
   const filteredInventory = React.useMemo(() => {
     let filtered = inventory;
 
@@ -93,6 +125,10 @@ const Inventory: React.FC = () => {
           return a.currentStock - b.currentStock;
         case "category":
           return a.category.localeCompare(b.category);
+        case "cost":
+          return getItemCostPerUnit(b) - getItemCostPerUnit(a); // Highest cost first
+        case "value":
+          return getItemTotalValue(b) - getItemTotalValue(a); // Highest value first
         default:
           return 0;
       }
@@ -194,6 +230,12 @@ Please process this reorder request at your earliest convenience.`;
           <p className="text-gray-600">Track supplies and manage stock levels</p>
         </div>
         <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Total Inventory Value</p>
+            <p className="text-xl font-bold text-[#203B17]">
+              ${getTotalInventoryValue().toFixed(2)}
+            </p>
+          </div>
           {isManager && (
             <Button 
               onClick={handleAddItem}
@@ -244,6 +286,39 @@ Please process this reorder request at your earliest convenience.`;
         </Card>
       )}
 
+      {/* Cost Breakdown by Category */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center text-blue-800">
+            <DollarSign className="h-5 w-5 mr-2" />
+            Inventory Cost Breakdown
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {categories.slice(1).map((category) => {
+              const categoryItems = inventory.filter(item => item.category === category.value);
+              const categoryValue = categoryItems.reduce((total, item) => total + getItemTotalValue(item), 0);
+              const percentage = getTotalInventoryValue() > 0 ? (categoryValue / getTotalInventoryValue()) * 100 : 0;
+              
+              return (
+                <div key={category.value} className="p-4 bg-white rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-lg">{getCategoryIcon(category.value)}</span>
+                    <span className="text-sm text-gray-600">{percentage.toFixed(1)}%</span>
+                  </div>
+                  <h4 className="font-medium text-gray-900 mb-1">{category.label}</h4>
+                  <div className="space-y-1">
+                    <p className="text-lg font-bold text-blue-600">${categoryValue.toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">{categoryItems.length} items</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -275,6 +350,8 @@ Please process this reorder request at your earliest convenience.`;
             <SelectItem value="name">Sort by Name</SelectItem>
             <SelectItem value="stock">Sort by Stock Level</SelectItem>
             <SelectItem value="category">Sort by Category</SelectItem>
+            <SelectItem value="cost">Sort by Cost per Unit</SelectItem>
+            <SelectItem value="value">Sort by Total Value</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center space-x-2">
@@ -354,6 +431,21 @@ Please process this reorder request at your earliest convenience.`;
                         </span>
                       </div>
                     )}
+
+                    {/* Cost Information */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Cost per {item.unit}</span>
+                      <span className="font-medium text-green-600">
+                        ${getItemCostPerUnit(item).toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Value</span>
+                      <span className="font-semibold text-[#203B17]">
+                        ${getItemTotalValue(item).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="mt-4 flex gap-2">

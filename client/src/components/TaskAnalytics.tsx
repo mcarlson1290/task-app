@@ -10,11 +10,12 @@ import {
 } from "recharts";
 import { 
   TrendingUp, Clock, CheckCircle, AlertTriangle, Users, 
-  Target, Award, Activity, RotateCcw, Zap 
+  Target, Award, Activity, RotateCcw, Zap, DollarSign 
 } from "lucide-react";
 import { DashboardAnalytics } from "@/types";
 import { useLocation } from "@/contexts/LocationContext";
 import { RecurringTaskAnalytics } from "./RecurringTaskAnalytics";
+import { TaskCostAnalysis } from "./TaskCostAnalysis";
 
 // Staff Comparison Component
 const StaffComparison: React.FC = () => {
@@ -202,7 +203,7 @@ const TaskEfficiency: React.FC = () => {
 };
 
 export const TaskAnalytics: React.FC = () => {
-  const [activeView, setActiveView] = React.useState<'recurring' | 'staff' | 'efficiency'>('recurring');
+  const [activeView, setActiveView] = React.useState<'recurring' | 'staff' | 'efficiency' | 'costs'>('recurring');
   const [timePeriod, setTimePeriod] = React.useState("7d");
   const { currentLocation, isViewingAllLocations } = useLocation();
 
@@ -310,12 +311,21 @@ export const TaskAnalytics: React.FC = () => {
           <Zap className="w-4 h-4" />
           Efficiency Metrics
         </Button>
+        <Button
+          variant={activeView === 'costs' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('costs')}
+          className="flex items-center gap-2"
+        >
+          <DollarSign className="w-4 h-4" />
+          Cost Analysis
+        </Button>
       </div>
 
       {/* Content based on active view */}
       {activeView === 'recurring' && <RecurringTaskAnalytics />}
       {activeView === 'staff' && <StaffComparison />}
       {activeView === 'efficiency' && <TaskEfficiency />}
+      {activeView === 'costs' && <TaskCostAnalysis />}
     </div>
   );
 };

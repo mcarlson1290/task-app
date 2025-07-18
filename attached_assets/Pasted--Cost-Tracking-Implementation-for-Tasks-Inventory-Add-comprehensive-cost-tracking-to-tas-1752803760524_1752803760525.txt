@@ -1,0 +1,1122 @@
+# 💰 Cost Tracking Implementation for Tasks & Inventory
+
+## Add comprehensive cost tracking to tasks and inventory
+
+### 1. UPDATE TASK ANALYTICS WITH COST TRACKING:
+
+Update `src/components/TaskAnalytics.tsx` to include a Cost Analysis tab:
+
+```typescript
+export const TaskAnalytics: React.FC = () => {
+  const [activeView, setActiveView] = useState<'recurring' | 'staff' | 'efficiency' | 'costs'>('recurring');
+  
+  return (
+    <div className="task-analytics">
+      <div className="analytics-nav">
+        <button
+          className={activeView === 'recurring' ? 'active' : ''}
+          onClick={() => setActiveView('recurring')}
+        >
+          🔄 Recurring Task Analysis
+        </button>
+        <button
+          className={activeView === 'staff' ? 'active' : ''}
+          onClick={() => setActiveView('staff')}
+        >
+          👥 Staff Comparison
+        </button>
+        <button
+          className={activeView === 'efficiency' ? 'active' : ''}
+          onClick={() => setActiveView('efficiency')}
+        >
+          ⚡ Efficiency Metrics
+        </button>
+        <button
+          className={activeView === 'costs' ? 'active' : ''}
+          onClick={() => setActiveView('costs')}
+        >
+          💰 Cost Analysis
+        </button>
+      </div>
+      
+      {activeView === 'recurring' && <RecurringTaskAnalytics />}
+      {activeView === 'staff' && <StaffComparison />}
+      {activeView === 'efficiency' && <TaskEfficiency />}
+      {activeView === 'costs' && <TaskCostAnalysis />}
+    </div>
+  );
+};
+```
+
+### 2. CREATE TASK COST ANALYSIS COMPONENT:
+
+Create `src/components/TaskCostAnalysis.tsx`:
+
+```typescript
+import React, { useState } from 'react';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+export const TaskCostAnalysis: React.FC = () => {
+  const [viewType, setViewType] = useState<'task' | 'crop' | 'location'>('task');
+  const [dateRange, setDateRange] = useState('30d');
+  
+  // Cost breakdown by task type
+  const taskCostData = [
+    {
+      taskType: 'Seed Romaine Lettuce',
+      instances: 45,
+      avgLaborCost: 8.75,
+      avgMaterialCost: 2.50,
+      totalAvgCost: 11.25,
+      trend: -0.5
+    },
+    {
+      taskType: 'Harvest Microgreens',
+      instances: 120,
+      avgLaborCost: 15.20,
+      avgMaterialCost: 0.25,
+      totalAvgCost: 15.45,
+      trend: +1.2
+    },
+    {
+      taskType: 'pH Testing',
+      instances: 24,
+      avgLaborCost: 12.50,
+      avgMaterialCost: 3.75,
+      totalAvgCost: 16.25,
+      trend: 0
+    },
+    {
+      taskType: 'System Cleaning',
+      instances: 30,
+      avgLaborCost: 22.30,
+      avgMaterialCost: 5.20,
+      totalAvgCost: 27.50,
+      trend: -2.1
+    }
+  ];
+  
+  // Cost per crop (full cycle)
+  const cropCostData = [
+    {
+      crop: 'Romaine Lettuce',
+      unitsProduced: 1250,
+      totalLaborCost: 1875,
+      totalMaterialCost: 625,
+      totalCost: 2500,
+      costPerUnit: 2.00,
+      marketPrice: 4.50,
+      profitMargin: 55.6
+    },
+    {
+      crop: 'Broccoli Microgreens',
+      unitsProduced: 800,
+      totalLaborCost: 960,
+      totalMaterialCost: 320,
+      totalCost: 1280,
+      costPerUnit: 1.60,
+      marketPrice: 6.00,
+      profitMargin: 73.3
+    },
+    {
+      crop: 'Arugula',
+      unitsProduced: 950,
+      totalLaborCost: 1425,
+      totalMaterialCost: 475,
+      totalCost: 1900,
+      costPerUnit: 2.00,
+      marketPrice: 5.00,
+      profitMargin: 60.0
+    },
+    {
+      crop: 'Basil',
+      unitsProduced: 600,
+      totalLaborCost: 1200,
+      totalMaterialCost: 480,
+      totalCost: 1680,
+      costPerUnit: 2.80,
+      marketPrice: 7.50,
+      profitMargin: 62.7
+    }
+  ];
+  
+  // Cost trend over time
+  const costTrendData = [
+    { month: 'Jan', laborCost: 8500, materialCost: 2800, totalCost: 11300 },
+    { month: 'Feb', laborCost: 8200, materialCost: 2600, totalCost: 10800 },
+    { month: 'Mar', laborCost: 8900, materialCost: 2900, totalCost: 11800 },
+    { month: 'Apr', laborCost: 8600, materialCost: 2750, totalCost: 11350 },
+  ];
+  
+  // Cost breakdown pie chart
+  const costBreakdown = [
+    { name: 'Labor', value: 68, color: '#3b82f6' },
+    { name: 'Seeds', value: 12, color: '#10b981' },
+    { name: 'Growing Media', value: 8, color: '#f59e0b' },
+    { name: 'Utilities', value: 7, color: '#8b5cf6' },
+    { name: 'Other Supplies', value: 5, color: '#6b7280' }
+  ];
+  
+  return (
+    <div className="task-cost-analysis">
+      {/* View Type Selector */}
+      <div className="cost-controls">
+        <div className="view-type-selector">
+          <button
+            className={viewType === 'task' ? 'active' : ''}
+            onClick={() => setViewType('task')}
+          >
+            By Task
+          </button>
+          <button
+            className={viewType === 'crop' ? 'active' : ''}
+            onClick={() => setViewType('crop')}
+          >
+            By Crop
+          </button>
+          <button
+            className={viewType === 'location' ? 'active' : ''}
+            onClick={() => setViewType('location')}
+          >
+            By Location
+          </button>
+        </div>
+        
+        <select value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="year">This year</option>
+        </select>
+      </div>
+      
+      {/* Summary Cards */}
+      <div className="cost-summary-cards">
+        <div className="cost-card">
+          <h3>Average Task Cost</h3>
+          <div className="cost-value">$14.85</div>
+          <div className="cost-breakdown-mini">
+            <span>Labor: $10.95</span>
+            <span>Materials: $3.90</span>
+          </div>
+        </div>
+        <div className="cost-card highlight">
+          <h3>Cost per Head (Lettuce)</h3>
+          <div className="cost-value">$2.00</div>
+          <div className="profit-indicator">
+            <span>Sells for: $4.50</span>
+            <span className="profit">+125% ROI</span>
+          </div>
+        </div>
+        <div className="cost-card">
+          <h3>Monthly Labor Cost</h3>
+          <div className="cost-value">$8,600</div>
+          <div className="trend negative">+3.2% vs last month</div>
+        </div>
+        <div className="cost-card">
+          <h3>Cost Efficiency</h3>
+          <div className="cost-value">92%</div>
+          <div className="trend positive">+2.1% improvement</div>
+        </div>
+      </div>
+      
+      {viewType === 'task' && (
+        <>
+          {/* Task Cost Table */}
+          <div className="cost-table-section">
+            <h3>Cost Analysis by Task Type</h3>
+            <table className="cost-table">
+              <thead>
+                <tr>
+                  <th>Task Type</th>
+                  <th>Instances</th>
+                  <th>Avg Labor Cost</th>
+                  <th>Avg Material Cost</th>
+                  <th>Total Avg Cost</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                {taskCostData.map((task, index) => (
+                  <tr key={index}>
+                    <td>{task.taskType}</td>
+                    <td>{task.instances}</td>
+                    <td>${task.avgLaborCost.toFixed(2)}</td>
+                    <td>${task.avgMaterialCost.toFixed(2)}</td>
+                    <td className="total-cost">${task.totalAvgCost.toFixed(2)}</td>
+                    <td>
+                      <span className={`trend ${task.trend > 0 ? 'negative' : 'positive'}`}>
+                        {task.trend > 0 ? '+' : ''}{task.trend}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Cost Breakdown Pie */}
+          <div className="chart-row">
+            <div className="chart-card">
+              <h3>Overall Cost Distribution</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={costBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {costBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </>
+      )}
+      
+      {viewType === 'crop' && (
+        <>
+          {/* Crop Cost Analysis */}
+          <div className="cost-table-section">
+            <h3>Full Cycle Cost per Crop</h3>
+            <table className="cost-table">
+              <thead>
+                <tr>
+                  <th>Crop</th>
+                  <th>Units Produced</th>
+                  <th>Total Labor</th>
+                  <th>Total Materials</th>
+                  <th>Cost per Unit</th>
+                  <th>Market Price</th>
+                  <th>Profit Margin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cropCostData.map((crop, index) => (
+                  <tr key={index}>
+                    <td>{crop.crop}</td>
+                    <td>{crop.unitsProduced}</td>
+                    <td>${crop.totalLaborCost}</td>
+                    <td>${crop.totalMaterialCost}</td>
+                    <td className="cost-per-unit">${crop.costPerUnit.toFixed(2)}</td>
+                    <td>${crop.marketPrice.toFixed(2)}</td>
+                    <td>
+                      <div className="profit-margin">
+                        <div className="margin-bar">
+                          <div 
+                            className="margin-fill"
+                            style={{ width: `${crop.profitMargin}%` }}
+                          />
+                        </div>
+                        <span>{crop.profitMargin}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Profitability Chart */}
+          <div className="chart-card">
+            <h3>Crop Profitability Comparison</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={cropCostData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="crop" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="costPerUnit" fill="#ef4444" name="Cost per Unit" />
+                <Bar dataKey="marketPrice" fill="#10b981" name="Market Price" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
+      
+      {/* Cost Trend Chart */}
+      <div className="chart-card">
+        <h3>Cost Trend Analysis</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={costTrendData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="laborCost" stroke="#3b82f6" name="Labor Cost" />
+            <Line type="monotone" dataKey="materialCost" stroke="#10b981" name="Material Cost" />
+            <Line type="monotone" dataKey="totalCost" stroke="#f59e0b" strokeWidth={2} name="Total Cost" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      
+      {/* Cost Optimization Insights */}
+      <div className="cost-insights">
+        <h3>Cost Optimization Opportunities</h3>
+        <div className="insights-grid">
+          <div className="insight-card cost">
+            <h4>💡 Reduce Seeding Labor</h4>
+            <p>Batch seeding on Tuesdays could save $45/week in labor costs</p>
+            <span className="potential-savings">Potential savings: $2,340/year</span>
+          </div>
+          <div className="insight-card cost">
+            <h4>📦 Bulk Material Ordering</h4>
+            <p>Ordering growing media in bulk could reduce costs by 15%</p>
+            <span className="potential-savings">Potential savings: $1,800/year</span>
+          </div>
+          <div className="insight-card cost">
+            <h4>⚡ Task Efficiency</h4>
+            <p>Improving harvest speed by 10% would save 2.5 hours/week</p>
+            <span className="potential-savings">Potential savings: $3,900/year</span>
+          </div>
+          <div className="insight-card cost">
+            <h4>🌱 Crop Mix Optimization</h4>
+            <p>Increasing microgreens by 20% would improve margins by 8%</p>
+            <span className="potential-savings">Potential profit: $5,200/year</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. UPDATE INVENTORY WITH COST TRACKING:
+
+Update `src/pages/Inventory.tsx` to include cost fields:
+
+```typescript
+export const Inventory: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'current' | 'add' | 'history'>('current');
+  const [showAddModal, setShowAddModal] = useState(false);
+  
+  // Enhanced inventory data with costs
+  const [inventory, setInventory] = useState([
+    {
+      id: 1,
+      name: 'Romaine Lettuce Seeds',
+      category: 'Seeds',
+      quantity: 2.5,
+      unit: 'lbs',
+      reorderPoint: 1.0,
+      supplier: 'Johnny\'s Seeds',
+      lastUpdated: '2024-03-15',
+      costPerUnit: 45.00, // per lb
+      lastPurchasePrice: 112.50, // for 2.5 lbs
+      avgCostPerUnit: 44.20, // historical average
+      location: 'Kenosha'
+    },
+    {
+      id: 2,
+      name: 'Coconut Coir',
+      category: 'Growing Media',
+      quantity: 15,
+      unit: 'blocks',
+      reorderPoint: 10,
+      supplier: 'Grow Supply Co',
+      lastUpdated: '2024-03-10',
+      costPerUnit: 8.50,
+      lastPurchasePrice: 425.00, // for 50 blocks
+      avgCostPerUnit: 8.35,
+      location: 'Kenosha'
+    }
+  ]);
+  
+  return (
+    <div className="inventory-page">
+      <div className="page-header">
+        <h1>📦 Inventory Management</h1>
+        <button 
+          className="btn-primary"
+          onClick={() => setShowAddModal(true)}
+        >
+          + Add Inventory
+        </button>
+      </div>
+      
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
+        <button
+          className={activeTab === 'current' ? 'active' : ''}
+          onClick={() => setActiveTab('current')}
+        >
+          Current Stock
+        </button>
+        <button
+          className={activeTab === 'add' ? 'active' : ''}
+          onClick={() => setActiveTab('add')}
+        >
+          Purchase History
+        </button>
+        <button
+          className={activeTab === 'history' ? 'active' : ''}
+          onClick={() => setActiveTab('history')}
+        >
+          Usage History
+        </button>
+      </div>
+      
+      {activeTab === 'current' && (
+        <CurrentInventory inventory={inventory} onUpdate={setInventory} />
+      )}
+      
+      {activeTab === 'add' && (
+        <PurchaseHistory inventory={inventory} />
+      )}
+      
+      {activeTab === 'history' && (
+        <UsageHistory inventory={inventory} />
+      )}
+      
+      {/* Add Inventory Modal */}
+      {showAddModal && (
+        <AddInventoryModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={(newItem) => {
+            setInventory([...inventory, { ...newItem, id: Date.now() }]);
+            setShowAddModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+```
+
+### 4. CREATE ADD INVENTORY MODAL:
+
+Create `src/components/AddInventoryModal.tsx`:
+
+```typescript
+import React, { useState } from 'react';
+
+interface AddInventoryModalProps {
+  onClose: () => void;
+  onAdd: (item: any) => void;
+}
+
+export const AddInventoryModal: React.FC<AddInventoryModalProps> = ({ onClose, onAdd }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'Seeds',
+    quantity: 0,
+    unit: 'lbs',
+    costPerUnit: 0,
+    totalCost: 0,
+    supplier: '',
+    reorderPoint: 0,
+    notes: ''
+  });
+  
+  const categories = ['Seeds', 'Growing Media', 'Nutrients', 'Supplies', 'Equipment'];
+  const units = ['lbs', 'oz', 'kg', 'blocks', 'liters', 'gallons', 'units', 'bags'];
+  
+  const handleQuantityChange = (quantity: number) => {
+    setFormData({
+      ...formData,
+      quantity,
+      totalCost: quantity * formData.costPerUnit
+    });
+  };
+  
+  const handleCostPerUnitChange = (costPerUnit: number) => {
+    setFormData({
+      ...formData,
+      costPerUnit,
+      totalCost: formData.quantity * costPerUnit
+    });
+  };
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAdd({
+      ...formData,
+      lastPurchasePrice: formData.totalCost,
+      avgCostPerUnit: formData.costPerUnit, // Will be calculated over time
+      lastUpdated: new Date().toISOString().split('T')[0],
+      location: getCurrentLocation()
+    });
+  };
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content add-inventory-modal">
+        <div className="modal-header">
+          <h2>Add Inventory Item</h2>
+          <button className="btn-close" onClick={onClose}>✕</button>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>
+                Item Name*
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Category*
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Quantity*
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.quantity}
+                  onChange={(e) => handleQuantityChange(parseFloat(e.target.value) || 0)}
+                  required
+                />
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Unit*
+                <select
+                  value={formData.unit}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                >
+                  {units.map(unit => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Cost per Unit ($)*
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.costPerUnit}
+                  onChange={(e) => handleCostPerUnitChange(parseFloat(e.target.value) || 0)}
+                  required
+                />
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Total Cost ($)
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.totalCost}
+                  readOnly
+                  className="readonly"
+                />
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Supplier
+                <input
+                  type="text"
+                  value={formData.supplier}
+                  onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                />
+              </label>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                Reorder Point
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.reorderPoint}
+                  onChange={(e) => setFormData({ ...formData, reorderPoint: parseFloat(e.target.value) || 0 })}
+                />
+              </label>
+            </div>
+            
+            <div className="form-group full-width">
+              <label>
+                Notes
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                />
+              </label>
+            </div>
+          </div>
+          
+          <div className="cost-summary">
+            <h3>Cost Summary</h3>
+            <div className="summary-row">
+              <span>Quantity:</span>
+              <span>{formData.quantity} {formData.unit}</span>
+            </div>
+            <div className="summary-row">
+              <span>Cost per {formData.unit}:</span>
+              <span>${formData.costPerUnit.toFixed(2)}</span>
+            </div>
+            <div className="summary-row total">
+              <span>Total Cost:</span>
+              <span>${formData.totalCost.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div className="modal-footer">
+            <button type="button" className="btn-cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-save">
+              Add to Inventory
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+```
+
+### 5. UPDATE CURRENT INVENTORY COMPONENT:
+
+Update to show cost information:
+
+```typescript
+const CurrentInventory: React.FC<{ inventory: any[]; onUpdate: (inv: any[]) => void }> = ({ inventory, onUpdate }) => {
+  const [filter, setFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  
+  // Calculate total inventory value
+  const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.costPerUnit), 0);
+  
+  return (
+    <div className="current-inventory">
+      {/* Inventory Stats */}
+      <div className="inventory-stats">
+        <div className="stat-card">
+          <h3>Total Items</h3>
+          <div className="stat-value">{inventory.length}</div>
+        </div>
+        <div className="stat-card">
+          <h3>Total Value</h3>
+          <div className="stat-value">${totalValue.toFixed(2)}</div>
+        </div>
+        <div className="stat-card">
+          <h3>Low Stock Items</h3>
+          <div className="stat-value warning">
+            {inventory.filter(item => item.quantity <= item.reorderPoint).length}
+          </div>
+        </div>
+        <div className="stat-card">
+          <h3>Avg Item Value</h3>
+          <div className="stat-value">
+            ${(totalValue / inventory.length).toFixed(2)}
+          </div>
+        </div>
+      </div>
+      
+      {/* Filters and Sort */}
+      <div className="inventory-controls">
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All Categories</option>
+          <option value="Seeds">Seeds</option>
+          <option value="Growing Media">Growing Media</option>
+          <option value="Nutrients">Nutrients</option>
+          <option value="Supplies">Supplies</option>
+        </select>
+        
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="name">Sort by Name</option>
+          <option value="value">Sort by Value</option>
+          <option value="quantity">Sort by Quantity</option>
+          <option value="reorder">Sort by Reorder Status</option>
+        </select>
+      </div>
+      
+      {/* Inventory Table */}
+      <div className="inventory-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Quantity</th>
+              <th>Cost/Unit</th>
+              <th>Total Value</th>
+              <th>Reorder Point</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventory
+              .filter(item => filter === 'all' || item.category === filter)
+              .sort((a, b) => {
+                switch (sortBy) {
+                  case 'value': return (b.quantity * b.costPerUnit) - (a.quantity * a.costPerUnit);
+                  case 'quantity': return b.quantity - a.quantity;
+                  case 'reorder': return (a.quantity - a.reorderPoint) - (b.quantity - b.reorderPoint);
+                  default: return a.name.localeCompare(b.name);
+                }
+              })
+              .map(item => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.category}</td>
+                  <td>{item.quantity} {item.unit}</td>
+                  <td>${item.costPerUnit.toFixed(2)}</td>
+                  <td className="total-value">
+                    ${(item.quantity * item.costPerUnit).toFixed(2)}
+                  </td>
+                  <td>{item.reorderPoint} {item.unit}</td>
+                  <td>
+                    {item.quantity <= item.reorderPoint ? (
+                      <span className="status-badge reorder">Reorder</span>
+                    ) : item.quantity <= item.reorderPoint * 1.5 ? (
+                      <span className="status-badge low">Low</span>
+                    ) : (
+                      <span className="status-badge good">Good</span>
+                    )}
+                  </td>
+                  <td>
+                    <button className="btn-action">Edit</button>
+                    <button className="btn-action">History</button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+```
+
+### 6. ADD CSS STYLES:
+
+```css
+/* Cost Analysis Styles */
+.task-cost-analysis {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.cost-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-type-selector {
+  display: flex;
+  gap: 4px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.view-type-selector button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-type-selector button.active {
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Cost Summary Cards */
+.cost-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.cost-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.cost-card.highlight {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #10b981;
+}
+
+.cost-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.cost-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.cost-breakdown-mini {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.profit-indicator {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.profit {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Cost Table */
+.cost-table-section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cost-table th {
+  background: #f9fafb;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cost-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.total-cost {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.cost-per-unit {
+  font-weight: 600;
+  color: #dc2626;
+}
+
+/* Profit Margin Bar */
+.profit-margin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.margin-bar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.margin-fill {
+  height: 100%;
+  background: #10b981;
+}
+
+/* Cost Insights */
+.cost-insights {
+  margin-top: 32px;
+}
+
+.insight-card.cost {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+}
+
+.potential-savings {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+/* Inventory Styles */
+.add-inventory-modal {
+  max-width: 700px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-group input.readonly {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.cost-summary {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+}
+
+.cost-summary h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.summary-row.total {
+  font-weight: 600;
+  font-size: 18px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+/* Inventory Stats */
+.inventory-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.inventory-stats .stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.stat-value.warning {
+  color: #f59e0b;
+}
+
+.inventory-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.total-value {
+  font-weight: 600;
+  color: #059669;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cost-summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .cost-table-section {
+    overflow-x: auto;
+  }
+}
+```
+
+### SUMMARY:
+
+This implementation adds comprehensive cost tracking:
+
+✅ **Task Cost Analysis**:
+- Cost breakdown by task type (labor + materials)
+- Cost per crop (seed to harvest)
+- ROI calculations and profit margins
+- Cost optimization insights
+
+✅ **Enhanced Inventory**:
+- Cost per unit tracking
+- Total inventory value
+- Purchase history with pricing
+- Add inventory modal with cost calculation
+- Reorder status based on stock levels
+
+✅ **Key Metrics**:
+- Cost per head of lettuce: $2.00
+- Average task cost with labor breakdown
+- Monthly cost trends
+- Profitability by crop type
+
+The system now provides:
+- Real production costs per unit
+- Labor cost tracking (using staff pay rates)
+- Material cost allocation
+- ROI and profit margin analysis
+- Cost optimization recommendations
+
+This data will eventually sync with QuickBooks but for now provides standalone cost visibility!
