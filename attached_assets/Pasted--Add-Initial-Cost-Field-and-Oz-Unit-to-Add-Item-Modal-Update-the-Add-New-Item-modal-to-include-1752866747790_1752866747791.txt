@@ -1,0 +1,191 @@
+# Add Initial Cost Field and Oz Unit to Add Item Modal
+
+Update the "Add New Item" modal to include initial inventory value and add "oz" as a unit option.
+
+## 1. Add Oz to Unit Options
+
+Update the unit dropdown to include ounces:
+
+```jsx
+<label>
+  Unit
+  <select 
+    value={itemData.unit}
+    onChange={(e) => setItemData({...itemData, unit: e.target.value})}
+    required
+  >
+    <option value="Units">Units</option>
+    <option value="mL">mL</option>
+    <option value="oz">oz</option>
+  </select>
+</label>
+```
+
+## 2. Add Estimated Total Value Field
+
+After the Current Stock field, add a field for the estimated total value:
+
+```jsx
+const AddItemModal = ({ onClose, onSave }) => {
+  const [itemData, setItemData] = useState({
+    name: '',
+    currentStock: 0,
+    estimatedTotalValue: '', // Add this to state
+    unit: 'Units',
+    minimumStock: 0,
+    category: '',
+    supplier: ''
+  });
+
+  // Calculate cost per unit when values change
+  const calculateCostPerUnit = () => {
+    const stock = parseFloat(itemData.currentStock) || 0;
+    const totalValue = parseFloat(itemData.estimatedTotalValue) || 0;
+    
+    if (stock > 0 && totalValue > 0) {
+      return (totalValue / stock).toFixed(2);
+    }
+    return '0.00';
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Add New Item</h2>
+        
+        <form onSubmit={handleSubmit}>
+          {/* ... existing fields ... */}
+          
+          {/* After Current Stock field, add: */}
+          <label>
+            Estimated Total Value ($) *
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={itemData.estimatedTotalValue}
+              onChange={(e) => setItemData({...itemData, estimatedTotalValue: e.target.value})}
+              placeholder="e.g., 50.00"
+              required
+            />
+            <small style={{ color: '#6b7280', fontSize: '12px' }}>
+              Enter the estimated total value of your current stock (not per unit)
+            </small>
+          </label>
+
+          {/* Show calculated cost per unit if both values are entered */}
+          {itemData.currentStock > 0 && itemData.estimatedTotalValue && (
+            <div style={{
+              backgroundColor: '#f3f4f6',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px'
+            }}>
+              <p style={{ margin: 0, fontWeight: 'bold', color: '#374151' }}>
+                Calculated Cost Per {itemData.unit}: ${calculateCostPerUnit()}
+              </p>
+            </div>
+          )}
+          
+          {/* ... rest of the form ... */}
+        </form>
+      </div>
+    </div>
+  );
+};
+```
+
+## 3. Update the Save Handler
+
+Update the handleSubmit function to include the cost data:
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  // Calculate initial values
+  const stock = parseFloat(itemData.currentStock) || 0;
+  const totalValue = parseFloat(itemData.estimatedTotalValue) || 0;
+  const costPerUnit = stock > 0 ? totalValue / stock : 0;
+  
+  const newItem = {
+    id: Date.now(),
+    name: itemData.name,
+    currentStock: stock,
+    unit: itemData.unit,
+    minimumStock: parseFloat(itemData.minimumStock) || 0,
+    category: itemData.category,
+    supplier: itemData.supplier,
+    
+    // Cost tracking fields
+    totalValue: totalValue,
+    avgCostPerUnit: costPerUnit,
+    
+    // Initialize with one transaction for the initial stock
+    transactions: stock > 0 ? [{
+      id: Date.now(),
+      type: 'initial',
+      quantity: stock,
+      totalCost: totalValue,
+      costPerUnit: costPerUnit,
+      notes: 'Initial inventory',
+      addedBy: currentUser.name,
+      addedAt: new Date().toISOString()
+    }] : [],
+    
+    // Check if low stock
+    isLowStock: stock < itemData.minimumStock,
+    
+    // Metadata
+    createdBy: currentUser.name,
+    createdAt: new Date().toISOString()
+  };
+  
+  onSave(newItem);
+};
+```
+
+## 4. Update the Parent Component Handler
+
+Make sure the parent component handles the new item with cost data:
+
+```jsx
+const handleAddItem = (newItem) => {
+  // Add the new item to the inventory
+  setItems(prevItems => [...prevItems, newItem]);
+  
+  // Close the modal
+  setShowAddItemModal(false);
+  
+  // Show success message
+  console.log(`✅ Added ${newItem.name} with ${newItem.currentStock} ${newItem.unit} valued at $${newItem.totalValue}`);
+  alert(`Successfully added ${newItem.name} to inventory`);
+};
+```
+
+## 5. Update Form Validation
+
+Add validation to ensure the total value makes sense:
+
+```jsx
+// In handleSubmit, before creating newItem:
+if (totalValue > 0 && stock === 0) {
+  alert('Cannot have a value without any stock quantity');
+  return;
+}
+
+if (stock > 0 && totalValue === 0) {
+  if (!confirm('Are you sure the total value is $0.00? This will set cost per unit to $0.00')) {
+    return;
+  }
+}
+```
+
+## Summary of Changes:
+1. Added "oz" as a unit option alongside "Units" and "mL"
+2. Added "Estimated Total Value" field with clear label indicating it's for total inventory, not per unit
+3. Shows calculated cost per unit dynamically as user types
+4. Initializes the item with proper cost tracking data
+5. Creates an initial transaction record for audit trail
+
+This allows managers to set the initial inventory value when creating new items, which then properly initializes the cost tracking system.

@@ -32,7 +32,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: item.unit,
         minimumStock: item.minimumStock,
         category: item.category,
-        supplier: item.supplier || ''
+        supplier: item.supplier || '',
+        estimatedTotalValue: '' // Not shown for edit mode
       };
     }
     return {
@@ -41,7 +42,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       unit: 'units',
       minimumStock: 0,
       category: 'supplies',
-      supplier: ''
+      supplier: '',
+      estimatedTotalValue: ''
     };
   });
 
@@ -63,7 +65,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: 'units',
         minimumStock: 0,
         category: 'supplies',
-        supplier: ''
+        supplier: '',
+        estimatedTotalValue: ''
       });
     }
   }, [item, mode]);
@@ -81,11 +84,38 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       return;
     }
 
+    // Validation for add mode with cost tracking
+    if (mode === 'add') {
+      const stock = parseInt(formData.currentStock.toString()) || 0;
+      const totalValue = parseFloat(formData.estimatedTotalValue) || 0;
+      
+      if (totalValue > 0 && stock === 0) {
+        alert('Cannot have a value without any stock quantity');
+        return;
+      }
+      
+      if (stock > 0 && totalValue === 0) {
+        if (!confirm('Are you sure the total value is $0.00? This will set cost per unit to $0.00')) {
+          return;
+        }
+      }
+    }
+
+    // Calculate cost data for new items
+    const stock = parseInt(formData.currentStock.toString()) || 0;
+    const totalValue = parseFloat(formData.estimatedTotalValue) || 0;
+    const costPerUnit = stock > 0 ? totalValue / stock : 0;
+
     const itemData = {
       ...formData,
-      currentStock: parseInt(formData.currentStock.toString()),
+      currentStock: stock,
       minimumStock: parseInt(formData.minimumStock.toString()),
-      id: item?.id
+      id: item?.id,
+      // Add cost tracking fields for new items
+      ...(mode === 'add' && {
+        avgCostPerUnit: costPerUnit,
+        totalValue: totalValue
+      })
     };
     
     onSave(itemData);
@@ -110,11 +140,23 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     { value: 'units', label: 'Units' },
     { value: 'kg', label: 'Kilograms' },
     { value: 'lbs', label: 'Pounds' },
+    { value: 'oz', label: 'Ounces' },
     { value: 'liters', label: 'Liters' },
     { value: 'packets', label: 'Packets' },
     { value: 'bags', label: 'Bags' },
     { value: 'pieces', label: 'Pieces' }
   ];
+
+  // Calculate cost per unit for display
+  const calculateCostPerUnit = () => {
+    const stock = parseFloat(formData.currentStock.toString()) || 0;
+    const totalValue = parseFloat(formData.estimatedTotalValue) || 0;
+    
+    if (stock > 0 && totalValue > 0) {
+      return (totalValue / stock).toFixed(2);
+    }
+    return '0.00';
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -182,6 +224,36 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
             />
             <p className="text-sm text-gray-600">Alert threshold for low stock</p>
           </div>
+
+          {/* Estimated Total Value field - only for add mode */}
+          {mode === 'add' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="estimatedTotalValue">Estimated Total Value ($)</Label>
+                <Input
+                  id="estimatedTotalValue"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.estimatedTotalValue}
+                  onChange={(e) => setFormData({...formData, estimatedTotalValue: e.target.value})}
+                  placeholder="e.g., 50.00"
+                />
+                <p className="text-sm text-gray-600">
+                  Enter the estimated total value of your current stock (not per unit)
+                </p>
+              </div>
+
+              {/* Show calculated cost per unit if both values are entered */}
+              {formData.currentStock > 0 && formData.estimatedTotalValue && (
+                <div className="bg-gray-50 p-3 rounded-lg border">
+                  <p className="text-sm font-medium text-gray-700">
+                    Calculated Cost Per {formData.unit}: <span className="text-[#203B17] font-bold">${calculateCostPerUnit()}</span>
+                  </p>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
