@@ -68,7 +68,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { href: "/task-data", label: "Task Data", icon: "📊", requiresRole: "manager" },
     { href: "/staff-data", label: "Staff Data", icon: "👥", requiresRole: "manager" },
     { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager" },
-    { href: "/tray-tracking", label: "Tray Tracking", icon: "📦", requiresRole: "manager" },
   ];
 
   const currentUser = testUsers.find(u => u.username === auth.user?.username) || testUsers[0];
