@@ -12,12 +12,14 @@ import {
   Target, Award, Activity 
 } from "lucide-react";
 import { DashboardAnalytics } from "@/types";
+import { useLocation } from "@/contexts/LocationContext";
 
 export const TaskAnalytics: React.FC = () => {
   const [timePeriod, setTimePeriod] = React.useState("7d");
+  const { currentLocation, isViewingAllLocations } = useLocation();
 
   const { data: analytics, isLoading } = useQuery<DashboardAnalytics>({
-    queryKey: ["/api/analytics/dashboard"],
+    queryKey: ["/api/analytics/dashboard", currentLocation.code],
   });
 
   const COLORS = ['#2D8028', '#203B17', '#4ADE80', '#F59E0B', '#EF4444'];

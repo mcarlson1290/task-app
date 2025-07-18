@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Download, Filter, BarChart3, Users, Clock, CheckCircle, AlertTriangle, SkipForward } from "lucide-react";
+import { useLocation } from "@/contexts/LocationContext";
 
 interface TaskFilters {
   dateRange: string;
@@ -393,6 +394,8 @@ const TaskDataTable: React.FC<{ tasks: TaskDataProps[] }> = ({ tasks }) => {
 };
 
 export const TaskOverview: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  
   const [filters, setFilters] = useState<TaskFilters>({
     dateRange: 'last7days',
     startDate: null,
@@ -410,12 +413,15 @@ export const TaskOverview: React.FC = () => {
   });
 
   const { data: tasks = [], isLoading } = useQuery<TaskDataProps[]>({
-    queryKey: ["/api/tasks"],
+    queryKey: ["/api/tasks", currentLocation.code],
     enabled: true,
   });
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
+      // Location filter - only show tasks for current location unless viewing all locations
+      if (!isViewingAllLocations && task.location !== currentLocation.code) return false;
+      
       // Apply filters
       if (filters.taskType !== 'all' && task.type !== filters.taskType) return false;
       if (filters.status !== 'all' && task.status !== filters.status) return false;
@@ -455,7 +461,7 @@ export const TaskOverview: React.FC = () => {
       
       return true;
     });
-  }, [tasks, filters]);
+  }, [tasks, filters, currentLocation.code, isViewingAllLocations]);
 
   if (isLoading) {
     return (

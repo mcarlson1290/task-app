@@ -10,16 +10,18 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { RecurringTask } from '@shared/schema';
 import RecurringTaskModal from '@/components/RecurringTaskModal';
+import { useLocation } from '@/contexts/LocationContext';
 
 const RecurringTasks: React.FC = () => {
   const auth = getStoredAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentLocation, isViewingAllLocations } = useLocation();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
 
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
-    queryKey: ['/api/recurring-tasks'],
+    queryKey: ['/api/recurring-tasks', currentLocation.code],
     queryFn: async () => {
       const response = await fetch('/api/recurring-tasks');
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
@@ -27,6 +29,14 @@ const RecurringTasks: React.FC = () => {
     },
     enabled: !!auth.user,
   });
+
+  // Filter recurring tasks by location
+  const filteredRecurringTasks = React.useMemo(() => {
+    if (isViewingAllLocations) {
+      return recurringTasks;
+    }
+    return recurringTasks.filter(task => task.location === currentLocation.code);
+  }, [recurringTasks, currentLocation.code, isViewingAllLocations]);
 
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
@@ -77,7 +87,7 @@ const RecurringTasks: React.FC = () => {
     if (task.frequency === 'daily') return 'Daily';
     if (task.frequency === 'weekly') {
       const days = task.daysOfWeek?.map(day => 
-        day.charAt(0).toUpperCase() + day.slice(1)
+        typeof day === 'string' ? day.charAt(0).toUpperCase() + day.slice(1) : String(day)
       ).join(', ');
       return `Weekly on ${days}`;
     }
@@ -123,7 +133,7 @@ const RecurringTasks: React.FC = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {recurringTasks.map((task) => (
+        {filteredRecurringTasks.map((task) => (
           <Card key={task.id} className="relative">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -213,7 +223,7 @@ const RecurringTasks: React.FC = () => {
         ))}
       </div>
 
-      {recurringTasks.length === 0 && (
+      {filteredRecurringTasks.length === 0 && (
         <div className="text-center py-12">
           <RotateCcw className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Recurring Tasks</h3>
