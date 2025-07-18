@@ -2,16 +2,19 @@
 .sub-header-wrapper {
   /* Positioning - This makes it stick below the main header */
   position: sticky;
-  top: 64px; /* Adjust this to match YOUR main header height */
+  top: 56px; /* Match main header min-height exactly */
   z-index: 100;
   
-  /* Full width - edge to edge with NO gaps */
-  width: 100vw;
-  margin: 0 !important;
-  padding: 0 !important;
+  /* Full width but contained within bounds */
+  width: 100%;
+  margin: 0;
+  padding: 0;
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  
+  /* Ensure no gaps */
+  margin-top: 0 !important;
 }
 
 .sub-header-container {

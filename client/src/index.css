@@ -70,14 +70,25 @@
   padding: 0 !important;
 }
 
-/* FORCE FULL-WIDTH SUB-HEADER */
-.main-content .sub-header-wrapper {
-  width: 100vw !important;
-  position: relative !important;
-  left: 50% !important;
-  right: 50% !important;
-  margin-left: -50vw !important;
-  margin-right: -50vw !important;
+/* ATTACH SUB-HEADER TO MAIN HEADER */
+.main-content {
+  padding-top: 0;
+}
+
+.main-content main {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Remove any gaps between headers */
+.app-header + main .sub-header-wrapper {
+  margin-top: 0;
+}
+
+/* Force SubHeader to be immediately after app header */
+.sub-header-wrapper {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .dark {
