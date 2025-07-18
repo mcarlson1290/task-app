@@ -61,7 +61,7 @@
 
 /* PAGE CONTENT SPACING FOR SUB-HEADER */
 .page-content {
-  padding-top: 16px;
+  padding-top: 0; /* No extra space needed for attached design */
 }
 
 .dark {
