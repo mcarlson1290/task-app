@@ -453,7 +453,7 @@ const Tasks: React.FC = () => {
       {/* Updated filter bar with New Task button */}
       <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
         <div 
-          className="task-filters"
+          className="task-filters tasks-filter-container"
           ref={filtersRef}
           onScroll={(e) => {
             const target = e.target as HTMLDivElement;
@@ -462,7 +462,10 @@ const Tasks: React.FC = () => {
           }}
         >
           {/* All Tasks Button */}
-          <button className="btn-filter all-tasks">
+          <button 
+            className={`task-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
+          >
             All Tasks
           </button>
 
