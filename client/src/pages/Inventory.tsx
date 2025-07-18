@@ -337,38 +337,7 @@ Please process this reorder request at your earliest convenience.`;
         </Card>
       )}
 
-      {/* Cost Breakdown by Category */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center text-blue-800">
-            <DollarSign className="h-5 w-5 mr-2" />
-            Inventory Cost Breakdown
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {categories.slice(1).map((category) => {
-              const categoryItems = inventory.filter(item => item.category === category.value);
-              const categoryValue = categoryItems.reduce((total, item) => total + getItemTotalValue(item), 0);
-              const percentage = getTotalInventoryValue() > 0 ? (categoryValue / getTotalInventoryValue()) * 100 : 0;
-              
-              return (
-                <div key={category.value} className="p-4 bg-white rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg">{getCategoryIcon(category.value)}</span>
-                    <span className="text-sm text-gray-600">{percentage.toFixed(1)}%</span>
-                  </div>
-                  <h4 className="font-medium text-gray-900 mb-1">{category.label}</h4>
-                  <div className="space-y-1">
-                    <p className="text-lg font-bold text-blue-600">${categoryValue.toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">{categoryItems.length} items</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">

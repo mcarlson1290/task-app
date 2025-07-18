@@ -1,0 +1,78 @@
+# Remove Duplicate Inventory Cost Breakdown
+
+There are now two cost breakdown sections showing. Remove the top one and keep only the new, improved version with the total inventory value display.
+
+## Remove the Duplicate Section
+
+Find and remove the first/top cost breakdown section that looks like this:
+
+```jsx
+// REMOVE THIS ENTIRE SECTION:
+<div className="cost-breakdown-section">
+  <h2>💰 Inventory Cost Breakdown</h2>
+  <div className="category-cards">
+    <div className="category-card">
+      <div className="icon">🌱</div>
+      <h3>Seeds</h3>
+      <p className="value">$0.00</p>
+      <p className="count">0 items</p>
+    </div>
+    {/* ... other category cards ... */}
+  </div>
+</div>
+```
+
+## Keep Only the New Section
+
+Keep only the new cost breakdown section that includes:
+1. The "💰 Inventory Cost Breakdown" header
+2. The gray box with "Total Inventory Value: $0.00"
+3. The category cards below with Seeds, Nutrients, Farm Supplies, Other Supplies, and Equipment
+
+The final structure should be:
+```jsx
+<div className="inventory-container">
+  {/* Header with buttons */}
+  <div className="inventory-header">
+    <h1>📦 Inventory</h1>
+    <div className="header-actions">
+      {/* Add to Inventory and Add Item buttons */}
+    </div>
+  </div>
+
+  {/* Low stock alerts if any */}
+  {lowStockItems.length > 0 && (
+    <div className="low-stock-alerts">
+      {/* ... */}
+    </div>
+  )}
+
+  {/* Single Cost Breakdown Section */}
+  <div className="cost-breakdown-section">
+    <h2>💰 Inventory Cost Breakdown</h2>
+    
+    {/* Total value display */}
+    <div className="total-value-display">
+      <p>Total Inventory Value</p>
+      <p className="value">$0.00</p>
+    </div>
+    
+    {/* Category breakdown cards */}
+    <div className="category-cards">
+      {/* Seeds, Nutrients, Farm Supplies, Other Supplies, Equipment cards */}
+    </div>
+  </div>
+
+  {/* Search and filters */}
+  <div className="inventory-controls">
+    {/* ... */}
+  </div>
+
+  {/* Inventory items list */}
+  <div className="inventory-items">
+    {/* ... */}
+  </div>
+</div>
+```
+
+This removes the redundancy and keeps just one clean cost breakdown section with the total value prominently displayed.
