@@ -513,6 +513,64 @@ img {
   width: 100%;
 }
 
+/* Page Layout Updates - Clean Headers */
+.page-content {
+  padding: 24px;
+  height: 100%;
+}
+
+/* Each page should start with its main content */
+.task-manager,
+.account-page,
+.inventory-page,
+.education-page,
+.recurring-tasks-page,
+.task-data-page,
+.staff-data-page,
+.production-data-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Remove any .page-header styles as they're no longer needed */
+.page-header {
+  display: none; /* Remove entirely */
+}
+
+/* Ensure first element has no top margin */
+.page-content > *:first-child {
+  margin-top: 0;
+}
+
+/* Consistent sub-tab styling */
+.tab-navigation {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.tab-navigation button {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.tab-navigation button.active {
+  background: white;
+  color: #2D8028;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 /* Location Selector Styles */
 .sidebar-location-selector .relative > button {
   @apply bg-[#2D8028] border-[#2D8028] text-white hover:bg-[#2D8028]/80;

@@ -1029,7 +1029,7 @@ const StaffData: React.FC = () => {
   return (
     <div className="staff-data-page">
       <div className="page-header">
-        <h1>👥 Staff Data Management</h1>
+        <div></div>
         <button className="btn-export" onClick={handleExport}>
           📥 Export Staff Report
         </button>

@@ -342,29 +342,23 @@ const Education: React.FC = () => {
     <div className="space-y-6 education-page">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between education-header">
-        <div>
-          <h1 className="text-2xl font-bold text-[#203B17] mb-2">Education & Training</h1>
-          <p className="text-gray-600">Complete training courses to unlock new roles and skills</p>
+        <div className="flex items-center space-x-4 text-sm">
+          <span className="flex items-center">
+            📚 {completedCourses} Courses Completed
+          </span>
+          <span className="flex items-center">
+            🏆 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role
+          </span>
         </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3 education-header-stats">
-          <div className="flex items-center space-x-4 text-sm">
-            <span className="flex items-center">
-              📚 {completedCourses} Courses Completed
-            </span>
-            <span className="flex items-center">
-              🏆 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role
-            </span>
-          </div>
-          {isCorporateManager && (
-            <Button 
-              onClick={() => setShowCreateModal(true)}
-              className="bg-[#2D8028] hover:bg-[#203B17] text-white btn-create-course"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Course
-            </Button>
-          )}
-        </div>
+        {isCorporateManager && (
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-[#2D8028] hover:bg-[#203B17] text-white btn-create-course"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Course
+          </Button>
+        )}
       </div>
 
       {/* Learning Progress Summary */}

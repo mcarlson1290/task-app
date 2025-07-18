@@ -225,11 +225,7 @@ Please process this reorder request at your earliest convenience.`;
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#203B17] mb-2">Inventory Management</h1>
-          <p className="text-gray-600">Track supplies and manage stock levels</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+        <div className="flex items-center space-x-3">
           <div className="text-right">
             <p className="text-sm text-gray-600">Total Inventory Value</p>
             <p className="text-xl font-bold text-[#203B17]">

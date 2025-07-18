@@ -31,16 +31,6 @@ const TaskData: React.FC = () => {
   
   return (
     <div className="task-data-page">
-      <div className="page-header mb-6">
-        <h1 className="text-2xl font-bold text-[#203B17] mb-2">📊 Task Data</h1>
-        <div className="header-info">
-          {isViewingAllLocations ? (
-            <span className="location-indicator text-gray-600">All Locations Combined</span>
-          ) : (
-            <span className="location-indicator text-gray-600">{currentLocation.name}</span>
-          )}
-        </div>
-      </div>
       
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'analytics')} className="w-full">
         <TabsList className="grid w-full grid-cols-2">

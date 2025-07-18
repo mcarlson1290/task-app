@@ -119,10 +119,7 @@ const RecurringTasks: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">🔄 Recurring Tasks</h1>
-          <p className="text-gray-600">Manage automated task generation and scheduling</p>
-        </div>
+        <div></div>
         <Button 
           onClick={() => setShowAddModal(true)}
           className="bg-[#2D8028] hover:bg-[#203B17]"

@@ -229,11 +229,59 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {!isMobile && (
           <header className="app-header">
             <div className="header-left">
-              <h2 className="text-lg font-semibold text-[#203B17]">
-                {navigationItems.find(item => isActive(item.href))?.label || 
-                 managerItems.find(item => isActive(item.href))?.label || 
-                 "Dashboard"}
-              </h2>
+              {/* Page tabs with emojis */}
+              {(() => {
+                const pageTabs = {
+                  '/': [
+                    { label: '📋 Tasks', value: 'tasks' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/account': [
+                    { label: '👤 Account', value: 'account' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/inventory': [
+                    { label: '📦 Inventory', value: 'inventory' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/education': [
+                    { label: '🎓 Education', value: 'education' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/recurring-tasks': [
+                    { label: '🔄 Recurring Tasks', value: 'recurring' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/task-data': [
+                    { label: '📊 Task Data', value: 'task-data' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/staff-data': [
+                    { label: '👥 Staff Data', value: 'staff-data' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ],
+                  '/production-data': [
+                    { label: '🌱 Production Data', value: 'production-data' },
+                    { label: '🏢 Corporate', value: 'corporate' }
+                  ]
+                };
+                
+                const currentTabs = pageTabs[location] || [];
+                
+                return currentTabs.length > 0 && (
+                  <div className="page-tabs">
+                    {currentTabs.map((tab, index) => (
+                      <button 
+                        key={tab.value}
+                        className={`tab-button ${index === 0 ? 'active' : ''}`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
+              
               <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
                 {currentUser.role}
               </Badge>

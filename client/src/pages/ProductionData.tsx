@@ -626,10 +626,7 @@ const ProductionData: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#203B17] mb-2">Production Data</h1>
-          <p className="text-gray-600">Track crop production and tray management</p>
-        </div>
+        <div></div>
         <div className="mt-4 sm:mt-0">
           <Button onClick={handleExport} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
             <Download className="h-4 w-4 mr-2" />
