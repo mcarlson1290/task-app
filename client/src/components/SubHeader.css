@@ -1,0 +1,267 @@
+/* FLOATING SUB-HEADER DESIGN */
+.sub-header-wrapper {
+  position: sticky;
+  top: 64px; /* Adjust based on your main header height */
+  z-index: 100;
+  padding: 16px 24px 0 24px;
+  background: transparent;
+}
+
+.sub-header-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+  padding: 12px 20px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.sub-header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* EXACT BUTTON SPECIFICATIONS */
+
+/* Primary Button (Green) - Used for main actions */
+.btn-primary {
+  /* Dimensions */
+  height: 36px;
+  padding: 0 16px;
+  min-width: 120px;
+  
+  /* Colors */
+  background-color: #28a745;
+  color: #ffffff;
+  border: none;
+  
+  /* Typography */
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 36px;
+  
+  /* Shape */
+  border-radius: 4px;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:active {
+  background-color: #1e7e34;
+  box-shadow: none;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Icon in button */
+.btn-primary span {
+  font-size: 18px;
+  line-height: 1;
+  margin-right: 4px;
+}
+
+/* Secondary Button (Gray) */
+.btn-secondary {
+  /* Same dimensions as primary */
+  height: 36px;
+  padding: 0 16px;
+  min-width: 100px;
+  
+  /* Colors */
+  background-color: #6c757d;
+  color: #ffffff;
+  border: none;
+  
+  /* Typography */
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 36px;
+  
+  /* Shape */
+  border-radius: 4px;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* FILTER AND INPUT SPECIFICATIONS */
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.filter-dropdown {
+  /* Dimensions */
+  height: 36px;
+  min-width: 180px;
+  max-width: 250px;
+  padding: 0 12px;
+  
+  /* Style */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  
+  /* Typography */
+  font-size: 14px;
+  color: #495057;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.filter-dropdown:hover {
+  border-color: #80bdff;
+}
+
+.filter-dropdown:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.search-input {
+  /* Dimensions */
+  height: 36px;
+  flex: 1;
+  max-width: 400px;
+  min-width: 200px;
+  padding: 0 12px;
+  
+  /* Style */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  
+  /* Typography */
+  font-size: 14px;
+  color: #495057;
+  
+  /* Behavior */
+  transition: border-color 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+}
+
+.search-input:hover {
+  border-color: #80bdff;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* TAB NAVIGATION SPECIFICATIONS */
+
+.tab-group {
+  display: flex;
+  gap: 2px;
+  background-color: #f1f3f5;
+  padding: 2px;
+  border-radius: 6px;
+  height: 40px;
+}
+
+.tab-button {
+  /* Dimensions */
+  height: 36px;
+  padding: 0 20px;
+  
+  /* Style */
+  border: none;
+  background-color: transparent;
+  
+  /* Typography */
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  
+  /* Shape */
+  border-radius: 4px;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #495057;
+}
+
+.tab-button.active {
+  background-color: #ffffff;
+  color: #212529;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* UTILITY CLASSES */
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sub-header-wrapper {
+    padding: 12px 16px 0 16px;
+  }
+  
+  .sub-header-container {
+    padding: 10px 16px;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-input,
+  .filter-dropdown {
+    width: 100%;
+    max-width: none;
+  }
+}
