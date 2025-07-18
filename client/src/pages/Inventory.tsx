@@ -77,9 +77,47 @@ const Inventory: React.FC = () => {
     { value: "all", label: "All Categories" },
     { value: "seeds", label: "Seeds" },
     { value: "nutrients", label: "Nutrients" },
-    { value: "supplies", label: "Supplies" },
+    { value: "farm-supplies", label: "Farm Supplies" },
+    { value: "other-supplies", label: "Other Supplies" },
     { value: "equipment", label: "Equipment" },
   ];
+
+  const categoryDetails = [
+    { id: 'seeds', name: 'Seeds', icon: '🌱', color: '#22c55e' },
+    { id: 'nutrients', name: 'Nutrients', icon: '🧪', color: '#3b82f6' },
+    { id: 'farm-supplies', name: 'Farm Supplies', icon: '🚜', color: '#f59e0b' },
+    { id: 'other-supplies', name: 'Other Supplies', icon: '📦', color: '#8b5cf6' },
+    { id: 'equipment', name: 'Equipment', icon: '🔧', color: '#6366f1' }
+  ];
+
+  const calculateCategoryTotals = () => {
+    const totals = {
+      'seeds': { value: 0, count: 0 },
+      'nutrients': { value: 0, count: 0 },
+      'farm-supplies': { value: 0, count: 0 },
+      'other-supplies': { value: 0, count: 0 },
+      'equipment': { value: 0, count: 0 }
+    };
+    
+    inventory.forEach(item => {
+      const categoryKey = item.category?.toLowerCase().replace(/\s+/g, '-') || 'other-supplies';
+      if (totals[categoryKey]) {
+        totals[categoryKey].value += getItemTotalValue(item);
+        totals[categoryKey].count += 1;
+      }
+    });
+    
+    const grandTotal = Object.values(totals).reduce((sum, cat) => sum + cat.value, 0);
+    
+    // Add percentages
+    Object.keys(totals).forEach(category => {
+      totals[category].percentage = grandTotal > 0 
+        ? ((totals[category].value / grandTotal) * 100).toFixed(1)
+        : '0.0';
+    });
+    
+    return { totals, grandTotal };
+  };
 
   // Cost calculation functions
   const getItemCostPerUnit = (item: InventoryItem): number => {
@@ -149,8 +187,11 @@ const Inventory: React.FC = () => {
     const icons = {
       seeds: "🌱",
       nutrients: "🧪",
+      "farm-supplies": "🚜",
+      "other-supplies": "📦",
+      equipment: "🔧",
+      // Legacy support
       supplies: "📦",
-      equipment: "⚙️",
     };
     return icons[category as keyof typeof icons] || "📋";
   };
@@ -233,31 +274,27 @@ Please process this reorder request at your earliest convenience.`;
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-right">
-          <p className="text-sm text-gray-600">Total Inventory Value</p>
-          <p className="text-xl font-bold text-[#203B17]">
-            ${getTotalInventoryValue().toFixed(2)}
-          </p>
-        </div>
-        <div className="flex items-center gap-3 mt-4 sm:mt-0">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-[#203B17] flex items-center gap-2">
+          📦 Inventory
+        </h1>
+        <div className="flex items-center gap-3">
           {/* Add to Inventory button - visible to ALL users */}
-          <Button 
+          <button 
             onClick={() => setShowAddInventoryModal(true)}
-            className="bg-[#10b981] hover:bg-[#059669] text-white font-semibold"
+            className="bg-[#10b981] hover:bg-[#059669] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
           >
             📥 Add to Inventory
-          </Button>
+          </button>
           
           {/* Add Item button - only for managers */}
           {isManager && (
-            <Button 
+            <button 
               onClick={handleAddItem}
-              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+              className="bg-[#22c55e] hover:bg-[#16a34a] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
+              + Add Item
+            </button>
           )}
         </div>
       </div>
@@ -382,6 +419,41 @@ Please process this reorder request at your earliest convenience.`;
           </label>
         </div>
       </div>
+
+      {/* Inventory Cost Breakdown */}
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-lg font-semibold text-[#203B17] mb-4 flex items-center gap-2">
+            💰 Inventory Cost Breakdown
+          </h2>
+          
+          {/* Total Inventory Value Display */}
+          <div className="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+            <p className="text-sm text-gray-600 mb-1">Total Inventory Value</p>
+            <p className="text-3xl font-bold text-[#203B17]">
+              ${calculateCategoryTotals().grandTotal.toFixed(2)}
+            </p>
+          </div>
+          
+          {/* Category Breakdown Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {categoryDetails.map((category) => {
+              const categoryData = calculateCategoryTotals().totals[category.id];
+              return (
+                <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
+                  <div className="text-2xl mb-2">{category.icon}</div>
+                  <h3 className="font-medium text-gray-900 text-sm mb-1">{category.name}</h3>
+                  <p className="text-xs text-gray-600 mb-2">{categoryData.percentage}%</p>
+                  <p className="font-bold text-[#203B17] text-sm mb-1">
+                    ${categoryData.value.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-500">{categoryData.count} items</p>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Inventory Grid */}
       {filteredInventory.length === 0 ? (

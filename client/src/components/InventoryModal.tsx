@@ -33,7 +33,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         minimumStock: item.minimumStock,
         category: item.category,
         supplier: item.supplier || '',
-        estimatedTotalValue: '' // Not shown for edit mode
+        estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
       };
     }
     return {
@@ -41,7 +41,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       currentStock: 0,
       unit: 'units',
       minimumStock: 0,
-      category: 'supplies',
+      category: 'other-supplies',
       supplier: '',
       estimatedTotalValue: ''
     };
@@ -56,7 +56,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: item.unit,
         minimumStock: item.minimumStock,
         category: item.category,
-        supplier: item.supplier || ''
+        supplier: item.supplier || '',
+        estimatedTotalValue: '' // Not used in edit mode
       });
     } else if (mode === 'add') {
       setFormData({
@@ -64,7 +65,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         currentStock: 0,
         unit: 'units',
         minimumStock: 0,
-        category: 'supplies',
+        category: 'other-supplies',
         supplier: '',
         estimatedTotalValue: ''
       });
@@ -132,7 +133,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
   const categories = [
     { value: 'seeds', label: 'Seeds' },
     { value: 'nutrients', label: 'Nutrients' },
-    { value: 'supplies', label: 'Supplies' },
+    { value: 'farm-supplies', label: 'Farm Supplies' },
+    { value: 'other-supplies', label: 'Other Supplies' },
     { value: 'equipment', label: 'Equipment' }
   ];
 

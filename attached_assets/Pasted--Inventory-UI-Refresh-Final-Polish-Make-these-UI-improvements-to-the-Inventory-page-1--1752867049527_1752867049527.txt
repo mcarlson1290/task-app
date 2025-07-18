@@ -1,0 +1,235 @@
+# Inventory UI Refresh - Final Polish
+
+Make these UI improvements to the Inventory page:
+
+## 1. Update Button Styling
+
+Change the "Add to Inventory" and "Add Item" buttons to match the style consistency:
+
+```jsx
+// In the Inventory component header
+<div className="inventory-header">
+  <h1>📦 Inventory</h1>
+  <div className="header-actions">
+    {/* Add to Inventory button - visible to ALL users */}
+    <button 
+      onClick={() => setShowAddInventoryModal(true)} 
+      className="btn-action"
+      style={{
+        backgroundColor: '#10b981',
+        color: 'white',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px'
+      }}
+    >
+      <span>📥</span> Add to Inventory
+    </button>
+    
+    {/* Add Item button - only for managers */}
+    {(currentUser.role === 'Manager' || currentUser.role === 'Corporate') && (
+      <button 
+        onClick={() => setShowAddItemModal(true)} 
+        className="btn-action"
+        style={{
+          backgroundColor: '#22c55e',
+          color: 'white',
+          padding: '8px 16px',
+          borderRadius: '6px',
+          border: 'none',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}
+      >
+        <span>+</span> Add Item
+      </button>
+    )}
+  </div>
+</div>
+```
+
+## 2. Move Total Inventory Value to Cost Breakdown Section
+
+Remove the total value from the top and integrate it into the cost breakdown:
+
+```jsx
+// Remove this from the header area:
+// <p>Total Inventory Value: $120.00</p>
+
+// Update the Inventory Cost Breakdown section:
+<div className="cost-breakdown-section">
+  <h2>💰 Inventory Cost Breakdown</h2>
+  
+  {/* Add total value here with prominent styling */}
+  <div className="total-value-display" style={{
+    backgroundColor: '#f3f4f6',
+    padding: '16px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    textAlign: 'center'
+  }}>
+    <p style={{ 
+      margin: '0', 
+      fontSize: '14px', 
+      color: '#6b7280' 
+    }}>
+      Total Inventory Value
+    </p>
+    <p style={{ 
+      margin: '4px 0 0 0', 
+      fontSize: '28px', 
+      fontWeight: 'bold', 
+      color: '#111827' 
+    }}>
+      ${calculateTotalValue()}
+    </p>
+  </div>
+  
+  {/* Category breakdown cards */}
+  <div className="category-breakdown">
+    {/* ... existing category cards ... */}
+  </div>
+</div>
+```
+
+## 3. Split Supplies into Two Categories
+
+Update the category structure to separate farm and other supplies:
+
+```jsx
+// Update the categories in your data:
+const inventoryCategories = [
+  { id: 'seeds', name: 'Seeds', icon: '🌱', color: '#22c55e' },
+  { id: 'nutrients', name: 'Nutrients', icon: '🧪', color: '#3b82f6' },
+  { id: 'farm-supplies', name: 'Farm Supplies', icon: '🚜', color: '#f59e0b' },
+  { id: 'other-supplies', name: 'Other Supplies', icon: '📦', color: '#8b5cf6' },
+  { id: 'equipment', name: 'Equipment', icon: '🔧', color: '#6366f1' }
+];
+
+// Update the cost breakdown display:
+<div className="category-cards" style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  gap: '16px'
+}}>
+  {/* Seeds */}
+  <div className="category-card">
+    <div className="icon">🌱</div>
+    <h3>Seeds</h3>
+    <p className="percentage">100.0%</p>
+    <p className="value">$120.00</p>
+    <p className="count">1 items</p>
+  </div>
+
+  {/* Nutrients */}
+  <div className="category-card">
+    <div className="icon">🧪</div>
+    <h3>Nutrients</h3>
+    <p className="percentage">0.0%</p>
+    <p className="value">$0.00</p>
+    <p className="count">0 items</p>
+  </div>
+
+  {/* Farm Supplies */}
+  <div className="category-card">
+    <div className="icon">🚜</div>
+    <h3>Farm Supplies</h3>
+    <p className="percentage">0.0%</p>
+    <p className="value">$0.00</p>
+    <p className="count">0 items</p>
+  </div>
+
+  {/* Other Supplies */}
+  <div className="category-card">
+    <div className="icon">📦</div>
+    <h3>Other Supplies</h3>
+    <p className="percentage">0.0%</p>
+    <p className="value">$0.00</p>
+    <p className="count">0 items</p>
+  </div>
+
+  {/* Equipment */}
+  <div className="category-card">
+    <div className="icon">🔧</div>
+    <h3>Equipment</h3>
+    <p className="percentage">0.0%</p>
+    <p className="value">$0.00</p>
+    <p className="count">0 items</p>
+  </div>
+</div>
+```
+
+## 4. Update Category Dropdown in Add Item Modal
+
+Update the category options when adding new items:
+
+```jsx
+<label>
+  Category *
+  <select 
+    value={itemData.category}
+    onChange={(e) => setItemData({...itemData, category: e.target.value})}
+    required
+  >
+    <option value="">Select Category</option>
+    <option value="Seeds">Seeds</option>
+    <option value="Nutrients">Nutrients</option>
+    <option value="Farm Supplies">Farm Supplies</option>
+    <option value="Other Supplies">Other Supplies</option>
+    <option value="Equipment">Equipment</option>
+  </select>
+</label>
+```
+
+## 5. Calculate Category Totals Dynamically
+
+Add a function to calculate totals by category:
+
+```javascript
+const calculateCategoryTotals = () => {
+  const totals = {
+    'Seeds': { value: 0, count: 0 },
+    'Nutrients': { value: 0, count: 0 },
+    'Farm Supplies': { value: 0, count: 0 },
+    'Other Supplies': { value: 0, count: 0 },
+    'Equipment': { value: 0, count: 0 }
+  };
+  
+  items.forEach(item => {
+    if (totals[item.category]) {
+      totals[item.category].value += item.totalValue || 0;
+      totals[item.category].count += 1;
+    }
+  });
+  
+  const grandTotal = Object.values(totals).reduce((sum, cat) => sum + cat.value, 0);
+  
+  // Add percentages
+  Object.keys(totals).forEach(category => {
+    totals[category].percentage = grandTotal > 0 
+      ? ((totals[category].value / grandTotal) * 100).toFixed(1)
+      : '0.0';
+  });
+  
+  return { totals, grandTotal };
+};
+```
+
+## Summary of Changes:
+1. ✅ Styled buttons consistently with smaller, cleaner design
+2. ✅ Moved total inventory value from header to cost breakdown section with prominent display
+3. ✅ Split "Supplies" into "Farm Supplies" and "Other Supplies" categories
+4. ✅ Updated category dropdowns and calculations
+5. ✅ Made the cost breakdown more visually clear and organized
+
+The UI will now be cleaner with the total value prominently displayed in the cost breakdown section where it makes more contextual sense.
