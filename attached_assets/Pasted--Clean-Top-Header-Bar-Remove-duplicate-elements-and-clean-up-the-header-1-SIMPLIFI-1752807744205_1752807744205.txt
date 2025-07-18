@@ -1,0 +1,274 @@
+# 🧹 Clean Top Header Bar
+
+## Remove duplicate elements and clean up the header
+
+### 1. SIMPLIFIED HEADER STRUCTURE:
+
+```typescript
+export const AppHeader: React.FC = () => {
+  const location = useLocation();
+  const currentUser = getCurrentUser();
+  const { currentLocation, canSwitchLocations } = useLocation();
+  
+  // Get page-specific tabs
+  const getPageTabs = () => {
+    switch (location.pathname) {
+      case '/':
+        return [{ label: '📋 Tasks', value: 'tasks', active: true }];
+      case '/account':
+        return [{ label: '👤 Account', value: 'account', active: true }];
+      case '/inventory':
+        return [{ label: '📦 Inventory', value: 'inventory', active: true }];
+      case '/education':
+        return [{ label: '🎓 Education', value: 'education', active: true }];
+      case '/recurring-tasks':
+        return [{ label: '🔄 Recurring Tasks', value: 'recurring', active: true }];
+      case '/task-data':
+        return [{ label: '📊 Task Data', value: 'task-data', active: true }];
+      case '/staff-data':
+        return [{ label: '👥 Staff Data', value: 'staff-data', active: true }];
+      case '/production-data':
+        return [{ label: '🌱 Production Data', value: 'production', active: true }];
+      default:
+        return [];
+    }
+  };
+  
+  const tabs = getPageTabs();
+  
+  return (
+    <header className="app-header">
+      {/* Left side - Page title only */}
+      <div className="header-left">
+        {tabs.map(tab => (
+          <div key={tab.value} className="page-title">
+            {tab.label}
+          </div>
+        ))}
+      </div>
+      
+      {/* Right side - Location dropdown and user info */}
+      <div className="header-right">
+        {/* Location Dropdown (Functional) */}
+        <LocationDropdown />
+        
+        {/* User Info */}
+        <div className="user-info">
+          <User size={14} />
+          <span className="user-name">
+            Welcome, {currentUser.name}
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+};
+```
+
+### 2. LOCATION DROPDOWN COMPONENT:
+
+```typescript
+const LocationDropdown: React.FC = () => {
+  const { 
+    currentLocation, 
+    availableLocations, 
+    switchLocation, 
+    canSwitchLocations,
+    viewMode,
+    setViewMode 
+  } = useLocation();
+  
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="location-dropdown">
+      <button 
+        className="location-button"
+        onClick={() => canSwitchLocations && setIsOpen(!isOpen)}
+        disabled={!canSwitchLocations}
+      >
+        <MapPin size={16} />
+        <span>{currentLocation.name}</span>
+        {canSwitchLocations && <ChevronDown size={14} />}
+      </button>
+      
+      {isOpen && canSwitchLocations && (
+        <div className="location-menu">
+          {/* Menu content */}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### 3. CLEANED UP CSS:
+
+```css
+/* App Header - Simplified */
+.app-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Left side - Just the page title */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Right side - Location and user */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Location Dropdown */
+.location-dropdown {
+  position: relative;
+}
+
+.location-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.location-button:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.location-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.location-button svg {
+  color: #6b7280;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.user-info svg {
+  color: #6b7280;
+}
+
+.user-name {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Remove old styles */
+.tab-button,
+.page-tabs,
+.location-badge,
+.notification-bell,
+.header-corporate-badge {
+  display: none !important; /* Remove all these old elements */
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 8px 16px;
+  }
+  
+  .page-title {
+    font-size: 16px;
+  }
+  
+  .user-info {
+    padding: 6px 12px;
+  }
+  
+  .user-name {
+    max-width: 120px;
+  }
+  
+  /* Hide welcome text on mobile */
+  @media (max-width: 480px) {
+    .user-info span::before {
+      content: '';
+    }
+    
+    .user-info .user-name {
+      max-width: 80px;
+    }
+  }
+}
+```
+
+### 4. WHAT'S REMOVED:
+
+```typescript
+// REMOVE these elements:
+// ❌ Corporate badge/button on the left
+// ❌ Duplicate "Corporate" text
+// ❌ Second location indicator on the right
+// ❌ Notification bell icon
+// ❌ Any redundant tabs
+
+// KEEP these elements:
+// ✅ Page title with emoji (left side)
+// ✅ Functional location dropdown (right side)
+// ✅ User welcome message (right side)
+```
+
+### SUMMARY:
+
+The cleaned header now has:
+
+**Left side:**
+- Just the current page title with emoji (📋 Tasks, 👥 Staff Data, etc.)
+
+**Right side:**
+- Functional location dropdown (for Corporate users)
+- User welcome message
+
+**Removed:**
+- ❌ Mysterious "Corporate" text on the left
+- ❌ Duplicate location indicator
+- ❌ Notification bell (using Teams instead)
+- ❌ Any confusing duplicate elements
+
+The header is now clean, minimal, and functional - exactly what users need without any clutter!

@@ -407,26 +407,22 @@
   min-width: 0; /* Allow shrinking */
 }
 
-.page-tabs {
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.tab-button {
-  padding: 6px 16px; /* Smaller padding */
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
-  white-space: nowrap;
-}
-
-.tab-button.active {
-  background: #f3f4f6;
-  color: #203B17;
+/* Hide old duplicate elements */
+.page-tabs,
+.tab-button,
+.location-badge,
+.notification-bell,
+.header-corporate-badge {
+  display: none !important;
 }
 
 /* Header Right - User Info */
@@ -452,13 +448,13 @@
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px; /* Reduced gap */
-  padding: 6px 12px; /* Smaller padding */
-  background: #f3f4f6;
-  border-radius: 6px;
-  font-size: 13px; /* Smaller font */
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 14px;
   color: #374151;
-  max-width: 200px; /* Limit width */
+  max-width: 200px;
 }
 
 .user-name {
@@ -2880,6 +2876,30 @@ textarea:focus {
   .btn-export {
     flex: 1;
     justify-content: center;
+  }
+  
+  /* Mobile: Simplified header */
+  .app-header {
+    padding: 8px 16px;
+  }
+  
+  .page-title {
+    font-size: 16px;
+  }
+  
+  .user-info {
+    padding: 6px 12px;
+  }
+  
+  .user-name {
+    max-width: 120px;
+  }
+  
+  /* Hide welcome text on very small screens */
+  @media (max-width: 480px) {
+    .user-name {
+      max-width: 80px;
+    }
   }
 }
 

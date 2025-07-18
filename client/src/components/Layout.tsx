@@ -228,83 +228,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Top Header - Hidden on mobile */}
         {!isMobile && (
           <header className="app-header">
+            {/* Left side - Just the page title with emoji */}
             <div className="header-left">
-              {/* Page tabs with emojis */}
               {(() => {
-                const pageTabs = {
-                  '/': [
-                    { label: '📋 Tasks', value: 'tasks' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/account': [
-                    { label: '👤 Account', value: 'account' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/inventory': [
-                    { label: '📦 Inventory', value: 'inventory' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/education': [
-                    { label: '🎓 Education', value: 'education' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/recurring-tasks': [
-                    { label: '🔄 Recurring Tasks', value: 'recurring' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/task-data': [
-                    { label: '📊 Task Data', value: 'task-data' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/staff-data': [
-                    { label: '👥 Staff Data', value: 'staff-data' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ],
-                  '/production-data': [
-                    { label: '🌱 Production Data', value: 'production-data' },
-                    { label: '🏢 Corporate', value: 'corporate' }
-                  ]
+                const pageTitle = {
+                  '/': '📋 Tasks',
+                  '/account': '👤 Account',
+                  '/inventory': '📦 Inventory',
+                  '/education': '🎓 Education',
+                  '/recurring-tasks': '🔄 Recurring Tasks',
+                  '/task-data': '📊 Task Data',
+                  '/staff-data': '👥 Staff Data',
+                  '/production-data': '🌱 Production Data'
                 };
                 
-                const currentTabs = pageTabs[location] || [];
-                
-                return currentTabs.length > 0 && (
-                  <div className="page-tabs">
-                    {currentTabs.map((tab, index) => (
-                      <button 
-                        key={tab.value}
-                        className={`tab-button ${index === 0 ? 'active' : ''}`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
+                return (
+                  <div className="page-title">
+                    {pageTitle[location] || '📋 Tasks'}
                   </div>
                 );
               })()}
-              
-              <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
-                {currentUser.role}
-              </Badge>
             </div>
             
+            {/* Right side - Location dropdown and user info */}
             <div className="header-right">
               <LocationSelector />
-              <div className="location-badge">
-                <MapPin size={14} />
-                <span>{currentLocation.name}</span>
-              </div>
               <div className="user-info">
                 <User size={14} />
-                <span className="user-name truncate">Welcome, {currentUser.name}</span>
+                <span className="user-name">Welcome, {currentUser.name}</span>
               </div>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5 text-gray-600" />
-                {analytics?.lowStockAlerts && analytics.lowStockAlerts > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                    {analytics.lowStockAlerts}
-                  </Badge>
-                )}
-              </Button>
             </div>
           </header>
         )}
