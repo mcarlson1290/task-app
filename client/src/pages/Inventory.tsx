@@ -273,7 +273,8 @@ Please process this reorder request at your earliest convenience.`;
   }
 
   return (
-    <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto">
+    <div className="h-full overflow-auto inventory-scroll">
+      <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto min-h-full bg-gray-50">
       {/* Collapsible Cost Breakdown - At Top */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
         {/* Collapsible Header */}
@@ -398,43 +399,43 @@ Please process this reorder request at your earliest convenience.`;
         )}
       </div>
 
-      {/* Low Stock Alerts */}
+      {/* Low Stock Alerts Section */}
       {lowStockItems.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="flex items-center text-red-800">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Low Stock Alerts ({lowStockItems.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {lowStockItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-lg mr-2">{getCategoryIcon(item.category)}</span>
-                    <div>
-                      <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {item.currentStock} {item.unit} remaining
-                      </p>
-                    </div>
+        <div className="mb-10 p-5 bg-red-50 border border-red-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-red-800 mb-6 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            Low Stock Alerts ({lowStockItems.length})
+          </h3>
+          <div className="space-y-4">
+            {lowStockItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-4 bg-red-100 rounded-md shadow-sm">
+                <div className="flex items-center">
+                  <span className="text-lg mr-3">{getCategoryIcon(item.category)}</span>
+                  <div>
+                    <p className="font-medium text-red-900">{item.name}</p>
+                    <p className="text-sm text-red-700">
+                      {item.currentStock} {item.unit} remaining • Reorder at {item.reorderLevel} {item.unit}
+                    </p>
                   </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => handleReorder(item)}
-                  >
-                    <Mail className="h-3 w-3 mr-1" />
-                    Reorder
-                  </Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <button
+                  onClick={() => handleReorder(item)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm flex items-center gap-1 transition-colors"
+                >
+                  <Mail className="h-4 w-4" />
+                  Reorder
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
+
+      {/* Main Inventory Items Section */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+          📦 All Inventory Items ({filteredInventory.length})
+        </h3>
 
 
 
@@ -547,6 +548,7 @@ Please process this reorder request at your earliest convenience.`;
           })}
         </div>
       )}
+      </div>
 
       {/* Add/Edit Item Modal */}
       <InventoryModal
@@ -565,6 +567,7 @@ Please process this reorder request at your earliest convenience.`;
         items={inventory}
         onSave={handleAddInventory}
       />
+      </div>
     </div>
   );
 };
