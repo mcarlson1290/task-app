@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   role: text("role").notNull(), // 'technician', 'manager', 'corporate'
   approved: boolean("approved").default(false),
+  location: text("location").default('Kenosha'), // User's assigned location
   createdAt: timestamp("created_at").defaultNow(),
 });
 

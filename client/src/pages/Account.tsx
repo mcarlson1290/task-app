@@ -91,8 +91,34 @@ const Account: React.FC = () => {
 
   const trainingData = getRoleTrainingData(auth.user?.role || '');
 
+  const getAssignedLocation = (user: any) => {
+    // Corporate users see "Grow Space Vertical Farms"
+    if (user?.role === 'corporate') {
+      return 'Grow Space Vertical Farms';
+    }
+    
+    // All other users see their actual location
+    return user?.location || 'Kenosha';
+  };
+
+  const getStaffId = (user: any) => {
+    if (!user) return 'N/A';
+    
+    // Get location code
+    let locationCode = 'K'; // Default to Kenosha
+    if (user.role === 'corporate') {
+      locationCode = 'C';
+    } else if (user.location === 'Racine') {
+      locationCode = 'R';
+    } else if (user.location === 'Lake Geneva') {
+      locationCode = 'LG';
+    }
+    
+    return `${locationCode}${String(user.id).padStart(3, '0')}`;
+  };
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto" style={{ paddingTop: '40px' }}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Personal Information */}
         <Card>
@@ -112,8 +138,8 @@ const Account: React.FC = () => {
               <p className="text-lg text-[#203B17] font-medium">{auth.user?.username}@growspace.farm</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Employee ID</label>
-              <p className="text-lg text-[#203B17] font-medium">EMP{String(auth.user?.id).padStart(3, '0')}</p>
+              <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Staff ID</label>
+              <p className="text-lg text-[#203B17] font-medium">{getStaffId(auth.user)}</p>
             </div>
           </CardContent>
         </Card>
@@ -133,7 +159,7 @@ const Account: React.FC = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Assigned Location</label>
-              <p className="text-lg text-[#203B17] font-medium">Grow Space Vertical Farm</p>
+              <p className="text-lg text-[#203B17] font-medium">{getAssignedLocation(auth.user)}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Trained Roles</label>
@@ -179,12 +205,12 @@ const Account: React.FC = () => {
         </Card>
       </div>
 
-      {/* Activity Summary */}
+      {/* Task Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span>📊</span>
-            Activity Summary
+            Task Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
