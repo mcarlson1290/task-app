@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
 import { TrayIntegration } from "@/utils/trayIntegration";
+import { useLocation } from "@/contexts/LocationContext";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -41,6 +42,7 @@ const Tasks: React.FC = () => {
   const auth = getStoredAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentLocation, isViewingAllLocations } = useLocation();
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -64,7 +66,7 @@ const Tasks: React.FC = () => {
   }, []);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", auth.user?.id],
+    queryKey: ["/api/tasks", auth.user?.id, currentLocation.code],
     queryFn: async () => {
       const url = auth.user?.role === 'technician' 
         ? `/api/tasks?userId=${auth.user.id}`
@@ -162,6 +164,11 @@ const Tasks: React.FC = () => {
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
 
+    // Location filter - only show tasks for current location unless viewing all locations
+    if (!isViewingAllLocations) {
+      filtered = filtered.filter(task => task.location === currentLocation.code);
+    }
+
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(task => 
@@ -209,7 +216,7 @@ const Tasks: React.FC = () => {
     }
 
     return filtered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.code, isViewingAllLocations]);
 
   // Clear all filters function
   const clearAllFilters = () => {

@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from '@/contexts/LocationContext';
 
-// Mock staff data
+// Mock staff data with location codes
 const mockStaff = [
   {
     id: 1,
     fullName: 'Alex Martinez',
     email: 'alex.martinez@growspace.farm',
     phone: '555-0101',
-    location: 'Grow Space',
+    location: 'K', // Kenosha
     rolesAssigned: ['General Staff', 'Seeding Tech'],
     dateHired: '2023-06-15',
     payRate: 18.50, // Hidden from non-managers
@@ -29,7 +30,7 @@ const mockStaff = [
     fullName: 'Sarah Johnson',
     email: 'sarah.j@growspace.farm',
     phone: '555-0102',
-    location: 'Grow Space',
+    location: 'K', // Kenosha
     rolesAssigned: ['General Staff', 'Harvest Tech', 'Packing'],
     dateHired: '2023-03-22',
     payRate: 20.00,
@@ -49,7 +50,7 @@ const mockStaff = [
     fullName: 'Mike Chen',
     email: 'mike.chen@growspace.farm',
     phone: '555-0103',
-    location: 'Grow Space',
+    location: 'R', // Racine
     rolesAssigned: ['General Staff', 'Equipment Tech', 'Cleaning Crew'],
     dateHired: '2024-01-10',
     payRate: 17.00,
@@ -69,7 +70,7 @@ const mockStaff = [
     fullName: 'Jessica Wong',
     email: 'jessica.w@growspace.farm',
     phone: '555-0104',
-    location: 'Grow Space',
+    location: 'R', // Racine
     rolesAssigned: ['Manager', 'All Roles'],
     dateHired: '2022-11-01',
     payRate: 28.00,
@@ -89,7 +90,7 @@ const mockStaff = [
     fullName: 'Tom Rodriguez',
     email: 'tom.r@growspace.farm',
     phone: '555-0105',
-    location: 'Grow Space',
+    location: 'MKE', // Milwaukee
     rolesAssigned: ['General Staff'],
     dateHired: '2024-02-20',
     payRate: 16.50,
@@ -102,6 +103,26 @@ const mockStaff = [
     tasksCompleted: 18,
     avgTaskDuration: '48m',
     onTimeRate: 85.0,
+    microsoftId: null
+  },
+  {
+    id: 6,
+    fullName: 'David Kim',
+    email: 'david.k@growspace.farm',
+    phone: '555-0106',
+    location: 'MKE', // Milwaukee
+    rolesAssigned: ['General Staff', 'Harvest Tech'],
+    dateHired: '2023-09-12',
+    payRate: 19.25,
+    trainingCompleted: ['Basic Safety & Orientation', 'Harvest Operations Training'],
+    trainingInProgress: [],
+    preferredHours: 'Evening (2pm-10pm)',
+    activeStatus: 'active',
+    lastTaskCompleted: '2024-03-15T19:30:00',
+    managerNotes: 'Consistent performer, good teamwork',
+    tasksCompleted: 187,
+    avgTaskDuration: '41m',
+    onTimeRate: 94.8,
     microsoftId: null
   }
 ];
@@ -976,9 +997,18 @@ const StaffAnalyticsView: React.FC<{
 const StaffData: React.FC = () => {
   const auth = getStoredAuth();
   const { toast } = useToast();
+  const { currentLocation, isViewingAllLocations } = useLocation();
   const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
   const [activeTab, setActiveTab] = useState('edit');
   const [staff, setStaff] = useState(mockStaff);
+  
+  // Filter staff by location
+  const filteredStaff = React.useMemo(() => {
+    if (isViewingAllLocations) {
+      return staff;
+    }
+    return staff.filter(person => person.location === currentLocation.code);
+  }, [staff, currentLocation.code, isViewingAllLocations]);
 
   const handleExport = () => {
     toast({
@@ -1025,13 +1055,13 @@ const StaffData: React.FC = () => {
       <div className="tab-content">
         {activeTab === 'edit' ? (
           <StaffEditView 
-            staff={staff}
+            staff={filteredStaff}
             isManager={isManager}
             onUpdateStaff={setStaff}
           />
         ) : (
           <StaffAnalyticsView 
-            staff={staff}
+            staff={filteredStaff}
           />
         )}
       </div>
