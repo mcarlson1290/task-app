@@ -1,0 +1,144 @@
+# Fix App-Wide Scrolling Issue
+
+The scrolling issue is affecting the entire app, not just the inventory page. This is likely due to the main app container or layout structure. Here's how to fix it:
+
+## 1. Fix the Root App Layout
+
+In your main App component or root layout, update the structure:
+
+```jsx
+// App.tsx or main layout component
+<div className="app-container" style={{
+  display: 'flex',
+  height: '100vh',
+  overflow: 'hidden' // Prevent scrolling on the outer container
+}}>
+  {/* Sidebar - Fixed, not scrollable */}
+  <aside className="sidebar" style={{
+    width: '260px',
+    height: '100vh',
+    backgroundColor: '#203B17',
+    flexShrink: 0,
+    overflow: 'hidden'
+  }}>
+    {/* Sidebar content */}
+  </aside>
+  
+  {/* Main content area - This should scroll */}
+  <main className="main-content" style={{
+    flex: 1,
+    height: '100vh',
+    overflow: 'auto', // THIS IS THE KEY - enable scrolling here
+    backgroundColor: '#f5f5f5'
+  }}>
+    {/* Page content goes here - it will be scrollable */}
+    <Routes>
+      <Route path="/tasks" element={<Tasks />} />
+      <Route path="/inventory" element={<Inventory />} />
+      {/* ... other routes ... */}
+    </Routes>
+  </main>
+</div>
+```
+
+## 2. Remove Conflicting Styles
+
+Check and remove these common issues:
+
+```css
+/* REMOVE these from body or html */
+body, html {
+  overflow: hidden; /* Remove this */
+  height: 100%; /* This is OK */
+}
+
+/* REMOVE fixed heights from inner containers */
+.page-container {
+  height: 100vh; /* Remove this from inner pages */
+  overflow: hidden; /* Remove this */
+}
+```
+
+## 3. Update Individual Page Containers
+
+Each page component should NOT set its own height:
+
+```jsx
+// In Tasks.tsx, Inventory.tsx, etc.
+<div className="page-wrapper" style={{
+  padding: '24px',
+  minHeight: '100%', // Use minHeight instead of height
+  // DON'T add: height: '100vh'
+  // DON'T add: overflow: 'hidden'
+}}>
+  {/* Page content */}
+</div>
+```
+
+## 4. Check CSS Reset or Global Styles
+
+Look for a global CSS file that might be setting:
+
+```css
+/* In index.css or App.css */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Make sure there's no overflow: hidden here */
+}
+
+#root {
+  height: 100vh;
+  /* Make sure there's no overflow: hidden here */
+}
+```
+
+## 5. Mobile Responsive Fix
+
+For mobile, update the layout when sidebar collapses:
+
+```css
+@media (max-width: 768px) {
+  .main-content {
+    width: 100%;
+    height: 100vh;
+    overflow: auto; /* Ensure scrolling works on mobile too */
+  }
+}
+```
+
+## 6. Test the Fix
+
+After implementing:
+1. The sidebar should stay fixed in place
+2. The main content area should have a scrollbar when content exceeds viewport
+3. Each page should scroll independently
+4. Mobile view should also scroll properly
+
+## Quick Debug Test
+
+Add this temporary style to verify scrolling works:
+
+```jsx
+// In any page component, temporarily add:
+<div style={{ height: '2000px', background: 'linear-gradient(to bottom, red, blue)' }}>
+  Test scroll - you should see a gradient from red to blue
+</div>
+```
+
+If you can't scroll to see the blue part, the issue is in the layout structure.
+
+## Summary:
+The key is that the main content area (not the entire app) should have:
+- `height: 100vh`
+- `overflow: auto`
+
+While inner page components should NOT have:
+- Fixed heights
+- `overflow: hidden`
+
+This creates a scrollable content area while keeping the sidebar fixed.

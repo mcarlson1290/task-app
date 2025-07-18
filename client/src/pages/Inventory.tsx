@@ -273,8 +273,7 @@ Please process this reorder request at your earliest convenience.`;
   }
 
   return (
-    <div className="h-full overflow-auto inventory-scroll">
-      <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto min-h-full bg-gray-50">
+    <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto bg-gray-50">
       {/* Collapsible Cost Breakdown - At Top */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
         {/* Collapsible Header */}
@@ -567,7 +566,6 @@ Please process this reorder request at your earliest convenience.`;
         items={inventory}
         onSave={handleAddInventory}
       />
-      </div>
     </div>
   );
 };
