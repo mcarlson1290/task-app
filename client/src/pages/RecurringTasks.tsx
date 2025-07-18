@@ -11,7 +11,6 @@ import { apiRequest } from '@/lib/queryClient';
 import { RecurringTask } from '@shared/schema';
 import RecurringTaskModal from '@/components/RecurringTaskModal';
 import { useLocation } from '@/contexts/LocationContext';
-import SubHeader from '@/components/SubHeader';
 
 const RecurringTasks: React.FC = () => {
   const auth = getStoredAuth();
@@ -119,11 +118,16 @@ const RecurringTasks: React.FC = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <SubHeader>
-        <button className="btn-primary ml-auto" onClick={() => setShowAddModal(true)}>
-          <span>+</span> Add Recurring Task
-        </button>
-      </SubHeader>
+      <div className="flex justify-between items-center mb-6">
+        <div></div>
+        <Button 
+          onClick={() => setShowAddModal(true)}
+          className="bg-[#2D8028] hover:bg-[#203B17]"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Recurring Task
+        </Button>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredRecurringTasks.map((task) => (

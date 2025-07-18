@@ -17,7 +17,6 @@ import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/tray
 import SystemConfiguration from "@/components/SystemConfiguration";
 import { EquipmentManagement } from "@/components/EquipmentManagement";
 import TrayTracking from "@/pages/TrayTracking";
-import SubHeader from "@/components/SubHeader";
 
 interface Crop extends CropType {
   checklistTemplate: any;
@@ -578,47 +577,63 @@ const ProductionData: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SubHeader>
-        <div className="tab-group">
-          <button 
-            className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            Live Dashboard
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'trays' ? 'active' : ''}`}
-            onClick={() => setActiveTab('trays')}
-          >
-            Tray Tracking
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'equipment' ? 'active' : ''}`}
-            onClick={() => setActiveTab('equipment')}
-          >
-            Equipment
-          </button>
-          {isCorporateManager && (
-            <button 
-              className={`tab-button ${activeTab === 'crops' ? 'active' : ''}`}
-              onClick={() => setActiveTab('crops')}
-            >
-              Crop Config
-            </button>
-          )}
-          {isCorporateManager && (
-            <button 
-              className={`tab-button ${activeTab === 'systems' ? 'active' : ''}`}
-              onClick={() => setActiveTab('systems')}
-            >
-              System Config
-            </button>
-          )}
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div></div>
+        <div className="mt-4 sm:mt-0">
+          <Button onClick={handleExport} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
         </div>
-        <button className="btn-primary ml-auto" onClick={handleExport}>
-          📊 Export Report
-        </button>
-      </SubHeader>
+      </div>
+
+      {/* Horizontal Scrolling Tabs */}
+      <div className="tab-navigation-wrapper relative">
+        {showLeftScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('left')}
+          >
+            <ChevronLeft size={20} />
+          </Button>
+        )}
+        
+        <div 
+          className="flex overflow-x-auto scrollbar-hide space-x-2 px-8 pb-2"
+          ref={tabsRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setShowLeftScroll(target.scrollLeft > 0);
+            setShowRightScroll(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
+          {tabs.map(tab => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "default" : "outline"}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 whitespace-nowrap ${activeTab === tab.id ? 'bg-[#2D8028] text-white' : 'bg-white text-gray-600'}`}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        
+        {showRightScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('right')}
+          >
+            <ChevronRight size={20} />
+          </Button>
+        )}
+      </div>
       
       {/* Tab Content */}
       <div className="tab-content mt-6">

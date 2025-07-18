@@ -3,7 +3,6 @@ import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
 import { SubTabNavigation } from '@/components/SubTabNavigation';
-import SubHeader from '@/components/SubHeader';
 
 // Mock staff data with location codes
 const mockStaff = [
@@ -1035,34 +1034,20 @@ const StaffData: React.FC = () => {
 
   return (
     <div className="staff-data-page">
-      <SubHeader>
-        <div className="tab-group">
-          <button 
-            className={`tab-button ${activeTab === 'edit' ? 'active' : ''}`}
-            onClick={() => setActiveTab('edit')}
-          >
-            Staff Edit
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Staff Analytics
+      {/* Navigation and Actions on same line */}
+      <div className="nav-with-actions">
+        <SubTabNavigation 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+        
+        <div className="nav-actions">
+          <button className="btn-export" onClick={handleExport}>
+            📊 Export Staff Report
           </button>
         </div>
-        <select className="filter-dropdown">
-          <option value="name">Sort by Name</option>
-          <option value="role">Sort by Role</option>
-          <option value="hire">Sort by Hire Date</option>
-          <option value="active">Sort by Status</option>
-        </select>
-        <button className="btn-primary" onClick={handleExport}>
-          📊 Export Staff Report
-        </button>
-        <button className="btn-primary">
-          <span>+</span> Add Staff Member
-        </button>
-      </SubHeader>
+      </div>
       
       {/* Content will go here based on activeTab */}
       <div className="tab-content">
