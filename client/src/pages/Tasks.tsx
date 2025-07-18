@@ -450,7 +450,8 @@ const Tasks: React.FC = () => {
 
   return (
     <div className="page-content">
-      <SubHeader>
+      {/* SubHeader removed - now integrated into main header */}
+      <div>
         <div className="tab-group">
           <button className={`tab-button ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
             All Tasks
@@ -536,7 +537,7 @@ const Tasks: React.FC = () => {
         >
           <Plus size={16} /> New Task
         </button>
-      </SubHeader>
+      </div>
       
       <div className="task-manager">
 

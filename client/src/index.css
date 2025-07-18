@@ -435,10 +435,30 @@
   border-bottom: 1px solid #e5e7eb;
   padding: 12px 20px; /* Reduced padding */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   flex-shrink: 0;
   min-height: 56px; /* Fixed height */
+}
+
+.app-header.expanded {
+  min-height: 112px; /* Double height when expanded */
+}
+
+.header-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 56px;
+}
+
+.header-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 8px;
 }
 
 .header-left {

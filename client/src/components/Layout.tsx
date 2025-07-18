@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Bell, User, MapPin, ChevronDown, Home, Package, GraduationCap, Settings } from "lucide-react";
+import { Bell, User, MapPin, ChevronDown, Home, Package, GraduationCap, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -31,6 +31,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const handleLogout = () => {
     clearStoredAuth();
     setLocation("/login");
+  };
+
+  // Helper function to determine if page has controls
+  const getPageHasControls = (location: string): boolean => {
+    return ['/', '/inventory', '/education', '/recurring-tasks', '/task-data', '/staff-data', '/production-data'].includes(location);
   };
 
   const testUsers = [
@@ -71,6 +76,60 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const currentUser = testUsers.find(u => u.username === auth.user?.username) || testUsers[0];
+
+  // Helper function to render page-specific controls
+  const renderPageControls = (location: string) => {
+    switch (location) {
+      case '/':
+        return (
+          <>
+            <Button variant="outline" size="sm">All Tasks</Button>
+            <Button variant="ghost" size="sm">Category</Button>
+            <select className="px-3 py-1 border rounded">
+              <option>All Status</option>
+              <option>Pending</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+            </select>
+            <input type="text" placeholder="Search tasks..." className="px-3 py-1 border rounded w-48" />
+            <Button size="sm" className="bg-[#28a745] hover:bg-[#218838]">
+              <Plus className="h-4 w-4 mr-2" />
+              New Task
+            </Button>
+          </>
+        );
+      case '/inventory':
+        return (
+          <>
+            <input type="text" placeholder="Search items..." className="px-3 py-1 border rounded w-48" />
+            <select className="px-3 py-1 border rounded">
+              <option>All Categories</option>
+              <option>Seeds</option>
+              <option>Nutrients</option>
+              <option>Supplies</option>
+            </select>
+            <Button size="sm" className="bg-[#28a745] hover:bg-[#218838]">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Button>
+          </>
+        );
+      case '/education':
+        return (
+          <>
+            <Button variant="outline" size="sm">All Courses</Button>
+            <Button variant="ghost" size="sm">In Progress</Button>
+            <Button variant="ghost" size="sm">Completed</Button>
+            <Button size="sm" className="bg-[#28a745] hover:bg-[#218838]">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Course
+            </Button>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
   
   // Ensure currentUser has a valid username
   if (!currentUser.username) {
@@ -227,37 +286,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="main-content">
         {/* Top Header - Hidden on mobile */}
         {!isMobile && (
-          <header className="app-header">
-            {/* Left side - Just the page title with emoji */}
-            <div className="header-left">
-              {(() => {
-                const pageTitle = {
-                  '/': '📋 Tasks',
-                  '/account': '👤 Account',
-                  '/inventory': '📦 Inventory',
-                  '/education': '🎓 Education',
-                  '/recurring-tasks': '🔄 Recurring Tasks',
-                  '/task-data': '📊 Task Data',
-                  '/staff-data': '👥 Staff Data',
-                  '/production-data': '🌱 Production Data'
-                };
-                
-                return (
-                  <div className="page-title">
-                    {pageTitle[location] || '📋 Tasks'}
-                  </div>
-                );
-              })()}
-            </div>
-            
-            {/* Right side - Location dropdown and user info */}
-            <div className="header-right">
-              <LocationSelector />
-              <div className="user-info">
-                <User size={14} />
-                <span className="user-name">Welcome, {currentUser.name}</span>
+          <header className={`app-header ${getPageHasControls(location) ? 'expanded' : ''}`}>
+            {/* First Row - Page title and user info */}
+            <div className="header-main-row">
+              <div className="header-left">
+                {(() => {
+                  const pageTitle = {
+                    '/': '📋 Tasks',
+                    '/account': '👤 Account',
+                    '/inventory': '📦 Inventory',
+                    '/education': '🎓 Education',
+                    '/recurring-tasks': '🔄 Recurring Tasks',
+                    '/task-data': '📊 Task Data',
+                    '/staff-data': '👥 Staff Data',
+                    '/production-data': '🌱 Production Data'
+                  };
+                  
+                  return (
+                    <div className="page-title">
+                      {pageTitle[location] || '📋 Tasks'}
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              <div className="header-right">
+                <LocationSelector />
+                <div className="user-info">
+                  <User size={14} />
+                  <span className="user-name">Welcome, {currentUser.name}</span>
+                </div>
               </div>
             </div>
+            
+            {/* Second Row - Page-specific controls */}
+            {getPageHasControls(location) && (
+              <div className="header-controls-row">
+                {renderPageControls(location)}
+              </div>
+            )}
           </header>
         )}
 
