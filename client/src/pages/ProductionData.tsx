@@ -320,54 +320,7 @@ const ProductionDashboard: React.FC<{
         </Card>
       </div>
 
-      {/* Tray Tracking Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tray Tracking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-4 py-2 text-left">Tray ID</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Crop Type</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Date Planted</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">System</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Est. Harvest</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Status</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Yield</th>
-                  <th className="border border-gray-200 px-4 py-2 text-left">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trays.map((tray) => (
-                  <tr key={tray.id} className="hover:bg-gray-50">
-                    <td className="border border-gray-200 px-4 py-2 font-mono text-sm">{tray.id}</td>
-                    <td className="border border-gray-200 px-4 py-2">{tray.cropType}</td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {new Date(tray.datePlanted).toLocaleDateString()}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">{tray.assignedSystem}</td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {new Date(tray.estimatedHarvestDate).toLocaleDateString()}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {getStatusBadge(tray.status)}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {tray.actualYield ? `${tray.actualYield} lbs` : '-'}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2 text-sm text-gray-600">
-                      {tray.notes || '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 };

@@ -1,0 +1,174 @@
+# 🔧 Remove Tray Tracking from Live Dashboard
+
+## Remove the duplicate Tray Tracking section from Production Dashboard
+
+### UPDATE PRODUCTION DASHBOARD COMPONENT:
+
+```typescript
+export const ProductionDashboard: React.FC = () => {
+  const { currentLocation, isViewingAllLocations } = useLocation();
+  const [dateRange, setDateRange] = useState('30d');
+  const [selectedCrop, setSelectedCrop] = useState('all');
+  
+  // Production metrics
+  const productionMetrics = {
+    totalTraysActive: 342,
+    totalPlantsGrowing: 15648,
+    harvestReadyToday: 28,
+    projectedHarvestThisWeek: 156,
+    avgYieldPerTray: 2.3, // lbs
+    yieldEfficiency: 94.2 // % of expected yield
+  };
+  
+  return (
+    <div className="production-dashboard">
+      {/* Date Range Selector */}
+      <div className="dashboard-controls">
+        <div className="date-selector">
+          <button className={dateRange === '7d' ? 'active' : ''} onClick={() => setDateRange('7d')}>
+            7 days
+          </button>
+          <button className={dateRange === '30d' ? 'active' : ''} onClick={() => setDateRange('30d')}>
+            30 days
+          </button>
+          <button className={dateRange === '90d' ? 'active' : ''} onClick={() => setDateRange('90d')}>
+            90 days
+          </button>
+        </div>
+        
+        <select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
+          <option value="all">All Crops</option>
+          <option value="romaine">Romaine Lettuce</option>
+          <option value="arugula">Arugula</option>
+          <option value="microgreens">All Microgreens</option>
+          <option value="herbs">All Herbs</option>
+        </select>
+      </div>
+      
+      {/* Key Metrics - REMOVE THE TRAY TRACKING CARDS */}
+      <div className="production-metrics">
+        <div className="metric-card">
+          <div className="metric-icon">🌱</div>
+          <div className="metric-content">
+            <div className="metric-value">{productionMetrics.totalTraysActive}</div>
+            <div className="metric-label">Active Trays</div>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon">🌿</div>
+          <div className="metric-content">
+            <div className="metric-value">{productionMetrics.totalPlantsGrowing.toLocaleString()}</div>
+            <div className="metric-label">Plants Growing</div>
+          </div>
+        </div>
+        <div className="metric-card highlight">
+          <div className="metric-icon">📦</div>
+          <div className="metric-content">
+            <div className="metric-value">{productionMetrics.harvestReadyToday}</div>
+            <div className="metric-label">Ready Today</div>
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-icon">📊</div>
+          <div className="metric-content">
+            <div className="metric-value">{productionMetrics.yieldEfficiency}%</div>
+            <div className="metric-label">Yield Efficiency</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* REMOVE THIS ENTIRE TRAY TRACKING SECTION */}
+      {/* DELETE FROM HERE
+      <div className="tray-tracking-section">
+        <h2>Tray Tracking</h2>
+        <table className="tray-table">
+          <thead>
+            <tr>
+              <th>Tray ID</th>
+              <th>Crop Type</th>
+              <th>Date Planted</th>
+              <th>System</th>
+              <th>Est. Harvest</th>
+              <th>Status</th>
+              <th>Yield</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Empty table */}
+          </tbody>
+        </table>
+      </div>
+      DELETE TO HERE */}
+      
+      {/* Charts Grid - Keep all the charts */}
+      <div className="production-charts">
+        {/* Production Trend Chart */}
+        <div className="chart-card large">
+          <h3>Production Trend</h3>
+          {/* Chart content */}
+        </div>
+        
+        {/* Crop Distribution Chart */}
+        <div className="chart-card">
+          <h3>Current Crop Distribution</h3>
+          {/* Chart content */}
+        </div>
+        
+        {/* Yield Comparison Chart */}
+        <div className="chart-card">
+          <h3>Yield vs Expected (lbs/tray)</h3>
+          {/* Chart content */}
+        </div>
+        
+        {/* Waste Analysis Chart */}
+        <div className="chart-card">
+          <h3>Waste Analysis</h3>
+          {/* Chart content */}
+        </div>
+        
+        {/* Growth Stage Distribution */}
+        <div className="chart-card">
+          <h3>Growth Stage Distribution</h3>
+          {/* Chart content */}
+        </div>
+        
+        {/* Harvest Schedule */}
+        <div className="chart-card">
+          <h3>Upcoming Harvests (Next 7 Days)</h3>
+          {/* Chart content */}
+        </div>
+      </div>
+      
+      {/* Production Insights */}
+      <div className="production-insights">
+        <h3>Production Insights</h3>
+        {/* Insights content */}
+      </div>
+    </div>
+  );
+};
+```
+
+### ALSO REMOVE ANY RELATED CSS:
+
+```css
+/* Remove these styles if they exist */
+.tray-tracking-section {
+  display: none; /* or delete entirely */
+}
+
+.tray-table {
+  display: none; /* or delete entirely */
+}
+```
+
+### SUMMARY:
+
+The Production Dashboard should now only show:
+1. ✅ Date range and crop filter controls
+2. ✅ Production metrics cards (Active Trays, Plants Growing, Ready Today, Yield Efficiency)
+3. ✅ Production charts (trends, distribution, yield comparison, etc.)
+4. ✅ Production insights
+
+The Tray Tracking table is completely removed since it has its own dedicated tab now. Users can click on the "Tray Tracking" tab to see the full tray management interface.
