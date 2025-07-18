@@ -36,19 +36,23 @@ export const EquipmentManagement: React.FC = () => {
   const isCorporateManager = auth.user?.role === 'corporate';
   const { currentLocation } = useLocation();
   
-  // Fetch systems data
+  // Fetch systems data with location filtering
   const { data: systemsData = [] } = useQuery<GrowingSystem[]>({
-    queryKey: ['/api/growing-systems'],
+    queryKey: ['/api/growing-systems', currentLocation.code],
     queryFn: async () => {
-      const response = await fetch('/api/growing-systems');
+      const response = await fetch(`/api/growing-systems?location=${currentLocation.code}`);
       if (!response.ok) throw new Error('Failed to fetch systems');
       return response.json();
     },
   });
 
   useEffect(() => {
-    setSystems(systemsData);
-  }, [systemsData]);
+    // Filter systems by current location
+    const locationSystems = systemsData.filter(system => 
+      system.location === currentLocation.code
+    );
+    setSystems(locationSystems);
+  }, [systemsData, currentLocation.code]);
 
   // Group systems by category
   const systemsByCategory = {
@@ -56,37 +60,23 @@ export const EquipmentManagement: React.FC = () => {
     leafyGreens: systems.filter(s => s.category === 'leafyGreens')
   };
 
-  // Mock system performance data
-  const systemPerformanceData = useMemo(() => [
-    { date: '3/1', efficiency: 94.2, temperature: 72.5, humidity: 68, yield: 2.3 },
-    { date: '3/8', efficiency: 96.1, temperature: 71.8, humidity: 65, yield: 2.4 },
-    { date: '3/15', efficiency: 93.8, temperature: 73.2, humidity: 70, yield: 2.2 },
-    { date: '3/22', efficiency: 97.5, temperature: 72.0, humidity: 67, yield: 2.6 },
-    { date: '3/29', efficiency: 95.3, temperature: 72.8, humidity: 66, yield: 2.4 },
-  ], []);
+  // Mock sensor data for each system
+  const getSensorData = (systemId: string) => {
+    const sensorReadings = {
+      '1': { ph: 6.2, ec: 1.8, temperature: 72.5, lastReading: '2 minutes ago' },
+      '2': { ph: 6.4, ec: 2.1, temperature: 71.8, lastReading: '1 minute ago' },
+      '3': { ph: 6.0, ec: 1.9, temperature: 73.2, lastReading: '3 minutes ago' },
+      '4': { ph: 6.3, ec: 2.0, temperature: 72.0, lastReading: '2 minutes ago' },
+      '5': { ph: 6.1, ec: 1.7, temperature: 72.8, lastReading: '4 minutes ago' },
+      '6': { ph: 6.5, ec: 2.2, temperature: 71.5, lastReading: '1 minute ago' },
+      '7': { ph: 6.2, ec: 1.8, temperature: 72.3, lastReading: '2 minutes ago' },
+      '8': { ph: 6.4, ec: 2.0, temperature: 71.9, lastReading: '3 minutes ago' },
+    };
+    
+    return sensorReadings[systemId] || { ph: 6.2, ec: 1.8, temperature: 72.0, lastReading: '5 minutes ago' };
+  };
 
-  const systemStatusData = useMemo(() => [
-    { status: 'Optimal', count: 8, color: '#10b981' },
-    { status: 'Warning', count: 3, color: '#f59e0b' },
-    { status: 'Maintenance', count: 2, color: '#ef4444' },
-    { status: 'Offline', count: 1, color: '#6b7280' }
-  ], []);
-
-  const maintenanceSchedule = useMemo(() => [
-    { system: 'NFT System A1', type: 'Routine Cleaning', due: 'Today', priority: 'high' },
-    { system: 'Tower B3', type: 'pH Calibration', due: 'Tomorrow', priority: 'medium' },
-    { system: 'Microgreen Rack C2', type: 'Light Replacement', due: 'Mar 3', priority: 'low' },
-    { system: 'NFT System A2', type: 'Nutrient Pump Service', due: 'Mar 5', priority: 'high' },
-  ], []);
-
-  const energyConsumption = useMemo(() => [
-    { system: 'LED Grow Lights', consumption: 45.2, cost: 18.80 },
-    { system: 'Water Pumps', consumption: 12.8, cost: 5.32 },
-    { system: 'Climate Control', consumption: 28.5, cost: 11.83 },
-    { system: 'Ventilation', consumption: 8.3, cost: 3.45 },
-  ], []);
-
-  // Calculate overall statistics
+  // Calculate basic statistics
   const stats = useMemo(() => {
     const totalCapacity = systems.reduce((sum, s) => sum + s.capacity, 0);
     const totalOccupied = systems.reduce((sum, s) => sum + s.currentOccupancy, 0);
@@ -94,77 +84,58 @@ export const EquipmentManagement: React.FC = () => {
       ? Math.round((totalOccupied / totalCapacity) * 100) 
       : 0;
     const systemsAtCapacity = systems.filter(s => s.currentOccupancy >= s.capacity).length;
-    const avgEfficiency = systemPerformanceData.reduce((sum, d) => sum + d.efficiency, 0) / systemPerformanceData.length;
-    const totalEnergyConsumption = energyConsumption.reduce((sum, e) => sum + e.consumption, 0);
     
     return {
       totalCapacity,
       totalOccupied,
       utilizationRate,
-      systemsAtCapacity,
-      avgEfficiency: Math.round(avgEfficiency * 10) / 10,
-      totalEnergyConsumption: Math.round(totalEnergyConsumption * 10) / 10,
-      totalEnergyCost: energyConsumption.reduce((sum, e) => sum + e.cost, 0),
-      systemsOperational: systemStatusData.find(s => s.status === 'Optimal')?.count || 0,
-      systemsNeedingMaintenance: systemStatusData.find(s => s.status === 'Maintenance')?.count || 0
+      systemsAtCapacity
     };
-  }, [systems, systemPerformanceData, energyConsumption, systemStatusData]);
+  }, [systems]);
 
   return (
     <div className="equipment-management space-y-6">
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[#203B17] mb-2">Equipment Management</h2>
-          <p className="text-gray-600">Monitor and manage growing systems performance</p>
+          <h2 className="text-xl font-bold text-[#203B17] mb-2">Equipment Management - {currentLocation.name}</h2>
+          <p className="text-gray-600">Monitor growing systems and sensor readings</p>
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
           <div className="flex gap-1">
             <Button
-              variant={analyticsView === 'overview' ? 'default' : 'outline'}
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setAnalyticsView('overview')}
+              onClick={() => setViewMode('grid')}
             >
-              Overview
+              <Grid className="w-4 h-4 mr-1" />
+              Grid
             </Button>
             <Button
-              variant={analyticsView === 'performance' ? 'default' : 'outline'}
+              variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setAnalyticsView('performance')}
+              onClick={() => setViewMode('list')}
             >
-              Performance
-            </Button>
-            <Button
-              variant={analyticsView === 'maintenance' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setAnalyticsView('maintenance')}
-            >
-              Maintenance
+              <List className="w-4 h-4 mr-1" />
+              List
             </Button>
           </div>
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">7 days</SelectItem>
-              <SelectItem value="30d">30 days</SelectItem>
-              <SelectItem value="90d">90 days</SelectItem>
-            </SelectContent>
-          </Select>
+          {isCorporateManager && (
+            <Button onClick={() => setShowConfigModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add System
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Enhanced Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card className="p-6">
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">System Capacity</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalCapacity}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.totalOccupied} occupied • {stats.utilizationRate}% utilization
-              </p>
+              <p className="text-sm font-medium text-gray-600">Total Systems</p>
+              <p className="text-2xl font-bold text-gray-900">{systems.length}</p>
             </div>
             <div className="p-3 bg-blue-50 rounded-full">
               <Settings className="w-6 h-6 text-blue-600" />
@@ -172,14 +143,11 @@ export const EquipmentManagement: React.FC = () => {
           </div>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">System Efficiency</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.avgEfficiency}%</p>
-              <p className="text-sm text-green-600 mt-1">
-                +2.3% vs last month
-              </p>
+              <p className="text-sm font-medium text-gray-600">Total Capacity</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalCapacity}</p>
             </div>
             <div className="p-3 bg-green-50 rounded-full">
               <Activity className="w-6 h-6 text-green-600" />
@@ -187,321 +155,133 @@ export const EquipmentManagement: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Energy Consumption</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalEnergyConsumption}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                kWh • ${stats.totalEnergyCost.toFixed(2)} cost
-              </p>
+              <p className="text-sm font-medium text-gray-600">Current Occupied</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalOccupied}</p>
             </div>
             <div className="p-3 bg-yellow-50 rounded-full">
-              <Zap className="w-6 h-6 text-yellow-600" />
+              <CheckCircle className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">System Status</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.systemsOperational}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {stats.systemsNeedingMaintenance} need maintenance
-              </p>
+              <p className="text-sm font-medium text-gray-600">Utilization Rate</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.utilizationRate}%</p>
             </div>
             <div className="p-3 bg-purple-50 rounded-full">
-              <CheckCircle className="w-6 h-6 text-purple-600" />
+              <BarChart3 className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Analytics Views */}
-      {analyticsView === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* System Status Distribution */}
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle>System Status Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={systemStatusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ status, count }) => `${status}: ${count}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {systemStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Energy Consumption Breakdown */}
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle>Energy Consumption by System</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={energyConsumption}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="system" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="consumption" fill="#3b82f6" name="kWh" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {analyticsView === 'performance' && (
-        <div className="space-y-6">
-          {/* Performance Trends */}
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle>System Performance Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={systemPerformanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
-                  <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="efficiency" stroke="#10b981" name="Efficiency %" strokeWidth={2} />
-                  <Line yAxisId="left" type="monotone" dataKey="yield" stroke="#3b82f6" name="Yield (lbs/tray)" strokeWidth={2} />
-                  <Line yAxisId="right" type="monotone" dataKey="temperature" stroke="#f59e0b" name="Temp (°F)" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Environmental Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Temperature</p>
-                  <p className="text-2xl font-bold text-gray-900">72.5°F</p>
-                  <p className="text-sm text-gray-500 mt-1">Optimal range: 70-75°F</p>
-                </div>
-                <div className="p-3 bg-red-50 rounded-full">
-                  <Thermometer className="w-6 h-6 text-red-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Humidity</p>
-                  <p className="text-2xl font-bold text-gray-900">67%</p>
-                  <p className="text-sm text-gray-500 mt-1">Optimal range: 60-70%</p>
-                </div>
-                <div className="p-3 bg-blue-50 rounded-full">
-                  <Droplets className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Light Efficiency</p>
-                  <p className="text-2xl font-bold text-gray-900">92%</p>
-                  <p className="text-sm text-green-600 mt-1">+1.5% improvement</p>
-                </div>
-                <div className="p-3 bg-yellow-50 rounded-full">
-                  <Lightbulb className="w-6 h-6 text-yellow-600" />
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {analyticsView === 'maintenance' && (
-        <div className="space-y-6">
-          {/* Maintenance Schedule */}
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle>Upcoming Maintenance Schedule</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {maintenanceSchedule.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        item.priority === 'high' ? 'bg-red-500' :
-                        item.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                      }`} />
-                      <div>
-                        <p className="font-medium text-gray-900">{item.system}</p>
-                        <p className="text-sm text-gray-600">{item.type}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{item.due}</p>
-                      <Badge variant={item.priority === 'high' ? 'destructive' : 'secondary'}>
-                        {item.priority}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Maintenance Insights */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <CardHeader>
-                <CardTitle>Maintenance Insights</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-gray-900">Preventive Maintenance Due</h4>
-                      <p className="text-sm text-gray-600">3 systems require routine maintenance this week</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <Target className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-gray-900">Efficiency Optimization</h4>
-                      <p className="text-sm text-gray-600">LED light replacement could improve efficiency by 3%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-gray-900">Performance Trending Up</h4>
-                      <p className="text-sm text-gray-600">System efficiency has improved 2.3% this month</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardHeader>
-                <CardTitle>Energy Cost Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {energyConsumption.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 bg-blue-500 rounded-full" />
-                        <span className="text-sm font-medium">{item.system}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">${item.cost.toFixed(2)}</p>
-                        <p className="text-xs text-gray-500">{item.consumption} kWh</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* System Controls */}
-      <Card className="p-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>System Management</CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+      {/* Systems Display */}
+      <div className="space-y-6">
+        {systems.length === 0 ? (
+          <Card className="p-8 text-center">
+            <div className="text-gray-500">
+              <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium mb-2">No Systems Found</h3>
+              <p className="text-sm">No growing systems found for {currentLocation.name}.</p>
               {isCorporateManager && (
-                <Button onClick={() => setShowConfigModal(true)}>
+                <Button onClick={() => setShowConfigModal(true)} className="mt-4">
                   <Plus className="w-4 h-4 mr-2" />
                   Add System
                 </Button>
               )}
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {systems.map((system) => (
-              <Card key={system.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">{system.name}</h3>
-                  <Badge variant={system.currentOccupancy >= system.capacity ? 'destructive' : 'secondary'}>
-                    {system.currentOccupancy >= system.capacity ? 'Full' : 'Available'}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600 mb-2">{system.type}</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Capacity</span>
-                    <span className="text-sm font-medium">{system.currentOccupancy}/{system.capacity}</span>
+          </Card>
+        ) : (
+          <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            {systems.map((system) => {
+              const sensorData = getSensorData(system.id.toString());
+              const occupancyPercent = Math.round((system.currentOccupancy / system.capacity) * 100);
+              
+              return (
+                <Card key={system.id} className="p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{system.name}</h3>
+                      <p className="text-sm text-gray-600">{system.type}</p>
+                    </div>
+                    <Badge variant={occupancyPercent >= 90 ? 'destructive' : occupancyPercent >= 70 ? 'secondary' : 'default'}>
+                      {occupancyPercent >= 90 ? 'Full' : 'Available'}
+                    </Badge>
                   </div>
-                  <Progress value={(system.currentOccupancy / system.capacity) * 100} className="h-2" />
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedSystem(system.id)}
-                    className="flex-1"
-                  >
-                    View Details
-                  </Button>
-                  {isCorporateManager && (
+
+                  {/* Sensor Readings */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center justify-center mb-1">
+                        <Droplets className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-gray-600">pH</p>
+                      <p className="text-lg font-bold text-gray-900">{sensorData.ph}</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center justify-center mb-1">
+                        <Zap className="w-4 h-4 text-green-600" />
+                      </div>
+                      <p className="text-xs text-gray-600">EC</p>
+                      <p className="text-lg font-bold text-gray-900">{sensorData.ec}</p>
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                      <div className="flex items-center justify-center mb-1">
+                        <Thermometer className="w-4 h-4 text-red-600" />
+                      </div>
+                      <p className="text-xs text-gray-600">Temp</p>
+                      <p className="text-lg font-bold text-gray-900">{sensorData.temperature}°F</p>
+                    </div>
+                  </div>
+
+                  {/* Capacity */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Capacity</span>
+                      <span className="text-sm font-medium">{system.currentOccupancy}/{system.capacity}</span>
+                    </div>
+                    <Progress value={occupancyPercent} className="h-2" />
+                  </div>
+
+                  {/* Last Reading */}
+                  <div className="text-xs text-gray-500 mb-4">
+                    Last reading: {sensorData.lastReading}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setEditingSystem(system);
-                        setShowConfigModal(true);
-                      }}
+                      onClick={() => setSelectedSystem(system.id.toString())}
+                      className="flex-1"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      View Details
                     </Button>
-                  )}
-                </div>
-              </Card>
-            ))}
+                    {isCorporateManager && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingSystem(system);
+                          setShowConfigModal(true);
+                        }}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* System Configuration Modal */}
       {showConfigModal && (
