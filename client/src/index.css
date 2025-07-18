@@ -59,10 +59,23 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll on body */
+    width: 100%;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  #root {
+    width: 100%;
+    overflow-x: hidden;
   }
 }
 
@@ -77,10 +90,11 @@
 
 /* Task Manager Cleanup */
 .task-manager {
-  padding: 24px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100%; /* Ensure it doesn't exceed parent */
 }
 
 /* Filter Bar with Horizontal Scroll */
@@ -260,6 +274,38 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -230px; /* Hide by default on mobile */
+    z-index: 100;
+    height: 100%;
+    transition: left 0.3s ease;
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .app-header {
+    padding: 8px 16px; /* Even smaller on mobile */
+  }
+  
+  .user-info {
+    max-width: 120px; /* Shorter on mobile */
+  }
+  
+  .location-badge {
+    display: none; /* Hide location on mobile to save space */
+  }
+  
+  .page-content {
+    padding: 16px;
+  }
+  
   .task-filters-wrapper {
     margin: 0 -16px 16px -16px;
     border-radius: 0;
@@ -294,6 +340,177 @@
 .task-filters-wrapper.can-scroll-right::after {
   right: 0;
   background: linear-gradient(to left, white, transparent);
+}
+
+/* Main App Container */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden; /* Prevent any overflow */
+}
+
+/* Sidebar */
+.sidebar {
+  width: 230px; /* Slightly narrower */
+  background: #203B17;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent overflow */
+  min-width: 0; /* Allow flex item to shrink below content size */
+}
+
+/* Header */
+.app-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 20px; /* Reduced padding */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 56px; /* Fixed height */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0; /* Allow shrinking */
+}
+
+.page-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-button {
+  padding: 6px 16px; /* Smaller padding */
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.tab-button.active {
+  background: #f3f4f6;
+  color: #203B17;
+}
+
+/* Header Right - User Info */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Reduced gap */
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.location-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px; /* Smaller padding */
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 13px; /* Smaller font */
+  color: #374151;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced gap */
+  padding: 6px 12px; /* Smaller padding */
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 13px; /* Smaller font */
+  color: #374151;
+  max-width: 200px; /* Limit width */
+}
+
+.user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Page Content */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden; /* No horizontal scroll */
+  padding: 24px;
+}
+
+/* Utility Classes */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure all containers respect boundaries */
+.container,
+.section,
+.card {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Tables should be scrollable if needed */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  min-width: 600px; /* Set minimum width */
+}
+
+/* Prevent images from breaking layout */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Component-specific overflow prevention */
+.chart-container,
+.metrics-grid,
+.form-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* For any flex containers */
+.flex-container {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping instead of overflow */
+  gap: 16px;
+}
+
+/* Grid containers should be responsive */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
 /* Location Selector Styles */

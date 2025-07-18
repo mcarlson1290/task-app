@@ -89,7 +89,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex">
+    <div className="app-container bg-[#F5F5F5]">
       {/* Mobile Header */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
@@ -120,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Fixed Left Sidebar - Hidden on mobile */}
-      <aside className={`fixed left-0 top-0 h-full w-64 bg-[#203B17] text-white flex flex-col z-50 ${isMobile ? 'hidden' : ''}`}>
+      <aside className={`sidebar ${isMobile ? 'hidden' : ''}`}>
         {/* Logo/Header */}
         <div className="p-6 border-b border-[#2D8028]">
           <h1 className="text-xl font-bold text-white">🌱 Grow Space</h1>
@@ -224,42 +224,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <div className={`flex-1 ${isMobile ? 'ml-0' : 'ml-64'}`}>
+      <div className="main-content">
         {/* Top Header - Hidden on mobile */}
         {!isMobile && (
-          <header className="bg-white shadow-sm sticky top-0 z-40">
-            <div className="px-6 py-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <h2 className="text-lg font-semibold text-[#203B17]">
-                    {navigationItems.find(item => isActive(item.href))?.label || 
-                     managerItems.find(item => isActive(item.href))?.label || 
-                     "Dashboard"}
-                  </h2>
-                  <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
-                    {currentUser.role}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <LocationSelector />
-                  <span className="text-sm text-gray-600">Welcome, {currentUser.name}</span>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5 text-gray-600" />
-                    {analytics?.lowStockAlerts && analytics.lowStockAlerts > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                        {analytics.lowStockAlerts}
-                      </Badge>
-                    )}
-                  </Button>
-                </div>
+          <header className="app-header">
+            <div className="header-left">
+              <h2 className="text-lg font-semibold text-[#203B17]">
+                {navigationItems.find(item => isActive(item.href))?.label || 
+                 managerItems.find(item => isActive(item.href))?.label || 
+                 "Dashboard"}
+              </h2>
+              <Badge variant="secondary" className="bg-[#2D8028]/20 text-[#203B17]">
+                {currentUser.role}
+              </Badge>
+            </div>
+            
+            <div className="header-right">
+              <LocationSelector />
+              <div className="location-badge">
+                <MapPin size={14} />
+                <span>{currentLocation.name}</span>
               </div>
+              <div className="user-info">
+                <User size={14} />
+                <span className="user-name truncate">Welcome, {currentUser.name}</span>
+              </div>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5 text-gray-600" />
+                {analytics?.lowStockAlerts && analytics.lowStockAlerts > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
+                    {analytics.lowStockAlerts}
+                  </Badge>
+                )}
+              </Button>
             </div>
           </header>
         )}
 
         {/* Main Content */}
-        <main className={`p-6 ${isMobile ? 'pt-20 pb-20' : ''}`}>
+        <main className={`${isMobile ? 'pt-20 pb-20' : ''}`}>
           {children}
         </main>
       </div>

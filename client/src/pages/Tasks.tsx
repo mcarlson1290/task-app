@@ -448,7 +448,8 @@ const Tasks: React.FC = () => {
   }
 
   return (
-    <div className="task-manager">
+    <div className="page-content">
+      <div className="task-manager">
       {/* Updated filter bar with New Task button */}
       <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
         <div 
@@ -589,6 +590,7 @@ const Tasks: React.FC = () => {
         open={taskActionModalOpen}
         onClose={() => setTaskActionModalOpen(false)}
       />
+      </div>
     </div>
   );
 };
