@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SubTabNavigation } from "@/components/SubTabNavigation";
 import { TaskOverview } from "@/components/TaskOverview";
 import { TaskAnalytics } from "@/components/TaskAnalytics";
 import { useLocation } from "@/contexts/LocationContext";
@@ -8,10 +8,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
 const TaskData: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState('overview');
   const { currentLocation, isViewingAllLocations } = useLocation();
   const auth = getStoredAuth();
   const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'analytics', label: 'Analytics', icon: '📈' },
+    { id: 'costs', label: 'Cost Analysis', icon: '💰' }
+  ];
   
   if (!isManager) {
     return (
@@ -31,25 +37,17 @@ const TaskData: React.FC = () => {
   
   return (
     <div className="task-data-page">
+      <SubTabNavigation 
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
       
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'analytics')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            📋 Overview
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            📈 Analytics
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="mt-6">
-          <TaskOverview />
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="mt-6">
-          <TaskAnalytics />
-        </TabsContent>
-      </Tabs>
+      <div className="tab-content">
+        {activeTab === 'overview' && <TaskOverview />}
+        {activeTab === 'analytics' && <TaskAnalytics />}
+        {activeTab === 'costs' && <div className="p-8 text-center text-gray-500">Cost Analysis coming soon...</div>}
+      </div>
     </div>
   );
 };

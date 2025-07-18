@@ -2070,3 +2070,56 @@ label.error select {
 .tab-navigation-wrapper > div {
   scroll-behavior: smooth;
 }
+
+
+/* Sub-tab Navigation - Matching Production Data */
+.sub-tab-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  
+  /* Hide scrollbar but keep functionality */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sub-tab-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+.sub-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sub-tab-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.sub-tab-btn.active {
+  background: #2D8028;
+  color: white;
+}
+
+/* Remove old inconsistent styles */
+.analytics-nav,
+.task-data-tabs,
+.staff-data-tabs {
+  display: none; /* Remove these old styles */
+}

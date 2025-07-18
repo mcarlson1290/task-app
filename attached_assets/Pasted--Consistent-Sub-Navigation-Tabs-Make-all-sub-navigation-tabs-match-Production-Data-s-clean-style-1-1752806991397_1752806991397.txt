@@ -1,0 +1,94 @@
+🎨 Consistent Sub-Navigation Tabs
+Make all sub-navigation tabs match Production Data's clean style
+1. UNIFIED SUB-TAB COMPONENT:
+Create a reusable sub-tab navigation component:
+typescriptinterface SubTab {
+  id: string;
+  label: string;
+  icon: string;
+  isActive?: boolean;
+  requiresRole?: string;
+}
+
+export const SubTabNavigation: React.FC<{
+  tabs: SubTab[];
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+}> = ({ tabs, activeTab, onTabChange }) => {
+  const currentUser = getCurrentUser();
+  
+  const visibleTabs = tabs.filter(tab => 
+    !tab.requiresRole || currentUser.role === tab.requiresRole || currentUser.role === 'Corporate'
+  );
+  
+  return (
+    <div className="sub-tab-navigation">
+      {visibleTabs.map(tab => (
+        <button
+          key={tab.id}
+          className={`sub-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+          onClick={() => onTabChange(tab.id)}
+        >
+          {tab.icon} {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+2. UPDATE TASK DATA PAGE:
+typescriptexport const TaskData: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'analytics', label: 'Analytics', icon: '📈' },
+    { id: 'costs', label: 'Cost Analysis', icon: '💰' }
+  ];
+  
+  return (
+    <div className="task-data-page">
+      <SubTabNavigation 
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+      
+      <div className="tab-content">
+        {activeTab === 'overview' && <TaskOverview />}
+        {activeTab === 'analytics' && <TaskAnalytics />}
+        {activeTab === 'costs' && <TaskCostAnalysis />}
+      </div>
+    </div>
+  );
+};
+3. UPDATE STAFF DATA PAGE:
+typescriptexport const StaffData: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('edit');
+  
+  const tabs = [
+    { id: 'edit', label: 'Staff Edit', icon: '✏️' },
+    { id: 'analytics', label: 'Staff Analytics', icon: '📊' }
+  ];
+  
+  return (
+    <div className="staff-data-page">
+      {/* Export button in top right like Production Data */}
+      <div className="page-actions">
+        <button className="btn-export">
+          📊 Export Staff Report
+        </button>
+      </div>
+      
+      <SubTabNavigation 
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+      
+      <div className="tab-content">
+        {activeTab === 'edit' && <StaffEdit />}
+        {activeTab === 'analytics' && <StaffAnalytics />}
+      </div>
+    </div>
+  );
+};

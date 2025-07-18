@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
+import { SubTabNavigation } from '@/components/SubTabNavigation';
 
 // Mock staff data with location codes
 const mockStaff = [
@@ -1026,30 +1027,24 @@ const StaffData: React.FC = () => {
     );
   }
 
+  const tabs = [
+    { id: 'edit', label: 'Staff Edit', icon: '✏️' },
+    { id: 'analytics', label: 'Staff Analytics', icon: '📊' }
+  ];
+
   return (
     <div className="staff-data-page">
-      <div className="page-header">
-        <div></div>
+      <div className="page-actions">
         <button className="btn-export" onClick={handleExport}>
           📥 Export Staff Report
         </button>
       </div>
       
-      {/* Tab Navigation */}
-      <div className="tab-navigation">
-        <button 
-          className={`tab ${activeTab === 'edit' ? 'active' : ''}`}
-          onClick={() => setActiveTab('edit')}
-        >
-          ✏️ Staff Edit
-        </button>
-        <button 
-          className={`tab ${activeTab === 'analytics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('analytics')}
-        >
-          📊 Staff Analytics
-        </button>
-      </div>
+      <SubTabNavigation 
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
       
       {/* Content will go here based on activeTab */}
       <div className="tab-content">
