@@ -61,34 +61,7 @@
 
 /* PAGE CONTENT SPACING FOR SUB-HEADER */
 .page-content {
-  padding-top: 0; /* No extra space needed for attached design */
-}
-
-/* ENSURE NO GAPS AROUND SUB-HEADER */
-.sub-header-wrapper {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* ATTACH SUB-HEADER TO MAIN HEADER */
-.main-content {
-  padding-top: 0;
-}
-
-.main-content main {
-  padding-top: 0;
-  margin-top: 0;
-}
-
-/* Remove any gaps between headers */
-.app-header + main .sub-header-wrapper {
-  margin-top: 0;
-}
-
-/* Force SubHeader to be immediately after app header */
-.sub-header-wrapper {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  padding-top: 16px;
 }
 
 .dark {
@@ -435,30 +408,10 @@
   border-bottom: 1px solid #e5e7eb;
   padding: 12px 20px; /* Reduced padding */
   display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  min-height: 56px; /* Fixed height */
-}
-
-.app-header.expanded {
-  min-height: 112px; /* Double height when expanded */
-}
-
-.header-main-row {
-  display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 56px;
-}
-
-.header-controls-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 12px 0;
-  border-top: 1px solid #f3f4f6;
-  margin-top: 8px;
+  flex-shrink: 0;
+  min-height: 56px; /* Fixed height */
 }
 
 .header-left {
