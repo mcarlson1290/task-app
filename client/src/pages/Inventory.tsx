@@ -274,15 +274,12 @@ Please process this reorder request at your earliest convenience.`;
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#203B17] flex items-center gap-2">
-          📦 Inventory
-        </h1>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           {/* Add to Inventory button - visible to ALL users */}
           <button 
             onClick={() => setShowAddInventoryModal(true)}
-            className="bg-[#10b981] hover:bg-[#059669] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
+            className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
           >
             📥 Add to Inventory
           </button>
@@ -291,7 +288,7 @@ Please process this reorder request at your earliest convenience.`;
           {isManager && (
             <button 
               onClick={handleAddItem}
-              className="bg-[#22c55e] hover:bg-[#16a34a] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
+              className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
             >
               + Add Item
             </button>

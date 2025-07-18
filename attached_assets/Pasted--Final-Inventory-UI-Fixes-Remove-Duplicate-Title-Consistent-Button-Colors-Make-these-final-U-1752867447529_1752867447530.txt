@@ -1,0 +1,116 @@
+# Final Inventory UI Fixes - Remove Duplicate Title & Consistent Button Colors
+
+Make these final UI adjustments to the Inventory page:
+
+## 1. Remove the Duplicate "Inventory" Title
+
+There are two "Inventory" titles showing. Remove the second one that appears below the page header:
+
+```jsx
+// REMOVE this duplicate title:
+<h1>📦 Inventory</h1>  // This one is redundant
+
+// KEEP only the one in the header with location/user info
+```
+
+## 2. Update Button Colors to Match Design System
+
+According to the design system, all primary action buttons should use the medium green color (#2D8028). Update both buttons:
+
+```jsx
+// Update both buttons to use consistent green color
+<div className="header-actions">
+  {/* Add to Inventory button - visible to ALL users */}
+  <button 
+    onClick={() => setShowAddInventoryModal(true)} 
+    className="btn-action"
+    style={{
+      backgroundColor: '#2D8028',  // Medium green (not #10b981)
+      color: 'white',
+      padding: '8px 16px',
+      borderRadius: '6px',
+      border: 'none',
+      fontSize: '14px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      transition: 'background-color 0.2s'
+    }}
+    onMouseEnter={(e) => e.target.style.backgroundColor = '#236622'}
+    onMouseLeave={(e) => e.target.style.backgroundColor = '#2D8028'}
+  >
+    <span>📥</span> Add to Inventory
+  </button>
+  
+  {/* Add Item button - only for managers */}
+  {(currentUser.role === 'Manager' || currentUser.role === 'Corporate') && (
+    <button 
+      onClick={() => setShowAddItemModal(true)} 
+      className="btn-action"
+      style={{
+        backgroundColor: '#2D8028',  // Same green as other button
+        color: 'white',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        transition: 'background-color 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.backgroundColor = '#236622'}
+      onMouseLeave={(e) => e.target.style.backgroundColor = '#2D8028'}
+    >
+      <span>+</span> Add Item
+    </button>
+  )}
+</div>
+```
+
+## 3. Final Page Structure
+
+The clean structure should be:
+```jsx
+<div className="inventory-container">
+  {/* Page header with location/user - NO duplicate title here */}
+  <div className="page-header">
+    {/* Location and user info */}
+  </div>
+
+  {/* Main inventory header with buttons */}
+  <div className="inventory-header">
+    <h1>📦 Inventory</h1>  {/* Only ONE title here */}
+    <div className="header-actions">
+      {/* Both buttons with consistent #2D8028 green */}
+    </div>
+  </div>
+
+  {/* Search and filters */}
+  <div className="inventory-controls">
+    {/* ... */}
+  </div>
+
+  {/* Cost breakdown section */}
+  <div className="cost-breakdown-section">
+    {/* ... */}
+  </div>
+
+  {/* Items list or empty state */}
+  <div className="inventory-items">
+    {/* ... */}
+  </div>
+</div>
+```
+
+## Summary of Changes:
+1. ✅ Remove the duplicate "📦 Inventory" title
+2. ✅ Change both buttons to use #2D8028 (medium green) from the design system
+3. ✅ Add hover effect for buttons (slightly darker green #236622)
+4. ✅ Keep consistent button styling with proper spacing and icons
+
+This will give you a clean, consistent UI that matches your design system colors.
