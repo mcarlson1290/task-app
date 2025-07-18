@@ -151,13 +151,13 @@ const SystemConfiguration: React.FC<SystemConfigurationProps> = ({ isCorporateMa
           <h3 className="text-xl font-semibold text-gray-900">🏭 Growing System Configuration</h3>
           <p className="text-gray-600">Configure and manage growing systems for automated task generation</p>
         </div>
-        <Button 
+        <button 
           onClick={() => setShowAddSystem(true)}
-          className="bg-[#2D8028] hover:bg-[#203B17]"
+          className="btn-primary"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4" />
           Add System
-        </Button>
+        </button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
