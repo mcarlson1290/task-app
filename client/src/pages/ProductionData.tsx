@@ -17,7 +17,6 @@ import { TrayService, Tray as TrayType, Crop as CropType } from "@/services/tray
 import SystemConfiguration from "@/components/SystemConfiguration";
 import { EquipmentManagement } from "@/components/EquipmentManagement";
 import TrayTracking from "@/pages/TrayTracking";
-import SubHeader from "@/components/SubHeader";
 
 interface Crop extends CropType {
   checklistTemplate: any;
@@ -348,10 +347,10 @@ const CropConfiguration: React.FC<{
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Crop Configuration</h2>
-        <button onClick={onAddCrop} className="btn-primary">
-          <Plus className="h-4 w-4" />
+        <Button onClick={onAddCrop} className="bg-[#2D8028] hover:bg-[#203B17]">
+          <Plus className="h-4 w-4 mr-2" />
           Add New Crop
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -578,24 +577,63 @@ const ProductionData: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SubHeader>
-        <button className="btn-primary" onClick={handleExport}>
-          <Download className="h-4 w-4" />
-          Export Report
-        </button>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div></div>
+        <div className="mt-4 sm:mt-0">
+          <Button onClick={handleExport} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+        </div>
+      </div>
+
+      {/* Horizontal Scrolling Tabs */}
+      <div className="tab-navigation-wrapper relative">
+        {showLeftScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('left')}
+          >
+            <ChevronLeft size={20} />
+          </Button>
+        )}
         
-        <div className="sub-tabs">
+        <div 
+          className="flex overflow-x-auto scrollbar-hide space-x-2 px-8 pb-2"
+          ref={tabsRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setShowLeftScroll(target.scrollLeft > 0);
+            setShowRightScroll(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
           {tabs.map(tab => (
-            <button
+            <Button
               key={tab.id}
-              className={`sub-tab ${activeTab === tab.id ? 'active' : ''}`}
+              variant={activeTab === tab.id ? "default" : "outline"}
               onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 whitespace-nowrap ${activeTab === tab.id ? 'bg-[#2D8028] text-white' : 'bg-white text-gray-600'}`}
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
-      </SubHeader>
+        
+        {showRightScroll && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md"
+            onClick={() => scrollTabs('right')}
+          >
+            <ChevronRight size={20} />
+          </Button>
+        )}
+      </div>
       
       {/* Tab Content */}
       <div className="tab-content mt-6">
