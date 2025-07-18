@@ -272,10 +272,10 @@ Please process this reorder request at your earliest convenience.`;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-end mb-8 px-2">
+        <div className="flex items-center gap-3 mr-2">
           {/* Add to Inventory button - visible to ALL users */}
           <button 
             onClick={() => setShowAddInventoryModal(true)}
@@ -337,94 +337,94 @@ Please process this reorder request at your earliest convenience.`;
 
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search inventory items or suppliers..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.value} value={category.value}>
-                {category.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Sort by Name</SelectItem>
-            <SelectItem value="stock">Sort by Stock Level</SelectItem>
-            <SelectItem value="category">Sort by Category</SelectItem>
-            <SelectItem value="cost">Sort by Cost per Unit</SelectItem>
-            <SelectItem value="value">Sort by Total Value</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="lowStock"
-            checked={showLowStockOnly}
-            onChange={(e) => setShowLowStockOnly(e.target.checked)}
-            className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
-          />
-          <label htmlFor="lowStock" className="text-sm text-gray-700 flex items-center whitespace-nowrap">
-            <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
-            Low Stock Only
-          </label>
+      <div className="bg-gray-50 p-3 md:p-4 rounded-lg mb-6 md:mb-8">
+        <div className="flex flex-col gap-3 md:gap-4 lg:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search inventory items or suppliers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full lg:w-48">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.value} value={category.value}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full lg:w-48">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Sort by Name</SelectItem>
+              <SelectItem value="stock">Sort by Stock Level</SelectItem>
+              <SelectItem value="category">Sort by Category</SelectItem>
+              <SelectItem value="cost">Sort by Cost per Unit</SelectItem>
+              <SelectItem value="value">Sort by Total Value</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center space-x-2 whitespace-nowrap">
+            <input
+              type="checkbox"
+              id="lowStock"
+              checked={showLowStockOnly}
+              onChange={(e) => setShowLowStockOnly(e.target.checked)}
+              className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
+            />
+            <label htmlFor="lowStock" className="text-sm text-gray-700 flex items-center">
+              <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
+              Low Stock Only
+            </label>
+          </div>
         </div>
       </div>
 
       {/* Inventory Cost Breakdown */}
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-lg font-semibold text-[#203B17] mb-4 flex items-center gap-2">
-            💰 Inventory Cost Breakdown
-          </h2>
-          
-          {/* Total Inventory Value Display */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6 text-center">
-            <p className="text-sm text-gray-600 mb-1">Total Inventory Value</p>
-            <p className="text-3xl font-bold text-[#203B17]">
-              ${calculateCategoryTotals().grandTotal.toFixed(2)}
-            </p>
-          </div>
-          
-          {/* Category Breakdown Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {categoryDetails.map((category) => {
-              const categoryData = calculateCategoryTotals().totals[category.id];
-              return (
-                <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
-                  <div className="text-2xl mb-2">{category.icon}</div>
-                  <h3 className="font-medium text-gray-900 text-sm mb-1">{category.name}</h3>
-                  <p className="text-xs text-gray-600 mb-2">{categoryData.percentage}%</p>
-                  <p className="font-bold text-[#203B17] text-sm mb-1">
-                    ${categoryData.value.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-500">{categoryData.count} items</p>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-8 md:mb-10">
+        <h2 className="text-lg font-semibold text-[#203B17] mb-6 flex items-center gap-2">
+          💰 Inventory Cost Breakdown
+        </h2>
+        
+        {/* Total Inventory Value Display */}
+        <div className="bg-gray-50 p-5 rounded-lg mb-6 text-center">
+          <p className="text-sm text-gray-600 mb-2">Total Inventory Value</p>
+          <p className="text-3xl font-bold text-[#203B17]">
+            ${calculateCategoryTotals().grandTotal.toFixed(2)}
+          </p>
+        </div>
+        
+        {/* Category Breakdown Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
+          {categoryDetails.map((category) => {
+            const categoryData = calculateCategoryTotals().totals[category.id];
+            return (
+              <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
+                <div className="text-2xl mb-2">{category.icon}</div>
+                <h3 className="font-medium text-gray-900 text-sm mb-1">{category.name}</h3>
+                <p className="text-xs text-gray-600 mb-2">{categoryData.percentage}%</p>
+                <p className="font-bold text-[#203B17] text-sm mb-1">
+                  ${categoryData.value.toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500">{categoryData.count} items</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Inventory Grid */}
       {filteredInventory.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-4">📦</div>
+        <div className="text-center py-20 px-5">
+          <div className="text-5xl mb-4">📦</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No items found</h3>
           <p className="text-gray-600">
             {searchTerm || categoryFilter
