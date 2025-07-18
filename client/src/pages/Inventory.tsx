@@ -10,7 +10,6 @@ import { InventoryItem } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
-import SubHeader from "@/components/SubHeader";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -224,67 +223,26 @@ Please process this reorder request at your earliest convenience.`;
 
   return (
     <div className="space-y-6">
-      <SubHeader>
-        {isManager && (
-          <button className="btn-primary" onClick={handleAddItem}>
-            <Plus className="h-4 w-4" />
-            Add Item
-          </button>
-        )}
-        
-        <div className="filter-group flex-grow">
-          <div className="search-input-container" style={{ position: 'relative', flex: '1', maxWidth: '400px' }}>
-            <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search inventory items or suppliers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '40px' }}
-            />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Total Inventory Value</p>
+            <p className="text-xl font-bold text-[#203B17]">
+              ${getTotalInventoryValue().toFixed(2)}
+            </p>
           </div>
-          
-          <select
-            className="filter-dropdown"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="all">All Categories</option>
-            <option value="seeds">Seeds</option>
-            <option value="nutrients">Nutrients</option>
-            <option value="supplies">Supplies</option>
-            <option value="equipment">Equipment</option>
-          </select>
-          
-          <select
-            className="filter-dropdown"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="name">Sort by Name</option>
-            <option value="category">Sort by Category</option>
-            <option value="stock">Sort by Stock Level</option>
-            <option value="value">Sort by Value</option>
-          </select>
-          
-          <button
-            className={`btn-secondary ${showLowStockOnly ? 'active' : ''}`}
-            onClick={() => setShowLowStockOnly(!showLowStockOnly)}
-            style={{ backgroundColor: showLowStockOnly ? '#dc2626' : '#6c757d' }}
-          >
-            <TrendingDown className="h-4 w-4" />
-            Low Stock Only
-          </button>
+          {isManager && (
+            <Button 
+              onClick={handleAddItem}
+              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Button>
+          )}
         </div>
-        
-        <div className="total-value-display" style={{ textAlign: 'right', marginLeft: 'auto' }}>
-          <p className="text-sm text-gray-600">Total Inventory Value</p>
-          <p className="text-xl font-bold text-[#203B17]">
-            ${getTotalInventoryValue().toFixed(2)}
-          </p>
-        </div>
-      </SubHeader>
+      </div>
 
       {/* Low Stock Alerts */}
       {lowStockItems.length > 0 && (
@@ -357,7 +315,55 @@ Please process this reorder request at your earliest convenience.`;
         </CardContent>
       </Card>
 
-
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search inventory items or suppliers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter by category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.value} value={category.value}>
+                {category.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Sort by Name</SelectItem>
+            <SelectItem value="stock">Sort by Stock Level</SelectItem>
+            <SelectItem value="category">Sort by Category</SelectItem>
+            <SelectItem value="cost">Sort by Cost per Unit</SelectItem>
+            <SelectItem value="value">Sort by Total Value</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="lowStock"
+            checked={showLowStockOnly}
+            onChange={(e) => setShowLowStockOnly(e.target.checked)}
+            className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
+          />
+          <label htmlFor="lowStock" className="text-sm text-gray-700 flex items-center whitespace-nowrap">
+            <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
+            Low Stock Only
+          </label>
+        </div>
+      </div>
 
       {/* Inventory Grid */}
       {filteredInventory.length === 0 ? (

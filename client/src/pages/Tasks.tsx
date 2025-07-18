@@ -18,7 +18,6 @@ import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
 import { TrayIntegration } from "@/utils/trayIntegration";
 import { useLocation } from "@/contexts/LocationContext";
-import SubHeader from "@/components/SubHeader";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -451,80 +450,101 @@ const Tasks: React.FC = () => {
   return (
     <div className="page-content">
       <div className="task-manager">
-      <SubHeader>
-        <button className="btn-primary" onClick={handleNewTask}>
-          <Plus className="h-4 w-4" />
-          New Task
-        </button>
-        
-        <div className="filter-group flex-grow">
-          <div className="search-input-container" style={{ position: 'relative', flex: '1', maxWidth: '400px' }}>
-            <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '40px' }}
-            />
-          </div>
-          
-          <select
-            className="filter-dropdown"
+      {/* Updated filter bar with New Task button */}
+      <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
+        <div 
+          className="task-filters"
+          ref={filtersRef}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setCanScrollLeft(target.scrollLeft > 0);
+            setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
+          {/* All Tasks Button */}
+          <button className="btn-filter all-tasks">
+            All Tasks
+          </button>
+
+          {/* Category Select */}
+          <select 
             value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value)}
+            className="filter-select"
           >
-            <option value="all">All Categories</option>
+            <option value="all">Category</option>
             {taskTypes.filter(type => type.value !== "all").map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
               </option>
             ))}
           </select>
-          
+
+          {/* Status Select */}
           <select
-            className="filter-dropdown"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            className="filter-select"
           >
-            <option value="all">All Status</option>
+            <option value="all">Status</option>
             {statusOptions.filter(option => option.value !== "all").map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
-          
+
+          {/* Priority Select */}
           <select
-            className="filter-dropdown"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
+            className="filter-select"
           >
-            <option value="all">All Priority</option>
+            <option value="all">Priority</option>
             {priorityOptions.filter(option => option.value !== "all").map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
-          
+
+          {/* Date Input */}
           <input
             type="date"
-            className="filter-dropdown"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
+            className="date-input"
           />
-          
-          <button
-            className="btn-secondary"
+
+          {/* Clear Filters Button */}
+          <button 
+            className="btn-clear-filters"
             onClick={clearAllFilters}
           >
-            <X className="h-4 w-4" />
-            Clear Filters
+            <X size={16} /> Clear Filters
+          </button>
+
+          {/* Search Box */}
+          <div className="search-box">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+
+          {/* New Task Button */}
+          <button 
+            className="btn-new-task"
+            onClick={handleNewTask}
+          >
+            <Plus size={16} /> New Task
           </button>
         </div>
-      </SubHeader>
+      </div>
 
       {/* Task Content */}
       <div className="task-content">

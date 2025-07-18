@@ -1,11 +1,11 @@
 import React, { useState } from "react";
+import { SubTabNavigation } from "@/components/SubTabNavigation";
 import { TaskOverview } from "@/components/TaskOverview";
 import { TaskAnalytics } from "@/components/TaskAnalytics";
 import { useLocation } from "@/contexts/LocationContext";
 import { getStoredAuth } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
-import SubHeader from "@/components/SubHeader";
 
 const TaskData: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -37,31 +37,20 @@ const TaskData: React.FC = () => {
   
   return (
     <div className="task-data-page">
-      <SubHeader>
-        <div className="tab-group">
-          <button 
-            className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            📊 Overview
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            📈 Analytics
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'costs' ? 'active' : ''}`}
-            onClick={() => setActiveTab('costs')}
-          >
-            💰 Cost Analysis
+      {/* Navigation and Actions on same line */}
+      <div className="nav-with-actions">
+        <SubTabNavigation 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+        
+        <div className="nav-actions">
+          <button className="btn-export">
+            📊 Export Task Report
           </button>
         </div>
-        <button className="btn-primary ml-auto">
-          📊 Export Task Report
-        </button>
-      </SubHeader>
+      </div>
       
       <div className="tab-content">
         {activeTab === 'overview' && <TaskOverview />}
