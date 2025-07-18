@@ -27,6 +27,35 @@ interface TaskFilters {
   hasProcessLink: string;
 }
 
+// Helper function to format dates without timezone issues
+const formatDueDate = (dateInput: string | Date): string => {
+  if (!dateInput) return '';
+  
+  let dateString: string;
+  
+  // Handle both Date objects and strings
+  if (dateInput instanceof Date) {
+    // Convert Date to YYYY-MM-DD format without timezone issues
+    const year = dateInput.getFullYear();
+    const month = String(dateInput.getMonth() + 1).padStart(2, '0');
+    const day = String(dateInput.getDate()).padStart(2, '0');
+    dateString = `${year}-${month}-${day}`;
+  } else {
+    // Handle ISO string format by extracting date part
+    dateString = dateInput.split('T')[0];
+  }
+  
+  // Parse the date string without timezone conversion
+  const [year, month, day] = dateString.split('-');
+  
+  // Create month names array
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  // Return formatted date (e.g., "Jan 18, 2025")
+  return `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
+};
+
 interface TaskDataProps {
   id: number;
   title: string;
@@ -384,7 +413,7 @@ const TaskDataTable: React.FC<{ tasks: TaskDataProps[] }> = ({ tasks }) => {
                   </td>
                   <td className="border border-gray-200 px-4 py-2">
                     <div className="text-sm">
-                      {new Date(task.dueDate).toLocaleDateString()}
+                      {formatDueDate(task.dueDate)}
                     </div>
                   </td>
                 </tr>
