@@ -37,11 +37,20 @@ const TaskData: React.FC = () => {
   
   return (
     <div className="task-data-page">
-      <SubTabNavigation 
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {/* Navigation and Actions on same line */}
+      <div className="nav-with-actions">
+        <SubTabNavigation 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+        
+        <div className="nav-actions">
+          <button className="btn-export">
+            📊 Export Task Report
+          </button>
+        </div>
+      </div>
       
       <div className="tab-content">
         {activeTab === 'overview' && <TaskOverview />}

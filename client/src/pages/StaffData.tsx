@@ -1034,17 +1034,20 @@ const StaffData: React.FC = () => {
 
   return (
     <div className="staff-data-page">
-      <div className="page-actions">
-        <button className="btn-export" onClick={handleExport}>
-          📥 Export Staff Report
-        </button>
+      {/* Navigation and Actions on same line */}
+      <div className="nav-with-actions">
+        <SubTabNavigation 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+        
+        <div className="nav-actions">
+          <button className="btn-export" onClick={handleExport}>
+            📊 Export Staff Report
+          </button>
+        </div>
       </div>
-      
-      <SubTabNavigation 
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
       
       {/* Content will go here based on activeTab */}
       <div className="tab-content">

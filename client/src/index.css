@@ -2605,6 +2605,41 @@ button {
   margin-top: var(--space-lg);
 }
 
+/* Navigation with Actions Container */
+.nav-with-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  gap: var(--space-lg);
+}
+
+/* Sub-navigation stays on left */
+.sub-tab-navigation {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: 0; /* Remove bottom margin since parent handles it */
+  padding: 6px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  flex: 1;
+  overflow-x: auto;
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sub-tab-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+/* Actions stay on right */
+.nav-actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
 /* Export/Action Buttons */
 .page-actions {
   display: flex;
@@ -2618,6 +2653,29 @@ button {
 .page-actions button {
   padding: var(--button-padding);
   min-width: 160px;
+}
+
+/* Export button styling */
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-export:hover {
+  background: #236020;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 128, 40, 0.2);
 }
 
 /* Task Data Page Improvements */
@@ -2802,5 +2860,33 @@ textarea:focus {
   
   .page-actions button {
     width: 100%;
+  }
+  
+  /* Mobile: Stack navigation and actions */
+  .nav-with-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+  }
+  
+  .sub-tab-navigation {
+    width: 100%;
+  }
+  
+  .nav-actions {
+    justify-content: flex-end;
+  }
+  
+  .btn-export {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Tablet: Keep inline but reduce button text */
+@media (max-width: 1024px) {
+  .btn-export {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 }
