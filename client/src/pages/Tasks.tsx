@@ -18,6 +18,7 @@ import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
 import { TrayIntegration } from "@/utils/trayIntegration";
 import { useLocation } from "@/contexts/LocationContext";
+import SubHeader from "@/components/SubHeader";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -449,6 +450,16 @@ const Tasks: React.FC = () => {
 
   return (
     <div className="page-content">
+      <SubHeader>
+        <div className="tab-group">
+          <button className={`tab-button ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
+            All Tasks
+          </button>
+          <button className={`tab-button ${activeFilter !== 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('category')}>
+            Category
+          </button>
+        </div>
+      </SubHeader>
       <div className="task-manager">
       {/* Updated filter bar with New Task button */}
       <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>

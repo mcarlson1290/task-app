@@ -10,6 +10,7 @@ import { InventoryItem } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
+import SubHeader from "@/components/SubHeader";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -223,6 +224,49 @@ Please process this reorder request at your earliest convenience.`;
 
   return (
     <div className="space-y-6">
+      <SubHeader>
+        <button className="btn-primary" onClick={handleAddItem}>
+          <span>+</span> Add Item
+        </button>
+        <div className="filter-group flex-grow">
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Search inventory items or suppliers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select 
+            className="filter-dropdown" 
+            value={categoryFilter} 
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="all">All Categories</option>
+            <option value="seeds">Seeds</option>
+            <option value="nutrients">Nutrients</option>
+            <option value="supplies">Supplies</option>
+            <option value="equipment">Equipment</option>
+          </select>
+          <select 
+            className="filter-dropdown" 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="name">Sort by Name</option>
+            <option value="date">Sort by Date</option>
+            <option value="value">Sort by Value</option>
+          </select>
+        </div>
+        <label className="checkbox-filter">
+          <input 
+            type="checkbox" 
+            checked={showLowStockOnly} 
+            onChange={(e) => setShowLowStockOnly(e.target.checked)} 
+          />
+          Low Stock Only
+        </label>
+      </SubHeader>
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center space-x-3">
@@ -232,15 +276,6 @@ Please process this reorder request at your earliest convenience.`;
               ${getTotalInventoryValue().toFixed(2)}
             </p>
           </div>
-          {isManager && (
-            <Button 
-              onClick={handleAddItem}
-              className="bg-[#2D8028] hover:bg-[#203B17] text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
-          )}
         </div>
       </div>
 

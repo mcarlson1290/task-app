@@ -1,0 +1,458 @@
+# Grow Space Sub-Header Implementation - Page-by-Page Specifications
+
+## What is the Sub-Header?
+
+The sub-header is a **SECOND navigation/control bar** that appears BELOW your main navigation header. It contains:
+- Page-specific action buttons (like "Add Item", "Create Course")
+- Filter controls (dropdowns, search bars)
+- Tab navigation for sub-pages
+- Export/report buttons
+
+**Visual Structure:**
+```
+[Main Header - with logo, main navigation, user menu]
+    ↓ 16px gap ↓
+[Sub-Header - floating white card with page-specific controls]
+    ↓ 16px gap ↓
+[Page Content]
+```
+
+## Step 1: Create the Sub-Header Component Files
+
+### 1.1 Create SubHeader Component
+**Create NEW file: `src/components/SubHeader.jsx`**
+
+```jsx
+import React from 'react';
+import './SubHeader.css';
+
+const SubHeader = ({ children, className = '' }) => {
+  return (
+    <div className={`sub-header-wrapper ${className}`}>
+      <div className="sub-header-container">
+        <div className="sub-header-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SubHeader;
+```
+
+### 1.2 Create SubHeader Styles
+**Create NEW file: `src/components/SubHeader.css`**
+
+```css
+/* SUB-HEADER (SECOND HEADER BAR) - FLOATING DESIGN */
+.sub-header-wrapper {
+  /* Positioning - This makes it stick below the main header */
+  position: sticky;
+  top: 64px; /* Adjust this to match YOUR main header height */
+  z-index: 100;
+  
+  /* Spacing - Creates the floating effect */
+  padding: 16px 24px 0 24px;
+  background: transparent; /* Transparent so we see the page background */
+}
+
+.sub-header-container {
+  /* The actual white floating card */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+  padding: 12px 20px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.sub-header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* PRIMARY BUTTON - Green action buttons */
+.btn-primary {
+  height: 36px;
+  padding: 0 16px;
+  min-width: 120px;
+  background-color: #28a745;
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary span {
+  font-size: 18px;
+  line-height: 1;
+  margin-right: 4px;
+}
+
+/* FILTER CONTROLS */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.filter-dropdown {
+  height: 36px;
+  min-width: 180px;
+  max-width: 250px;
+  padding: 0 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #495057;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.search-input {
+  height: 36px;
+  flex: 1;
+  max-width: 400px;
+  min-width: 200px;
+  padding: 0 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #495057;
+  transition: border-color 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+}
+
+/* TAB NAVIGATION */
+.tab-group {
+  display: flex;
+  gap: 2px;
+  background-color: #f1f3f5;
+  padding: 2px;
+  border-radius: 6px;
+  height: 40px;
+}
+
+.tab-button {
+  height: 36px;
+  padding: 0 20px;
+  border: none;
+  background-color: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #495057;
+}
+
+.tab-button.active {
+  background-color: #ffffff;
+  color: #212529;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* UTILITY CLASSES */
+.ml-auto {
+  margin-left: auto;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+/* CHECKBOX FILTER */
+.checkbox-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #495057;
+}
+
+.checkbox-filter input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+```
+
+## Step 2: Page-by-Page Sub-Header Content
+
+### 📄 TASKS PAGE
+**What the sub-header should contain:**
+- Tab navigation: "All Tasks" | "Category"
+- These are VIEW FILTERS, not page navigation
+
+**Implementation for Tasks page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your tasks list
+<SubHeader>
+  <div className="tab-group">
+    <button className="tab-button active">All Tasks</button>
+    <button className="tab-button">Category</button>
+  </div>
+</SubHeader>
+```
+
+### 📦 INVENTORY PAGE
+**What the sub-header should contain:**
+- Green "Add Item" button (left side)
+- Search input field (middle)
+- Category dropdown filter
+- Sort dropdown
+
+**Implementation for Inventory page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your inventory grid
+<SubHeader>
+  <button className="btn-primary">
+    <span>+</span> Add Item
+  </button>
+  <div className="filter-group flex-grow">
+    <input 
+      type="text" 
+      className="search-input" 
+      placeholder="Search inventory items or suppliers..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+    <select className="filter-dropdown" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+      <option value="all">All Categories</option>
+      <option value="seeds">Seeds</option>
+      <option value="nutrients">Nutrients</option>
+      <option value="supplies">Supplies</option>
+      <option value="equipment">Equipment</option>
+    </select>
+    <select className="filter-dropdown" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+      <option value="name">Sort by Name</option>
+      <option value="date">Sort by Date</option>
+      <option value="value">Sort by Value</option>
+    </select>
+  </div>
+  <label className="checkbox-filter">
+    <input type="checkbox" checked={lowStockOnly} onChange={(e) => setLowStockOnly(e.target.checked)} />
+    Low Stock Only
+  </label>
+</SubHeader>
+```
+
+### 🎓 EDUCATION PAGE
+**What the sub-header should contain:**
+- Green "Create Course" button (right side)
+- Filter tabs: "All Courses" | "In Progress" | "Completed" | "Not Started"
+
+**Implementation for Education page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your course grid
+<SubHeader>
+  <div className="tab-group">
+    <button className="tab-button active">All Courses</button>
+    <button className="tab-button">In Progress</button>
+    <button className="tab-button">Completed</button>
+    <button className="tab-button">Not Started</button>
+  </div>
+  <button className="btn-primary ml-auto">
+    <span>+</span> Create Course
+  </button>
+</SubHeader>
+```
+
+### 🔄 RECURRING TASKS PAGE
+**What the sub-header should contain:**
+- Green "Add Recurring Task" button (right side)
+- No filters needed (based on your empty state screenshot)
+
+**Implementation for Recurring Tasks page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your recurring tasks list
+<SubHeader>
+  <button className="btn-primary ml-auto">
+    <span>+</span> Add Recurring Task
+  </button>
+</SubHeader>
+```
+
+### 📊 TASK DATA PAGE
+**What the sub-header should contain:**
+- Tab navigation: "Overview" | "Analytics" | "Cost Analysis"
+- Green "Export Task Report" button (right side)
+- Time filter dropdown
+
+**Implementation for Task Data page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your data visualizations
+<SubHeader>
+  <div className="tab-group">
+    <button className="tab-button active">Overview</button>
+    <button className="tab-button">Analytics</button>
+    <button className="tab-button">Cost Analysis</button>
+  </div>
+  <select className="filter-dropdown">
+    <option value="24h">24 hours</option>
+    <option value="7d" selected>7 days</option>
+    <option value="30d">30 days</option>
+    <option value="90d">90 days</option>
+  </select>
+  <button className="btn-primary ml-auto">
+    📊 Export Task Report
+  </button>
+</SubHeader>
+```
+
+### 👥 STAFF DATA PAGE
+**What the sub-header should contain:**
+- Tab navigation: "Staff Edit" | "Staff Analytics"
+- Green "Add Staff Member" button (right side)
+- Green "Export Staff Report" button
+- Sort dropdown
+
+**Implementation for Staff Data page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your staff table
+<SubHeader>
+  <div className="tab-group">
+    <button className="tab-button active">Staff Edit</button>
+    <button className="tab-button">Staff Analytics</button>
+  </div>
+  <select className="filter-dropdown">
+    <option value="name">Sort by Name</option>
+    <option value="role">Sort by Role</option>
+    <option value="hire">Sort by Hire Date</option>
+    <option value="active">Sort by Status</option>
+  </select>
+  <button className="btn-primary">
+    📊 Export Staff Report
+  </button>
+  <button className="btn-primary">
+    <span>+</span> Add Staff Member
+  </button>
+</SubHeader>
+```
+
+### 🌱 PRODUCTION DATA PAGE
+**What the sub-header should contain:**
+- Tab navigation: "Live Dashboard" | "Tray Tracking" | "Equipment" | "Crop Config" | "System Config"
+- Green "Export Report" button (right side)
+
+**Implementation for Production Data page:**
+```jsx
+import SubHeader from '../components/SubHeader';
+
+// Add this BELOW your main header, ABOVE your production dashboard
+<SubHeader>
+  <div className="tab-group">
+    <button className="tab-button active">Live Dashboard</button>
+    <button className="tab-button">Tray Tracking</button>
+    <button className="tab-button">Equipment</button>
+    <button className="tab-button">Crop Config</button>
+    <button className="tab-button">System Config</button>
+  </div>
+  <button className="btn-primary ml-auto">
+    📊 Export Report
+  </button>
+</SubHeader>
+```
+
+## Step 3: Main Content Spacing Adjustment
+
+For EACH page, add this to your main content container to account for the sub-header:
+
+```css
+.page-content {
+  /* Adds space below the floating sub-header */
+  padding-top: 16px;
+  /* Keep all your existing styles */
+}
+```
+
+## Step 4: Connect Functionality
+
+For each filter/button in the sub-header, connect it to your existing state/functions:
+
+```jsx
+// Example for inventory page filters
+const [searchTerm, setSearchTerm] = useState('');
+const [categoryFilter, setCategoryFilter] = useState('all');
+const [sortBy, setSortBy] = useState('name');
+const [lowStockOnly, setLowStockOnly] = useState(false);
+
+// Filter your data based on these states
+const filteredInventory = inventory
+  .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  .filter(item => categoryFilter === 'all' || item.category === categoryFilter)
+  .filter(item => !lowStockOnly || item.quantity < item.minQuantity)
+  .sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'date') return new Date(b.date) - new Date(a.date);
+    if (sortBy === 'value') return b.value - a.value;
+  });
+```
+
+## Verification Checklist
+
+After implementing each page:
+
+- [ ] Main header is still visible and unchanged
+- [ ] Sub-header appears as a white floating card 16px below main header
+- [ ] All original page content is still visible
+- [ ] Sub-header contains the correct controls for that specific page
+- [ ] Buttons are green (#28a745) and 36px tall
+- [ ] Sub-header stays visible when scrolling (sticky)
+- [ ] All existing functionality still works
+
+## Summary of What Goes in Each Sub-Header
+
+1. **Tasks**: View toggle (All Tasks / Category)
+2. **Inventory**: Add button + Search + Category filter + Sort
+3. **Education**: Course filter tabs + Create Course button
+4. **Recurring Tasks**: Just Add Recurring Task button
+5. **Task Data**: View tabs + Time filter + Export button
+6. **Staff Data**: View tabs + Sort + Export + Add Staff button
+7. **Production Data**: View tabs (5 tabs) + Export button
+
+Remember: The sub-header is a SECOND bar, not a replacement for your main navigation!
