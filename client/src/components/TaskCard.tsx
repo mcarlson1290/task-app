@@ -88,11 +88,48 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return "Just now";
   };
 
-  const checkIfOverdue = (dueDate: Date): boolean => {
+  const checkIfOverdue = (dueDateInput: string | Date): boolean => {
+    if (!dueDateInput) return false;
+    
     const now = new Date();
-    const due = new Date(dueDate);
-    due.setHours(20, 27, 0, 0); // 8:27 PM
-    return now > due;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    let dateString: string;
+    
+    // Handle both Date objects and strings
+    if (dueDateInput instanceof Date) {
+      // Convert Date to YYYY-MM-DD format
+      const year = dueDateInput.getFullYear();
+      const month = String(dueDateInput.getMonth() + 1).padStart(2, '0');
+      const day = String(dueDateInput.getDate()).padStart(2, '0');
+      dateString = `${year}-${month}-${day}`;
+    } else {
+      // Handle ISO string format by extracting date part
+      dateString = dueDateInput.split('T')[0];
+    }
+    
+    // Parse the task date (YYYY-MM-DD format)
+    const [year, month, day] = dateString.split('-');
+    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    // If due date is before today, it's overdue
+    if (dueDate < today) {
+      return true;
+    }
+    
+    // If due date is today, check if it's after 8:30 PM
+    if (dueDate.getTime() === today.getTime()) {
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Check if it's after 8:30 PM (20:30 in 24-hour format)
+      if (currentHour > 20 || (currentHour === 20 && currentMinute >= 30)) {
+        return true;
+      }
+    }
+    
+    // Otherwise, not overdue
+    return false;
   };
 
   const formatDueDate = (dateInput: string | Date): string => {
@@ -123,12 +160,28 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
   };
 
+  const getOverdueMessage = (task: any): string => {
+    if (!task.isOverdue) return '';
+    
+    const today = new Date().toISOString().split('T')[0];
+    const taskDateString = task.dueDate instanceof Date ? 
+      task.dueDate.toISOString().split('T')[0] : 
+      task.dueDate.split('T')[0];
+    
+    if (taskDateString === today) {
+      return 'OVERDUE (8:30 PM deadline passed)';
+    }
+    
+    const daysDiff = Math.abs(differenceInDays(new Date(), new Date(task.dueDate)));
+    return `OVERDUE by ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
+  };
+
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
   const isPending = task.status === 'pending';
   const isPaused = task.status === 'paused';
   const isSkipped = task.status === 'skipped';
-  const isOverdue = task.dueDate ? checkIfOverdue(new Date(task.dueDate)) : false;
+  const isOverdue = task.dueDate && task.status !== 'completed' && task.status !== 'approved' ? checkIfOverdue(task.dueDate) : false;
 
   const getCardClassName = () => {
     let baseClass = "hover:shadow-lg transition-all duration-200 cursor-pointer";
@@ -238,7 +291,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                 <div className="flex items-center text-sm text-red-600">
                   <AlertTriangle className="h-4 w-4 mr-1" />
                   <span className="font-semibold">
-                    OVERDUE by {Math.abs(differenceInDays(new Date(), new Date(task.dueDate)))} days
+                    {getOverdueMessage(task)}
                   </span>
                 </div>
               )}

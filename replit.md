@@ -134,6 +134,24 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
+- **July 18, 2025**: Fixed task creation and overdue logic bugs
+  - **Task Creation Bug Fix**: Successfully resolved task creation issue where new tasks weren't appearing in the task list
+    - Added proper location assignment to new tasks using current location context
+    - Enhanced query cache invalidation with explicit refetch and analytics dashboard updates
+    - Fixed race condition between task creation and query cache updates
+    - Tasks now properly include location code and appear immediately in filtered lists
+  - **Date Display Bug Fix**: Corrected timezone-related date display issue on task cards
+    - Implemented timezone-safe date formatting without UTC conversion
+    - Updated TaskCard and TaskOverview components to use consistent date formatting
+    - Fixed day-shifting problem where task dates showed one day earlier due to timezone handling
+    - Added robust date parsing for both Date objects and ISO strings
+  - **Overdue Logic Enhancement**: Fixed overdue task detection with proper 8:30 PM cutoff
+    - Implemented correct overdue logic: tasks due in past OR today after 8:30 PM
+    - Added timezone-safe date comparison without UTC conversion issues
+    - Enhanced overdue messages to distinguish between past-due and today-after-8:30PM tasks
+    - Added periodic overdue status checking every minute for real-time updates
+    - Excluded completed and approved tasks from overdue calculations
+    - Added proper error handling and edge case management
 - **July 18, 2025**: Clean header bar implementation with simplified structure
   - **Simplified Header Design**: Completely restructured top header bar removing duplicate elements and clutter
     - Left side now shows only the current page title with emoji (📋 Tasks, 👥 Staff Data, etc.)

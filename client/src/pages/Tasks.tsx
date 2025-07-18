@@ -112,6 +112,22 @@ const Tasks: React.FC = () => {
     console.log('Filtered tasks:', filteredTasks);
   }, [tasks, dateFilter]);
 
+  // Periodic overdue status check (every minute)
+  React.useEffect(() => {
+    const checkOverdueStatus = () => {
+      // Force a refetch to ensure overdue status is up-to-date
+      refetch();
+    };
+    
+    // Check immediately on mount
+    checkOverdueStatus();
+    
+    // Set up interval to check every minute
+    const interval = setInterval(checkOverdueStatus, 60000); // 60 seconds
+    
+    return () => clearInterval(interval);
+  }, [refetch]);
+
   // Task update mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
