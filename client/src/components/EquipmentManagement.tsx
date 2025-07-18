@@ -24,13 +24,10 @@ import { getStoredAuth } from '../lib/auth';
 import { useLocation } from '@/contexts/LocationContext';
 
 export const EquipmentManagement: React.FC = () => {
-  const [systems, setSystems] = useState<GrowingSystem[]>([]);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [editingSystem, setEditingSystem] = useState<GrowingSystem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [analyticsView, setAnalyticsView] = useState<'overview' | 'performance' | 'maintenance'>('overview');
-  const [dateRange, setDateRange] = useState('30d');
   
   const auth = getStoredAuth();
   const isCorporateManager = auth.user?.role === 'corporate';
@@ -46,12 +43,11 @@ export const EquipmentManagement: React.FC = () => {
     },
   });
 
-  useEffect(() => {
-    // Filter systems by current location
-    const locationSystems = systemsData.filter(system => 
+  // Filter systems by current location directly in useMemo
+  const systems = useMemo(() => {
+    return systemsData.filter(system => 
       system.location === currentLocation.code
     );
-    setSystems(locationSystems);
   }, [systemsData, currentLocation.code]);
 
   // Group systems by category
