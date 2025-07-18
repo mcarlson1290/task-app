@@ -2674,22 +2674,29 @@ button {
   box-shadow: 0 4px 12px rgba(45, 128, 40, 0.2);
 }
 
-/* Tasks Page Filter Buttons Fix */
+/* Tasks Page Filter Buttons Fix - Compact Version */
 .tasks-filter-container {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 20px;
-  padding: 10px 0;
+  padding: 12px 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
 }
 
 .task-filter-btn {
-  padding: 8px 16px;
+  height: 32px;
+  padding: 0 12px;
   border: 1px solid #ddd;
   background-color: #f5f5f5;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
   transition: all 0.2s;
+  min-width: auto;
 }
 
 .task-filter-btn:hover {
@@ -2701,6 +2708,84 @@ button {
   background-color: #2D8028;
   color: white;
   border-color: #2D8028;
+}
+
+/* Compact filter elements */
+.filter-select {
+  height: 32px;
+  padding: 0 8px;
+  min-width: 80px;
+  max-width: 120px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+}
+
+.date-input {
+  height: 32px;
+  padding: 0 6px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100px;
+}
+
+.search-input {
+  height: 32px;
+  width: 140px;
+  padding: 0 8px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.btn-clear-filters,
+.btn-new-task {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background-color: #f5f5f5;
+}
+
+.btn-new-task {
+  background-color: #2D8028;
+  color: white;
+  border-color: #2D8028;
+}
+
+.btn-clear-filters:hover,
+.btn-new-task:hover {
+  opacity: 0.9;
+}
+
+/* Mobile compact filters */
+@media (max-width: 480px) {
+  .filter-select {
+    min-width: 70px;
+    max-width: 100px;
+    font-size: 12px;
+  }
+  
+  .search-input {
+    width: 100px;
+  }
+  
+  .task-filter-btn,
+  .btn-clear-filters,
+  .btn-new-task {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  
+  .date-input {
+    width: 85px;
+    font-size: 12px;
+  }
 }
 
 /* Task Data Page Improvements */
