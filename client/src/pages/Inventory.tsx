@@ -21,6 +21,7 @@ const Inventory: React.FC = () => {
   const [showAddInventoryModal, setShowAddInventoryModal] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<InventoryItem | null>(null);
   const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
+  const [isCostBreakdownOpen, setIsCostBreakdownOpen] = React.useState(true);
   const auth = getStoredAuth();
   const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
   const queryClient = useQueryClient();
@@ -273,27 +274,128 @@ Please process this reorder request at your earliest convenience.`;
 
   return (
     <div className="px-4 md:px-6 py-4 md:py-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-end mb-8 px-2">
-        <div className="flex items-center gap-3 mr-2">
-          {/* Add to Inventory button - visible to ALL users */}
-          <button 
-            onClick={() => setShowAddInventoryModal(true)}
-            className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
-          >
-            📥 Add to Inventory
-          </button>
-          
-          {/* Add Item button - only for managers */}
-          {isManager && (
-            <button 
-              onClick={handleAddItem}
-              className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
-            >
-              + Add Item
-            </button>
-          )}
+      {/* Collapsible Cost Breakdown - At Top */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+        {/* Collapsible Header */}
+        <div 
+          className="flex justify-between items-center px-6 py-5 cursor-pointer select-none hover:bg-gray-50 transition-colors"
+          onClick={() => setIsCostBreakdownOpen(!isCostBreakdownOpen)}
+        >
+          <h2 className="text-lg font-semibold text-[#203B17] flex items-center gap-2 m-0">
+            <span className="text-xl">{isCostBreakdownOpen ? '▼' : '▶'}</span>
+            💰 Inventory Cost Breakdown
+          </h2>
+          <div className="text-xl font-bold text-[#203B17]">
+            ${calculateCategoryTotals().grandTotal.toFixed(2)}
+          </div>
         </div>
+        
+        {/* Collapsible Content */}
+        {isCostBreakdownOpen && (
+          <div className="px-6 pb-6 border-t border-gray-200">
+            {/* Total Inventory Value Display */}
+            <div className="bg-gray-50 p-5 rounded-lg mb-6 text-center mt-6">
+              <p className="text-sm text-gray-600 mb-2">Total Inventory Value</p>
+              <p className="text-3xl font-bold text-[#203B17]">
+                ${calculateCategoryTotals().grandTotal.toFixed(2)}
+              </p>
+            </div>
+            
+            {/* Category Breakdown Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {categoryDetails.map((category) => {
+                const categoryData = calculateCategoryTotals().totals[category.id];
+                return (
+                  <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
+                    <div className="text-2xl mb-2">{category.icon}</div>
+                    <h3 className="font-medium text-gray-900 text-sm mb-1">{category.name}</h3>
+                    <p className="text-xs text-gray-600 mb-2">{categoryData.percentage}%</p>
+                    <p className="font-bold text-[#203B17] text-sm mb-1">
+                      ${categoryData.value.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500">{categoryData.count} items</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Single-Line Control Bar */}
+      <div className="bg-gray-50 p-4 rounded-lg mb-6 flex flex-wrap items-center gap-3">
+        {/* Search input */}
+        <div className="relative flex-1 min-w-[300px] w-full lg:w-auto">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search inventory items or suppliers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white"
+          />
+        </div>
+        
+        {/* Category filter */}
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[140px] bg-white">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.value} value={category.value}>
+                {category.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {/* Sort dropdown */}
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[140px] bg-white">
+            <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Sort by Name</SelectItem>
+            <SelectItem value="stock">Sort by Stock</SelectItem>
+            <SelectItem value="category">Sort by Category</SelectItem>
+            <SelectItem value="cost">Sort by Cost</SelectItem>
+            <SelectItem value="value">Sort by Value</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {/* Low stock checkbox */}
+        <label className="flex items-center gap-2 whitespace-nowrap px-3 py-2 bg-white border border-gray-300 rounded-md cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showLowStockOnly}
+            onChange={(e) => setShowLowStockOnly(e.target.checked)}
+            className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
+          />
+          <span className="text-sm text-gray-700 flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
+            Low Stock Only
+          </span>
+        </label>
+        
+        {/* Divider */}
+        <div className="w-px h-8 bg-gray-300 mx-1"></div>
+        
+        {/* Action buttons */}
+        <button 
+          onClick={() => setShowAddInventoryModal(true)}
+          className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap"
+        >
+          📥 Add to Inventory
+        </button>
+        
+        {isManager && (
+          <button 
+            onClick={handleAddItem}
+            className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap"
+          >
+            + Add Item
+          </button>
+        )}
       </div>
 
       {/* Low Stock Alerts */}
@@ -336,90 +438,7 @@ Please process this reorder request at your earliest convenience.`;
 
 
 
-      {/* Search and Filters */}
-      <div className="bg-gray-50 p-3 md:p-4 rounded-lg mb-6 md:mb-8">
-        <div className="flex flex-col gap-3 md:gap-4 lg:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search inventory items or suppliers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full lg:w-48">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full lg:w-48">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Sort by Name</SelectItem>
-              <SelectItem value="stock">Sort by Stock Level</SelectItem>
-              <SelectItem value="category">Sort by Category</SelectItem>
-              <SelectItem value="cost">Sort by Cost per Unit</SelectItem>
-              <SelectItem value="value">Sort by Total Value</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center space-x-2 whitespace-nowrap">
-            <input
-              type="checkbox"
-              id="lowStock"
-              checked={showLowStockOnly}
-              onChange={(e) => setShowLowStockOnly(e.target.checked)}
-              className="h-4 w-4 text-[#2D8028] rounded border-gray-300 focus:ring-[#2D8028]"
-            />
-            <label htmlFor="lowStock" className="text-sm text-gray-700 flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-1 text-red-500" />
-              Low Stock Only
-            </label>
-          </div>
-        </div>
-      </div>
 
-      {/* Inventory Cost Breakdown */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-8 md:mb-10">
-        <h2 className="text-lg font-semibold text-[#203B17] mb-6 flex items-center gap-2">
-          💰 Inventory Cost Breakdown
-        </h2>
-        
-        {/* Total Inventory Value Display */}
-        <div className="bg-gray-50 p-5 rounded-lg mb-6 text-center">
-          <p className="text-sm text-gray-600 mb-2">Total Inventory Value</p>
-          <p className="text-3xl font-bold text-[#203B17]">
-            ${calculateCategoryTotals().grandTotal.toFixed(2)}
-          </p>
-        </div>
-        
-        {/* Category Breakdown Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
-          {categoryDetails.map((category) => {
-            const categoryData = calculateCategoryTotals().totals[category.id];
-            return (
-              <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
-                <div className="text-2xl mb-2">{category.icon}</div>
-                <h3 className="font-medium text-gray-900 text-sm mb-1">{category.name}</h3>
-                <p className="text-xs text-gray-600 mb-2">{categoryData.percentage}%</p>
-                <p className="font-bold text-[#203B17] text-sm mb-1">
-                  ${categoryData.value.toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500">{categoryData.count} items</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Inventory Grid */}
       {filteredInventory.length === 0 ? (

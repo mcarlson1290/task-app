@@ -1,0 +1,253 @@
+# Redesign Inventory Layout - Collapsible Cost Breakdown & Inline Controls
+
+Restructure the inventory page with a collapsible cost breakdown at the top and all controls in one line:
+
+## 1. Make Cost Breakdown Collapsible and Move to Top
+
+Create a collapsible cost breakdown section that appears right after the page header:
+
+```jsx
+const [isCostBreakdownOpen, setIsCostBreakdownOpen] = useState(true);
+
+// Right after the page header, add:
+<div className="cost-breakdown-section" style={{
+  marginBottom: '24px',
+  backgroundColor: 'white',
+  borderRadius: '8px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+  overflow: 'hidden'
+}}>
+  {/* Collapsible header */}
+  <div 
+    className="cost-breakdown-header"
+    onClick={() => setIsCostBreakdownOpen(!isCostBreakdownOpen)}
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '20px 24px',
+      cursor: 'pointer',
+      borderBottom: isCostBreakdownOpen ? '1px solid #e5e7eb' : 'none',
+      userSelect: 'none'
+    }}
+  >
+    <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <span style={{ fontSize: '20px' }}>{isCostBreakdownOpen ? '▼' : '▶'}</span>
+      💰 Inventory Cost Breakdown
+    </h2>
+    <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+      ${calculateTotalValue()}
+    </div>
+  </div>
+  
+  {/* Collapsible content */}
+  {isCostBreakdownOpen && (
+    <div style={{ padding: '24px' }}>
+      {/* Total value display */}
+      <div className="total-value-display" style={{
+        backgroundColor: '#f3f4f6',
+        padding: '20px',
+        borderRadius: '8px',
+        marginBottom: '24px',
+        textAlign: 'center'
+      }}>
+        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
+          Total Inventory Value
+        </p>
+        <p style={{ margin: '4px 0 0 0', fontSize: '32px', fontWeight: 'bold' }}>
+          $0.00
+        </p>
+      </div>
+      
+      {/* Category cards */}
+      <div className="category-cards" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: '16px'
+      }}>
+        {/* Category cards here */}
+      </div>
+    </div>
+  )}
+</div>
+```
+
+## 2. Create Single-Line Control Bar
+
+Combine search, filters, and buttons into one horizontal control bar:
+
+```jsx
+<div className="inventory-controls" style={{
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  marginBottom: '24px',
+  padding: '16px',
+  backgroundColor: '#f9fafb',
+  borderRadius: '8px',
+  flexWrap: 'wrap' // Allow wrapping on mobile
+}}>
+  {/* Search input - takes up available space */}
+  <input
+    type="text"
+    placeholder="Search inventory items or suppliers..."
+    style={{
+      flex: '1 1 300px', // Grow but minimum 300px
+      padding: '10px 16px',
+      border: '1px solid #e5e7eb',
+      borderRadius: '6px',
+      fontSize: '14px'
+    }}
+  />
+  
+  {/* Category filter */}
+  <select style={{
+    padding: '10px 16px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '6px',
+    minWidth: '140px',
+    backgroundColor: 'white'
+  }}>
+    <option>All Categories</option>
+    <option>Seeds</option>
+    <option>Nutrients</option>
+    <option>Farm Supplies</option>
+    <option>Other Supplies</option>
+    <option>Equipment</option>
+  </select>
+  
+  {/* Sort dropdown */}
+  <select style={{
+    padding: '10px 16px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '6px',
+    minWidth: '140px',
+    backgroundColor: 'white'
+  }}>
+    <option>Sort by Name</option>
+    <option>Sort by Value</option>
+    <option>Sort by Quantity</option>
+  </select>
+  
+  {/* Low stock checkbox */}
+  <label style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    whiteSpace: 'nowrap',
+    padding: '10px 12px',
+    backgroundColor: 'white',
+    border: '1px solid #e5e7eb',
+    borderRadius: '6px',
+    cursor: 'pointer'
+  }}>
+    <input type="checkbox" />
+    <span>⚠️ Low Stock Only</span>
+  </label>
+  
+  {/* Divider */}
+  <div style={{
+    width: '1px',
+    height: '30px',
+    backgroundColor: '#e5e7eb',
+    margin: '0 4px'
+  }} />
+  
+  {/* Action buttons */}
+  <button 
+    onClick={() => setShowAddInventoryModal(true)} 
+    style={{
+      backgroundColor: '#2D8028',
+      color: 'white',
+      padding: '10px 16px',
+      borderRadius: '6px',
+      border: 'none',
+      fontSize: '14px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      whiteSpace: 'nowrap'
+    }}
+  >
+    📥 Add to Inventory
+  </button>
+  
+  {(currentUser.role === 'Manager' || currentUser.role === 'Corporate') && (
+    <button 
+      onClick={() => setShowAddItemModal(true)} 
+      style={{
+        backgroundColor: '#2D8028',
+        color: 'white',
+        padding: '10px 16px',
+        borderRadius: '6px',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        whiteSpace: 'nowrap'
+      }}
+    >
+      + Add Item
+    </button>
+  )}
+</div>
+```
+
+## 3. Updated Page Structure
+
+The new layout order should be:
+
+```jsx
+<div className="inventory-page">
+  {/* 1. Page header with location/user */}
+  <div className="page-header">
+    {/* ... */}
+  </div>
+  
+  {/* 2. Page title */}
+  <h1 style={{ marginBottom: '24px' }}>📦 Inventory</h1>
+  
+  {/* 3. Collapsible Cost Breakdown (at top) */}
+  <div className="cost-breakdown-section">
+    {/* Collapsible section */}
+  </div>
+  
+  {/* 4. All controls in one line */}
+  <div className="inventory-controls">
+    {/* Search, filters, and buttons all together */}
+  </div>
+  
+  {/* 5. Inventory items or empty state */}
+  <div className="inventory-items">
+    {/* ... */}
+  </div>
+</div>
+```
+
+## 4. Mobile Responsive Adjustments
+
+```css
+@media (max-width: 1024px) {
+  .inventory-controls {
+    gap: 8px;
+  }
+  
+  .inventory-controls input[type="text"] {
+    flex: 1 1 100%;
+    order: -1; /* Search bar on top on mobile */
+  }
+}
+```
+
+## Summary of Changes:
+1. ✅ Cost Breakdown is now collapsible with a click
+2. ✅ Cost Breakdown moved to the top of the page
+3. ✅ All controls (search, filters, buttons) are in one horizontal line
+4. ✅ Added a visual divider between filters and action buttons
+5. ✅ Total value shows in the collapsed header for quick reference
+6. ✅ Clean, organized layout with better visual hierarchy
