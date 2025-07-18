@@ -141,7 +141,25 @@ export const inventoryItems = pgTable("inventory_items", {
   productCode: text("product_code"), // Used for tray ID generation
   ozPerTray: real("oz_per_tray"), // Amount needed per tray for seeds
   cropId: integer("crop_id"), // Links to crop configuration
+  
+  // Cost tracking fields
+  totalValue: real("total_value").default(0), // Total value of current stock
+  avgCostPerUnit: real("avg_cost_per_unit").default(0), // Weighted average cost per unit
+  
   lastRestocked: timestamp("last_restocked"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const inventoryTransactions = pgTable("inventory_transactions", {
+  id: serial("id").primaryKey(),
+  itemId: integer("item_id").references(() => inventoryItems.id),
+  type: text("type").notNull(), // 'purchase', 'usage', 'adjustment'
+  quantity: real("quantity").notNull(),
+  totalCost: real("total_cost"), // Cost for this transaction
+  costPerUnit: real("cost_per_unit"), // Cost per unit for this transaction
+  runningStock: real("running_stock").notNull(), // Stock level after this transaction
+  addedBy: integer("added_by").references(() => users.id),
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -171,6 +189,7 @@ export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
 export type GrowingSystem = typeof growingSystems.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
+export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 
 // Legacy exports for backwards compatibility
 export type { Task };
@@ -186,10 +205,12 @@ export interface ChecklistItem {
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
 export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
 export const insertTrayMovementSchema = createInsertSchema(trayMovements);
+export const insertInventoryTransactionSchema = createInsertSchema(inventoryTransactions);
 
 export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
 export type InsertGrowingSystem = z.infer<typeof insertGrowingSystemSchema>;
 export type InsertTrayMovement = z.infer<typeof insertTrayMovementSchema>;
+export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransactionSchema>;
 
 export const taskLogs = pgTable("task_logs", {
   id: serial("id").primaryKey(),

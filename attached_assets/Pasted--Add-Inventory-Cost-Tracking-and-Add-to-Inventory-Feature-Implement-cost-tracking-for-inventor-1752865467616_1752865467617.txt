@@ -1,0 +1,302 @@
+# Add Inventory Cost Tracking and "Add to Inventory" Feature
+
+Implement cost tracking for inventory items using standard accounting principles (weighted average cost).
+
+## 1. Add "Add to Inventory" Button
+
+Add a new button next to the existing "Add Item" button that everyone can use:
+
+```jsx
+// In the Inventory component header
+<div className="inventory-header">
+  <h1>📦 Inventory</h1>
+  <div className="header-actions">
+    {/* New button - visible to ALL users */}
+    <button 
+      onClick={() => setShowAddInventoryModal(true)} 
+      className="btn-add-inventory"
+      style={{
+        backgroundColor: '#10b981', // Green color
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '6px',
+        fontSize: '16px',
+        fontWeight: 'bold'
+      }}
+    >
+      📥 Add to Inventory
+    </button>
+    
+    {/* Existing Add Item button - only for managers */}
+    {(currentUser.role === 'Manager' || currentUser.role === 'Corporate') && (
+      <button 
+        onClick={() => setShowAddItemModal(true)} 
+        className="btn-add-item"
+      >
+        + Add Item
+      </button>
+    )}
+  </div>
+</div>
+```
+
+## 2. Create "Add to Inventory" Modal
+
+Create a new modal for adding inventory with cost tracking:
+
+```jsx
+const AddInventoryModal = ({ items, onClose, onSave }) => {
+  const [inventoryData, setInventoryData] = useState({
+    itemId: '',
+    quantity: '',
+    totalCost: '',
+    costPerUnit: '',
+    notes: ''
+  });
+
+  // Calculate cost per unit as user types
+  const handleCostChange = (field, value) => {
+    const updates = { ...inventoryData, [field]: value };
+    
+    if (field === 'totalCost' || field === 'quantity') {
+      const total = parseFloat(updates.totalCost) || 0;
+      const qty = parseFloat(updates.quantity) || 0;
+      
+      if (qty > 0 && total > 0) {
+        updates.costPerUnit = (total / qty).toFixed(2);
+      }
+    }
+    
+    setInventoryData(updates);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>📥 Add to Inventory</h2>
+        
+        <form onSubmit={handleSubmit}>
+          {/* Item Selection */}
+          <label>
+            Select Item *
+            <select 
+              value={inventoryData.itemId}
+              onChange={(e) => setInventoryData({...inventoryData, itemId: e.target.value})}
+              required
+            >
+              <option value="">Choose an item...</option>
+              {items.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.name} ({item.category})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Quantity */}
+          <label>
+            Quantity to Add *
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={inventoryData.quantity}
+              onChange={(e) => handleCostChange('quantity', e.target.value)}
+              placeholder="e.g., 50"
+              required
+            />
+          </label>
+
+          {/* Total Cost */}
+          <label>
+            Total Cost Paid ($) *
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={inventoryData.totalCost}
+              onChange={(e) => handleCostChange('totalCost', e.target.value)}
+              placeholder="e.g., 125.00"
+              required
+            />
+            <small>Enter the total amount paid for this quantity</small>
+          </label>
+
+          {/* Calculated Cost Per Unit */}
+          <div className="calculated-field">
+            <label>Cost Per Unit (Calculated)</label>
+            <div className="calculated-value">
+              ${inventoryData.costPerUnit || '0.00'}
+            </div>
+          </div>
+
+          {/* Optional Notes */}
+          <label>
+            Notes (Optional)
+            <textarea
+              value={inventoryData.notes}
+              onChange={(e) => setInventoryData({...inventoryData, notes: e.target.value})}
+              placeholder="e.g., Purchased from Supplier X, Invoice #12345"
+              rows={3}
+            />
+          </label>
+
+          <div className="modal-actions">
+            <button type="submit" className="btn-save">
+              Add to Inventory
+            </button>
+            <button type="button" onClick={onClose} className="btn-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+```
+
+## 3. Update "Add Item" Modal for Initial Cost
+
+When creating a new item (managers only), add fields for initial inventory and cost:
+
+```jsx
+// In the Add Item modal, add these fields:
+<label>
+  Initial Stock Quantity (Optional)
+  <input
+    type="number"
+    min="0"
+    step="0.01"
+    value={itemData.initialQuantity}
+    onChange={(e) => handleInitialCostChange('initialQuantity', e.target.value)}
+    placeholder="e.g., 100"
+  />
+</label>
+
+<label>
+  Initial Total Cost ($) (Optional)
+  <input
+    type="number"
+    min="0"
+    step="0.01"
+    value={itemData.initialTotalCost}
+    onChange={(e) => handleInitialCostChange('initialTotalCost', e.target.value)}
+    placeholder="e.g., 250.00"
+  />
+  <small>Total cost paid for initial inventory</small>
+</label>
+
+{itemData.initialQuantity && itemData.initialTotalCost && (
+  <div className="calculated-field">
+    <label>Initial Cost Per Unit</label>
+    <div className="calculated-value">
+      ${(itemData.initialTotalCost / itemData.initialQuantity).toFixed(2)}
+    </div>
+  </div>
+)}
+```
+
+## 4. Update Inventory Data Structure
+
+Update the inventory items to track cost:
+
+```javascript
+// Enhanced inventory item structure
+const inventoryItem = {
+  id: 'unique-id',
+  name: 'Arugula Seeds',
+  category: 'Seeds',
+  currentStock: 20,
+  minimumStock: 100,
+  supplier: 'TEST',
+  unitType: 'units', // or 'mL', 'oz', etc.
+  
+  // Cost tracking using weighted average
+  totalValue: 50.00, // Total value of current stock
+  avgCostPerUnit: 2.50, // Weighted average cost
+  
+  // Transaction history for cost tracking
+  transactions: [
+    {
+      date: '2024-03-15',
+      type: 'purchase', // or 'usage', 'adjustment'
+      quantity: 20,
+      totalCost: 50.00,
+      costPerUnit: 2.50,
+      runningStock: 20,
+      addedBy: 'Dan Wilson'
+    }
+  ]
+};
+```
+
+## 5. Implement Weighted Average Cost Calculation
+
+When adding inventory, update the average cost:
+
+```javascript
+const handleAddInventory = (inventoryData) => {
+  const item = items.find(i => i.id === inventoryData.itemId);
+  
+  // Calculate new weighted average cost
+  const oldTotalValue = item.totalValue || 0;
+  const oldQuantity = item.currentStock || 0;
+  const newQuantity = parseFloat(inventoryData.quantity);
+  const newTotalCost = parseFloat(inventoryData.totalCost);
+  
+  // New weighted average = (Old Total Value + New Cost) / (Old Qty + New Qty)
+  const newTotalQuantity = oldQuantity + newQuantity;
+  const newTotalValue = oldTotalValue + newTotalCost;
+  const newAvgCost = newTotalValue / newTotalQuantity;
+  
+  // Update item
+  const updatedItem = {
+    ...item,
+    currentStock: newTotalQuantity,
+    totalValue: newTotalValue,
+    avgCostPerUnit: newAvgCost,
+    transactions: [
+      ...(item.transactions || []),
+      {
+        date: new Date().toISOString(),
+        type: 'purchase',
+        quantity: newQuantity,
+        totalCost: newTotalCost,
+        costPerUnit: inventoryData.costPerUnit,
+        runningStock: newTotalQuantity,
+        addedBy: currentUser.name,
+        notes: inventoryData.notes
+      }
+    ]
+  };
+  
+  // Update the inventory
+  updateInventoryItem(updatedItem);
+  
+  // Show success message
+  console.log(`Added ${newQuantity} units at $${inventoryData.costPerUnit}/unit. New average cost: $${newAvgCost.toFixed(2)}/unit`);
+};
+```
+
+## 6. Display Cost Information
+
+Update the inventory card to show cost data:
+
+```jsx
+// In the inventory item display
+<div className="cost-info">
+  <span>Cost per unit: ${item.avgCostPerUnit?.toFixed(2) || '0.00'}</span>
+  <span>Total Value: ${item.totalValue?.toFixed(2) || '0.00'}</span>
+</div>
+```
+
+## Summary of Changes:
+1. Added prominent "Add to Inventory" button visible to all users
+2. Created modal for adding inventory with cost tracking
+3. Enhanced "Add Item" modal to include initial cost when creating new items
+4. Implemented weighted average cost calculation following accounting principles
+5. Added transaction history tracking for audit trail
+6. Display cost per unit and total inventory value
+
+This follows standard inventory accounting using the weighted average method, where the cost per unit is recalculated each time new inventory is added.

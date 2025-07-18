@@ -1,12 +1,13 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
-  recurringTasks, growingSystems, trayMovements,
+  recurringTasks, growingSystems, trayMovements, inventoryTransactions,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
   type TaskLog, type InsertTaskLog, type ChecklistItem, type RecurringTask,
   type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
-  type TrayMovement, type InsertTrayMovement
+  type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
+  type InsertInventoryTransaction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -38,6 +39,7 @@ export interface IStorage {
   deleteInventoryItem(id: number): Promise<boolean>;
   getLowStockItems(): Promise<InventoryItem[]>;
   getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]>;
+  addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem>;
 
   // Training methods
   getTrainingModule(id: number): Promise<TrainingModule | undefined>;
@@ -596,6 +598,11 @@ export class MemStorage implements IStorage {
     });
   }
 
+  // Get user by ID
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
   // Create user with username
   async createUser(userData: InsertUser): Promise<User> {
     const newUser: User = {
@@ -669,7 +676,17 @@ export class MemStorage implements IStorage {
     return this.tasks.delete(id);
   }
 
+  async resetTasks(): Promise<boolean> {
+    this.tasks.clear();
+    this.currentTaskId = 1;
+    return true;
+  }
+
   // Inventory methods
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    return this.inventoryItems.get(id);
+  }
+
   async getAllInventoryItems(): Promise<InventoryItem[]> {
     return Array.from(this.inventoryItems.values());
   }
@@ -712,6 +729,60 @@ export class MemStorage implements IStorage {
 
   async deleteInventoryItem(id: number): Promise<boolean> {
     return this.inventoryItems.delete(id);
+  }
+
+  async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
+    const item = this.inventoryItems.get(data.itemId);
+    if (!item) {
+      throw new Error("Inventory item not found");
+    }
+
+    // Calculate weighted average cost
+    const currentStock = item.currentStock || 0;
+    const currentAvgCost = item.avgCostPerUnit || 0;
+    const currentTotalValue = currentStock * currentAvgCost;
+    
+    const addedTotalValue = data.quantity * data.unitCost;
+    const newTotalStock = currentStock + data.quantity;
+    const newAvgCost = newTotalStock > 0 ? (currentTotalValue + addedTotalValue) / newTotalStock : 0;
+    const newTotalValue = newTotalStock * newAvgCost;
+
+    // Create transaction record
+    const transaction = {
+      itemId: data.itemId,
+      type: "purchase" as const,
+      quantity: data.quantity,
+      totalCost: addedTotalValue,
+      costPerUnit: data.unitCost,
+      runningStock: newTotalStock,
+      addedBy: 1, // Default user for now
+      notes: data.notes || `Added ${data.quantity} ${item.unit} at $${data.unitCost}/${item.unit}${data.supplier ? ` from ${data.supplier}` : ''}`,
+      createdAt: new Date()
+    };
+
+    // Update the inventory item
+    const updatedItem: InventoryItem = {
+      ...item,
+      currentStock: newTotalStock,
+      avgCostPerUnit: newAvgCost,
+      totalValue: newTotalValue,
+      supplier: data.supplier || item.supplier,
+      lastRestocked: new Date()
+    };
+
+    this.inventoryItems.set(data.itemId, updatedItem);
+    
+    console.log(`Inventory updated: ${item.name}`, {
+      oldStock: currentStock,
+      addedQuantity: data.quantity,
+      newStock: newTotalStock,
+      oldAvgCost: currentAvgCost,
+      newAvgCost: newAvgCost,
+      unitCost: data.unitCost,
+      transaction: transaction
+    });
+
+    return updatedItem;
   }
 
   // Training methods

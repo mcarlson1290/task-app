@@ -254,6 +254,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/inventory/add-stock", async (req, res) => {
+    try {
+      console.log("Add inventory request:", req.body);
+      const { itemId, quantity, unitCost, supplier, notes } = req.body;
+      
+      if (!itemId || !quantity || !unitCost) {
+        return res.status(400).json({ message: "Missing required fields: itemId, quantity, unitCost" });
+      }
+
+      const result = await storage.addInventoryStock({
+        itemId: parseInt(itemId),
+        quantity: parseFloat(quantity),
+        unitCost: parseFloat(unitCost),
+        supplier,
+        notes
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Add inventory error:", error);
+      res.status(500).json({ message: "Failed to add inventory", error: error.message });
+    }
+  });
+
   // Training routes
   app.get("/api/training/modules", async (req, res) => {
     try {

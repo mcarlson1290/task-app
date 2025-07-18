@@ -10,6 +10,7 @@ import { InventoryItem } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
+import AddInventoryModal, { AddInventoryData } from "@/components/AddInventoryModal";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -17,6 +18,7 @@ const Inventory: React.FC = () => {
   const [showLowStockOnly, setShowLowStockOnly] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<string>("name");
   const [showModal, setShowModal] = React.useState(false);
+  const [showAddInventoryModal, setShowAddInventoryModal] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<InventoryItem | null>(null);
   const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
   const auth = getStoredAuth();
@@ -58,6 +60,15 @@ const Inventory: React.FC = () => {
     },
   });
 
+  const addInventoryMutation = useMutation({
+    mutationFn: (data: AddInventoryData) => apiRequest("POST", "/api/inventory/add-stock", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      setShowAddInventoryModal(false);
+    },
+  });
+
   const categories = [
     { value: "all", label: "All Categories" },
     { value: "seeds", label: "Seeds" },
@@ -68,30 +79,13 @@ const Inventory: React.FC = () => {
 
   // Cost calculation functions
   const getItemCostPerUnit = (item: InventoryItem): number => {
-    // Mock cost data - in production, this would come from the database
-    const costs = {
-      'Arugula Seeds': 0.25,
-      'Basil Seeds': 0.30,
-      'Lettuce Seeds': 0.20,
-      'Spinach Seeds': 0.22,
-      'Broccoli Seeds': 0.28,
-      'Kale Seeds': 0.26,
-      'Hydroponic Nutrient Solution': 0.05,
-      'pH Test Kit': 15.00,
-      'Growing Trays': 2.50,
-      'Grow Lights': 45.00,
-      'Pruning Shears': 12.00,
-      'Harvesting Containers': 1.75,
-      'Seedling Trays': 1.25,
-      'Watering System': 85.00,
-      'Thermometer': 8.50,
-      'Humidity Sensor': 25.00,
-    };
-    return costs[item.name as keyof typeof costs] || 1.00;
+    // Use the weighted average cost from the database
+    return item.avgCostPerUnit || 0;
   };
 
   const getItemTotalValue = (item: InventoryItem): number => {
-    return item.currentStock * getItemCostPerUnit(item);
+    // Use the total value from the database or calculate it
+    return item.totalValue || (item.currentStock * getItemCostPerUnit(item));
   };
 
   const getTotalInventoryValue = (): number => {
@@ -205,6 +199,10 @@ Please process this reorder request at your earliest convenience.`;
     setEditingItem(null);
   };
 
+  const handleAddInventory = async (data: AddInventoryData) => {
+    await addInventoryMutation.mutateAsync(data);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -225,13 +223,22 @@ Please process this reorder request at your earliest convenience.`;
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="text-right">
-            <p className="text-sm text-gray-600">Total Inventory Value</p>
-            <p className="text-xl font-bold text-[#203B17]">
-              ${getTotalInventoryValue().toFixed(2)}
-            </p>
-          </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-600">Total Inventory Value</p>
+          <p className="text-xl font-bold text-[#203B17]">
+            ${getTotalInventoryValue().toFixed(2)}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 mt-4 sm:mt-0">
+          {/* Add to Inventory button - visible to ALL users */}
+          <Button 
+            onClick={() => setShowAddInventoryModal(true)}
+            className="bg-[#10b981] hover:bg-[#059669] text-white font-semibold"
+          >
+            📥 Add to Inventory
+          </Button>
+          
+          {/* Add Item button - only for managers */}
           {isManager && (
             <Button 
               onClick={handleAddItem}
@@ -481,6 +488,14 @@ Please process this reorder request at your earliest convenience.`;
         onSave={handleSaveItem}
         onDelete={handleDeleteItem}
         onClose={handleCloseModal}
+      />
+
+      {/* Add to Inventory Modal */}
+      <AddInventoryModal
+        isOpen={showAddInventoryModal}
+        onClose={() => setShowAddInventoryModal(false)}
+        items={inventory}
+        onSave={handleAddInventory}
       />
     </div>
   );
