@@ -38,6 +38,9 @@ const Tasks: React.FC = () => {
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
   const priorityDropdownRef = React.useRef<HTMLDivElement>(null);
   const dateDropdownRef = React.useRef<HTMLDivElement>(null);
+  const filtersRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
   
   const auth = getStoredAuth();
   const { toast } = useToast();
@@ -64,6 +67,25 @@ const Tasks: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Scroll indicators functionality
+  React.useEffect(() => {
+    const checkScroll = () => {
+      if (filtersRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = filtersRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+      }
+    };
+    
+    checkScroll();
+    const resizeObserver = new ResizeObserver(checkScroll);
+    if (filtersRef.current) {
+      resizeObserver.observe(filtersRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.code }],
@@ -426,266 +448,125 @@ const Tasks: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#203B17] mb-2">Today's Tasks</h1>
-          <p className="text-gray-600">Complete your daily farm operations</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-          <Button onClick={handleNewTask} className="bg-[#2D8028] hover:bg-[#203B17] text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            New Task
-          </Button>
-          <Button
-            onClick={() => {
-              // Reset all filters
-              setActiveFilter("all");
-              setStatusFilter("all");
-              setPriorityFilter("all");
-              setDateFilter("");
-              setSearchTerm("");
-              // Close modals
-              setModalOpen(false);
-              setSelectedTask(null);
-              setNewTaskModalOpen(false);
-              // Reset tasks to original state
-              resetTasksMutation.mutate();
-            }}
-            variant="outline"
-            className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
-            disabled={resetTasksMutation.isPending}
-          >
-            {resetTasksMutation.isPending ? "Resetting..." : "🔄 Reset (Dev)"}
-          </Button>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col gap-4">
-        {/* Filter Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+    <div className="task-manager">
+      {/* Updated filter bar with New Task button */}
+      <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
+        <div 
+          className="task-filters"
+          ref={filtersRef}
+          onScroll={(e) => {
+            const target = e.target as HTMLDivElement;
+            setCanScrollLeft(target.scrollLeft > 0);
+            setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+          }}
+        >
           {/* All Tasks Button */}
-          <Button
-            variant={activeFilter === "all" ? "default" : "outline"}
-            onClick={() => setActiveFilter("all")}
-            className={activeFilter === "all" 
-              ? "bg-[#2D8028] text-white hover:bg-[#203B17]" 
-              : "text-gray-600 hover:text-[#2D8028]"
-            }
+          <button className="btn-filter all-tasks">
+            All Tasks
+          </button>
+
+          {/* Category Select */}
+          <select 
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value)}
+            className="filter-select"
           >
-            📋 All Tasks
-          </Button>
+            <option value="all">Category</option>
+            {taskTypes.filter(type => type.value !== "all").map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
 
-          {/* Category Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <Button
-              variant="outline"
-              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-              className="flex items-center gap-2"
-            >
-              {activeFilter !== "all" ? (
-                <>
-                  <span>{taskTypes.find(t => t.value === activeFilter)?.emoji}</span>
-                  Category: {taskTypes.find(t => t.value === activeFilter)?.label}
-                  <X 
-                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveFilter("all");
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  Category
-                  <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-            
-            {categoryDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border rounded-lg shadow-lg z-50">
-                <div className="p-2 max-h-64 overflow-y-auto">
-                  {taskTypes.filter(type => type.value !== "all").map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => {
-                        setActiveFilter(type.value);
-                        setCategoryDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>{type.emoji}</span>
-                        {type.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Status Select */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Status</option>
+            {statusOptions.filter(option => option.value !== "all").map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
 
-          {/* Status Dropdown */}
-          <div className="relative" ref={statusDropdownRef}>
-            <Button
-              variant="outline"
-              onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
-              className="flex items-center gap-2"
-            >
-              {statusFilter !== "all" ? (
-                <>
-                  Status: {statusOptions.find(s => s.value === statusFilter)?.label}
-                  <X 
-                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setStatusFilter("all");
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  Status
-                  <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-            
-            {statusDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
-                <div className="p-2">
-                  {statusOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setStatusFilter(option.value);
-                        setStatusDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Priority Select */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Priority</option>
+            {priorityOptions.filter(option => option.value !== "all").map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
 
-          {/* Priority Dropdown */}
-          <div className="relative" ref={priorityDropdownRef}>
-            <Button
-              variant="outline"
-              onClick={() => setPriorityDropdownOpen(!priorityDropdownOpen)}
-              className="flex items-center gap-2"
-            >
-              {priorityFilter !== "all" ? (
-                <>
-                  Priority: {priorityOptions.find(p => p.value === priorityFilter)?.label}
-                  <X 
-                    className="h-4 w-4 ml-1 hover:bg-gray-100 rounded" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPriorityFilter("all");
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  Priority
-                  <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-            
-            {priorityDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
-                <div className="p-2">
-                  {priorityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setPriorityFilter(option.value);
-                        setPriorityDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Date Filter */}
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="border rounded px-3 py-2 text-sm"
-            />
-            {dateFilter && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDateFilter("")}
-                className="px-2 py-1"
-              >
-                Clear
-              </Button>
-            )}
-          </div>
+          {/* Date Input */}
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="date-input"
+          />
 
           {/* Clear Filters Button */}
-          <Button
+          <button 
+            className="btn-clear-filters"
             onClick={clearAllFilters}
-            variant="outline"
-            className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
           >
-            ✕ Clear Filters
-          </Button>
+            <X size={16} /> Clear Filters
+          </button>
 
-          {/* Search Bar */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+          {/* Search Box */}
+          <div className="search-box">
+            <Search size={16} />
+            <input
+              type="text"
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="search-input"
             />
           </div>
+
+          {/* New Task Button */}
+          <button 
+            className="btn-new-task"
+            onClick={handleNewTask}
+          >
+            <Plus size={16} /> New Task
+          </button>
         </div>
       </div>
 
-      {/* Task Grid */}
-      {filteredTasks.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-4">🌱</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
-          <p className="text-gray-600">
-            {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || activeFilter !== "all" 
-              ? "Try adjusting your filters or search term"
-              : "You're all caught up! No tasks available right now."
-            }
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onTaskAction={handleTaskAction}
-            />
-          ))}
-        </div>
-      )}
+      {/* Task Content */}
+      <div className="task-content">
+        {filteredTasks.length === 0 ? (
+          <div className="no-tasks">
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌱</div>
+            <h3>No tasks found</h3>
+            <p>You're all caught up! No tasks available right now.</p>
+          </div>
+        ) : (
+          <div className="task-list">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onTaskAction={handleTaskAction}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Task Modal */}
       <TaskModal

@@ -1,0 +1,398 @@
+# 📋 Task Manager UI Cleanup
+
+## Remove clutter and integrate New Task button into filter bar
+
+### 1. UPDATE TASK MANAGER COMPONENT:
+
+```typescript
+export const TaskManager: React.FC = () => {
+  const [filters, setFilters] = useState({
+    category: 'all',
+    status: 'all',
+    priority: 'all',
+    dateRange: 'today'
+  });
+  const [showAddModal, setShowAddModal] = useState(false);
+  
+  return (
+    <div className="task-manager">
+      {/* Remove the header section entirely */}
+      
+      {/* Updated filter bar with New Task button */}
+      <div className="task-filters-wrapper">
+        <div className="task-filters">
+          <button className="btn-filter all-tasks">
+            All Tasks
+          </button>
+          
+          <select 
+            value={filters.category}
+            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            className="filter-select"
+          >
+            <option value="all">Category</option>
+            <option value="seeding">Seeding</option>
+            <option value="harvesting">Harvesting</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="cleaning">Cleaning</option>
+          </select>
+          
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            className="filter-select"
+          >
+            <option value="all">Status</option>
+            <option value="assigned">Assigned</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="overdue">Overdue</option>
+          </select>
+          
+          <select
+            value={filters.priority}
+            onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+            className="filter-select"
+          >
+            <option value="all">Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          
+          <input
+            type="date"
+            value={filters.dateRange}
+            onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+            className="date-input"
+          />
+          
+          <button className="btn-clear-filters">
+            <X size={16} /> Clear Filters
+          </button>
+          
+          <div className="search-box">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              className="search-input"
+            />
+          </div>
+          
+          {/* New Task button integrated into filter bar */}
+          <button 
+            className="btn-new-task"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Plus size={16} /> New Task
+          </button>
+        </div>
+      </div>
+      
+      {/* Task list content */}
+      <div className="task-content">
+        {tasks.length === 0 ? (
+          <div className="no-tasks">
+            <Plant size={48} />
+            <h3>No tasks found</h3>
+            <p>You're all caught up! No tasks available right now.</p>
+          </div>
+        ) : (
+          <div className="task-list">
+            {/* Task cards */}
+          </div>
+        )}
+      </div>
+      
+      {/* Add Task Modal */}
+      {showAddModal && (
+        <AddTaskModal onClose={() => setShowAddModal(false)} />
+      )}
+    </div>
+  );
+};
+```
+
+### 2. UPDATE CSS FOR HORIZONTAL SCROLLING:
+
+```css
+/* Task Manager Cleanup */
+.task-manager {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Filter Bar with Horizontal Scroll */
+.task-filters-wrapper {
+  margin-bottom: 24px;
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.task-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 56px;
+  
+  /* Hide scrollbar but keep functionality */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.task-filters::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent flex items from shrinking */
+.task-filters > * {
+  flex-shrink: 0;
+}
+
+/* Filter Buttons and Selects */
+.btn-filter {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-filter:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.btn-filter.all-tasks {
+  background: #2D8028;
+  color: white;
+  border-color: #2D8028;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.date-input {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.btn-clear-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.btn-clear-filters:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Search Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  min-width: 200px;
+  margin-left: auto; /* Push to right */
+}
+
+.search-box svg {
+  color: #6b7280;
+}
+
+.search-input {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #374151;
+  width: 100%;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+/* New Task Button */
+.btn-new-task {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-new-task:hover {
+  background: #236020;
+}
+
+/* Task Content */
+.task-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* No Tasks State */
+.no-tasks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #6b7280;
+}
+
+.no-tasks svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.no-tasks h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #374151;
+}
+
+.no-tasks p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .task-filters-wrapper {
+    margin: 0 -16px 16px -16px;
+    border-radius: 0;
+  }
+  
+  .task-filters {
+    padding: 12px 16px;
+  }
+  
+  .search-box {
+    min-width: 150px;
+  }
+}
+
+/* Scroll Indicators (Optional) */
+.task-filters-wrapper.can-scroll-left::before,
+.task-filters-wrapper.can-scroll-right::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.task-filters-wrapper.can-scroll-left::before {
+  left: 0;
+  background: linear-gradient(to right, white, transparent);
+}
+
+.task-filters-wrapper.can-scroll-right::after {
+  right: 0;
+  background: linear-gradient(to left, white, transparent);
+}
+```
+
+### 3. OPTIONAL: ADD SCROLL INDICATORS (if you want visual hints):
+
+```typescript
+// Add to TaskManager component
+const filtersRef = useRef<HTMLDivElement>(null);
+const [canScrollLeft, setCanScrollLeft] = useState(false);
+const [canScrollRight, setCanScrollRight] = useState(false);
+
+useEffect(() => {
+  const checkScroll = () => {
+    if (filtersRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = filtersRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+  
+  checkScroll();
+  window.addEventListener('resize', checkScroll);
+  
+  return () => window.removeEventListener('resize', checkScroll);
+}, []);
+
+// Update the wrapper div
+<div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
+  <div 
+    className="task-filters"
+    ref={filtersRef}
+    onScroll={(e) => {
+      const target = e.target as HTMLDivElement;
+      setCanScrollLeft(target.scrollLeft > 0);
+      setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+    }}
+  >
+    {/* Filter content */}
+  </div>
+</div>
+```
+
+### SUMMARY:
+
+This cleanup:
+- ✅ Removes "Today's Tasks" title
+- ✅ Removes "Complete your daily farm operations" subtitle  
+- ✅ Removes Reset (Dev) button
+- ✅ Integrates New Task button into the filter bar
+- ✅ Adds horizontal scrolling when screen is compressed
+- ✅ Maintains all filter functionality
+- ✅ Cleaner, more professional appearance
+- ✅ Optional scroll indicators for better UX
+
+The interface is now much cleaner and all controls are in one convenient bar!
