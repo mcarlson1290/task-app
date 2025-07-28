@@ -64,6 +64,12 @@ const Education: React.FC = () => {
     queryKey: ['/api/users']
   });
 
+  // Calculate completed courses from assignments (for progress bar)
+  const assignedCompletedCourses = courseAssignments.filter(assignment => {
+    const course = courses.find(c => c.id === assignment.courseId);
+    return course?.status === 'completed';
+  }).length;
+
   const [courses, setCourses] = useState<Course[]>([
     {
       id: 1,
@@ -211,9 +217,9 @@ const Education: React.FC = () => {
       return {
         ...course,
         assignedBy: assignedByUser?.name || 'Unknown',
-        assignedDate: assignment.assignedDate,
-        dueDate: assignment.dueDate,
-        priority: assignment.priority
+        assignedDate: assignment.assignedDate ? new Date(assignment.assignedDate).toISOString() : undefined,
+        dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString() : undefined,
+        priority: assignment.priority as 'low' | 'normal' | 'high' | undefined
       };
     }).filter(Boolean) as Course[];
   };
@@ -280,7 +286,7 @@ const Education: React.FC = () => {
     setSelectedCourse(null);
   };
 
-  const handleCreateCourse = (newCourse: Omit<Course, 'id'>) => {
+  const handleCreateCourse = (newCourse: Omit<Course, 'id' | 'status' | 'progress'>) => {
     const courseWithId = {
       ...newCourse,
       id: Date.now(),
@@ -296,7 +302,7 @@ const Education: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleUpdateCourse = (updatedCourse: Omit<Course, 'id'>) => {
+  const handleUpdateCourse = (updatedCourse: Omit<Course, 'id' | 'status' | 'progress'>) => {
     if (editingCourse) {
       setCourses(prevCourses => 
         prevCourses.map(course => 
@@ -415,18 +421,18 @@ const Education: React.FC = () => {
           <div className="progress-stats">
             <span className="assigned">{courseAssignments.length} Courses Assigned</span>
             <span className="separator">•</span>
-            <span className="completed">{completedCourses} Completed</span>
+            <span className="completed">{assignedCompletedCourses} Completed</span>
             <span className="separator">•</span>
             <span className="role">👤 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role</span>
           </div>
           <div className="progress-bar">
             <div 
               className="progress-fill" 
-              style={{ width: `${courseAssignments.length > 0 ? (completedCourses / courseAssignments.length) * 100 : 0}%` }} 
+              style={{ width: `${courseAssignments.length > 0 ? (assignedCompletedCourses / courseAssignments.length) * 100 : 0}%` }} 
             />
           </div>
           <span className="progress-text">
-            {courseAssignments.length > 0 ? Math.round((completedCourses / courseAssignments.length) * 100) : 0}% Complete
+            {courseAssignments.length > 0 ? Math.round((assignedCompletedCourses / courseAssignments.length) * 100) : 0}% Complete
           </span>
         </div>
       </div>
@@ -496,12 +502,14 @@ const Education: React.FC = () => {
       )}
 
       {/* Course Modal */}
-      <CourseModal
-        course={selectedCourse}
-        isOpen={showCourseModal}
-        onClose={handleCloseModal}
-        onComplete={handleCourseComplete}
-      />
+      {selectedCourse && (
+        <CourseModal
+          course={selectedCourse}
+          isOpen={showCourseModal}
+          onClose={handleCloseModal}
+          onComplete={handleCourseComplete}
+        />
+      )}
 
       {/* Course Creation Modal */}
       <CourseCreationModal
