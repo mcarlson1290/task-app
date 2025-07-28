@@ -1,0 +1,268 @@
+# Replit Instructions: In-App Notification System for Grow Space
+
+## Overview
+Create an in-app notification system with a bell icon in the header that shows unread count, dropdown list of notifications, and persistent storage of notification history.
+
+## Step 1: Add Notification Bell to Header
+In the main header/navigation component, add a notification bell next to the user name:
+
+```javascript
+<div className="header-right">
+  <span className="location">📍 Kenosha</span>
+  <div className="notification-container">
+    <button className="notification-bell" onClick={toggleNotifications}>
+      🔔
+      {unreadCount > 0 && (
+        <span className="notification-badge">{unreadCount}</span>
+      )}
+    </button>
+    {showNotifications && <NotificationDropdown />}
+  </div>
+  <span className="user-name">👤 Welcome, {userName}</span>
+</div>
+```
+
+## Step 2: Create Notifications Database Table
+Create a new table for storing notifications:
+
+```sql
+CREATE TABLE notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  type VARCHAR(50) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  message TEXT NOT NULL,
+  related_id INTEGER, -- Can reference task_id, course_id, etc.
+  related_type VARCHAR(50), -- 'task', 'course', 'harvest', etc.
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  read_at TIMESTAMP
+);
+```
+
+## Step 3: Notification Types to Implement
+
+### 1. Task Overdue Notifications
+**Trigger**: Daily check at start of day (or every hour)
+**Message**: "Task '{task_name}' is now overdue"
+**Type**: 'task_overdue'
+
+### 2. Direct Task Assignment
+**Trigger**: When a task is assigned to a specific user (not role)
+**Message**: "{assigner_name} assigned you '{task_name}'"
+**Type**: 'task_assigned'
+
+### 3. Course Assignment
+**Trigger**: When a course is assigned
+**Message**: "{manager_name} assigned you '{course_name}' training"
+**Type**: 'course_assigned'
+
+### 4. Task Completion Acknowledgment
+**Trigger**: When a manager marks your task as reviewed
+**Message**: "{manager_name} acknowledged your completion of '{task_name}'"
+**Type**: 'task_acknowledged'
+
+### 5. Urgent Task Alert
+**Trigger**: When a high-priority task is assigned
+**Message**: "URGENT: '{task_name}' requires immediate attention"
+**Type**: 'urgent_task'
+
+### 6. Course Due Soon
+**Trigger**: 2 days before course due date
+**Message**: "Training '{course_name}' is due in 2 days"
+**Type**: 'course_due_soon'
+
+### 7. Inventory Low Alert (Managers only)
+**Trigger**: When inventory drops below threshold
+**Message**: "{item_name} is running low (Current: {quantity})"
+**Type**: 'inventory_low'
+
+## Step 4: Notification Dropdown Component
+
+```javascript
+const NotificationDropdown = () => {
+  return (
+    <div className="notification-dropdown">
+      <div className="notification-header">
+        <h3>Notifications</h3>
+        <button onClick={markAllAsRead}>Mark all as read</button>
+      </div>
+      <div className="notification-list">
+        {notifications.map(notif => (
+          <div 
+            key={notif.id} 
+            className={`notification-item ${!notif.is_read ? 'unread' : ''}`}
+            onClick={() => handleNotificationClick(notif)}
+          >
+            <div className="notif-icon">{getIcon(notif.type)}</div>
+            <div className="notif-content">
+              <h4>{notif.title}</h4>
+              <p>{notif.message}</p>
+              <span className="notif-time">{formatTime(notif.created_at)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="notification-footer">
+        <a href="/notifications">View all notifications</a>
+      </div>
+    </div>
+  );
+};
+```
+
+## Step 5: Notification Triggers Implementation
+
+### Task Assignment Trigger
+```javascript
+// When assigning a task to a specific user
+const assignTaskToUser = async (taskId, userId, assignedBy) => {
+  // ... existing assignment code ...
+  
+  // Create notification
+  await createNotification({
+    user_id: userId,
+    type: 'task_assigned',
+    title: 'New Task Assigned',
+    message: `${assignedBy.name} assigned you '${task.name}'`,
+    related_id: taskId,
+    related_type: 'task'
+  });
+};
+```
+
+### Overdue Task Check (Run periodically)
+```javascript
+const checkOverdueTasks = async () => {
+  const overdueTasks = await db.query(`
+    SELECT t.*, ta.user_id 
+    FROM tasks t
+    JOIN task_assignments ta ON t.id = ta.task_id
+    WHERE t.due_date < NOW() 
+    AND t.status != 'completed'
+    AND NOT EXISTS (
+      SELECT 1 FROM notifications n 
+      WHERE n.related_id = t.id 
+      AND n.type = 'task_overdue'
+      AND n.created_at > NOW() - INTERVAL '24 hours'
+    )
+  `);
+  
+  for (const task of overdueTasks) {
+    await createNotification({
+      user_id: task.user_id,
+      type: 'task_overdue',
+      title: 'Task Overdue',
+      message: `Task '${task.name}' is now overdue`,
+      related_id: task.id,
+      related_type: 'task'
+    });
+  }
+};
+```
+
+## Step 6: Notification Styling
+
+```css
+.notification-container {
+  position: relative;
+}
+
+.notification-bell {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 350px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+}
+
+.notification-item.unread {
+  background: #f0f8ff;
+}
+
+.notification-item:hover {
+  background: #f5f5f5;
+}
+
+.notif-time {
+  font-size: 12px;
+  color: #666;
+}
+```
+
+## Step 7: Real-time Updates (Optional Enhancement)
+Add WebSocket support for instant notifications:
+
+```javascript
+// Listen for new notifications
+socket.on('new_notification', (notification) => {
+  // Add to notification list
+  setNotifications(prev => [notification, ...prev]);
+  
+  // Update unread count
+  setUnreadCount(prev => prev + 1);
+  
+  // Show toast notification
+  showToast(notification.title);
+});
+```
+
+## Step 8: Notification Preferences
+Add user preferences for notification types:
+
+```javascript
+const notificationPreferences = {
+  task_overdue: true,
+  task_assigned: true,
+  course_assigned: true,
+  urgent_task: true,
+  course_due_soon: true,
+  inventory_low: role === 'Manager' || role === 'Corporate'
+};
+```
+
+## Testing Checklist
+- [ ] Bell icon appears in header with correct unread count
+- [ ] Clicking bell shows dropdown with notifications
+- [ ] Unread notifications have blue background
+- [ ] Clicking notification marks it as read
+- [ ] Task assignment creates notification
+- [ ] Overdue tasks generate notifications
+- [ ] Notifications persist across sessions
+- [ ] "Mark all as read" works correctly
