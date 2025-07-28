@@ -242,6 +242,9 @@ export interface ChecklistItem {
   id: string;
   text: string;
   completed: boolean;
+  required?: boolean;
+  type?: string;
+  config?: Record<string, any>;
   data?: Record<string, any>;
   dataCollection?: {
     type: 'number' | 'text' | 'select';

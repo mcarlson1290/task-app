@@ -977,12 +977,14 @@ export class MemStorage implements IStorage {
         type: updatedTask.type || instance.type,
         // Convert checklist template to checklist format if updated
         checklist: updatedTask.checklistTemplate?.steps?.map((step: any, index: number) => ({
-          id: `${index + 1}`,
-          text: step.label || step.text || '',
+          id: step.id || `${index + 1}`,
+          text: step.label || '',
           completed: false,
           required: step.required || false,
+          type: step.type,
+          config: step.config,
           dataCollection: step.type === 'data-capture' ? { 
-            type: step.dataType || 'text', 
+            type: step.config?.dataType || 'text', 
             label: step.label || '' 
           } : undefined
         })) || instance.checklist
@@ -1072,12 +1074,14 @@ export class MemStorage implements IStorage {
       actualTime: null,
       progress: 0,
       checklist: recurringTask.checklistTemplate?.steps?.map((step, index) => ({
-        id: `${index + 1}`,
-        text: step.label || step.text || '',
+        id: step.id || `${index + 1}`,
+        text: step.label || '',
         completed: false,
         required: step.required || false,
+        type: step.type,
+        config: step.config,
         dataCollection: step.type === 'data-capture' ? { 
-          type: step.dataType || 'text', 
+          type: step.config?.dataType || 'text', 
           label: step.label || '' 
         } : undefined
       })) || [],

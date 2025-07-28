@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Clock, CheckSquare, Square } from "lucide-react";
 import { Task, ChecklistItem } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
+import ChecklistExecution from "./ChecklistExecution";
 
 interface TaskModalProps {
   task: Task | null;
@@ -69,6 +70,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
         userId: 1, // In a real app, get from auth context
         ...logData,
       });
+      return response.json();
+    },
+  });
+
+  // Fetch growing systems for ChecklistExecution
+  const { data: growingSystems = [] } = useQuery({
+    queryKey: ['/api/growing-systems'],
+    queryFn: async () => {
+      const response = await fetch('/api/growing-systems');
+      if (!response.ok) throw new Error('Failed to fetch growing systems');
       return response.json();
     },
   });
@@ -256,8 +267,51 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
             </div>
           )}
 
-          {/* Checklist */}
-          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && (
+          {/* Advanced Checklist Execution */}
+          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status === 'in_progress' && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-[#203B17] mb-4">Task Checklist</h4>
+              <ChecklistExecution
+                task={task}
+                checklist={{ steps: (checklist.length > 0 ? checklist : task.checklist || []).map(item => ({
+                  id: item.id,
+                  label: item.text,
+                  type: item.type || 'checkbox',
+                  config: item.config || {},
+                  required: item.required || false,
+                  completed: item.completed || false
+                })) }}
+                systems={growingSystems}
+                onComplete={(stepData) => {
+                  // Handle task completion when all checklist steps are done
+                  onTaskAction(task.id, 'complete');
+                }}
+                onProgress={(progress) => {
+                  // Handle progress updates
+                  const updatedChecklist = checklist.map(item => {
+                    if (item.id === progress.stepIndex.toString()) {
+                      return { ...item, completed: true, data: progress.stepData };
+                    }
+                    return item;
+                  });
+                  setChecklist(updatedChecklist);
+                  
+                  // Update task progress
+                  const completedCount = updatedChecklist.filter(item => item.completed).length;
+                  const progressPercent = Math.round((completedCount / updatedChecklist.length) * 100);
+                  
+                  updateTaskMutation.mutate({
+                    checklist: updatedChecklist,
+                    progress: progressPercent,
+                    data: { ...task.data, checklistData: updatedChecklist },
+                  });
+                }}
+              />
+            </div>
+          )}
+
+          {/* Simple Checklist View for Completed/Non-Active Tasks */}
+          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status !== 'in_progress' && (
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-[#203B17] mb-4">Checklist</h4>
               <div className="space-y-4">
@@ -266,10 +320,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={item.completed}
-                        onCheckedChange={(checked) => 
-                          handleChecklistChange(item.id, checked as boolean)
-                        }
-                        disabled={task.status === 'completed'}
+                        disabled={true}
                       />
                       <span className={`text-sm ${
                         item.completed ? 'line-through text-gray-500' : 'text-[#203B17]'
@@ -277,56 +328,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                         {item.text}
                       </span>
                     </div>
-                    
-                    {/* Data Collection */}
-                    {item.dataCollection && item.completed && (
-                      <div className="ml-6 space-y-2">
-                        <Label className="text-xs text-gray-600">
-                          {item.dataCollection.label}
-                        </Label>
-                        {item.dataCollection.type === 'number' && (
-                          <Input
-                            type="number"
-                            placeholder="Enter value"
-                            value={item.dataCollection.value || ''}
-                            onChange={(e) => 
-                              handleChecklistChange(item.id, item.completed, e.target.value)
-                            }
-                            className="w-32"
-                          />
-                        )}
-                        {item.dataCollection.type === 'text' && (
-                          <Input
-                            type="text"
-                            placeholder="Enter text"
-                            value={item.dataCollection.value || ''}
-                            onChange={(e) => 
-                              handleChecklistChange(item.id, item.completed, e.target.value)
-                            }
-                            className="w-48"
-                          />
-                        )}
-                        {item.dataCollection.type === 'select' && (
-                          <Select
-                            value={item.dataCollection.value || ''}
-                            onValueChange={(value) => 
-                              handleChecklistChange(item.id, item.completed, value)
-                            }
-                          >
-                            <SelectTrigger className="w-48">
-                              <SelectValue placeholder="Select option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {item.dataCollection.options?.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
