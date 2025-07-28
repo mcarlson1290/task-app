@@ -97,10 +97,12 @@ const CourseAssignmentModal: React.FC<CourseAssignmentModalProps> = ({
       courseId: course.id,
       assignedToUserId: userId,
       assignedByUserId: assignedBy.id,
-      dueDate: dueDate ? new Date(dueDate) : null,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       priority,
       notes: notes || null
     }));
+
+    console.log("Creating assignments:", assignments);
 
     // Create all assignments
     Promise.all(
@@ -114,7 +116,8 @@ const CourseAssignmentModal: React.FC<CourseAssignmentModalProps> = ({
       });
       queryClient.invalidateQueries({ queryKey: ['/api/course-assignments'] });
       handleClose();
-    }).catch(() => {
+    }).catch((error) => {
+      console.error("Assignment error:", error);
       toast({
         title: "Assignment Failed",
         description: "Could not assign course. Please try again.",

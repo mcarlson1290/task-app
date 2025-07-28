@@ -475,11 +475,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/course-assignments", async (req, res) => {
     try {
+      console.log("Received assignment data:", req.body);
       const assignmentData = insertCourseAssignmentSchema.parse(req.body);
+      console.log("Parsed assignment data:", assignmentData);
       const assignment = await storage.createCourseAssignment(assignmentData);
       res.json(assignment);
     } catch (error) {
-      res.status(400).json({ message: "Failed to create course assignment" });
+      console.error("Course assignment error:", error);
+      res.status(400).json({ message: "Failed to create course assignment", error: error.message });
     }
   });
 
