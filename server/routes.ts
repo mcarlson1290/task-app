@@ -476,7 +476,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/course-assignments", async (req, res) => {
     try {
       console.log("Received assignment data:", req.body);
-      const assignmentData = insertCourseAssignmentSchema.parse(req.body);
+      
+      // Convert date string to Date object if provided
+      const processedData = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null
+      };
+      
+      const assignmentData = insertCourseAssignmentSchema.parse(processedData);
       console.log("Parsed assignment data:", assignmentData);
       const assignment = await storage.createCourseAssignment(assignmentData);
       res.json(assignment);

@@ -97,7 +97,7 @@ const CourseAssignmentModal: React.FC<CourseAssignmentModalProps> = ({
       courseId: course.id,
       assignedToUserId: userId,
       assignedByUserId: assignedBy.id,
-      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      dueDate: dueDate || null,
       priority,
       notes: notes || null
     }));
