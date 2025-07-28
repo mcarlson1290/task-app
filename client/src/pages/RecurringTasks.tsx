@@ -23,19 +23,31 @@ const RecurringTasks: React.FC = () => {
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.code],
     queryFn: async () => {
+      console.log('Fetching recurring tasks...');
       const response = await fetch('/api/recurring-tasks');
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
-      return response.json();
+      const data = await response.json();
+      console.log('Fetched recurring tasks:', data);
+      return data;
     },
     enabled: !!auth.user,
   });
 
   // Filter recurring tasks by location
   const filteredRecurringTasks = React.useMemo(() => {
+    console.log('Filtering recurring tasks:', {
+      totalTasks: recurringTasks.length,
+      currentLocation: currentLocation.code,
+      isViewingAllLocations,
+      tasksWithLocation: recurringTasks.map(t => ({ id: t.id, title: t.title, location: t.location }))
+    });
+    
     if (isViewingAllLocations) {
       return recurringTasks;
     }
-    return recurringTasks.filter(task => task.location === currentLocation.code);
+    const filtered = recurringTasks.filter(task => task.location === currentLocation.code);
+    console.log('Filtered recurring tasks:', filtered.length);
+    return filtered;
   }, [recurringTasks, currentLocation.code, isViewingAllLocations]);
 
   const toggleTaskMutation = useMutation({
@@ -66,20 +78,24 @@ const RecurringTasks: React.FC = () => {
 
   const saveTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
+      console.log('Creating/updating recurring task with data:', taskData);
       if (taskData.id) {
         return await apiRequest('PATCH', `/api/recurring-tasks/${taskData.id}`, taskData);
       } else {
         return await apiRequest('POST', '/api/recurring-tasks', taskData);
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log('Task save successful, result:', result);
+      // Invalidate and refetch the queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
-      toast({
-        title: 'Task Saved',
-        description: 'Recurring task has been saved successfully.',
-      });
+      queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks'] });
       setShowAddModal(false);
       setEditingTask(null);
+      toast({
+        title: editingTask ? 'Task Updated' : 'Task Created',
+        description: editingTask ? 'Recurring task has been updated successfully.' : 'Recurring task has been created successfully.',
+      });
     },
   });
 

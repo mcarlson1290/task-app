@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { RecurringTask, GrowingSystem } from '@shared/schema';
 import ChecklistBuilder from './ChecklistBuilder';
 import { Calendar, Clock, Settings, CheckSquare, Building2, Repeat } from 'lucide-react';
+import { useLocation } from '@/contexts/LocationContext';
 
 interface RecurringTaskModalProps {
   task: RecurringTask | null;
@@ -23,6 +24,7 @@ interface RecurringTaskModalProps {
 
 const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState('basic');
+  const { currentLocation } = useLocation();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -147,7 +149,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     e.preventDefault();
     onSave({
       ...formData,
-      id: task?.id
+      id: task?.id,
+      location: currentLocation.code
     });
   };
 
