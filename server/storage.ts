@@ -110,11 +110,46 @@ export class MemStorage implements IStorage {
   private currentAssignmentId = 1;
 
   constructor() {
-    // Start with empty data - no seeding
+    this.seedInitialData();
   }
 
   private seedInitialData() {
-    // No initial data - start with empty system
+    // Create test users for course assignment testing
+    const testUsers = [
+      {
+        username: "alex_martinez",
+        name: "Alex Martinez", 
+        role: "technician" as const,
+        isApproved: true,
+        location: "K"
+      },
+      {
+        username: "dan_wilson",
+        name: "Dan Wilson",
+        role: "manager" as const, 
+        isApproved: true,
+        location: "R"
+      },
+      {
+        username: "matt_carlson", 
+        name: "Matt Carlson",
+        role: "corporate" as const,
+        isApproved: true,
+        location: "MKE"
+      }
+    ];
+
+    testUsers.forEach(userData => {
+      const user: User = {
+        id: this.currentUserId++,
+        ...userData,
+        password: "test123", // Default password for testing
+        approved: userData.isApproved,
+        createdAt: new Date()
+      };
+      delete (user as any).isApproved; // Remove the temporary property
+      this.users.set(user.id, user);
+    });
   }
 
   private seedLocationData() {

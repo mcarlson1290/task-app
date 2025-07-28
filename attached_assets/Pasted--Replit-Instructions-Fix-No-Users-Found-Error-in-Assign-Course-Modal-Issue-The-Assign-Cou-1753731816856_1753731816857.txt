@@ -1,0 +1,88 @@
+# Replit Instructions: Fix "No Users Found" Error in Assign Course Modal
+
+## Issue
+The Assign Course modal is showing "No users found" instead of displaying the available users (Alex, Dan, and Matt).
+
+## Step 1: Check the Users Query
+In the component handling the Assign Course modal, find where it queries for users. It should be something like:
+```javascript
+// Current query might be looking for wrong table/field
+const users = await db.query('SELECT * FROM users WHERE ...');
+```
+
+## Step 2: Update to Correct Query
+Replace with a query that fetches all active users:
+```javascript
+const users = await db.query(`
+  SELECT id, name, role, email 
+  FROM users 
+  WHERE active = true 
+  ORDER BY name ASC
+`);
+```
+
+## Step 3: If Using Static Test Data
+For now, if the database query isn't working, hard-code the three test users:
+```javascript
+const users = [
+  { id: 1, name: 'Alex Martinez', role: 'Staff' },
+  { id: 2, name: 'Dan Wilson', role: 'Manager' },
+  { id: 3, name: 'Matt Carlson', role: 'Corporate' }
+];
+```
+
+## Step 4: Update the Search Functionality
+Make sure the search input filters the users correctly:
+```javascript
+const filteredUsers = users.filter(user => 
+  user.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+```
+
+## Step 5: Render Users in the Modal
+In the modal's user list section, replace the "No users found" with:
+```javascript
+{filteredUsers.length > 0 ? (
+  filteredUsers.map(user => (
+    <div key={user.id} className="user-select-item">
+      <input 
+        type="checkbox" 
+        id={`user-${user.id}`}
+        value={user.id}
+        onChange={(e) => handleUserSelection(user.id, e.target.checked)}
+      />
+      <label htmlFor={`user-${user.id}`}>
+        {user.name} ({user.role})
+      </label>
+    </div>
+  ))
+) : (
+  <p>No users found</p>
+)}
+```
+
+## Step 6: Debug Logging
+Add console.log statements to debug:
+```javascript
+console.log('Users fetched:', users);
+console.log('Filtered users:', filteredUsers);
+```
+
+## Step 7: Verify Select All Functionality
+Ensure "Select All (0 users)" updates correctly:
+```javascript
+const selectAllText = `Select All (${filteredUsers.length} users)`;
+```
+
+## Quick Test
+After implementing:
+1. Open the Assign Course modal
+2. You should see:
+   - Alex Martinez (Staff)
+   - Dan Wilson (Manager)  
+   - Matt Carlson (Corporate)
+3. The search should filter them as you type
+4. Select All should show "Select All (3 users)"
+
+## Temporary Fix
+If database connection is the issue, just use the hardcoded users array from Step 3 until the database query is properly configured.
