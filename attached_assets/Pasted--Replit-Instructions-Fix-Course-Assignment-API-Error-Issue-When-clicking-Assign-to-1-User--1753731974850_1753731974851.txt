@@ -1,0 +1,145 @@
+# Replit Instructions: Fix Course Assignment API Error
+
+## Issue
+When clicking "Assign to 1 User(s)", the app is trying to make an API call to `/api/course-assignments` but the fetch request is malformed, showing "undefined" as the HTTP method.
+
+## Step 1: Fix the Fetch Request
+Find the assignment submission code (likely in the CourseAssignmentModal component around line 15-21 based on the error). It probably looks something like:
+
+```javascript
+// BROKEN CODE - likely missing method
+const res = await fetch(url, {
+  method: method, // This is undefined
+  headers: { ... }
+})
+```
+
+## Step 2: Replace with Correct Fetch Call
+Update the assignment submission to use POST method:
+
+```javascript
+const handleAssignCourse = async () => {
+  try {
+    const selectedUserIds = Object.keys(selectedUsers).filter(id => selectedUsers[id]);
+    
+    const res = await fetch('/api/course-assignments', {
+      method: 'POST', // Fix: Explicitly set to POST
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        courseId: courseId,
+        userIds: selectedUserIds,
+        dueDate: dueDate,
+        priority: priority,
+        notes: notes,
+        assignedBy: currentUser.id // Add who is assigning
+      })
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to assign course');
+    }
+
+    const data = await res.json();
+    
+    // Show success message
+    showNotification('Assignment successful!', 'success');
+    
+    // Close modal
+    closeModal();
+    
+    // Refresh the courses list
+    refreshCourses();
+    
+  } catch (error) {
+    console.error('Assignment error:', error);
+    showNotification('Assignment failed. Please try again.', 'error');
+  }
+};
+```
+
+## Step 3: Create the API Endpoint
+Create a new file at `/api/course-assignments.js` (or wherever your API routes are):
+
+```javascript
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { courseId, userIds, dueDate, priority, notes, assignedBy } = req.body;
+
+  try {
+    // Insert assignments into database
+    for (const userId of userIds) {
+      await db.query(`
+        INSERT INTO course_assignments 
+        (course_id, assigned_to_user_id, assigned_by_user_id, due_date, priority, notes, assigned_date)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      `, [courseId, userId, assignedBy, dueDate, priority, notes]);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: `Course assigned to ${userIds.length} user(s)` 
+    });
+    
+  } catch (error) {
+    console.error('Database error:', error);
+    return res.status(500).json({ error: 'Failed to save assignments' });
+  }
+}
+```
+
+## Step 4: Update the Modal Component
+In the modal component where the "Assign to 1 User(s)" button is:
+
+```javascript
+<button 
+  onClick={handleAssignCourse}
+  disabled={Object.values(selectedUsers).filter(Boolean).length === 0}
+  className="assign-button"
+>
+  Assign to {Object.values(selectedUsers).filter(Boolean).length} User(s)
+</button>
+```
+
+## Step 5: Quick Database Alternative
+If the database isn't set up yet, create a temporary in-memory storage:
+
+```javascript
+// At the top of your education page
+const [assignments, setAssignments] = useState([]);
+
+// In handleAssignCourse
+const newAssignments = selectedUserIds.map(userId => ({
+  id: Date.now() + Math.random(),
+  courseId: courseId,
+  userId: userId,
+  assignedBy: currentUser.name,
+  assignedDate: new Date(),
+  dueDate: dueDate,
+  priority: priority,
+  notes: notes
+}));
+
+setAssignments([...assignments, ...newAssignments]);
+```
+
+## Debugging Steps
+1. Add console.log before the fetch to see what's being sent:
+   ```javascript
+   console.log('Assignment data:', { courseId, userIds: selectedUserIds, dueDate, priority, notes });
+   ```
+
+2. Check that the courseId is being passed correctly to the modal
+
+3. Verify the selected users are being tracked properly
+
+## Test the Fix
+1. Open the Assign Course modal
+2. Select Dan Wilson
+3. Add "TEST" in notes
+4. Click "Assign to 1 User(s)"
+5. Should see success message instead of error

@@ -50,7 +50,7 @@ const CourseAssignmentModal: React.FC<CourseAssignmentModalProps> = ({
 
   const assignCourseMutation = useMutation({
     mutationFn: async (assignmentData: any) => {
-      return apiRequest('/api/course-assignments', 'POST', assignmentData);
+      return apiRequest('POST', '/api/course-assignments', assignmentData);
     },
     onSuccess: () => {
       toast({
@@ -105,7 +105,7 @@ const CourseAssignmentModal: React.FC<CourseAssignmentModalProps> = ({
     // Create all assignments
     Promise.all(
       assignments.map(assignment =>
-        apiRequest('/api/course-assignments', 'POST', assignment)
+        apiRequest('POST', '/api/course-assignments', assignment)
       )
     ).then(() => {
       toast({
