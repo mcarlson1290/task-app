@@ -32,7 +32,10 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
-  const [dateFilter, setDateFilter] = React.useState<string>("");
+  const [dateFilter, setDateFilter] = React.useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  });
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -536,12 +539,21 @@ const Tasks: React.FC = () => {
           </select>
 
           {/* Date Input */}
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="date-input"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="date-input"
+            />
+            <button
+              onClick={() => setDateFilter(new Date().toISOString().split('T')[0])}
+              className="btn-today"
+              title="Go to today"
+            >
+              Today
+            </button>
+          </div>
 
           {/* Clear Filters Button */}
           <button 

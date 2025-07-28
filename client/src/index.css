@@ -2788,6 +2788,22 @@ button {
   opacity: 0.9;
 }
 
+.btn-today {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background-color: #f5f5f5;
+  color: #374151;
+}
+
+.btn-today:hover {
+  background-color: #e5e7eb;
+}
+
 /* Mobile compact filters */
 @media (max-width: 480px) {
   .filter-select {

@@ -257,13 +257,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             </div>
           )}
           
-          {/* Tray Generation Indicator */}
-          {(task.type.includes('seeding') || task.type.includes('Seeding')) && (
-            <div className="flex items-center text-sm text-green-600 mb-2">
-              <span className="mr-1">🌱</span>
-              <span className="font-medium">Generates production tray when completed</span>
-            </div>
-          )}
+
           
           {task.checklist && task.checklist.length > 0 && (
             <div className="text-sm text-gray-600 mb-2">

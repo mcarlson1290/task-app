@@ -249,6 +249,19 @@ Preferred communication style: Simple, everyday language.
     - Task instances inherit title, description, type, location, and converted checklist from parent recurring task
     - Proper task status progression for instances (pending → in_progress → completed)
     - Each instance operates independently once created, allowing normal task workflow operations
+  - **Legacy Automation Text Removal**: Removed hardcoded "Generates production tray" text from task cards
+    - Tasks no longer show automatic automation messages based on task type
+    - Cleaned up TaskCard component by removing type-based automation display logic
+    - Prepared structure for future independent automation system
+  - **Tasks Page Date Filter Enhancement**: Improved date filtering with default to today and convenience features
+    - Tasks page now defaults to today's date on initial load instead of showing all tasks
+    - Added "Today" button next to date input for quick navigation back to current day
+    - Enhanced user experience with immediate access to current day's tasks
+  - **Recurring Task Edit Propagation**: Fixed recurring task updates to properly propagate to all future instances
+    - Server-side updateRecurringTask now updates all pending future task instances automatically
+    - Changes to title, description, type, and checklist template propagate to unstarted tasks
+    - Frontend shows confirmation that both recurring task and all future instances were updated
+    - Only pending tasks (not started or completed) receive updates to preserve work integrity
 - **July 17, 2025**: Successfully rebuilt task workflow from scratch with simplified architecture
   - Implemented single `handleTaskAction` function managing all task state changes
   - Fixed critical completion bug where task ID was becoming null/undefined

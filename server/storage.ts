@@ -961,6 +961,37 @@ export class MemStorage implements IStorage {
 
     const updatedTask = { ...task, ...updates };
     this.recurringTasks.set(id, updatedTask);
+    
+    // Update all pending future instances of this recurring task
+    const taskInstances = Array.from(this.tasks.values()).filter(t => 
+      t.recurringTaskId === id && 
+      t.status === 'pending' && 
+      t.dueDate && new Date(t.dueDate) >= new Date()
+    );
+    
+    taskInstances.forEach(instance => {
+      const updatedInstance = {
+        ...instance,
+        title: updatedTask.title || instance.title,
+        description: updatedTask.description || instance.description,
+        type: updatedTask.type || instance.type,
+        // Convert checklist template to checklist format if updated
+        checklist: updatedTask.checklistTemplate?.steps?.map((step: any, index: number) => ({
+          id: `${index + 1}`,
+          text: step.label || step.text || '',
+          completed: false,
+          required: step.required || false,
+          dataCollection: step.type === 'data-capture' ? { 
+            type: step.dataType || 'text', 
+            label: step.label || '' 
+          } : undefined
+        })) || instance.checklist
+      };
+      this.tasks.set(instance.id, updatedInstance);
+    });
+    
+    console.log(`Updated ${taskInstances.length} pending task instances for recurring task: ${updatedTask.title}`);
+    
     return updatedTask;
   }
 

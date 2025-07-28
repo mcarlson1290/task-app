@@ -87,14 +87,16 @@ const RecurringTasks: React.FC = () => {
     },
     onSuccess: (result) => {
       console.log('Task save successful, result:', result);
-      // Invalidate and refetch the queries to ensure fresh data
+      // Invalidate and refetch both recurring tasks and regular tasks
       queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks'] });
+      queryClient.refetchQueries({ queryKey: ['/api/tasks'] });
       setShowAddModal(false);
       setEditingTask(null);
       toast({
         title: editingTask ? 'Task Updated' : 'Task Created',
-        description: editingTask ? 'Recurring task has been updated successfully.' : 'Recurring task has been created successfully.',
+        description: editingTask ? 'Recurring task and all future instances have been updated successfully.' : 'Recurring task has been created successfully.',
       });
     },
   });
