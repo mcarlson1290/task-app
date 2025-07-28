@@ -197,6 +197,19 @@ export const courseAssignments = pgTable("course_assignments", {
   completedAt: timestamp("completed_at"),
 });
 
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: text("type").notNull(), // 'task_overdue', 'task_assigned', 'course_assigned', etc.
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  relatedId: integer("related_id"), // Can reference task_id, course_id, etc.
+  relatedType: text("related_type"), // 'task', 'course', 'harvest', etc.
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  readAt: timestamp("read_at"),
+});
+
 // Type exports
 export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
@@ -286,9 +299,16 @@ export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type TaskLog = typeof taskLogs.$inferSelect;
 export type InsertTaskLog = z.infer<typeof insertTaskLogSchema>;
 export type CourseAssignment = typeof courseAssignments.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
 
 export const insertCourseAssignmentSchema = createInsertSchema(courseAssignments).omit({
   id: true,
   assignedDate: true,
 });
 export type InsertCourseAssignment = z.infer<typeof insertCourseAssignmentSchema>;
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;

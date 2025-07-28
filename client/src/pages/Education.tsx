@@ -64,12 +64,6 @@ const Education: React.FC = () => {
     queryKey: ['/api/users']
   });
 
-  // Calculate completed courses from assignments (for progress bar)
-  const assignedCompletedCourses = courseAssignments.filter(assignment => {
-    const course = courses.find(c => c.id === assignment.courseId);
-    return course?.status === 'completed';
-  }).length;
-
   const [courses, setCourses] = useState<Course[]>([
     {
       id: 1,
@@ -189,6 +183,12 @@ const Education: React.FC = () => {
     }
   ]);
 
+  // Calculate completed courses from assignments (for progress bar)
+  const assignedCompletedCourses = courseAssignments.filter(assignment => {
+    const course = courses.find(c => c.id === assignment.courseId);
+    return course?.status === 'completed';
+  }).length;
+
   const completedCourses = courses.filter(c => c.status === 'completed').length;
   const totalCourses = courses.length;
   const overallProgress = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
@@ -307,7 +307,12 @@ const Education: React.FC = () => {
       setCourses(prevCourses => 
         prevCourses.map(course => 
           course.id === editingCourse.id 
-            ? { ...updatedCourse, id: editingCourse.id }
+            ? { 
+                ...updatedCourse, 
+                id: editingCourse.id,
+                status: course.status,
+                progress: course.progress
+              }
             : course
         )
       );

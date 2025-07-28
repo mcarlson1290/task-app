@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema, insertCourseAssignmentSchema } from "@shared/schema";
+import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema, insertCourseAssignmentSchema, insertNotificationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -486,6 +486,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignmentData = insertCourseAssignmentSchema.parse(processedData);
       console.log("Parsed assignment data:", assignmentData);
       const assignment = await storage.createCourseAssignment(assignmentData);
+      
+      // Create notification for course assignment
+      const assignedByUser = await storage.getUser(assignmentData.assignedByUserId!);
+      const assignedToUser = await storage.getUser(assignmentData.assignedToUserId!);
+      
+      if (assignedByUser && assignedToUser) {
+        await storage.createNotification({
+          userId: assignmentData.assignedToUserId!,
+          type: 'course_assigned',
+          title: 'New Course Assigned',
+          message: `${assignedByUser.name} assigned you training course #${assignmentData.courseId}`,
+          relatedId: assignmentData.courseId,
+          relatedType: 'course',
+          isRead: false
+        });
+      }
+      
       res.json(assignment);
     } catch (error) {
       console.error("Course assignment error:", error);
@@ -505,6 +522,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(assignment);
     } catch (error) {
       res.status(500).json({ message: "Failed to update course assignment" });
+    }
+  });
+
+  // Notification routes
+  app.get("/api/notifications/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const notifications = await storage.getNotificationsByUser(userId);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.post("/api/notifications", async (req, res) => {
+    try {
+      const notificationData = insertNotificationSchema.parse(req.body);
+      const notification = await storage.createNotification(notificationData);
+      res.json(notification);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create notification", error: error.message });
+    }
+  });
+
+  app.patch("/api/notifications/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isRead } = req.body;
+      
+      if (isRead) {
+        const notification = await storage.markNotificationAsRead(id);
+        if (!notification) {
+          return res.status(404).json({ message: "Notification not found" });
+        }
+        res.json(notification);
+      } else {
+        const notification = await storage.updateNotification(id, req.body);
+        if (!notification) {
+          return res.status(404).json({ message: "Notification not found" });
+        }
+        res.json(notification);
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update notification" });
+    }
+  });
+
+  app.patch("/api/notifications/mark-all-read", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteNotification(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete notification" });
     }
   });
 

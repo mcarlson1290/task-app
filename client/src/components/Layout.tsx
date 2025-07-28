@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Bell, User, MapPin, ChevronDown, Home, Package, GraduationCap, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { DashboardAnalytics } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LocationSelector } from "@/components/LocationSelector";
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
+import { Notification } from "@shared/schema";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [selectedLocation, setSelectedLocation] = React.useState("grow-space");
+  const [showNotifications, setShowNotifications] = useState(false);
   const auth = getStoredAuth();
   const isMobile = useIsMobile();
   const { currentLocation } = useLocationContext();
@@ -27,6 +30,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     queryKey: ["/api/analytics/dashboard"],
     enabled: auth.isAuthenticated,
   });
+
+  // Query for user notifications
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ['/api/notifications', auth.user?.id],
+    enabled: auth.isAuthenticated && !!auth.user?.id,
+  });
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
 
   const handleLogout = () => {
     clearStoredAuth();
@@ -250,9 +265,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               })()}
             </div>
             
-            {/* Right side - Location dropdown and user info */}
+            {/* Right side - Location dropdown, notifications, and user info */}
             <div className="header-right">
               <LocationSelector />
+              
+              {/* Notification Bell */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleNotifications}
+                  className="relative p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <Bell className="h-5 w-5 text-gray-600" />
+                  {unreadCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+                
+                {showNotifications && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    onClose={() => setShowNotifications(false)}
+                  />
+                )}
+              </div>
+              
               <div className="user-info">
                 <User size={14} />
                 <span className="user-name">Welcome, {currentUser.name}</span>

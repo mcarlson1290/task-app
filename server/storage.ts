@@ -1,13 +1,14 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
-  recurringTasks, growingSystems, trayMovements, inventoryTransactions, courseAssignments,
+  recurringTasks, growingSystems, trayMovements, inventoryTransactions, courseAssignments, notifications,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
   type TaskLog, type InsertTaskLog, type ChecklistItem, type RecurringTask,
   type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
   type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
-  type InsertInventoryTransaction, type CourseAssignment, type InsertCourseAssignment
+  type InsertInventoryTransaction, type CourseAssignment, type InsertCourseAssignment,
+  type Notification, type InsertNotification
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -79,6 +80,16 @@ export interface IStorage {
   createCourseAssignment(assignment: InsertCourseAssignment): Promise<CourseAssignment>;
   updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined>;
   deleteCourseAssignment(id: number): Promise<boolean>;
+
+  // Notification methods
+  getNotification(id: number): Promise<Notification | undefined>;
+  getAllNotifications(): Promise<Notification[]>;
+  getNotificationsByUser(userId: number): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  updateNotification(id: number, updates: Partial<Notification>): Promise<Notification | undefined>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+  markAllNotificationsAsRead(userId: number): Promise<void>;
+  deleteNotification(id: number): Promise<boolean>;
   
   // Clear all data
   clearAllData(): Promise<boolean>;
@@ -96,6 +107,7 @@ export class MemStorage implements IStorage {
   private trayMovements: Map<number, TrayMovement> = new Map();
   private crops: Map<number, Crop> = new Map();
   private courseAssignments: Map<number, CourseAssignment> = new Map();
+  private notifications: Map<number, Notification> = new Map();
   
   private currentUserId = 1;
   private currentTaskId = 1;
@@ -108,6 +120,7 @@ export class MemStorage implements IStorage {
   private currentTrayMovementId = 1;
   private currentCropId = 1;
   private currentAssignmentId = 1;
+  private currentNotificationId = 1;
 
   constructor() {
     this.seedInitialData();
@@ -149,6 +162,37 @@ export class MemStorage implements IStorage {
       };
       delete (user as any).isApproved; // Remove the temporary property
       this.users.set(user.id, user);
+    });
+
+    // Create some sample notifications for testing
+    this.createNotification({
+      userId: 1, // Alex Martinez
+      type: 'course_assigned',
+      title: 'New Training Course Assigned',
+      message: 'Dan Wilson assigned you "Basic Safety & Orientation" training',
+      relatedId: 1,
+      relatedType: 'course',
+      isRead: false
+    });
+
+    this.createNotification({
+      userId: 1, // Alex Martinez 
+      type: 'task_overdue',
+      title: 'Task Overdue',
+      message: 'Seeding Task for Microgreens is now overdue',
+      relatedId: 1,
+      relatedType: 'task',
+      isRead: false
+    });
+
+    this.createNotification({
+      userId: 2, // Dan Wilson (Manager)
+      type: 'inventory_low',
+      title: 'Low Stock Alert',
+      message: 'Broccoli Seeds is running low (Current: 45 units)',
+      relatedId: 1,
+      relatedType: 'inventory',
+      isRead: false
     });
   }
 
@@ -1021,6 +1065,72 @@ export class MemStorage implements IStorage {
     return this.crops.delete(id);
   }
 
+  // Notification methods
+  async getNotification(id: number): Promise<Notification | undefined> {
+    return this.notifications.get(id);
+  }
+
+  async getAllNotifications(): Promise<Notification[]> {
+    return Array.from(this.notifications.values()).sort((a, b) => 
+      new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+    );
+  }
+
+  async getNotificationsByUser(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(n => n.userId === userId)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const newNotification: Notification = {
+      id: this.currentNotificationId++,
+      ...notification,
+      createdAt: new Date(),
+      readAt: null
+    };
+    this.notifications.set(newNotification.id, newNotification);
+    return newNotification;
+  }
+
+  async updateNotification(id: number, updates: Partial<Notification>): Promise<Notification | undefined> {
+    const notification = this.notifications.get(id);
+    if (!notification) return undefined;
+    
+    const updatedNotification = { ...notification, ...updates };
+    this.notifications.set(id, updatedNotification);
+    return updatedNotification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    const notification = this.notifications.get(id);
+    if (!notification) return undefined;
+    
+    const updatedNotification = { 
+      ...notification, 
+      isRead: true, 
+      readAt: new Date() 
+    };
+    this.notifications.set(id, updatedNotification);
+    return updatedNotification;
+  }
+
+  async markAllNotificationsAsRead(userId: number): Promise<void> {
+    for (const [id, notification] of this.notifications.entries()) {
+      if (notification.userId === userId && !notification.isRead) {
+        this.notifications.set(id, {
+          ...notification,
+          isRead: true,
+          readAt: new Date()
+        });
+      }
+    }
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    return this.notifications.delete(id);
+  }
+
   // Clear all data method
   async clearAllData(): Promise<boolean> {
     try {
@@ -1035,6 +1145,7 @@ export class MemStorage implements IStorage {
       this.trayMovements.clear();
       this.crops.clear();
       this.courseAssignments.clear();
+      this.notifications.clear();
       
       // Reset all counters
       this.currentUserId = 1;
@@ -1048,6 +1159,7 @@ export class MemStorage implements IStorage {
       this.currentTrayMovementId = 1;
       this.currentCropId = 1;
       this.currentAssignmentId = 1;
+      this.currentNotificationId = 1;
       
       return true;
     } catch (error) {
