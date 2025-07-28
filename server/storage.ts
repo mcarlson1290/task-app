@@ -948,6 +948,10 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     this.recurringTasks.set(newTask.id, newTask);
+    
+    // Generate task instances for the next 30 days
+    await this.generateTaskInstances(newTask);
+    
     return newTask;
   }
 
@@ -961,7 +965,106 @@ export class MemStorage implements IStorage {
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
+    // Also delete all associated task instances
+    const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      return task?.recurringTaskId === id;
+    });
+    
+    taskIds.forEach(taskId => this.tasks.delete(taskId));
+    
     return this.recurringTasks.delete(id);
+  }
+
+  // Generate task instances from recurring task pattern
+  private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Generate instances for next 30 days
+    const endGeneration = new Date();
+    endGeneration.setDate(endGeneration.getDate() + 30);
+    
+    let currentDate = new Date(today);
+    const instances: Task[] = [];
+    
+    while (currentDate <= endGeneration) {
+      let shouldCreate = false;
+      
+      switch (recurringTask.frequency) {
+        case 'daily':
+          shouldCreate = true;
+          break;
+          
+        case 'weekly':
+          // Check if current day matches selected days
+          const dayOfWeek = currentDate.getDay();
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const currentDayName = dayNames[dayOfWeek];
+          const selectedDays = recurringTask.daysOfWeek || [];
+          shouldCreate = selectedDays.includes(currentDayName);
+          break;
+          
+        case 'monthly':
+          // Check if current date matches selected day of month
+          const dayOfMonth = currentDate.getDate();
+          shouldCreate = dayOfMonth === recurringTask.dayOfMonth;
+          break;
+      }
+      
+      if (shouldCreate && currentDate >= today) {
+        // Create task instance
+        const instance = await this.createTaskInstance(recurringTask, new Date(currentDate));
+        instances.push(instance);
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    console.log(`Generated ${instances.length} task instances for recurring task: ${recurringTask.title}`);
+  }
+
+  // Create individual task instance
+  private async createTaskInstance(recurringTask: RecurringTask, dueDate: Date): Promise<Task> {
+    const newTask: Task = {
+      id: this.currentTaskId++,
+      title: recurringTask.title,
+      description: recurringTask.description,
+      type: recurringTask.type,
+      status: 'pending',
+      priority: 'medium',
+      assignedTo: null,
+      createdBy: recurringTask.createdBy,
+      location: recurringTask.location,
+      estimatedTime: null,
+      actualTime: null,
+      progress: 0,
+      checklist: recurringTask.checklistTemplate?.steps?.map((step, index) => ({
+        id: `${index + 1}`,
+        text: step.label || step.text || '',
+        completed: false,
+        required: step.required || false,
+        dataCollection: step.type === 'data-capture' ? { 
+          type: step.dataType || 'text', 
+          label: step.label || '' 
+        } : undefined
+      })) || [],
+      data: {},
+      dueDate: dueDate,
+      startedAt: null,
+      completedAt: null,
+      pausedAt: null,
+      resumedAt: null,
+      skippedAt: null,
+      skipReason: null,
+      isRecurring: true,
+      recurringTaskId: recurringTask.id,
+      createdAt: new Date()
+    };
+    
+    this.tasks.set(newTask.id, newTask);
+    return newTask;
   }
 
   // Growing systems methods

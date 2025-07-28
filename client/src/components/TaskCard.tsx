@@ -222,8 +222,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
-                {task.isRecurring && (
-                  <span className="text-blue-500 text-sm" title="Recurring Task">
+                {task.isRecurring && task.recurringTaskId && (
+                  <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full" title="Recurring Task Instance">
                     🔄
                   </span>
                 )}

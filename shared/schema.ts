@@ -49,6 +49,7 @@ export const recurringTasks = pgTable("recurring_tasks", {
   daysOfWeek: json("days_of_week").$type<string[]>(), // ['monday', 'tuesday', etc.]
   dayOfMonth: integer("day_of_month"), // For monthly tasks
   isActive: boolean("is_active").default(true),
+  location: text("location").notNull(), // Location code (K, R, MKE)
   createdBy: integer("created_by").references(() => users.id),
   
   // Automation settings
