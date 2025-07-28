@@ -262,6 +262,12 @@ Preferred communication style: Simple, everyday language.
     - Changes to title, description, type, and checklist template propagate to unstarted tasks
     - Frontend shows confirmation that both recurring task and all future instances were updated
     - Only pending tasks (not started or completed) receive updates to preserve work integrity
+  - **Manual Tray Entry Options**: Added Edit Tray and Create Tray options to checklist builder for flexible manual entry
+    - Added "Edit Tray" step type with form fields for tray ID, location, crop type, seed date, harvest date, and notes
+    - Added "Create Tray" step type with configuration for number of trays, tray type, crop selection, seeds per cell, growing medium, and initial location
+    - Both step types include comprehensive form validation and dropdown options for standardized data entry
+    - Integrated seamlessly with existing ChecklistBuilder component and step type selector
+    - Enhanced icons and visual indicators for both new step types (Edit3 and PlusCircle icons)
 - **July 17, 2025**: Successfully rebuilt task workflow from scratch with simplified architecture
   - Implemented single `handleTaskAction` function managing all task state changes
   - Fixed critical completion bug where task ID was becoming null/undefined

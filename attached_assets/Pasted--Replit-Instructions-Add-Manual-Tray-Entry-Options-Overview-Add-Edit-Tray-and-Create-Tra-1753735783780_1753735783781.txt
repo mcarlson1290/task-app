@@ -1,0 +1,328 @@
+# Replit Instructions: Add Manual Tray Entry Options
+
+## Overview
+Add "Edit Tray" and "Create Tray" options to the step type selector to allow manual entry of checklist items in addition to the automated templates.
+
+## Step 1: Add New Step Types to Selector
+Update the step type options to include the manual entry options:
+
+```javascript
+const stepTypes = [
+  { id: 'text_instruction', icon: '📄', label: 'Text Instruction' },
+  { id: 'simple_checkbox', icon: '☑️', label: 'Simple Checkbox' },
+  { id: 'number_input', icon: '#️⃣', label: 'Number Input' },
+  { id: 'inventory_selection', icon: '📦', label: 'Inventory Selection' },
+  { id: 'system_assignment', icon: '📋', label: 'System Assignment' },
+  { id: 'data_collection', icon: '📊', label: 'Data Collection' },
+  { id: 'photo_upload', icon: '📷', label: 'Photo Upload' },
+  { id: 'tray_split', icon: '🌱', label: 'Tray Split (Leafy Greens)' },
+  { id: 'movement_trigger', icon: '➡️', label: 'Movement Trigger' },
+  // Add new manual options
+  { id: 'edit_tray', icon: '✏️', label: 'Edit Tray' },
+  { id: 'create_tray', icon: '➕', label: 'Create Tray' }
+];
+```
+
+## Step 2: Add Manual Entry Form for Tray Options
+When "Edit Tray" or "Create Tray" is selected, show a form for manual entry:
+
+```javascript
+const renderStepForm = (stepType) => {
+  switch(stepType) {
+    case 'edit_tray':
+      return <EditTrayForm onSave={handleTrayDataSave} />;
+    
+    case 'create_tray':
+      return <CreateTrayForm onSave={handleTrayDataSave} />;
+    
+    // ... existing cases
+  }
+};
+```
+
+## Step 3: Create Edit Tray Component
+```javascript
+const EditTrayForm = ({ onSave }) => {
+  const [trayData, setTrayData] = useState({
+    trayId: '',
+    location: '',
+    crop: '',
+    seedDate: '',
+    expectedHarvest: '',
+    notes: ''
+  });
+
+  return (
+    <div className="tray-form">
+      <h3>Edit Tray Details</h3>
+      
+      <div className="form-group">
+        <label>Tray ID/Number</label>
+        <input
+          type="text"
+          value={trayData.trayId}
+          onChange={(e) => setTrayData({...trayData, trayId: e.target.value})}
+          placeholder="e.g., A1-001"
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Current Location</label>
+        <select 
+          value={trayData.location}
+          onChange={(e) => setTrayData({...trayData, location: e.target.value})}
+        >
+          <option value="">Select location...</option>
+          <option value="germination">Germination Chamber</option>
+          <option value="nursery">Nursery</option>
+          <option value="production">Production Area</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Crop Type</label>
+        <input
+          type="text"
+          value={trayData.crop}
+          onChange={(e) => setTrayData({...trayData, crop: e.target.value})}
+          placeholder="e.g., Buttercrunch Lettuce"
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Seed Date</label>
+        <input
+          type="date"
+          value={trayData.seedDate}
+          onChange={(e) => setTrayData({...trayData, seedDate: e.target.value})}
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Expected Harvest</label>
+        <input
+          type="date"
+          value={trayData.expectedHarvest}
+          onChange={(e) => setTrayData({...trayData, expectedHarvest: e.target.value})}
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Notes</label>
+        <textarea
+          value={trayData.notes}
+          onChange={(e) => setTrayData({...trayData, notes: e.target.value})}
+          placeholder="Any special instructions or observations..."
+        />
+      </div>
+      
+      <button onClick={() => onSave(trayData)} className="save-btn">
+        Add to Checklist
+      </button>
+    </div>
+  );
+};
+```
+
+## Step 4: Create New Tray Component
+```javascript
+const CreateTrayForm = ({ onSave }) => {
+  const [trayData, setTrayData] = useState({
+    numberOfTrays: 1,
+    trayType: '',
+    crop: '',
+    seedsPerCell: '',
+    growingMedium: '',
+    location: ''
+  });
+
+  return (
+    <div className="tray-form">
+      <h3>Create New Tray(s)</h3>
+      
+      <div className="form-group">
+        <label>Number of Trays</label>
+        <input
+          type="number"
+          min="1"
+          value={trayData.numberOfTrays}
+          onChange={(e) => setTrayData({...trayData, numberOfTrays: e.target.value})}
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Tray Type</label>
+        <select 
+          value={trayData.trayType}
+          onChange={(e) => setTrayData({...trayData, trayType: e.target.value})}
+        >
+          <option value="">Select tray type...</option>
+          <option value="128-cell">128 Cell Plug Tray</option>
+          <option value="72-cell">72 Cell Plug Tray</option>
+          <option value="50-cell">50 Cell Plug Tray</option>
+          <option value="nft-channel">NFT Channel</option>
+          <option value="deep-water">Deep Water Raft</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Crop Selection</label>
+        <select 
+          value={trayData.crop}
+          onChange={(e) => setTrayData({...trayData, crop: e.target.value})}
+        >
+          <option value="">Select crop...</option>
+          <option value="romaine">Romaine Lettuce</option>
+          <option value="buttercrunch">Buttercrunch Lettuce</option>
+          <option value="arugula">Arugula</option>
+          <option value="basil">Basil</option>
+          <option value="kale">Kale</option>
+          <option value="spinach">Spinach</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Seeds per Cell</label>
+        <input
+          type="number"
+          min="1"
+          max="5"
+          value={trayData.seedsPerCell}
+          onChange={(e) => setTrayData({...trayData, seedsPerCell: e.target.value})}
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Growing Medium</label>
+        <select 
+          value={trayData.growingMedium}
+          onChange={(e) => setTrayData({...trayData, growingMedium: e.target.value})}
+        >
+          <option value="">Select medium...</option>
+          <option value="rockwool">Rockwool</option>
+          <option value="coco-coir">Coco Coir</option>
+          <option value="peat-moss">Peat Moss Mix</option>
+          <option value="vermiculite">Vermiculite</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Initial Location</label>
+        <select 
+          value={trayData.location}
+          onChange={(e) => setTrayData({...trayData, location: e.target.value})}
+        >
+          <option value="">Select location...</option>
+          <option value="germination">Germination Chamber</option>
+          <option value="nursery">Nursery</option>
+        </select>
+      </div>
+      
+      <button onClick={() => onSave(trayData)} className="save-btn">
+        Add to Checklist
+      </button>
+    </div>
+  );
+};
+```
+
+## Step 5: Handle Form Data and Convert to Checklist Items
+```javascript
+const handleTrayDataSave = (trayData) => {
+  let checklistItems = [];
+  
+  if (selectedStepType === 'edit_tray') {
+    // Convert edit tray data to checklist format
+    checklistItems = [
+      { text: `Locate tray ${trayData.trayId}`, checked: false },
+      { text: `Verify crop type: ${trayData.crop}`, checked: false },
+      { text: `Check current location: ${trayData.location}`, checked: false },
+      { text: `Update seed date: ${trayData.seedDate}`, checked: false },
+      { text: `Update harvest date: ${trayData.expectedHarvest}`, checked: false },
+      { text: `Add notes: ${trayData.notes}`, checked: false }
+    ];
+  } else if (selectedStepType === 'create_tray') {
+    // Convert create tray data to checklist format
+    checklistItems = [
+      { text: `Prepare ${trayData.numberOfTrays} ${trayData.trayType}(s)`, checked: false },
+      { text: `Fill with ${trayData.growingMedium}`, checked: false },
+      { text: `Plant ${trayData.crop} - ${trayData.seedsPerCell} seeds per cell`, checked: false },
+      { text: `Label trays with date and variety`, checked: false },
+      { text: `Water gently and evenly`, checked: false },
+      { text: `Move to ${trayData.location}`, checked: false },
+      { text: `Record in production log`, checked: false }
+    ];
+  }
+  
+  // Add items to the task checklist
+  addChecklistItems(checklistItems);
+  
+  // Close the modal
+  closeStepTypeModal();
+};
+```
+
+## Step 6: Style the Forms
+```css
+.tray-form {
+  padding: 20px;
+  max-width: 400px;
+}
+
+.tray-form h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.save-btn {
+  background: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.save-btn:hover {
+  background: #45a049;
+}
+```
+
+## Testing Steps:
+1. Open recurring task creator
+2. Click to add a checklist step
+3. Select "Edit Tray" - should show edit form
+4. Fill out tray details and save
+5. Verify checklist items are generated from form data
+6. Try "Create Tray" option
+7. Verify different checklist items are generated
+
+This allows both automated templates AND manual entry for maximum flexibility!

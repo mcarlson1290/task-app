@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ChevronUp, ChevronDown, Settings, FileText, CheckSquare, Hash, Package, Building, BarChart3, Camera, Split, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Settings, FileText, CheckSquare, Hash, Package, Building, BarChart3, Camera, Split, ArrowRight, Edit3, PlusCircle } from 'lucide-react';
 import { GrowingSystem } from '@shared/schema';
 
 interface ChecklistStep {
@@ -40,7 +40,9 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
     { value: 'data-capture', label: 'Data Collection', icon: BarChart3 },
     { value: 'photo', label: 'Photo Upload', icon: Camera },
     { value: 'tray-split', label: 'Tray Split (Leafy Greens)', icon: Split },
-    { value: 'movement-trigger', label: 'Movement Trigger', icon: ArrowRight }
+    { value: 'movement-trigger', label: 'Movement Trigger', icon: ArrowRight },
+    { value: 'edit-tray', label: 'Edit Tray', icon: Edit3 },
+    { value: 'create-tray', label: 'Create Tray', icon: PlusCircle }
   ];
 
   const getDefaultConfig = (type: string) => {
@@ -57,6 +59,10 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
         return { allowCustomSplit: true, defaultSplits: 2 };
       case 'movement-trigger':
         return { fromSystem: '', toSystem: '', automatic: false };
+      case 'edit-tray':
+        return { trayId: '', location: '', crop: '', seedDate: '', expectedHarvest: '', notes: '' };
+      case 'create-tray':
+        return { numberOfTrays: 1, trayType: '', crop: '', seedsPerCell: 1, growingMedium: '', location: '' };
       default:
         return {};
     }
@@ -197,7 +203,9 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
       'data-capture': BarChart3,
       photo: Camera,
       'tray-split': Split,
-      'movement-trigger': ArrowRight
+      'movement-trigger': ArrowRight,
+      'edit-tray': Edit3,
+      'create-tray': PlusCircle
     };
     return icons[type as keyof typeof icons] || FileText;
   };
@@ -456,6 +464,212 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                   placeholder="Enter detailed instructions..."
                   rows={3}
                 />
+              </div>
+            )}
+
+            {step.type === 'edit-tray' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Tray ID/Number</Label>
+                    <Input
+                      type="text"
+                      value={step.config.trayId || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, trayId: e.target.value }
+                      })}
+                      placeholder="e.g., A1-001"
+                    />
+                  </div>
+                  <div>
+                    <Label>Current Location</Label>
+                    <Select
+                      value={step.config.location || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, location: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="germination">Germination Chamber</SelectItem>
+                        <SelectItem value="nursery">Nursery</SelectItem>
+                        <SelectItem value="production">Production Area</SelectItem>
+                        <SelectItem value="harvest">Harvest Area</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Crop Type</Label>
+                    <Input
+                      type="text"
+                      value={step.config.crop || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, crop: e.target.value }
+                      })}
+                      placeholder="e.g., Buttercrunch Lettuce"
+                    />
+                  </div>
+                  <div>
+                    <Label>Seed Date</Label>
+                    <Input
+                      type="date"
+                      value={step.config.seedDate || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, seedDate: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Expected Harvest</Label>
+                    <Input
+                      type="date"
+                      value={step.config.expectedHarvest || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, expectedHarvest: e.target.value }
+                      })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Notes</Label>
+                  <Textarea
+                    value={step.config.notes || ''}
+                    onChange={(e) => onUpdate({
+                      ...step,
+                      config: { ...step.config, notes: e.target.value }
+                    })}
+                    placeholder="Any special instructions or observations..."
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
+
+            {step.type === 'create-tray' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Number of Trays</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={step.config.numberOfTrays || 1}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, numberOfTrays: parseInt(e.target.value) || 1 }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Tray Type</Label>
+                    <Select
+                      value={step.config.trayType || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, trayType: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tray type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="128-cell">128 Cell Plug Tray</SelectItem>
+                        <SelectItem value="72-cell">72 Cell Plug Tray</SelectItem>
+                        <SelectItem value="50-cell">50 Cell Plug Tray</SelectItem>
+                        <SelectItem value="nft-channel">NFT Channel</SelectItem>
+                        <SelectItem value="deep-water">Deep Water Raft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Crop Selection</Label>
+                    <Select
+                      value={step.config.crop || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, crop: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select crop..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="romaine">Romaine Lettuce</SelectItem>
+                        <SelectItem value="buttercrunch">Buttercrunch Lettuce</SelectItem>
+                        <SelectItem value="arugula">Arugula</SelectItem>
+                        <SelectItem value="basil">Basil</SelectItem>
+                        <SelectItem value="kale">Kale</SelectItem>
+                        <SelectItem value="spinach">Spinach</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Seeds per Cell</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={step.config.seedsPerCell || 1}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, seedsPerCell: parseInt(e.target.value) || 1 }
+                      })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Growing Medium</Label>
+                    <Select
+                      value={step.config.growingMedium || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, growingMedium: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select medium..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rockwool">Rockwool</SelectItem>
+                        <SelectItem value="coco-coir">Coco Coir</SelectItem>
+                        <SelectItem value="peat-moss">Peat Moss Mix</SelectItem>
+                        <SelectItem value="vermiculite">Vermiculite</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Initial Location</Label>
+                    <Select
+                      value={step.config.location || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, location: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="germination">Germination Chamber</SelectItem>
+                        <SelectItem value="nursery">Nursery</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             )}
           </div>
