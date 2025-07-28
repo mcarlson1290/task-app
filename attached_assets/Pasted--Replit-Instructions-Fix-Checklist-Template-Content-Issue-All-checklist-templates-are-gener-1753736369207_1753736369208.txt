@@ -1,0 +1,226 @@
+# Replit Instructions: Fix Checklist Template Content
+
+## Issue
+All checklist templates are generating "TEST" checkboxes instead of their specific content.
+
+## Step 1: Find Where Checklist Items Are Generated
+Look for where the checklist items are being created when a template is selected. It's likely hardcoded to "TEST":
+
+```javascript
+// Find and replace code that looks like this:
+const generateChecklistItems = (template) => {
+  // This is probably returning TEST items
+  return Array(10).fill({ text: 'TEST', checked: false });
+};
+```
+
+## Step 2: Implement Proper Template Content
+Replace with actual template-specific content:
+
+```javascript
+const generateChecklistItems = (templateType) => {
+  switch(templateType) {
+    case 'harvest':
+      return [
+        { text: 'Check plant health and maturity', checked: false },
+        { text: 'Sanitize harvesting tools and containers', checked: false },
+        { text: 'Harvest at optimal time of day (early morning)', checked: false },
+        { text: 'Cut/harvest using proper technique for crop type', checked: false },
+        { text: 'Remove damaged or diseased portions', checked: false },
+        { text: 'Sort by size and quality grade', checked: false },
+        { text: 'Rinse if required for crop type', checked: false },
+        { text: 'Package in clean containers', checked: false },
+        { text: 'Label with variety, harvest date, and lot number', checked: false },
+        { text: 'Move to cold storage within 30 minutes', checked: false },
+        { text: 'Update harvest log and inventory', checked: false }
+      ];
+      
+    case 'seeding':
+      return [
+        { text: 'Verify seed variety and lot number', checked: false },
+        { text: 'Check seed expiration date', checked: false },
+        { text: 'Prepare growing medium (moisten if needed)', checked: false },
+        { text: 'Fill plug trays to appropriate level', checked: false },
+        { text: 'Create proper depth indentations', checked: false },
+        { text: 'Place seeds according to variety requirements', checked: false },
+        { text: 'Cover seeds if required', checked: false },
+        { text: 'Mist gently with water', checked: false },
+        { text: 'Label trays with variety and date', checked: false },
+        { text: 'Place in germination chamber', checked: false },
+        { text: 'Record in seeding log', checked: false }
+      ];
+      
+    case 'transplanting':
+      return [
+        { text: 'Water seedlings 2-4 hours before transplanting', checked: false },
+        { text: 'Prepare destination system (NFT/DWC)', checked: false },
+        { text: 'Check EC and pH of nutrient solution', checked: false },
+        { text: 'Inspect seedlings for readiness (true leaves)', checked: false },
+        { text: 'Remove seedlings gently from plug trays', checked: false },
+        { text: 'Check root development and health', checked: false },
+        { text: 'Place in growing system at proper spacing', checked: false },
+        { text: 'Ensure roots make contact with solution', checked: false },
+        { text: 'Update location in tracking system', checked: false },
+        { text: 'Monitor for transplant shock (next 24h)', checked: false }
+      ];
+      
+    case 'cleaning':
+      return [
+        { text: 'Clear area of plant debris', checked: false },
+        { text: 'Remove and dispose of old growing media', checked: false },
+        { text: 'Rinse surfaces with water', checked: false },
+        { text: 'Apply approved sanitizer solution', checked: false },
+        { text: 'Allow appropriate contact time', checked: false },
+        { text: 'Rinse with clean water if required', checked: false },
+        { text: 'Check and clean drain lines', checked: false },
+        { text: 'Wipe down lights and reflectors', checked: false },
+        { text: 'Clean and calibrate sensors', checked: false },
+        { text: 'Document cleaning in log', checked: false }
+      ];
+      
+    case 'nutrient_check':
+      return [
+        { text: 'Take water sample from reservoir', checked: false },
+        { text: 'Calibrate EC meter', checked: false },
+        { text: 'Measure and record EC level', checked: false },
+        { text: 'Calibrate pH meter', checked: false },
+        { text: 'Measure and record pH level', checked: false },
+        { text: 'Check water temperature', checked: false },
+        { text: 'Inspect for algae or contamination', checked: false },
+        { text: 'Adjust EC if needed (target: ___)', checked: false },
+        { text: 'Adjust pH if needed (target: 5.8-6.2)', checked: false },
+        { text: 'Add adjustments slowly with mixing', checked: false },
+        { text: 'Re-test after 30 minutes', checked: false },
+        { text: 'Record all readings and adjustments', checked: false }
+      ];
+      
+    case 'pest_inspection':
+      return [
+        { text: 'Check tops of leaves for pests', checked: false },
+        { text: 'Check undersides of leaves', checked: false },
+        { text: 'Inspect stems and growing points', checked: false },
+        { text: 'Look for pest damage (holes, spots)', checked: false },
+        { text: 'Check sticky traps', checked: false },
+        { text: 'Record any pest sightings', checked: false },
+        { text: 'Check for beneficial insects', checked: false },
+        { text: 'Inspect growing media for gnats', checked: false },
+        { text: 'Document with photos if pests found', checked: false },
+        { text: 'Apply treatment if threshold reached', checked: false }
+      ];
+      
+    case 'system_check':
+      return [
+        { text: 'Check pump operation and flow rate', checked: false },
+        { text: 'Inspect irrigation lines for clogs', checked: false },
+        { text: 'Verify timer settings', checked: false },
+        { text: 'Check air pump and air stones', checked: false },
+        { text: 'Test backup power systems', checked: false },
+        { text: 'Inspect electrical connections', checked: false },
+        { text: 'Check grow light operation', checked: false },
+        { text: 'Verify ventilation fan operation', checked: false },
+        { text: 'Test alarm systems', checked: false },
+        { text: 'Document any issues found', checked: false }
+      ];
+      
+    default:
+      // For manual entries or unknown types
+      return [];
+  }
+};
+```
+
+## Step 3: Update the Task Creation/Save Function
+Make sure the checklist items are properly saved with the task:
+
+```javascript
+const saveTask = async (taskData) => {
+  const checklistItems = generateChecklistItems(taskData.checklistTemplate);
+  
+  const fullTaskData = {
+    ...taskData,
+    checklist: checklistItems, // Make sure this is included
+    checklistTemplate: taskData.checklistTemplate // Save template type for reference
+  };
+  
+  // Save to database
+  const response = await fetch('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fullTaskData)
+  });
+  
+  // ... rest of save logic
+};
+```
+
+## Step 4: Fix the Display Component
+In the task detail view, ensure it's reading the actual checklist data:
+
+```javascript
+const TaskChecklist = ({ task }) => {
+  const [checklist, setChecklist] = useState(task.checklist || []);
+  
+  return (
+    <div className="task-checklist">
+      {checklist.map((item, index) => (
+        <div key={index} className="checklist-item">
+          <input
+            type="checkbox"
+            checked={item.checked}
+            onChange={() => toggleChecklistItem(index)}
+          />
+          <label>{item.text}</label>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+## Step 5: Debug - Add Console Logs
+Add logging to see what's happening:
+
+```javascript
+// When selecting a template
+const handleTemplateSelect = (template) => {
+  console.log('Selected template:', template);
+  const items = generateChecklistItems(template);
+  console.log('Generated items:', items);
+  setChecklistItems(items);
+};
+
+// When saving
+console.log('Saving task with checklist:', taskData.checklist);
+```
+
+## Step 6: Database Storage Check
+Ensure the checklist is stored properly in the database:
+
+```sql
+-- Check if checklist column exists and is correct type
+ALTER TABLE tasks 
+ADD COLUMN IF NOT EXISTS checklist JSONB DEFAULT '[]'::jsonb;
+
+-- Or if using a separate table
+CREATE TABLE IF NOT EXISTS task_checklist_items (
+  id SERIAL PRIMARY KEY,
+  task_id INTEGER REFERENCES tasks(id),
+  text TEXT NOT NULL,
+  checked BOOLEAN DEFAULT false,
+  position INTEGER
+);
+```
+
+## Quick Fix to Test
+If you need to verify the UI works while debugging:
+
+```javascript
+// Temporarily hardcode different items to verify display
+const testItems = [
+  { text: 'First actual task item', checked: false },
+  { text: 'Second actual task item', checked: false },
+  { text: 'Third actual task item', checked: false }
+];
+```
+
+The issue is likely in the `generateChecklistItems` function - it's probably returning test data instead of the actual template content. Find where this function is defined and replace it with the proper template content above.
