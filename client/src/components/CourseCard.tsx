@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Clock, Users, Award, Edit3, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, Users, Award, Edit3, Trash2, Target } from "lucide-react";
 
 interface Course {
   id: number;
@@ -33,12 +33,13 @@ interface CourseCardProps {
   onResume: (course: Course) => void;
   onEdit?: (course: Course) => void;
   onDelete?: (courseId: number) => void;
+  onAssign?: (course: Course) => void;
   allCourses?: Course[];
   isLocked?: boolean;
   isCorporateManager?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEdit, onDelete, allCourses = [], isLocked = false, isCorporateManager = false }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEdit, onDelete, onAssign, allCourses = [], isLocked = false, isCorporateManager = false }) => {
   const checkPrerequisites = () => {
     if (!course.prerequisites) {
       return true;
@@ -271,6 +272,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onStart, onResume, onEd
 
         <div className="space-y-2">
           {getActionButton()}
+          {onAssign && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAssign(course);
+              }}
+              className="w-full text-green-600 border-green-200 hover:bg-green-50"
+            >
+              <Target className="h-4 w-4 mr-2" />
+              Assign Course
+            </Button>
+          )}
           {course.status === 'completed' && course.completedDate && (
             <p className="text-xs text-gray-500 text-center">
               Completed on {new Date(course.completedDate).toLocaleDateString()}

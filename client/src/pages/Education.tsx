@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, BookOpen, Award, CheckCircle, Play, Filter, Plus } from "lucide-react";
-import { TrainingModule, UserProgress } from "@shared/schema";
+import { Clock, BookOpen, Award, CheckCircle, Play, Filter, Plus, Target } from "lucide-react";
+import { TrainingModule, UserProgress, CourseAssignment, User } from "@shared/schema";
 import { getStoredAuth } from "@/lib/auth";
 import CourseCard from "@/components/CourseCard";
 import CourseModal from "@/components/CourseModal";
 import CourseCreationModal from "@/components/CourseCreationModal";
+import CourseAssignmentModal from "@/components/CourseAssignmentModal";
 import confetti from "canvas-confetti";
 
 interface Course {
@@ -33,16 +34,36 @@ interface Course {
       label: string;
     }[];
   };
+  assignedBy?: string;
+  assignedDate?: string;
+  dueDate?: string;
+  priority?: 'low' | 'normal' | 'high';
 }
 
 const Education: React.FC = () => {
   const auth = getStoredAuth();
-  const [filterTab, setFilterTab] = useState<string>('all');
+  const [filterTab, setFilterTab] = useState<string>('assigned');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [courseToAssign, setCourseToAssign] = useState<Course | null>(null);  
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const isCorporateManager = auth.user?.role === 'corporate';
+  const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  const currentUser = auth.user as User;
+  // Query for course assignments
+  const { data: courseAssignments = [] } = useQuery<CourseAssignment[]>({
+    queryKey: ['/api/course-assignments', { userId: currentUser?.id }],
+    queryFn: () => fetch(`/api/course-assignments?userId=${currentUser?.id}`).then(res => res.json()),
+    enabled: !!currentUser
+  });
+
+  // Query for all users (for assignment modal)
+  const { data: allUsers = [] } = useQuery<User[]>({
+    queryKey: ['/api/users']
+  });
+
   const [courses, setCourses] = useState<Course[]>([
     {
       id: 1,
@@ -166,18 +187,52 @@ const Education: React.FC = () => {
   const totalCourses = courses.length;
   const overallProgress = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
 
-  const filteredCourses = courses.filter(course => {
+  // Handle course assignment
+  const handleAssignCourse = (course: Course) => {
+    setCourseToAssign(course);
+    setShowAssignmentModal(true);
+  };
+
+  const handleCloseAssignmentModal = () => {
+    setShowAssignmentModal(false);
+    setCourseToAssign(null);
+  };
+
+  // Get assigned courses with assignment details
+  const getAssignedCourses = () => {
+    if (!currentUser) return [];
+    
+    return courseAssignments.map(assignment => {
+      const course = courses.find(c => c.id === assignment.courseId);
+      if (!course) return null;
+      
+      const assignedByUser = allUsers.find(u => u.id === assignment.assignedByUserId);
+      
+      return {
+        ...course,
+        assignedBy: assignedByUser?.name || 'Unknown',
+        assignedDate: assignment.assignedDate,
+        dueDate: assignment.dueDate,
+        priority: assignment.priority
+      };
+    }).filter(Boolean) as Course[];
+  };
+
+  const filteredCourses = (() => {
     switch (filterTab) {
+      case 'assigned':
+        return getAssignedCourses();
       case 'in-progress':
-        return course.status === 'in-progress';
+        return courses.filter(course => course.status === 'in-progress');
       case 'completed':
-        return course.status === 'completed';
+        return courses.filter(course => course.status === 'completed');
       case 'not-started':
-        return course.status === 'not-started';
+        return courses.filter(course => course.status === 'not-started');
+      case 'all':
       default:
-        return true;
+        return courses;
     }
-  });
+  })();
 
   const handleStartCourse = (course: Course) => {
     setSelectedCourse(course);
@@ -358,26 +413,32 @@ const Education: React.FC = () => {
         <div className="progress-content">
           <h3>Your Learning Progress</h3>
           <div className="progress-stats">
-            <span className="completed">{completedCourses} Courses Completed</span>
+            <span className="assigned">{courseAssignments.length} Courses Assigned</span>
             <span className="separator">•</span>
-            <span className="remaining">{courses.length - completedCourses} remaining</span>
+            <span className="completed">{completedCourses} Completed</span>
             <span className="separator">•</span>
             <span className="role">👤 {auth.user?.role === 'manager' ? 'Manager' : 'Technician'} Role</span>
           </div>
           <div className="progress-bar">
             <div 
               className="progress-fill" 
-              style={{ width: `${courses.length > 0 ? (completedCourses / courses.length) * 100 : 0}%` }} 
+              style={{ width: `${courseAssignments.length > 0 ? (completedCourses / courseAssignments.length) * 100 : 0}%` }} 
             />
           </div>
           <span className="progress-text">
-            {courses.length > 0 ? Math.round((completedCourses / courses.length) * 100) : 0}% Complete
+            {courseAssignments.length > 0 ? Math.round((completedCourses / courseAssignments.length) * 100) : 0}% Complete
           </span>
         </div>
       </div>
       
       {/* Filter tabs matching sub-tab style */}
       <div className="course-filter-tabs">
+        <button
+          className={`filter-tab ${filterTab === 'assigned' ? 'active' : ''}`}
+          onClick={() => setFilterTab('assigned')}
+        >
+          🎯 Assigned
+        </button>
         <button
           className={`filter-tab ${filterTab === 'all' ? 'active' : ''}`}
           onClick={() => setFilterTab('all')}
@@ -414,6 +475,7 @@ const Education: React.FC = () => {
             onResume={handleResumeCourse}
             onEdit={handleEditCourse}
             onDelete={isCorporateManager ? handleDeleteCourse : undefined}
+            onAssign={isManager ? handleAssignCourse : undefined}
             allCourses={courses}
             isLocked={!checkPrerequisites(course)}
             isCorporateManager={isCorporateManager}
@@ -450,6 +512,16 @@ const Education: React.FC = () => {
         allCourses={courses}
         editingCourse={editingCourse}
       />
+
+      {/* Course Assignment Modal */}
+      {isManager && (
+        <CourseAssignmentModal
+          isOpen={showAssignmentModal}
+          onClose={handleCloseAssignmentModal}
+          course={courseToAssign}
+          assignedBy={currentUser}
+        />
+      )}
     </div>
   );
 };

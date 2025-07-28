@@ -1,13 +1,13 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
-  recurringTasks, growingSystems, trayMovements, inventoryTransactions,
+  recurringTasks, growingSystems, trayMovements, inventoryTransactions, courseAssignments,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
   type TaskLog, type InsertTaskLog, type ChecklistItem, type RecurringTask,
   type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
   type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
-  type InsertInventoryTransaction
+  type InsertInventoryTransaction, type CourseAssignment, type InsertCourseAssignment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -71,6 +71,14 @@ export interface IStorage {
   // Tray movements
   createTrayMovement(movement: InsertTrayMovement): Promise<TrayMovement>;
   getTrayMovements(trayId: string): Promise<TrayMovement[]>;
+
+  // Course assignments
+  getCourseAssignment(id: number): Promise<CourseAssignment | undefined>;
+  getAllCourseAssignments(): Promise<CourseAssignment[]>;
+  getCourseAssignmentsByUser(userId: number): Promise<CourseAssignment[]>;
+  createCourseAssignment(assignment: InsertCourseAssignment): Promise<CourseAssignment>;
+  updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined>;
+  deleteCourseAssignment(id: number): Promise<boolean>;
   
   // Clear all data
   clearAllData(): Promise<boolean>;
@@ -87,6 +95,7 @@ export class MemStorage implements IStorage {
   private growingSystems: Map<number, GrowingSystem> = new Map();
   private trayMovements: Map<number, TrayMovement> = new Map();
   private crops: Map<number, Crop> = new Map();
+  private courseAssignments: Map<number, CourseAssignment> = new Map();
   
   private currentUserId = 1;
   private currentTaskId = 1;
@@ -98,6 +107,7 @@ export class MemStorage implements IStorage {
   private currentGrowingSystemId = 1;
   private currentTrayMovementId = 1;
   private currentCropId = 1;
+  private currentAssignmentId = 1;
 
   constructor() {
     // Start with empty data - no seeding
@@ -907,6 +917,43 @@ export class MemStorage implements IStorage {
     return this.growingSystems.delete(id);
   }
 
+  // Course assignment methods
+  async getAllCourseAssignments(): Promise<CourseAssignment[]> {
+    return Array.from(this.courseAssignments.values());
+  }
+
+  async getCourseAssignment(id: number): Promise<CourseAssignment | undefined> {
+    return this.courseAssignments.get(id);
+  }
+
+  async getCourseAssignmentsByUser(userId: number): Promise<CourseAssignment[]> {
+    return Array.from(this.courseAssignments.values()).filter(assignment => assignment.assignedToUserId === userId);
+  }
+
+  async createCourseAssignment(assignmentData: InsertCourseAssignment): Promise<CourseAssignment> {
+    const newAssignment: CourseAssignment = {
+      ...assignmentData,
+      id: this.currentAssignmentId++,
+      assignedDate: new Date(),
+      completed: false
+    };
+    this.courseAssignments.set(newAssignment.id, newAssignment);
+    return newAssignment;
+  }
+
+  async updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined> {
+    const assignment = this.courseAssignments.get(id);
+    if (!assignment) return undefined;
+
+    const updatedAssignment = { ...assignment, ...updates };
+    this.courseAssignments.set(id, updatedAssignment);
+    return updatedAssignment;
+  }
+
+  async deleteCourseAssignment(id: number): Promise<boolean> {
+    return this.courseAssignments.delete(id);
+  }
+
   // Crop methods
   async getAllCrops(): Promise<Crop[]> {
     return Array.from(this.crops.values());
@@ -952,6 +999,7 @@ export class MemStorage implements IStorage {
       this.growingSystems.clear();
       this.trayMovements.clear();
       this.crops.clear();
+      this.courseAssignments.clear();
       
       // Reset all counters
       this.currentUserId = 1;
@@ -964,6 +1012,7 @@ export class MemStorage implements IStorage {
       this.currentGrowingSystemId = 1;
       this.currentTrayMovementId = 1;
       this.currentCropId = 1;
+      this.currentAssignmentId = 1;
       
       return true;
     } catch (error) {

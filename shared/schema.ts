@@ -184,23 +184,25 @@ export const userProgress = pgTable("user_progress", {
   score: integer("score"), // 0-100
 });
 
+export const courseAssignments = pgTable("course_assignments", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").notNull(), // Reference to course (stored in frontend)
+  assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
+  assignedByUserId: integer("assigned_by_user_id").references(() => users.id),
+  assignedDate: timestamp("assigned_date").defaultNow(),
+  dueDate: timestamp("due_date"),
+  priority: text("priority").default('normal'), // 'low', 'normal', 'high'
+  notes: text("notes"),
+  completed: boolean("completed").default(false),
+  completedAt: timestamp("completed_at"),
+});
+
 // Type exports
 export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
 export type GrowingSystem = typeof growingSystems.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
-
-// Legacy exports for backwards compatibility
-export type { Task };
-
-// ChecklistItem type for task checklists
-export interface ChecklistItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  data?: Record<string, any>;
-}
 
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
 export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
@@ -221,18 +223,19 @@ export const taskLogs = pgTable("task_logs", {
   data: json("data").$type<Record<string, any>>(),
 });
 
-// Types for checklist items
-export type ChecklistItem = {
+// ChecklistItem type for task checklists
+export interface ChecklistItem {
   id: string;
   text: string;
   completed: boolean;
+  data?: Record<string, any>;
   dataCollection?: {
     type: 'number' | 'text' | 'select';
     label: string;
     options?: string[];
     value?: any;
   };
-};
+}
 
 // Task status type
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'approved' | 'paused' | 'skipped';
@@ -273,7 +276,6 @@ export const insertTaskLogSchema = createInsertSchema(taskLogs).omit({
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type InventoryItem = typeof inventoryItems.$inferSelect;
 export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
@@ -283,3 +285,10 @@ export type UserProgress = typeof userProgress.$inferSelect;
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type TaskLog = typeof taskLogs.$inferSelect;
 export type InsertTaskLog = z.infer<typeof insertTaskLogSchema>;
+export type CourseAssignment = typeof courseAssignments.$inferSelect;
+
+export const insertCourseAssignmentSchema = createInsertSchema(courseAssignments).omit({
+  id: true,
+  assignedDate: true,
+});
+export type InsertCourseAssignment = z.infer<typeof insertCourseAssignmentSchema>;

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema } from "@shared/schema";
+import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema, insertCourseAssignmentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -452,6 +452,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Recurring task deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete recurring task" });
+    }
+  });
+
+  // Course assignment routes
+  app.get("/api/course-assignments", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      let assignments;
+      
+      if (userId) {
+        assignments = await storage.getCourseAssignmentsByUser(parseInt(userId as string));
+      } else {
+        assignments = await storage.getAllCourseAssignments();
+      }
+      
+      res.json(assignments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch course assignments" });
+    }
+  });
+
+  app.post("/api/course-assignments", async (req, res) => {
+    try {
+      const assignmentData = insertCourseAssignmentSchema.parse(req.body);
+      const assignment = await storage.createCourseAssignment(assignmentData);
+      res.json(assignment);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create course assignment" });
+    }
+  });
+
+  app.patch("/api/course-assignments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const assignment = await storage.updateCourseAssignment(id, req.body);
+      
+      if (!assignment) {
+        return res.status(404).json({ message: "Course assignment not found" });
+      }
+
+      res.json(assignment);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update course assignment" });
     }
   });
 
