@@ -1,0 +1,368 @@
+# Replit Instructions: Fix Checklist Completion Issues
+
+## Issue 1: Text Instructions Should Auto-Advance
+Text instructions shouldn't require completion - they're just information:
+
+```javascript
+const TextInstructionStep = ({ step, onAutoAdvance }) => {
+  // Auto-advance after a short delay or immediately
+  useEffect(() => {
+    // Automatically move to next step after displaying
+    const timer = setTimeout(() => {
+      onAutoAdvance();
+    }, 500); // Brief pause to read
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  return (
+    <div className="step-item text-instruction">
+      <span className="step-icon">📄</span>
+      <span className="instruction-text">{step.text}</span>
+      {/* No completion required - just informational */}
+    </div>
+  );
+};
+
+// Update the checklist logic
+const handleStepDisplay = (step, index) => {
+  if (step.type === 'text_instruction') {
+    // Don't wait for completion, just show and move on
+    return {
+      requiresCompletion: false,
+      autoAdvance: true
+    };
+  }
+  return {
+    requiresCompletion: true,
+    autoAdvance: false
+  };
+};
+```
+
+## Issue 2: Inventory Item Pre-defined in Recurring Task
+The inventory item should be set when creating the recurring task, not when completing it:
+
+### A. Update Recurring Task Creator
+```javascript
+// When adding an inventory step in recurring task creator
+const AddInventoryStep = ({ onAdd }) => {
+  const [stepText, setStepText] = useState('');
+  const [selectedItem, setSelectedItem] = useState('');
+  const [unit, setUnit] = useState('');
+  const [inventoryItems] = useState([
+    { id: 1, name: 'RO Water', unit: 'gallons' },
+    { id: 2, name: 'pH Down', unit: 'ml' },
+    { id: 3, name: 'Rockwool Cubes', unit: 'cubes' },
+    { id: 4, name: 'Romaine Seeds', unit: 'seeds' }
+  ]);
+  
+  const handleAdd = () => {
+    if (selectedItem) {
+      const item = inventoryItems.find(i => i.id === parseInt(selectedItem));
+      onAdd({
+        type: 'inventory_usage',
+        text: stepText || `Record ${item.name} usage`,
+        inventoryItemId: item.id,
+        inventoryItemName: item.name,
+        inventoryUnit: item.unit
+      });
+    }
+  };
+  
+  return (
+    <div className="add-inventory-step">
+      <h4>Add Inventory Usage Step</h4>
+      
+      <div className="form-group">
+        <label>Step Description (optional)</label>
+        <input
+          type="text"
+          value={stepText}
+          onChange={(e) => setStepText(e.target.value)}
+          placeholder={`e.g., "How much RO water did you use?"`}
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>What inventory item will be used?</label>
+        <select
+          value={selectedItem}
+          onChange={(e) => setSelectedItem(e.target.value)}
+          required
+        >
+          <option value="">Select item...</option>
+          {inventoryItems.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.name} ({item.unit})
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      <button onClick={handleAdd} disabled={!selectedItem}>
+        Add Inventory Step
+      </button>
+    </div>
+  );
+};
+```
+
+### B. Update Task Completion Inventory Step
+```javascript
+const InventoryUsageStep = ({ step, onComplete, onSkip }) => {
+  const [quantity, setQuantity] = useState('');
+  const [currentStock, setCurrentStock] = useState(null);
+  
+  useEffect(() => {
+    // Fetch current stock level for the pre-defined item
+    fetchCurrentStock(step.inventoryItemId);
+  }, [step.inventoryItemId]);
+  
+  const fetchCurrentStock = async (itemId) => {
+    // Fetch from API or use mock data
+    setCurrentStock(250); // Example
+  };
+  
+  const handleSubmit = () => {
+    if (quantity) {
+      onComplete({
+        itemId: step.inventoryItemId,
+        itemName: step.inventoryItemName,
+        quantity: parseFloat(quantity),
+        action: 'remove'
+      });
+    }
+  };
+  
+  return (
+    <div className="inventory-usage-input">
+      <h4>Record Inventory Usage</h4>
+      <p className="item-info">
+        <strong>{step.inventoryItemName}</strong>
+        {currentStock && <span> (Current stock: {currentStock} {step.inventoryUnit})</span>}
+      </p>
+      
+      <div className="form-group">
+        <label>How much did you use?</label>
+        <div className="quantity-input">
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="Enter amount"
+            min="0"
+            step="0.01"
+          />
+          <span className="unit">{step.inventoryUnit}</span>
+        </div>
+      </div>
+      
+      <div className="step-actions">
+        <button 
+          onClick={handleSubmit} 
+          disabled={!quantity}
+          className="submit-btn"
+        >
+          Record Usage
+        </button>
+        <button onClick={onSkip} className="skip-btn">
+          Skip Step
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+## Issue 3: Fix Skip Button Error
+Add proper error handling for skip functionality:
+
+```javascript
+const handleStepSkip = (stepIndex) => {
+  try {
+    const updatedSteps = [...steps];
+    
+    // Ensure the step exists
+    if (!updatedSteps[stepIndex]) {
+      console.error('Invalid step index:', stepIndex);
+      return;
+    }
+    
+    updatedSteps[stepIndex] = {
+      ...updatedSteps[stepIndex],
+      skipped: true,
+      completed: false,
+      skippedAt: new Date().toISOString()
+    };
+    
+    setSteps(updatedSteps);
+    
+    // Move to next step if available
+    const nextIndex = stepIndex + 1;
+    if (nextIndex < steps.length) {
+      setCurrentStepIndex(nextIndex);
+    } else {
+      // All steps processed
+      setAllStepsProcessed(true);
+    }
+  } catch (error) {
+    console.error('Error skipping step:', error);
+    // Show user-friendly error
+    showNotification('Unable to skip step. Please try again.', 'error');
+  }
+};
+```
+
+## Issue 4: Fix Photo Capture
+Ensure camera actually opens:
+
+```javascript
+const PhotoCaptureStep = ({ step, onComplete, onSkip }) => {
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [capturing, setCapturing] = useState(false);
+  const fileInputRef = useRef(null);
+  
+  const handlePhotoCapture = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCapturing(true);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        setPhoto(file);
+        setCapturing(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const openCamera = () => {
+    // Reset input to ensure change event fires
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleSubmit = async () => {
+    if (photo) {
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append('photo', photo);
+      formData.append('taskId', step.taskId);
+      formData.append('stepId', step.id);
+      
+      try {
+        // Upload photo
+        const response = await fetch('/api/photos/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          onComplete({
+            photoUrl: data.url,
+            photoId: data.id,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        console.error('Photo upload failed:', error);
+        // Still complete the step even if upload fails
+        onComplete({
+          photoData: preview,
+          timestamp: new Date().toISOString(),
+          uploadFailed: true
+        });
+      }
+    }
+  };
+  
+  return (
+    <div className="photo-capture-input">
+      <h4>{step.text || 'Take a Photo'}</h4>
+      
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="camera" // This should open camera on mobile
+        onChange={handlePhotoCapture}
+        style={{ display: 'none' }}
+      />
+      
+      {!preview ? (
+        <div className="camera-controls">
+          <button 
+            onClick={openCamera}
+            className="camera-btn primary-btn"
+            disabled={capturing}
+          >
+            📷 {capturing ? 'Processing...' : 'Take Photo'}
+          </button>
+          
+          <p className="hint">
+            {navigator.mediaDevices ? 
+              'Click to open camera' : 
+              'Click to select a photo'}
+          </p>
+        </div>
+      ) : (
+        <div className="photo-preview-container">
+          <img 
+            src={preview} 
+            alt="Captured" 
+            className="photo-preview"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+          <div className="preview-actions">
+            <button 
+              onClick={openCamera}
+              className="retake-btn"
+            >
+              Retake Photo
+            </button>
+            <button 
+              onClick={handleSubmit} 
+              className="submit-btn"
+            >
+              Use This Photo
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <button onClick={onSkip} className="skip-btn">
+        Skip Photo
+      </button>
+    </div>
+  );
+};
+```
+
+## Issue 5: Update Progress Calculation
+Don't count text instructions in progress:
+
+```javascript
+const calculateProgress = (steps) => {
+  // Filter out text instructions from progress calculation
+  const actionableSteps = steps.filter(s => s.type !== 'text_instruction');
+  
+  if (actionableSteps.length === 0) return 100;
+  
+  const completedOrSkipped = actionableSteps.filter(s => s.completed || s.skipped);
+  return Math.round((completedOrSkipped.length / actionableSteps.length) * 100);
+};
+```
+
+These fixes will:
+1. Make text instructions auto-advance without requiring completion
+2. Pre-define inventory items in the recurring task setup
+3. Fix the skip button error with proper error handling
+4. Ensure the camera actually opens on mobile devices
+5. Calculate progress correctly excluding text instructions

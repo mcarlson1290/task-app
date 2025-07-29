@@ -40,8 +40,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
   const [stepData, setStepData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const steps = checklist.steps;
+  const [steps, setSteps] = useState(checklist.steps);
   const isLastStep = currentStep === steps.length - 1;
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
 
@@ -225,22 +224,25 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     
     switch (step.type) {
       case 'instruction':
+        // Auto-advance instruction steps - they're just informational
+        React.useEffect(() => {
+          const timer = setTimeout(() => {
+            setStepData({ ...stepData, [step.id]: true });
+            handleStepComplete();
+          }, 1000); // Brief pause to read the instruction
+          
+          return () => clearTimeout(timer);
+        }, []);
+        
         return (
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <p className="text-blue-900 font-medium">{step.config.text || step.label}</p>
+              <div className="flex items-center text-blue-900">
+                <FileText className="w-5 h-5 mr-2" />
+                <span className="font-medium">{step.config.text || step.label}</span>
+              </div>
+              <p className="text-sm text-blue-700 mt-2">📖 Reading instruction...</p>
             </div>
-            <Button 
-              onClick={() => {
-                setStepData({ ...stepData, [step.id]: true });
-                handleStepComplete();
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={isProcessing}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Mark as Complete
-            </Button>
           </div>
         );
 
@@ -743,22 +745,48 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     return icons[type as keyof typeof icons] || Circle;
   };
 
-  // Handle step skip with proper state
-  const handleStepSkip = (stepIndex: number) => {
-    const updatedSteps = [...steps];
-    updatedSteps[stepIndex] = {
-      ...updatedSteps[stepIndex],
-      skipped: true,
-      completed: false
-    };
-    setSteps(updatedSteps);
+  // Calculate progress excluding instruction steps
+  const calculateProgress = (steps: any[]) => {
+    // Filter out instruction steps from progress calculation
+    const actionableSteps = steps.filter(s => s.type !== 'instruction');
     
-    // Move to next step
-    if (stepIndex < steps.length - 1) {
-      setCurrentStep(stepIndex + 1);
-    } else {
-      // All steps processed
-      onComplete();
+    if (actionableSteps.length === 0) return 100;
+    
+    const completedOrSkipped = actionableSteps.filter(s => s.completed || (s as any).skipped);
+    return Math.round((completedOrSkipped.length / actionableSteps.length) * 100);
+  };
+
+  // Handle step skip with proper error handling
+  const handleStepSkip = (stepIndex: number) => {
+    try {
+      const updatedSteps = [...steps];
+      
+      // Ensure the step exists
+      if (!updatedSteps[stepIndex]) {
+        console.error('Invalid step index:', stepIndex);
+        return;
+      }
+      
+      updatedSteps[stepIndex] = {
+        ...updatedSteps[stepIndex],
+        skipped: true,
+        completed: false,
+        skippedAt: new Date().toISOString()
+      };
+      
+      setSteps(updatedSteps);
+      
+      // Move to next step if available
+      const nextIndex = stepIndex + 1;
+      if (nextIndex < steps.length) {
+        setCurrentStep(nextIndex);
+      } else {
+        // All steps processed
+        onComplete(stepData);
+      }
+    } catch (error) {
+      console.error('Error skipping step:', error);
+      setErrors({ ...errors, [steps[stepIndex]?.id]: 'Unable to skip step. Please try again.' });
     }
   };
 
@@ -769,10 +797,10 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Task Checklist</h3>
           <Badge variant="outline">
-            {steps.filter(s => s.completed || (s as any).skipped).length} of {steps.length} Complete
+            {steps.filter(s => s.completed || (s as any).skipped).length} of {steps.length} Steps
           </Badge>
         </div>
-        <Progress value={progressPercentage} className="w-full" />
+        <Progress value={calculateProgress(steps)} className="w-full" />
       </div>
 
       {/* Steps with Inline Inputs */}
