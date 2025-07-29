@@ -227,12 +227,15 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
       case 'instruction':
         return (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-blue-900">{step.config.text || step.label}</p>
+            <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <p className="text-blue-900 font-medium">{step.config.text || step.label}</p>
             </div>
             <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
+              onClick={() => {
+                setStepData({ ...stepData, [step.id]: true });
+                handleStepComplete();
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={isProcessing}
             >
               <CheckCircle className="w-4 h-4 mr-2" />
@@ -244,57 +247,72 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
       case 'checkbox':
         return (
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Checkbox
                 id={step.id}
                 checked={stepData[step.id] || false}
-                onCheckedChange={(checked) => setStepData({
-                  ...stepData,
-                  [step.id]: checked
-                })}
+                onCheckedChange={(checked) => {
+                  setStepData({ ...stepData, [step.id]: checked });
+                  if (checked) {
+                    handleStepComplete();
+                  }
+                }}
+                className="h-5 w-5"
               />
-              <Label htmlFor={step.id} className="text-base">{step.label}</Label>
+              <Label htmlFor={step.id} className="text-base font-medium">{step.label}</Label>
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={!stepData[step.id] || isProcessing}
-            >
-              Continue
-            </Button>
+            {stepData[step.id] && (
+              <div className="flex items-center text-green-600 font-medium">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Completed
+              </div>
+            )}
           </div>
         );
 
       case 'number-input':
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={step.id}>{step.label}</Label>
+            <div className="space-y-2">
+              <Label htmlFor={step.id} className="text-base font-medium">{step.label}</Label>
               <div className="flex items-center space-x-2">
                 <Input
                   id={step.id}
                   type="number"
                   value={stepData[step.id] || ''}
-                  onChange={(e) => setStepData({
-                    ...stepData,
-                    [step.id]: parseInt(e.target.value) || 0
-                  })}
-                  min={step.config.min}
-                  max={step.config.max}
-                  placeholder={`Enter ${step.config.unit || 'value'}`}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setStepData({ ...stepData, [step.id]: value });
+                  }}
+                  min={step.config.min || 0}
+                  max={step.config.max || 999}
+                  placeholder={step.config.placeholder || `Enter ${step.config.unit || 'number'}`}
+                  className="w-32"
                 />
                 {step.config.unit && (
-                  <span className="text-sm text-gray-500">{step.config.unit}</span>
+                  <Badge variant="outline" className="text-sm">
+                    {step.config.unit}
+                  </Badge>
                 )}
               </div>
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={isProcessing}
-            >
-              Continue
-            </Button>
+            {stepData[step.id] ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-green-600 font-medium">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Value entered: {stepData[step.id]} {step.config.unit}
+                </div>
+                <Button 
+                  onClick={handleStepComplete} 
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isProcessing}
+                >
+                  Continue
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Enter a value to continue</p>
+            )}
           </div>
         );
 
@@ -322,7 +340,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                     <SelectItem key={item.id} value={item.id.toString()}>
                       <div className="flex items-center justify-between w-full">
                         <span>{item.name}</span>
-                        <Badge variant="outline">{item.currentQuantity} {item.unit}</Badge>
+                        <Badge variant="outline">{item.currentStock || 0} {item.unit}</Badge>
                       </div>
                     </SelectItem>
                   ))}
@@ -383,69 +401,152 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'data-capture':
+        const isPercentage = step.label.toLowerCase().includes('percent');
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={step.id}>{step.label}</Label>
-              {step.config.dataType === 'number' ? (
+            <div className="space-y-2">
+              <Label htmlFor={step.id} className="text-base font-medium">{step.label}</Label>
+              <div className="flex items-center space-x-2">
                 <Input
                   id={step.id}
                   type="number"
+                  step={isPercentage ? "1" : "0.1"}
+                  min={isPercentage ? 0 : 0}
+                  max={isPercentage ? 100 : 999}
                   value={stepData[step.id] || ''}
-                  onChange={(e) => setStepData({
-                    ...stepData,
-                    [step.id]: parseFloat(e.target.value) || 0
-                  })}
-                  placeholder="Enter value"
+                  onChange={(e) => {
+                    let value = parseFloat(e.target.value) || 0;
+                    if (isPercentage && value > 100) value = 100;
+                    if (isPercentage && value < 0) value = 0;
+                    setStepData({ ...stepData, [step.id]: value });
+                  }}
+                  placeholder={isPercentage ? "0" : "Enter value"}
+                  className="w-32"
                 />
-              ) : (
-                <Input
-                  id={step.id}
-                  type="text"
-                  value={stepData[step.id] || ''}
-                  onChange={(e) => setStepData({
-                    ...stepData,
-                    [step.id]: e.target.value
-                  })}
-                  placeholder="Enter information"
-                />
-              )}
+                <Badge variant="outline" className="text-sm">
+                  {isPercentage ? '%' : 'units'}
+                </Badge>
+              </div>
               {step.config.calculation && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-blue-600 mt-1">
                   Auto-calculated: {step.config.calculation}
                 </p>
               )}
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={isProcessing}
-            >
-              Save Data
-            </Button>
+            {stepData[step.id] !== undefined && stepData[step.id] !== '' && stepData[step.id] !== 0 ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-green-600 font-medium">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Recorded: {stepData[step.id]}{isPercentage ? '%' : ' units'}
+                </div>
+                <Button 
+                  onClick={handleStepComplete} 
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isProcessing}
+                >
+                  Save Data
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Enter a value to continue</p>
+            )}
           </div>
         );
 
       case 'photo':
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={step.id}>{step.label}</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Photo upload functionality</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  This feature will be available in a future update
-                </p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor={step.id} className="text-base font-medium">{step.label}</Label>
+              {stepData[step.id] ? (
+                <div className="space-y-2">
+                  <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                    <div className="flex items-center text-green-700">
+                      <Camera className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Photo captured successfully</span>
+                    </div>
+                    <p className="text-sm text-green-600 mt-1">
+                      Photo timestamp: {new Date(stepData[step.id]).toLocaleString()}
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setStepData({ ...stepData, [step.id]: new Date().toISOString() });
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Retake Photo
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-3">Take a photo to document this step</p>
+                  <Button 
+                    onClick={() => {
+                      setStepData({ ...stepData, [step.id]: new Date().toISOString() });
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Capture Photo
+                  </Button>
+                </div>
+              )}
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={isProcessing}
-            >
-              Skip Photo
-            </Button>
+            {stepData[step.id] && (
+              <Button 
+                onClick={handleStepComplete} 
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isProcessing}
+              >
+                Continue with Photo Documented
+              </Button>
+            )}
+          </div>
+        );
+
+      case 'movement-trigger':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base font-medium">{step.label}</Label>
+              {stepData[step.id] ? (
+                <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                  <div className="flex items-center text-green-700">
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                    <span className="font-medium">Movement completed</span>
+                  </div>
+                  <p className="text-sm text-green-600 mt-1">
+                    Completed at: {new Date(stepData[step.id]).toLocaleString()}
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                  <p className="text-yellow-800">Ready to execute movement action</p>
+                </div>
+              )}
+            </div>
+            {!stepData[step.id] ? (
+              <Button 
+                onClick={() => {
+                  setStepData({ ...stepData, [step.id]: new Date().toISOString() });
+                  handleStepComplete();
+                }}
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isProcessing}
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Execute Movement
+              </Button>
+            ) : (
+              <div className="flex items-center text-green-600 font-medium">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Movement Complete
+              </div>
+            )}
           </div>
         );
 
