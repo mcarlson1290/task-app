@@ -12,6 +12,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
+import { PersistenceManager } from './persistence';
 
 export interface IStorage {
   // User methods
@@ -122,8 +123,60 @@ export class MemStorage implements IStorage {
   private currentAssignmentId = 1;
   private currentNotificationId = 1;
 
+  private persistence = PersistenceManager.getInstance();
+
   constructor() {
-    this.seedInitialData();
+    // Load persisted data asynchronously - this will either load from files or fall back to seed data
+    this.loadPersistedData().catch(console.error);
+  }
+
+  private async loadPersistedData() {
+    console.log('Loading persisted data...');
+    const persistedData = await this.persistence.loadData();
+    
+    if (persistedData) {
+      // Restore tasks
+      persistedData.tasks.forEach(task => {
+        this.tasks.set(task.id, task);
+      });
+      
+      // Restore recurring tasks
+      persistedData.recurringTasks.forEach(recurringTask => {
+        this.recurringTasks.set(recurringTask.id, recurringTask);
+      });
+      
+      // Restore inventory items
+      persistedData.inventoryItems.forEach(item => {
+        this.inventoryItems.set(item.id, item);
+      });
+      
+      // Restore counters
+      this.currentTaskId = persistedData.counters.currentTaskId;
+      this.currentRecurringTaskId = persistedData.counters.currentRecurringTaskId; 
+      this.currentInventoryId = persistedData.counters.currentInventoryId;
+      
+      console.log('Persistence restored:', {
+        tasks: persistedData.tasks.length,
+        recurringTasks: persistedData.recurringTasks.length,
+        inventoryItems: persistedData.inventoryItems.length
+      });
+    } else {
+      console.log('No persisted data found, initializing with seed data');
+      this.seedInitialData();
+    }
+  }
+
+  private async persistData() {
+    await this.persistence.saveData({
+      tasks: Array.from(this.tasks.values()),
+      recurringTasks: Array.from(this.recurringTasks.values()),
+      inventoryItems: Array.from(this.inventoryItems.values()),
+      counters: {
+        currentTaskId: this.currentTaskId,
+        currentRecurringTaskId: this.currentRecurringTaskId,
+        currentInventoryId: this.currentInventoryId
+      }
+    });
   }
 
   private seedInitialData() {
@@ -749,6 +802,12 @@ export class MemStorage implements IStorage {
       data: taskData.data || {}
     };
     this.tasks.set(newTask.id, newTask);
+    await this.persistence.saveTasks(Array.from(this.tasks.values()));
+    await this.persistence.saveCounters({
+      currentTaskId: this.currentTaskId,
+      currentRecurringTaskId: this.currentRecurringTaskId,
+      currentInventoryId: this.currentInventoryId
+    });
     return newTask;
   }
 
@@ -758,6 +817,7 @@ export class MemStorage implements IStorage {
 
     const updatedTask = { ...task, ...updates };
     this.tasks.set(id, updatedTask);
+    await this.persistence.saveTasks(Array.from(this.tasks.values()));
     return updatedTask;
   }
 
@@ -813,6 +873,7 @@ export class MemStorage implements IStorage {
 
     const updatedItem = { ...item, ...updates };
     this.inventoryItems.set(id, updatedItem);
+    await this.persistence.saveInventoryItems(Array.from(this.inventoryItems.values()));
     return updatedItem;
   }
 
@@ -870,6 +931,9 @@ export class MemStorage implements IStorage {
       unitCost: data.unitCost,
       transaction: transaction
     });
+
+    // Persist inventory changes
+    await this.persistence.saveInventoryItems(Array.from(this.inventoryItems.values()));
 
     return updatedItem;
   }
@@ -952,6 +1016,9 @@ export class MemStorage implements IStorage {
     // Generate task instances for the next 30 days
     await this.generateTaskInstances(newTask);
     
+    // Persist data after generating task instances
+    await this.persistData();
+    
     return newTask;
   }
 
@@ -993,6 +1060,9 @@ export class MemStorage implements IStorage {
     });
     
     console.log(`Updated ${taskInstances.length} pending task instances for recurring task: ${updatedTask.title}`);
+    
+    // Persist all changes
+    await this.persistData();
     
     return updatedTask;
   }
@@ -1099,6 +1169,7 @@ export class MemStorage implements IStorage {
     };
     
     this.tasks.set(newTask.id, newTask);
+    // Note: Task instances are persisted in bulk after generateTaskInstances completes
     return newTask;
   }
 

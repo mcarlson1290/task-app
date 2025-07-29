@@ -1,0 +1,36 @@
+[
+  {
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "frequency": "daily",
+    "daysOfWeek": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday"
+    ],
+    "location": "K",
+    "isActive": true,
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "water-step-1",
+          "type": "inventory-select",
+          "label": "Record water usage for microgreens",
+          "required": true,
+          "config": {
+            "inventoryItemId": "1",
+            "inventoryItemName": "RO Water",
+            "inventoryUnit": "gallons",
+            "customText": "How much water did you use?",
+            "defaultQuantity": "2.5"
+          }
+        }
+      ]
+    },
+    "id": 1,
+    "createdAt": "2025-07-29T16:31:12.128Z"
+  }
+]
