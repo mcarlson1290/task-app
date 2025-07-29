@@ -21,11 +21,11 @@
           "label": "",
           "required": true,
           "config": {
-            "inventoryItemId": "",
-            "inventoryItemName": "",
-            "inventoryUnit": "",
-            "customText": "",
-            "defaultQuantity": ""
+            "inventoryItemId": "1",
+            "inventoryItemName": "RO Water",
+            "inventoryUnit": "gallons",
+            "customText": "How much water did you use?",
+            "defaultQuantity": "2.5"
           }
         }
       ]

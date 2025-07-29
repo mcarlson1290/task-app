@@ -157,6 +157,12 @@ Preferred communication style: Simple, everyday language.
     - Enhanced save button with loading state and disabled state when no changes are present
     - Added beforeunload warning to prevent accidental navigation away from unsaved changes
     - All form inputs now use updateFormData helper that tracks changes without triggering saves
+  - **Recurring Task Template Configuration Restoration**: Fixed inventory step configuration in recurring task template
+    - Successfully restored "Water the Microgreens" recurring task with complete inventory configuration
+    - Inventory step now properly configured with: RO Water (ID: 1), custom text "How much water did you use?", default quantity 2.5 gallons
+    - All 30 task instances automatically updated with correct configuration from template
+    - Added checklist preview in RecurringTaskModal to show configured steps and their details
+    - Verified data persistence and API updates working correctly for checklist template modifications
   - **Inventory Step Configuration Enhancement**: Enhanced recurring task creator with proper three-input inventory configuration
     - Fixed inventory-select steps to require item selection, custom text, and default quantity during recurring task setup
     - Added blue configuration panel with clear labels and pre-configured inventory items

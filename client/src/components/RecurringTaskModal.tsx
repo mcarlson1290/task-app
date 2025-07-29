@@ -521,6 +521,18 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 systems={systems}
                 onChange={handleChecklistChange}
               />
+              {formData.checklistTemplate.steps.length > 0 && (
+                <div className="mt-4 p-3 bg-gray-50 rounded border">
+                  <p className="text-sm text-gray-600">
+                    <strong>Checklist Preview:</strong> {formData.checklistTemplate.steps.length} step(s) configured
+                  </p>
+                  {formData.checklistTemplate.steps.map((step, index) => (
+                    <div key={step.id} className="text-xs text-gray-500 mt-1">
+                      {index + 1}. {step.type} - {step.config?.inventoryItemName || step.config?.text || step.label || 'Untitled step'}
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
