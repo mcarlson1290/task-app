@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle, Circle, AlertTriangle, Camera, Package, Building, BarChart3, Split, ArrowRight, FileText } from 'lucide-react';
+import { CheckCircle, Circle, AlertTriangle, Camera, Package, Building, BarChart3, Split, ArrowRight, FileText, Edit3, PlusCircle } from 'lucide-react';
 import { GrowingSystem, InventoryItem, Task } from '@shared/schema';
 
 interface ChecklistStep {
@@ -145,7 +145,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     if (system) {
       const updatedSystem = {
         ...system,
-        currentOccupancy: system.currentOccupancy + 1
+        currentOccupancy: (system.currentOccupancy || 0) + 1
       };
       
       try {
@@ -211,7 +211,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            quantity: item.currentQuantity - (item.usedQuantity || 1)
+            currentStock: (item.currentStock || 0) - (item.usedQuantity || 1)
           })
         });
       }
