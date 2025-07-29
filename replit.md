@@ -149,6 +149,14 @@ Preferred communication style: Simple, everyday language.
     - Enhanced updateStep method with proper config preservation using spread operators
     - All three inventory inputs (item selection, custom text, default quantity) now properly persist
     - Settings modal no longer closes immediately and maintains user-entered configuration data
+  - **No Auto-Save Pattern Implementation**: Disabled automatic saving in recurring task editor to prevent configuration loss
+    - Removed all auto-save triggers from form inputs and state changes in RecurringTaskModal
+    - Added hasChanges tracking and unsaved changes indicator with orange warning text
+    - Implemented explicit save-only-on-button-click behavior with proper async handling
+    - Added confirmation dialog when canceling with unsaved changes to prevent accidental data loss
+    - Enhanced save button with loading state and disabled state when no changes are present
+    - Added beforeunload warning to prevent accidental navigation away from unsaved changes
+    - All form inputs now use updateFormData helper that tracks changes without triggering saves
   - **Inventory Step Configuration Enhancement**: Enhanced recurring task creator with proper three-input inventory configuration
     - Fixed inventory-select steps to require item selection, custom text, and default quantity during recurring task setup
     - Added blue configuration panel with clear labels and pre-configured inventory items

@@ -25,6 +25,9 @@ interface RecurringTaskModalProps {
 const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState('basic');
   const { currentLocation } = useLocation();
+  const [originalData, setOriginalData] = useState<any>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -48,7 +51,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   // Update form data when task changes
   React.useEffect(() => {
     if (task) {
-      setFormData({
+      const taskData = {
         title: task.title || '',
         description: task.description || '',
         type: task.type || 'seeding-microgreens',
@@ -66,10 +69,13 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
           }
         },
         checklistTemplate: task.checklistTemplate || { steps: [] }
-      });
+      };
+      setFormData(taskData);
+      setOriginalData(taskData);
+      setHasChanges(false);
     } else {
       // Reset form for new task
-      setFormData({
+      const newTaskData = {
         title: '',
         description: '',
         type: 'seeding-microgreens',
@@ -87,9 +93,26 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
           }
         },
         checklistTemplate: { steps: [] }
-      });
+      };
+      setFormData(newTaskData);
+      setOriginalData(newTaskData);
+      setHasChanges(false);
     }
+    setIsSaving(false);
   }, [task]);
+
+  // Warn if user tries to leave with unsaved changes
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges && isOpen) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges, isOpen]);
 
   const { data: systems = [] } = useQuery<GrowingSystem[]>({
     queryKey: ['/api/growing-systems'],
@@ -130,28 +153,56 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     { value: 'sunday', label: 'Sunday' }
   ];
 
+  // Helper function to update form data and track changes
+  const updateFormData = (updates: any) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+    setHasChanges(true);
+  };
+
   const handleDayToggle = (day: string) => {
     const newDays = formData.daysOfWeek.includes(day)
       ? formData.daysOfWeek.filter(d => d !== day)
       : [...formData.daysOfWeek, day];
     
-    setFormData({ ...formData, daysOfWeek: newDays });
+    updateFormData({ daysOfWeek: newDays });
   };
 
   const handleChecklistChange = (steps: any[]) => {
-    setFormData({
-      ...formData,
+    updateFormData({
       checklistTemplate: { steps }
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      id: task?.id,
-      location: currentLocation.code
-    });
+    if (!hasChanges && task) {
+      onClose();
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await onSave({
+        ...formData,
+        id: task?.id,
+        location: currentLocation.code
+      });
+      // onClose will be called by the parent component on successful save
+    } catch (error) {
+      console.error('Failed to save recurring task:', error);
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (hasChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+        setHasChanges(false);
+        onClose();
+      }
+    } else {
+      onClose();
+    }
   };
 
   const addFlowStage = () => {
@@ -162,8 +213,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       autoMove: false
     };
     
-    setFormData({
-      ...formData,
+    updateFormData({
       automation: {
         ...formData.automation,
         flow: {
@@ -178,8 +228,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     const stages = [...formData.automation.flow.stages];
     stages[index] = { ...stages[index], [field]: value };
     
-    setFormData({
-      ...formData,
+    updateFormData({
       automation: {
         ...formData.automation,
         flow: {
@@ -192,8 +241,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
 
   const removeFlowStage = (index: number) => {
     const stages = formData.automation.flow.stages.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
+    updateFormData({
       automation: {
         ...formData.automation,
         flow: {
@@ -244,7 +292,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) => updateFormData({ title: e.target.value })}
                     placeholder="Enter task title"
                     required
                   />
@@ -254,7 +302,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                   <Label htmlFor="type">Task Type</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(value) => setFormData({ ...formData, type: value })}
+                    onValueChange={(value) => updateFormData({ type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -275,7 +323,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => updateFormData({ description: e.target.value })}
                   placeholder="Enter task description"
                   rows={3}
                 />
@@ -285,7 +333,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 <Checkbox
                   id="isActive"
                   checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: !!checked })}
+                  onCheckedChange={(checked) => updateFormData({ isActive: !!checked })}
                 />
                 <Label htmlFor="isActive">Active task (will generate instances)</Label>
               </div>
@@ -296,7 +344,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 <Label htmlFor="frequency">Frequency</Label>
                 <Select
                   value={formData.frequency}
-                  onValueChange={(value) => setFormData({ ...formData, frequency: value })}
+                  onValueChange={(value) => updateFormData({ frequency: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -335,8 +383,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 <Checkbox
                   id="automationEnabled"
                   checked={formData.automation.enabled}
-                  onCheckedChange={(checked) => setFormData({
-                    ...formData,
+                  onCheckedChange={(checked) => updateFormData({
                     automation: { ...formData.automation, enabled: !!checked }
                   })}
                 />
@@ -349,8 +396,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                     <Checkbox
                       id="generateTrays"
                       checked={formData.automation.generateTrays}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
+                      onCheckedChange={(checked) => updateFormData({
                         automation: { ...formData.automation, generateTrays: !!checked }
                       })}
                     />
@@ -365,8 +411,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                           id="trayCount"
                           type="number"
                           value={formData.automation.trayCount}
-                          onChange={(e) => setFormData({
-                            ...formData,
+                          onChange={(e) => updateFormData({
                             automation: { 
                               ...formData.automation, 
                               trayCount: parseInt(e.target.value) || 1 
@@ -381,8 +426,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                         <Label htmlFor="cropType">Crop Type</Label>
                         <Select
                           value={formData.automation.cropType}
-                          onValueChange={(value) => setFormData({
-                            ...formData,
+                          onValueChange={(value) => updateFormData({
                             automation: { ...formData.automation, cropType: value }
                           })}
                         >
@@ -481,12 +525,21 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
           </Tabs>
 
           <div className="flex justify-end gap-2 mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSaving}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#2D8028] hover:bg-[#203B17]">
-              {task ? 'Update Task' : 'Create Task'}
+            <Button 
+              type="submit" 
+              className="bg-[#2D8028] hover:bg-[#203B17]"
+              disabled={isSaving || (!hasChanges && task)}
+            >
+              {isSaving ? 'Saving...' : (task ? 'Update Task' : 'Create Task')}
             </Button>
+            {hasChanges && (
+              <span className="ml-2 text-orange-600 text-sm">
+                • Unsaved changes
+              </span>
+            )}
           </div>
         </form>
       </DialogContent>

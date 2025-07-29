@@ -99,6 +99,14 @@ const RecurringTasks: React.FC = () => {
         description: editingTask ? 'Recurring task and all future instances have been updated successfully.' : 'Recurring task has been created successfully.',
       });
     },
+    onError: (error) => {
+      console.error('Failed to save recurring task:', error);
+      toast({
+        title: 'Save Failed',
+        description: 'Failed to save recurring task. Please try again.',
+        variant: 'destructive'
+      });
+    }
   });
 
   const getFrequencyDisplay = (task: RecurringTask) => {
@@ -263,7 +271,7 @@ const RecurringTasks: React.FC = () => {
           setShowAddModal(false);
           setEditingTask(null);
         }}
-        onSave={saveTaskMutation.mutate}
+        onSave={(taskData) => saveTaskMutation.mutateAsync(taskData)}
       />
     </div>
   );
