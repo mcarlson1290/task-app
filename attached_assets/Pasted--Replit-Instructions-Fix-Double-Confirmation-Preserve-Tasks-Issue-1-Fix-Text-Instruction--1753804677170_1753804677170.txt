@@ -1,0 +1,164 @@
+# Replit Instructions: Fix Double Confirmation & Preserve Tasks
+
+## Issue 1: Fix Text Instruction Double Confirmation
+Text instructions should be checkable but only require one click, not double confirmation:
+
+```javascript
+const TextInstructionStep = ({ step, onComplete }) => {
+  const [checked, setChecked] = useState(step.completed || false);
+  
+  const handleCheck = () => {
+    setChecked(true);
+    // Directly complete without additional confirmation
+    onComplete({
+      completed: true,
+      completedAt: new Date().toISOString()
+    });
+  };
+  
+  return (
+    <div className={`step-item text-instruction ${checked ? 'completed' : ''}`}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={handleCheck}
+        id={`step-${step.id}`}
+      />
+      <label htmlFor={`step-${step.id}`}>
+        <span className="step-icon">📄</span>
+        <span className="instruction-text">{step.text}</span>
+      </label>
+    </div>
+  );
+};
+```
+
+## Issue 2: IMPORTANT - Preserve Existing Tasks
+
+### Add This Comment Block to Any Files You're Updating:
+```javascript
+/**
+ * IMPORTANT: When implementing these changes, DO NOT DELETE or MODIFY:
+ * - Existing tasks in the database
+ * - Existing recurring tasks
+ * - Any task instances that have been created
+ * - User-entered data in tasks
+ * 
+ * Only update the code logic, not the data!
+ */
+```
+
+### When Working with Database Migrations:
+```javascript
+// WRONG - Don't do this:
+// DROP TABLE tasks;
+// DELETE FROM tasks WHERE ...;
+
+// CORRECT - Only add or modify structure:
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS new_field TYPE;
+UPDATE tasks SET field = value WHERE condition AND existing_data IS NOT NULL;
+```
+
+### For Replit AI Instructions:
+When giving Replit new instructions, always prefix with:
+```
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. 
+Only update the code functionality while preserving all existing data.
+
+[Your actual instructions here]
+```
+
+## Updated Text Instruction Handler
+Remove any double confirmation logic:
+
+```javascript
+const TaskChecklist = ({ task }) => {
+  const [steps, setSteps] = useState(task.checklist || []);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  
+  const handleStepComplete = (stepId, data) => {
+    const updatedSteps = steps.map(step => 
+      step.id === stepId 
+        ? { ...step, ...data, completed: true }
+        : step
+    );
+    
+    setSteps(updatedSteps);
+    
+    // Auto-advance to next step
+    const currentIndex = steps.findIndex(s => s.id === stepId);
+    if (currentIndex < steps.length - 1) {
+      setCurrentStepIndex(currentIndex + 1);
+    }
+  };
+  
+  // For text instructions, no input block needed
+  const renderStep = (step, index) => {
+    if (step.type === 'text_instruction') {
+      return (
+        <TextInstructionStep 
+          key={step.id}
+          step={step}
+          onComplete={(data) => handleStepComplete(step.id, data)}
+        />
+      );
+    }
+    
+    // Other step types with input blocks
+    return (
+      <div key={step.id}>
+        <div className={`step-item ${index === currentStepIndex ? 'active' : ''}`}>
+          {/* Step display */}
+        </div>
+        
+        {index === currentStepIndex && !step.completed && (
+          <div className="step-input-block">
+            {/* Input component based on type */}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  return (
+    <div className="task-checklist">
+      {steps.map((step, index) => renderStep(step, index))}
+    </div>
+  );
+};
+```
+
+## Data Preservation Checklist for Replit:
+- [ ] Never use DROP TABLE commands
+- [ ] Never use DELETE FROM without WHERE clause
+- [ ] Always use IF NOT EXISTS when creating tables
+- [ ] Always use IF NOT EXISTS when adding columns
+- [ ] Test migrations on a copy first
+- [ ] Backup data before structural changes
+
+## Safe Update Pattern:
+```javascript
+// When updating task structure
+const updateTaskStructure = async () => {
+  // 1. Add new fields without removing old ones
+  await db.query(`
+    ALTER TABLE tasks 
+    ADD COLUMN IF NOT EXISTS new_field VARCHAR(255)
+  `);
+  
+  // 2. Migrate data if needed
+  await db.query(`
+    UPDATE tasks 
+    SET new_field = old_field 
+    WHERE new_field IS NULL
+  `);
+  
+  // 3. Only mark old field as deprecated, don't delete
+  // Let it remain for backward compatibility
+};
+```
+
+This ensures:
+1. Text instructions only need one click to complete
+2. Your existing tasks won't be deleted when updating code
+3. All user data is preserved during updates

@@ -1,3 +1,12 @@
+/**
+ * IMPORTANT: When implementing these changes, DO NOT DELETE or MODIFY:
+ * - Existing tasks in the database
+ * - Existing recurring tasks
+ * - Any task instances that have been created
+ * - User-entered data in tasks
+ * 
+ * Only update the code logic, not the data!
+ */
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -224,24 +233,26 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     
     switch (step.type) {
       case 'instruction':
-        // Auto-advance instruction steps - they're just informational
-        React.useEffect(() => {
-          const timer = setTimeout(() => {
-            setStepData({ ...stepData, [step.id]: true });
-            handleStepComplete();
-          }, 1000); // Brief pause to read the instruction
-          
-          return () => clearTimeout(timer);
-        }, []);
-        
         return (
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
               <div className="flex items-center text-blue-900">
+                <input
+                  type="checkbox"
+                  checked={stepData[step.id] || false}
+                  onChange={() => {
+                    setStepData({ ...stepData, [step.id]: true });
+                    handleStepComplete();
+                  }}
+                  className="mr-3 h-5 w-5 text-blue-600"
+                  id={`step-${step.id}`}
+                />
                 <FileText className="w-5 h-5 mr-2" />
-                <span className="font-medium">{step.config.text || step.label}</span>
+                <label htmlFor={`step-${step.id}`} className="font-medium cursor-pointer">
+                  {step.config.text || step.label}
+                </label>
               </div>
-              <p className="text-sm text-blue-700 mt-2">📖 Reading instruction...</p>
+              <p className="text-sm text-blue-700 mt-2">Click the checkbox to mark as read</p>
             </div>
           </div>
         );
@@ -745,15 +756,12 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     return icons[type as keyof typeof icons] || Circle;
   };
 
-  // Calculate progress excluding instruction steps
+  // Calculate progress including instruction steps (they can be checked off)
   const calculateProgress = (steps: any[]) => {
-    // Filter out instruction steps from progress calculation
-    const actionableSteps = steps.filter(s => s.type !== 'instruction');
+    if (steps.length === 0) return 100;
     
-    if (actionableSteps.length === 0) return 100;
-    
-    const completedOrSkipped = actionableSteps.filter(s => s.completed || (s as any).skipped);
-    return Math.round((completedOrSkipped.length / actionableSteps.length) * 100);
+    const completedOrSkipped = steps.filter(s => s.completed || (s as any).skipped);
+    return Math.round((completedOrSkipped.length / steps.length) * 100);
   };
 
   // Handle step skip with proper error handling
