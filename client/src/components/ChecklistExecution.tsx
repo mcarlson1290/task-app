@@ -332,11 +332,40 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
       case 'inventory-select':
         // Use pre-configured inventory item from recurring task setup
         const quantity = stepData[step.id] || step.config.defaultQuantity || '';
+        
+        // Handle case where inventory item isn't properly configured
         const inventoryItem = {
-          id: step.config.inventoryItemId,
-          name: step.config.inventoryItemName,
-          unit: step.config.inventoryUnit
+          id: step.config.inventoryItemId || '',
+          name: step.config.inventoryItemName || 'Unknown Item',
+          unit: step.config.inventoryUnit || 'units'
         };
+        
+        // If no item is configured, show error
+        if (!inventoryItem.id) {
+          return (
+            <div className="space-y-4">
+              <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
+                <div className="flex items-center text-red-800">
+                  <AlertTriangle className="w-5 h-5 mr-2" />
+                  <span className="font-medium">Configuration Error</span>
+                </div>
+                <p className="text-sm text-red-700 mt-1">
+                  This inventory step needs to be configured with an item selection. Please contact your manager to fix the recurring task setup.
+                </p>
+                <p className="text-xs text-red-600 mt-2">
+                  <strong>For managers:</strong> Edit the recurring task and properly configure the inventory step with: item selection, custom text, and default quantity.
+                </p>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => handleStepSkip(currentStep)}
+                disabled={isProcessing}
+              >
+                Skip Step
+              </Button>
+            </div>
+          );
+        }
         
         // Find current stock level for the pre-configured item
         const currentItem = inventoryItems.find(item => item.id.toString() === inventoryItem.id);
@@ -355,7 +384,9 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-medium text-blue-900">Item: {inventoryItem.name}</span>
-                  <p className="text-sm text-blue-700">Current stock: {currentStock} {inventoryItem.unit}</p>
+                  <p className="text-sm text-blue-700">
+                    Current stock: {currentStock} {inventoryItem.unit}
+                  </p>
                 </div>
                 <Package className="w-5 h-5 text-blue-600" />
               </div>
@@ -420,13 +451,15 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                 <p className="text-sm text-gray-500">
                   {!quantity ? 'Enter quantity to continue' : hasQuantityError ? 'Invalid quantity' : 'Ready to record'}
                 </p>
-                <Button 
-                  variant="outline"
-                  onClick={() => handleStepSkip(currentStep)}
-                  disabled={isProcessing}
-                >
-                  Skip Step
-                </Button>
+                {!quantity && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleStepSkip(currentStep)}
+                    disabled={isProcessing}
+                  >
+                    Skip Step
+                  </Button>
+                )}
               </div>
             )}
           </div>
