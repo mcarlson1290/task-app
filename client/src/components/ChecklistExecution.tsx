@@ -330,93 +330,80 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'inventory-select':
-        const categoryItems = inventoryItems.filter(item => 
-          item.category === step.config.category || !step.config.category
-        );
-        const selectedItem = categoryItems.find(item => item.id.toString() === stepData[`${step.id}_item`]);
-        const quantity = stepData[`${step.id}_quantity`] || '';
-        const hasQuantityError = selectedItem && quantity > (selectedItem.currentStock || 0);
+        // Use pre-configured inventory item from recurring task setup
+        const quantity = stepData[step.id] || step.config.defaultQuantity || '';
+        const inventoryItem = {
+          id: step.config.inventoryItemId,
+          name: step.config.inventoryItemName,
+          unit: step.config.inventoryUnit
+        };
+        
+        // Find current stock level for the pre-configured item
+        const currentItem = inventoryItems.find(item => item.id.toString() === inventoryItem.id);
+        const currentStock = currentItem?.currentStock || 0;
+        const hasQuantityError = quantity && parseFloat(quantity) > currentStock;
         
         return (
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-base font-medium">Record Inventory Usage</Label>
-              <p className="text-sm text-gray-600">{step.label}</p>
+              <p className="text-sm text-gray-600">{step.config.customText || step.label}</p>
             </div>
             
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor={`${step.id}_item`}>What did you use?</Label>
-                <Select
-                  value={stepData[`${step.id}_item`] || ''}
-                  onValueChange={(value) => setStepData({
-                    ...stepData,
-                    [`${step.id}_item`]: value,
-                    [`${step.id}_quantity`]: '' // Reset quantity when item changes
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select item..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoryItems.map(item => (
-                      <SelectItem key={item.id} value={item.id.toString()}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{item.name}</span>
-                          <Badge variant="outline">
-                            Available: {item.currentStock || 0} {item.unit}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {selectedItem && (
+            {/* Show what item is being tracked */}
+            <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor={`${step.id}_quantity`}>How much did you use?</Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id={`${step.id}_quantity`}
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => setStepData({
-                        ...stepData,
-                        [`${step.id}_quantity`]: parseFloat(e.target.value) || 0
-                      })}
-                      placeholder="Enter amount"
-                      min="0"
-                      max={selectedItem.currentStock || 999999}
-                      className="w-32"
-                    />
-                    <Badge variant="outline">{selectedItem.unit}</Badge>
-                  </div>
-                  {hasQuantityError && (
-                    <p className="text-sm text-red-600 mt-1">
-                      ⚠️ This exceeds available inventory ({selectedItem.currentStock} {selectedItem.unit})!
-                    </p>
-                  )}
+                  <span className="font-medium text-blue-900">Item: {inventoryItem.name}</span>
+                  <p className="text-sm text-blue-700">Current stock: {currentStock} {inventoryItem.unit}</p>
                 </div>
+                <Package className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            
+            {/* Quantity input with default pre-filled */}
+            <div className="space-y-2">
+              <Label htmlFor={step.id}>Amount used:</Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id={step.id}
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setStepData({
+                    ...stepData,
+                    [step.id]: e.target.value
+                  })}
+                  placeholder={step.config.defaultQuantity || "Enter amount"}
+                  min="0"
+                  step="0.01"
+                  className="w-32"
+                  autoFocus
+                />
+                <Badge variant="outline">{inventoryItem.unit}</Badge>
+              </div>
+              
+              {hasQuantityError && (
+                <p className="text-sm text-red-600">
+                  ⚠️ This exceeds available stock ({currentStock} {inventoryItem.unit})
+                </p>
               )}
             </div>
 
-            {selectedItem && quantity && !hasQuantityError ? (
+            {quantity && parseFloat(quantity) > 0 && !hasQuantityError ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-green-600 font-medium">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Using: {quantity} {selectedItem.unit} of {selectedItem.name}
+                  Using: {quantity} {inventoryItem.unit} of {inventoryItem.name}
                 </div>
                 <Button 
                   onClick={() => {
-                    // Save inventory usage data
                     setStepData({
                       ...stepData,
                       [step.id]: {
-                        itemId: selectedItem.id,
-                        itemName: selectedItem.name,
+                        itemId: inventoryItem.id,
+                        itemName: inventoryItem.name,
                         quantity: parseFloat(quantity),
-                        unit: selectedItem.unit,
+                        unit: inventoryItem.unit,
                         action: 'remove'
                       }
                     });
@@ -429,9 +416,18 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">
-                {!selectedItem ? 'Select an item to continue' : 'Enter quantity to continue'}
-              </p>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-500">
+                  {!quantity ? 'Enter quantity to continue' : hasQuantityError ? 'Invalid quantity' : 'Ready to record'}
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => handleStepSkip(currentStep)}
+                  disabled={isProcessing}
+                >
+                  Skip Step
+                </Button>
+              </div>
             )}
           </div>
         );

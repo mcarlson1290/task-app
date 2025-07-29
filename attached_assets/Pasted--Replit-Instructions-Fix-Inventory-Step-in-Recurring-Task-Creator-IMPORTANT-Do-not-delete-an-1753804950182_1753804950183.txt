@@ -1,0 +1,278 @@
+# Replit Instructions: Fix Inventory Step in Recurring Task Creator
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Update Inventory Step Creation
+When creating a recurring task, the inventory step needs three inputs:
+
+```javascript
+const AddInventoryStep = ({ onAdd }) => {
+  const [customText, setCustomText] = useState('');
+  const [selectedItem, setSelectedItem] = useState('');
+  const [defaultQuantity, setDefaultQuantity] = useState('');
+  
+  const [inventoryItems] = useState([
+    { id: 1, name: 'RO Water', unit: 'gallons' },
+    { id: 2, name: 'pH Down', unit: 'ml' },
+    { id: 3, name: 'pH Up', unit: 'ml' },
+    { id: 4, name: 'Nutrients Part A', unit: 'ml' },
+    { id: 5, name: 'Nutrients Part B', unit: 'ml' },
+    { id: 6, name: 'Rockwool Cubes', unit: 'cubes' },
+    { id: 7, name: 'Romaine Seeds', unit: 'seeds' },
+    { id: 8, name: 'Buttercrunch Seeds', unit: 'seeds' },
+    { id: 9, name: 'Arugula Seeds', unit: 'seeds' },
+    { id: 10, name: 'Basil Seeds', unit: 'seeds' }
+  ]);
+  
+  const handleAdd = () => {
+    if (selectedItem && customText) {
+      const item = inventoryItems.find(i => i.id === parseInt(selectedItem));
+      
+      onAdd({
+        type: 'inventory_usage',
+        text: customText, // Custom text from user
+        inventoryItemId: item.id,
+        inventoryItemName: item.name,
+        inventoryUnit: item.unit,
+        defaultQuantity: defaultQuantity || null // Pre-fill value
+      });
+      
+      // Reset form
+      setCustomText('');
+      setSelectedItem('');
+      setDefaultQuantity('');
+    }
+  };
+  
+  return (
+    <div className="add-inventory-step-form">
+      <h4>Add Inventory Usage Step</h4>
+      
+      {/* Input 1: What inventory item */}
+      <div className="form-group">
+        <label>1. What inventory item will be used?</label>
+        <select
+          value={selectedItem}
+          onChange={(e) => setSelectedItem(e.target.value)}
+          required
+        >
+          <option value="">Select item...</option>
+          {inventoryItems.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.name} ({item.unit})
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      {/* Input 2: Custom text/question */}
+      <div className="form-group">
+        <label>2. What text should appear for this step?</label>
+        <input
+          type="text"
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value)}
+          placeholder="e.g., How much RO water did you use?"
+          required
+        />
+        <small className="hint">
+          This is what the user will see when completing the task
+        </small>
+      </div>
+      
+      {/* Input 3: Default quantity (optional) */}
+      <div className="form-group">
+        <label>3. Default quantity (optional)</label>
+        <div className="quantity-input">
+          <input
+            type="number"
+            value={defaultQuantity}
+            onChange={(e) => setDefaultQuantity(e.target.value)}
+            placeholder="e.g., 2.5"
+            step="0.1"
+            min="0"
+          />
+          {selectedItem && (
+            <span className="unit">
+              {inventoryItems.find(i => i.id === parseInt(selectedItem))?.unit}
+            </span>
+          )}
+        </div>
+        <small className="hint">
+          Pre-fills this amount to save time during task completion
+        </small>
+      </div>
+      
+      <button 
+        onClick={handleAdd} 
+        disabled={!selectedItem || !customText}
+        className="add-step-btn"
+      >
+        Add Inventory Step
+      </button>
+    </div>
+  );
+};
+```
+
+## Update Task Completion to Use Pre-filled Values
+When completing the task, show the pre-defined item and default quantity:
+
+```javascript
+const InventoryUsageStep = ({ step, onComplete, onSkip }) => {
+  // Start with default quantity if provided
+  const [quantity, setQuantity] = useState(step.defaultQuantity || '');
+  const [currentStock, setCurrentStock] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    fetchCurrentStock(step.inventoryItemId);
+  }, [step.inventoryItemId]);
+  
+  const fetchCurrentStock = async (itemId) => {
+    setLoading(true);
+    try {
+      // Fetch actual inventory level
+      const response = await fetch(`/api/inventory/${itemId}`);
+      const data = await response.json();
+      setCurrentStock(data.quantity);
+    } catch (error) {
+      console.error('Failed to fetch inventory:', error);
+    }
+    setLoading(false);
+  };
+  
+  const handleSubmit = () => {
+    if (quantity && parseFloat(quantity) > 0) {
+      onComplete({
+        itemId: step.inventoryItemId,
+        itemName: step.inventoryItemName,
+        quantity: parseFloat(quantity),
+        unit: step.inventoryUnit,
+        action: 'remove'
+      });
+    }
+  };
+  
+  return (
+    <div className="inventory-usage-input">
+      {/* Show the custom text from recurring task setup */}
+      <h4>{step.text}</h4>
+      
+      {/* Show what item is being tracked */}
+      <div className="item-info">
+        <strong>Item:</strong> {step.inventoryItemName}
+        {loading ? (
+          <span className="loading"> (Loading stock...)</span>
+        ) : currentStock !== null ? (
+          <span className="stock-level"> (Current: {currentStock} {step.inventoryUnit})</span>
+        ) : null}
+      </div>
+      
+      {/* Quantity input with default pre-filled */}
+      <div className="form-group">
+        <label>Amount used:</label>
+        <div className="quantity-input">
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder={step.defaultQuantity || "Enter amount"}
+            min="0"
+            step="0.01"
+            className="quantity-field"
+            autoFocus
+          />
+          <span className="unit">{step.inventoryUnit}</span>
+        </div>
+        
+        {quantity && currentStock && parseFloat(quantity) > currentStock && (
+          <p className="warning">
+            ⚠️ This exceeds available stock ({currentStock} {step.inventoryUnit})
+          </p>
+        )}
+      </div>
+      
+      <div className="step-actions">
+        <button 
+          onClick={handleSubmit} 
+          disabled={!quantity || parseFloat(quantity) <= 0}
+          className="submit-btn"
+        >
+          Record Usage
+        </button>
+        <button onClick={onSkip} className="skip-btn">
+          Skip Step
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+## Update Step Display in Checklist View
+Show inventory steps clearly in the checklist:
+
+```javascript
+const renderChecklistStep = (step) => {
+  switch (step.type) {
+    case 'inventory_usage':
+      return (
+        <div className="step-preview">
+          <span className="step-icon">📦</span>
+          <span className="step-text">{step.text}</span>
+          <span className="step-detail">
+            ({step.inventoryItemName}
+            {step.defaultQuantity && ` - Default: ${step.defaultQuantity} ${step.inventoryUnit}`})
+          </span>
+        </div>
+      );
+    // ... other step types
+  }
+};
+```
+
+## Styling
+```css
+.add-inventory-step-form {
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.quantity-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-field {
+  width: 120px;
+}
+
+.item-info {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.stock-level {
+  color: #666;
+  font-weight: normal;
+}
+
+.step-detail {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 10px;
+}
+```
+
+## Result
+This gives you three inputs when creating the inventory step:
+1. **Item selection** - What inventory item to track
+2. **Custom text** - The question/instruction users see
+3. **Default quantity** - Pre-fills to save time (optional)
+
+During task completion, users see the custom text, the item is pre-selected, and the quantity is pre-filled with the default (if provided).

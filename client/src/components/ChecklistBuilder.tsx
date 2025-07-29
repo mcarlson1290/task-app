@@ -50,7 +50,7 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
       case 'number-input':
         return { min: 0, max: 100, unit: '', default: 0 };
       case 'inventory-select':
-        return { category: 'seeds', allowMultiple: false };
+        return { inventoryItemId: '', inventoryItemName: '', inventoryUnit: '', customText: '', defaultQuantity: '' };
       case 'system-assignment':
         return { systemType: '', autoSuggest: true };
       case 'data-capture':
@@ -417,37 +417,105 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
             )}
 
             {step.type === 'inventory-select' && (
-              <div className="space-y-3">
-                <div>
-                  <Label>Category</Label>
-                  <Select
-                    value={step.config.category || 'seeds'}
-                    onValueChange={(value) => onUpdate({
-                      ...step,
-                      config: { ...step.config, category: value }
-                    })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="seeds">Seeds</SelectItem>
-                      <SelectItem value="nutrients">Nutrients</SelectItem>
-                      <SelectItem value="supplies">Supplies</SelectItem>
-                      <SelectItem value="equipment">Equipment</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`multiple-${step.id}`}
-                    checked={step.config.allowMultiple}
-                    onCheckedChange={(checked) => onUpdate({
-                      ...step,
-                      config: { ...step.config, allowMultiple: !!checked }
-                    })}
-                  />
-                  <Label htmlFor={`multiple-${step.id}`}>Allow multiple selections</Label>
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-3">Inventory Usage Step Configuration</h4>
+                  
+                  {/* Input 1: What inventory item */}
+                  <div className="space-y-2 mb-4">
+                    <Label className="text-sm font-medium">1. What inventory item will be used?</Label>
+                    <Select
+                      value={step.config.inventoryItemId || ''}
+                      onValueChange={(value) => {
+                        const inventoryItems = [
+                          { id: '1', name: 'RO Water', unit: 'gallons' },
+                          { id: '2', name: 'pH Down', unit: 'ml' },
+                          { id: '3', name: 'pH Up', unit: 'ml' },
+                          { id: '4', name: 'Nutrients Part A', unit: 'ml' },
+                          { id: '5', name: 'Nutrients Part B', unit: 'ml' },
+                          { id: '6', name: 'Rockwool Cubes', unit: 'cubes' },
+                          { id: '7', name: 'Romaine Seeds', unit: 'seeds' },
+                          { id: '8', name: 'Buttercrunch Seeds', unit: 'seeds' },
+                          { id: '9', name: 'Arugula Seeds', unit: 'seeds' },
+                          { id: '10', name: 'Basil Seeds', unit: 'seeds' }
+                        ];
+                        const item = inventoryItems.find(i => i.id === value);
+                        onUpdate({
+                          ...step,
+                          config: { 
+                            ...step.config, 
+                            inventoryItemId: value,
+                            inventoryItemName: item?.name || '',
+                            inventoryUnit: item?.unit || ''
+                          }
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select inventory item..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">RO Water (gallons)</SelectItem>
+                        <SelectItem value="2">pH Down (ml)</SelectItem>
+                        <SelectItem value="3">pH Up (ml)</SelectItem>
+                        <SelectItem value="4">Nutrients Part A (ml)</SelectItem>
+                        <SelectItem value="5">Nutrients Part B (ml)</SelectItem>
+                        <SelectItem value="6">Rockwool Cubes (cubes)</SelectItem>
+                        <SelectItem value="7">Romaine Seeds (seeds)</SelectItem>
+                        <SelectItem value="8">Buttercrunch Seeds (seeds)</SelectItem>
+                        <SelectItem value="9">Arugula Seeds (seeds)</SelectItem>
+                        <SelectItem value="10">Basil Seeds (seeds)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Input 2: Custom text/question */}
+                  <div className="space-y-2 mb-4">
+                    <Label className="text-sm font-medium">2. What text should appear for this step?</Label>
+                    <Input
+                      type="text"
+                      value={step.config.customText || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, customText: e.target.value }
+                      })}
+                      placeholder="e.g., How much RO water did you use?"
+                    />
+                    <p className="text-xs text-gray-600">This is what the user will see when completing the task</p>
+                  </div>
+
+                  {/* Input 3: Default quantity (optional) */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">3. Default quantity (optional)</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={step.config.defaultQuantity || ''}
+                        onChange={(e) => onUpdate({
+                          ...step,
+                          config: { ...step.config, defaultQuantity: e.target.value }
+                        })}
+                        placeholder="e.g., 2.5"
+                        step="0.1"
+                        min="0"
+                        className="w-32"
+                      />
+                      {step.config.inventoryUnit && (
+                        <span className="text-sm text-gray-600">{step.config.inventoryUnit}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600">Pre-fills this amount to save time during task completion</p>
+                  </div>
+
+                  {step.config.inventoryItemName && (
+                    <div className="mt-3 p-2 bg-white rounded border">
+                      <p className="text-sm text-gray-700">
+                        <strong>Preview:</strong> {step.config.customText || step.label} 
+                        <span className="text-gray-500"> (tracking {step.config.inventoryItemName}
+                        {step.config.defaultQuantity && ` - default: ${step.config.defaultQuantity} ${step.config.inventoryUnit}`})</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
