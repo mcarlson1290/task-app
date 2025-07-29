@@ -1,0 +1,401 @@
+# Replit Instructions: Fix Checklist UI and Functionality Issues
+
+## Issue 1: Move Input Block Under Current Step
+Instead of showing the input at the bottom, display it inline with the current step:
+
+```javascript
+const TaskChecklist = ({ task }) => {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [steps, setSteps] = useState(task.checklist || []);
+  
+  return (
+    <div className="task-checklist">
+      {steps.map((step, index) => (
+        <div key={step.id}>
+          {/* Step item display */}
+          <div 
+            className={`step-item ${index === currentStepIndex ? 'active' : ''}`}
+            onClick={() => setCurrentStepIndex(index)}
+          >
+            <span className="step-icon">{getStepIcon(step.type)}</span>
+            <span className="step-text">{step.text}</span>
+            {step.completed && <span className="checkmark">✓</span>}
+          </div>
+          
+          {/* Show input block directly under the active step */}
+          {index === currentStepIndex && !step.completed && (
+            <div className="step-input-block">
+              <StepInputComponent 
+                step={step} 
+                onComplete={(data) => handleStepComplete(index, data)}
+                onSkip={() => handleStepSkip(index)}
+              />
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {/* Progress and complete button at bottom */}
+      <div className="checklist-footer">
+        <button 
+          onClick={completeTask}
+          disabled={!allRequiredStepsComplete()}
+          className="complete-task-btn"
+        >
+          Mark as Complete
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+## Issue 2: Fix Skip Functionality
+When skipping a step, it should NOT appear as checked:
+
+```javascript
+const handleStepSkip = (stepIndex) => {
+  const updatedSteps = [...steps];
+  updatedSteps[stepIndex] = {
+    ...updatedSteps[stepIndex],
+    skipped: true,      // Mark as skipped, not completed
+    completed: false    // Ensure it's not marked as completed
+  };
+  setSteps(updatedSteps);
+  
+  // Move to next step
+  if (stepIndex < steps.length - 1) {
+    setCurrentStepIndex(stepIndex + 1);
+  }
+};
+
+// Update step display to show skipped state
+<div className={`step-item ${step.completed ? 'completed' : ''} ${step.skipped ? 'skipped' : ''}`}>
+  <span className="step-icon">
+    {step.completed ? '✓' : step.skipped ? '⏭️' : getStepIcon(step.type)}
+  </span>
+  <span className="step-text">{step.text}</span>
+</div>
+```
+
+## Issue 3: Fix Inventory Selection Step
+Change from "select seeds" to quantity-based inventory reduction:
+
+```javascript
+const InventoryUsageStep = ({ step, onComplete, onSkip }) => {
+  const [selectedItem, setSelectedItem] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [availableItems, setAvailableItems] = useState([]);
+  
+  useEffect(() => {
+    // Load inventory items
+    fetchInventoryItems();
+  }, []);
+  
+  const fetchInventoryItems = async () => {
+    // Fetch from inventory
+    const items = [
+      { id: 1, name: 'Romaine Seeds', unit: 'seeds', available: 500 },
+      { id: 2, name: 'Rockwool Cubes', unit: 'cubes', available: 200 },
+      { id: 3, name: 'Nutrients Part A', unit: 'ml', available: 5000 },
+      { id: 4, name: 'pH Down', unit: 'ml', available: 1000 }
+    ];
+    setAvailableItems(items);
+  };
+  
+  const handleSubmit = () => {
+    if (selectedItem && quantity) {
+      onComplete({
+        itemId: selectedItem,
+        quantity: parseFloat(quantity),
+        action: 'remove'
+      });
+    }
+  };
+  
+  const selectedItemData = availableItems.find(item => item.id === parseInt(selectedItem));
+  
+  return (
+    <div className="inventory-usage-input">
+      <h4>Record Inventory Usage</h4>
+      
+      <div className="form-group">
+        <label>What did you use?</label>
+        <select 
+          value={selectedItem} 
+          onChange={(e) => setSelectedItem(e.target.value)}
+        >
+          <option value="">Select item...</option>
+          {availableItems.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.name} (Available: {item.available} {item.unit})
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      {selectedItem && (
+        <div className="form-group">
+          <label>How much did you use?</label>
+          <div className="quantity-input">
+            <input
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Enter amount"
+              min="0"
+              max={selectedItemData?.available || 999999}
+            />
+            <span className="unit">{selectedItemData?.unit}</span>
+          </div>
+          {selectedItemData && quantity > selectedItemData.available && (
+            <p className="warning">⚠️ This exceeds available inventory!</p>
+          )}
+        </div>
+      )}
+      
+      <div className="step-actions">
+        <button 
+          onClick={handleSubmit} 
+          disabled={!selectedItem || !quantity}
+          className="submit-btn"
+        >
+          Record Usage
+        </button>
+        <button onClick={onSkip} className="skip-btn">Skip</button>
+      </div>
+    </div>
+  );
+};
+```
+
+## Issue 4: Fix Photo Capture
+Enable actual camera functionality:
+
+```javascript
+const PhotoCaptureStep = ({ step, onComplete, onSkip }) => {
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  
+  const handlePhotoCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        setPhoto(file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleSubmit = () => {
+    if (photo) {
+      // Upload photo and save reference
+      onComplete({
+        photo: photo,
+        photoUrl: preview,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+  
+  return (
+    <div className="photo-capture-input">
+      <h4>Take a Photo</h4>
+      
+      {!preview ? (
+        <div className="camera-controls">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment" // Opens camera on mobile
+            onChange={handlePhotoCapture}
+            style={{ display: 'none' }}
+          />
+          
+          <button 
+            onClick={() => fileInputRef.current.click()}
+            className="camera-btn"
+          >
+            📷 Open Camera
+          </button>
+          
+          <p className="hint">Or select a photo from your device</p>
+        </div>
+      ) : (
+        <div className="photo-preview-container">
+          <img src={preview} alt="Captured" className="photo-preview" />
+          <div className="preview-actions">
+            <button onClick={() => {setPreview(null); setPhoto(null);}}>
+              Retake
+            </button>
+            <button onClick={handleSubmit} className="submit-btn">
+              Use This Photo
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <button onClick={onSkip} className="skip-btn">Skip Photo</button>
+    </div>
+  );
+};
+```
+
+## Issue 5: Smart System Assignment for Movement
+Automatically find available systems based on requirements:
+
+```javascript
+const SystemMovementStep = ({ step, onComplete, onSkip }) => {
+  const [availableSystems, setAvailableSystems] = useState([]);
+  const [selectedSystem, setSelectedSystem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    findAvailableSystems();
+  }, []);
+  
+  const findAvailableSystems = async () => {
+    setLoading(true);
+    try {
+      // Query for open systems matching the crop/stage requirements
+      const cropType = step.cropType || 'lettuce'; // Get from task context
+      const stage = step.stage || 'vegetative'; // seedling, vegetative, etc.
+      
+      const response = await fetch(`/api/systems/available?crop=${cropType}&stage=${stage}`);
+      const systems = await response.json();
+      
+      setAvailableSystems(systems);
+      
+      // Auto-select if only one option
+      if (systems.length === 1) {
+        setSelectedSystem(systems[0]);
+      }
+    } catch (error) {
+      console.error('Error finding systems:', error);
+    }
+    setLoading(false);
+  };
+  
+  const handleMove = () => {
+    if (selectedSystem) {
+      onComplete({
+        systemId: selectedSystem.id,
+        systemName: selectedSystem.name,
+        movedAt: new Date().toISOString()
+      });
+    }
+  };
+  
+  if (loading) return <div>Finding available systems...</div>;
+  
+  return (
+    <div className="system-movement-input">
+      <h4>Move to Growing System</h4>
+      
+      {availableSystems.length === 0 ? (
+        <div className="no-systems">
+          <p>⚠️ No available systems found for this crop type</p>
+          <button onClick={onSkip}>Skip for Now</button>
+        </div>
+      ) : (
+        <>
+          <div className="systems-list">
+            {availableSystems.map(system => (
+              <div 
+                key={system.id}
+                className={`system-option ${selectedSystem?.id === system.id ? 'selected' : ''}`}
+                onClick={() => setSelectedSystem(system)}
+              >
+                <h5>{system.name}</h5>
+                <p>Type: {system.type} | Available spots: {system.availableSpots}</p>
+                <p>Current crops: {system.currentCrops || 'Empty'}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="step-actions">
+            <button 
+              onClick={handleMove}
+              disabled={!selectedSystem}
+              className="submit-btn"
+            >
+              Move to {selectedSystem?.name || 'System'}
+            </button>
+            <button onClick={onSkip} className="skip-btn">Skip</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+```
+
+## Issue 6: Update Styling
+```css
+/* Active step highlighting */
+.step-item.active {
+  background: #e3f2fd;
+  border-left: 4px solid #2196F3;
+}
+
+/* Input block appears inline */
+.step-input-block {
+  margin: 10px 0 10px 40px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Skipped steps styling */
+.step-item.skipped {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* Photo preview */
+.photo-preview {
+  max-width: 300px;
+  max-height: 300px;
+  border-radius: 8px;
+}
+
+/* System selection */
+.system-option {
+  padding: 12px;
+  margin: 8px 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.system-option.selected {
+  border-color: #4CAF50;
+  background: #e8f5e9;
+}
+
+/* Inventory usage */
+.quantity-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warning {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 5px;
+}
+```
+
+These changes will:
+1. Show the input block directly under the current step
+2. Properly handle skipped steps (not showing as completed)
+3. Change inventory to quantity-based usage tracking
+4. Enable actual camera functionality
+5. Intelligently suggest available systems based on crop requirements

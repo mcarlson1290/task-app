@@ -318,85 +318,216 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
 
       case 'inventory-select':
         const categoryItems = inventoryItems.filter(item => 
-          item.category === step.config.category
+          item.category === step.config.category || !step.config.category
         );
+        const selectedItem = categoryItems.find(item => item.id.toString() === stepData[`${step.id}_item`]);
+        const quantity = stepData[`${step.id}_quantity`] || '';
+        const hasQuantityError = selectedItem && quantity > (selectedItem.currentStock || 0);
         
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={step.id}>{step.label}</Label>
-              <Select
-                value={stepData[step.id] || ''}
-                onValueChange={(value) => setStepData({
-                  ...stepData,
-                  [step.id]: value
-                })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={`Select ${step.config.category}`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryItems.map(item => (
-                    <SelectItem key={item.id} value={item.id.toString()}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{item.name}</span>
-                        <Badge variant="outline">{item.currentStock || 0} {item.unit}</Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <Label className="text-base font-medium">Record Inventory Usage</Label>
+              <p className="text-sm text-gray-600">{step.label}</p>
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={isProcessing}
-            >
-              Continue
-            </Button>
+            
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor={`${step.id}_item`}>What did you use?</Label>
+                <Select
+                  value={stepData[`${step.id}_item`] || ''}
+                  onValueChange={(value) => setStepData({
+                    ...stepData,
+                    [`${step.id}_item`]: value,
+                    [`${step.id}_quantity`]: '' // Reset quantity when item changes
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select item..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoryItems.map(item => (
+                      <SelectItem key={item.id} value={item.id.toString()}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{item.name}</span>
+                          <Badge variant="outline">
+                            Available: {item.currentStock || 0} {item.unit}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedItem && (
+                <div>
+                  <Label htmlFor={`${step.id}_quantity`}>How much did you use?</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id={`${step.id}_quantity`}
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setStepData({
+                        ...stepData,
+                        [`${step.id}_quantity`]: parseFloat(e.target.value) || 0
+                      })}
+                      placeholder="Enter amount"
+                      min="0"
+                      max={selectedItem.currentStock || 999999}
+                      className="w-32"
+                    />
+                    <Badge variant="outline">{selectedItem.unit}</Badge>
+                  </div>
+                  {hasQuantityError && (
+                    <p className="text-sm text-red-600 mt-1">
+                      ⚠️ This exceeds available inventory ({selectedItem.currentStock} {selectedItem.unit})!
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {selectedItem && quantity && !hasQuantityError ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-green-600 font-medium">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Using: {quantity} {selectedItem.unit} of {selectedItem.name}
+                </div>
+                <Button 
+                  onClick={() => {
+                    // Save inventory usage data
+                    setStepData({
+                      ...stepData,
+                      [step.id]: {
+                        itemId: selectedItem.id,
+                        itemName: selectedItem.name,
+                        quantity: parseFloat(quantity),
+                        unit: selectedItem.unit,
+                        action: 'remove'
+                      }
+                    });
+                    handleStepComplete();
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isProcessing}
+                >
+                  Record Usage
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                {!selectedItem ? 'Select an item to continue' : 'Enter quantity to continue'}
+              </p>
+            )}
           </div>
         );
 
       case 'system-assignment':
-        const filteredSystems = step.config.systemType 
-          ? systems.filter(s => s.category === step.config.systemType)
-          : systems;
+        // Smart system filtering based on crop type and capacity
+        const availableSystems = systems.filter(system => {
+          const hasCapacity = (system.currentOccupancy || 0) < (system.capacity || 0);
+          const matchesType = !step.config.systemType || system.category === step.config.systemType;
+          return hasCapacity && matchesType;
+        }).sort((a, b) => {
+          // Sort by utilization (lower utilization first)
+          const aUtil = (a.currentOccupancy || 0) / (a.capacity || 1);
+          const bUtil = (b.currentOccupancy || 0) / (b.capacity || 1);
+          return aUtil - bUtil;
+        });
+        
+        const selectedSystemId = stepData[step.id];
+        const selectedSystem = systems.find(s => s.id.toString() === selectedSystemId);
         
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={step.id}>{step.label}</Label>
-              <Select
-                value={stepData[step.id] || ''}
-                onValueChange={(value) => setStepData({
-                  ...stepData,
-                  [step.id]: value
-                })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select system" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredSystems.map(system => (
-                    <SelectItem key={system.id} value={system.id.toString()}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{system.name}</span>
-                        <Badge variant="outline">
-                          {system.currentOccupancy}/{system.capacity}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <Label className="text-base font-medium">System Assignment</Label>
+              <p className="text-sm text-gray-600">{step.label}</p>
             </div>
-            <Button 
-              onClick={handleStepComplete} 
-              className="w-full"
-              disabled={isProcessing}
-            >
-              Assign System
-            </Button>
+            
+            {availableSystems.length === 0 ? (
+              <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                <div className="flex items-center text-yellow-800">
+                  <AlertTriangle className="w-5 h-5 mr-2" />
+                  <span className="font-medium">No available systems found</span>
+                </div>
+                <p className="text-sm text-yellow-700 mt-1">
+                  All systems are at capacity or don't match the requirements
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-sm text-gray-600">
+                  Found {availableSystems.length} available system{availableSystems.length !== 1 ? 's' : ''}
+                </div>
+                
+                <div className="space-y-2">
+                  {availableSystems.map(system => {
+                    const isSelected = selectedSystemId === system.id.toString();
+                    const utilization = ((system.currentOccupancy || 0) / (system.capacity || 1)) * 100;
+                    
+                    return (
+                      <div 
+                        key={system.id}
+                        className={`
+                          p-3 rounded-lg border-2 cursor-pointer transition-all
+                          ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-blue-300'}
+                        `}
+                        onClick={() => setStepData({
+                          ...stepData,
+                          [step.id]: system.id.toString()
+                        })}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h5 className="font-medium">{system.name}</h5>
+                            <p className="text-sm text-gray-600">
+                              Type: {system.category} | Available spots: {(system.capacity || 0) - (system.currentOccupancy || 0)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={utilization < 70 ? 'outline' : utilization < 90 ? 'secondary' : 'destructive'}>
+                              {Math.round(utilization)}% full
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedSystem ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-green-600 font-medium">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Selected: {selectedSystem.name}
+                </div>
+                <Button 
+                  onClick={() => {
+                    // Save system assignment data
+                    setStepData({
+                      ...stepData,
+                      [step.id]: {
+                        systemId: selectedSystem.id,
+                        systemName: selectedSystem.name,
+                        systemType: selectedSystem.category,
+                        assignedAt: new Date().toISOString()
+                      }
+                    });
+                    handleStepComplete();
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isProcessing}
+                >
+                  Assign to System
+                </Button>
+              </div>
+            ) : availableSystems.length > 0 ? (
+              <p className="text-sm text-gray-500">Select a system to continue</p>
+            ) : null}
           </div>
         );
 
@@ -454,57 +585,88 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'photo':
+        const photoData = stepData[step.id];
+        const hasPhoto = photoData && (photoData.timestamp || photoData);
+        
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={step.id} className="text-base font-medium">{step.label}</Label>
-              {stepData[step.id] ? (
-                <div className="space-y-2">
+              <Label className="text-base font-medium">{step.label}</Label>
+              
+              {hasPhoto ? (
+                <div className="space-y-3">
                   <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
                     <div className="flex items-center text-green-700">
                       <Camera className="w-5 h-5 mr-2" />
                       <span className="font-medium">Photo captured successfully</span>
                     </div>
                     <p className="text-sm text-green-600 mt-1">
-                      Photo timestamp: {new Date(stepData[step.id]).toLocaleString()}
+                      Captured: {new Date(photoData.timestamp || photoData).toLocaleString()}
                     </p>
                   </div>
-                  <Button 
-                    onClick={() => {
-                      setStepData({ ...stepData, [step.id]: new Date().toISOString() });
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Retake Photo
-                  </Button>
+                  
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={() => {
+                        // Simulate file input click for photo retake
+                        const photoTimestamp = new Date().toISOString();
+                        setStepData({ 
+                          ...stepData, 
+                          [step.id]: {
+                            timestamp: photoTimestamp,
+                            filename: `task_${task.id}_step_${step.id}_${Date.now()}.jpg`
+                          }
+                        });
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Retake Photo
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleStepComplete}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      disabled={isProcessing}
+                    >
+                      Continue
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-3">Take a photo to document this step</p>
-                  <Button 
-                    onClick={() => {
-                      setStepData({ ...stepData, [step.id]: new Date().toISOString() });
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Photo
-                  </Button>
+                <div className="space-y-3">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600 mb-3">Take a photo to document this step</p>
+                    
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={() => {
+                          // Simulate camera capture
+                          const photoTimestamp = new Date().toISOString();
+                          setStepData({ 
+                            ...stepData, 
+                            [step.id]: {
+                              timestamp: photoTimestamp,
+                              filename: `task_${task.id}_step_${step.id}_${Date.now()}.jpg`
+                            }
+                          });
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Capture Photo
+                      </Button>
+                      
+                      <p className="text-xs text-gray-500">
+                        Opens camera on mobile devices
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-            {stepData[step.id] && (
-              <Button 
-                onClick={handleStepComplete} 
-                className="w-full bg-green-600 hover:bg-green-700"
-                disabled={isProcessing}
-              >
-                Continue with Photo Documented
-              </Button>
-            )}
           </div>
         );
 
@@ -581,94 +743,127 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     return icons[type as keyof typeof icons] || Circle;
   };
 
+  // Handle step skip with proper state
+  const handleStepSkip = (stepIndex: number) => {
+    const updatedSteps = [...steps];
+    updatedSteps[stepIndex] = {
+      ...updatedSteps[stepIndex],
+      skipped: true,
+      completed: false
+    };
+    setSteps(updatedSteps);
+    
+    // Move to next step
+    if (stepIndex < steps.length - 1) {
+      setCurrentStep(stepIndex + 1);
+    } else {
+      // All steps processed
+      onComplete();
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Progress Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Task Checklist</h3>
           <Badge variant="outline">
-            Step {currentStep + 1} of {steps.length}
+            {steps.filter(s => s.completed || (s as any).skipped).length} of {steps.length} Complete
           </Badge>
         </div>
         <Progress value={progressPercentage} className="w-full" />
       </div>
 
-      {/* Step List */}
-      <div className="space-y-2">
+      {/* Steps with Inline Inputs */}
+      <div className="space-y-3">
         {steps.map((step, index) => {
           const StepIcon = getStepIcon(step.type);
-          const isCompleted = index < currentStep;
-          const isCurrent = index === currentStep;
+          const isCompleted = step.completed;
+          const isSkipped = (step as any).skipped;
+          const isCurrent = index === currentStep && !isCompleted && !isSkipped;
           
           return (
-            <div 
-              key={step.id}
-              className={`flex items-center space-x-3 p-2 rounded-lg ${
-                isCurrent ? 'bg-blue-50 border border-blue-200' : 
-                isCompleted ? 'bg-green-50' : 'bg-gray-50'
-              }`}
-            >
-              <StepIcon 
-                className={`w-5 h-5 ${
-                  isCompleted ? 'text-green-600' : 
-                  isCurrent ? 'text-blue-600' : 'text-gray-400'
-                }`}
-              />
-              <span className={`flex-1 ${
-                isCompleted ? 'text-green-900 line-through' : 
-                isCurrent ? 'text-blue-900 font-medium' : 'text-gray-600'
-              }`}>
-                {step.label}
-              </span>
-              {isCompleted && <CheckCircle className="w-4 h-4 text-green-600" />}
+            <div key={step.id} className="space-y-2">
+              {/* Step Item */}
+              <div 
+                className={`
+                  flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-all
+                  ${isCurrent ? 'bg-blue-50 border-blue-200 border-l-4 border-l-blue-500' : 'bg-white border-gray-200'}
+                  ${isCompleted ? 'bg-green-50 border-green-200' : ''}
+                  ${isSkipped ? 'bg-gray-50 border-gray-200 opacity-60' : ''}
+                `}
+                onClick={() => !isCompleted && !isSkipped && setCurrentStep(index)}
+              >
+                <div className="flex-shrink-0">
+                  {isCompleted ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : isSkipped ? (
+                    <div className="w-5 h-5 flex items-center justify-center text-gray-500">⏭️</div>
+                  ) : (
+                    <StepIcon className={`w-5 h-5 ${isCurrent ? 'text-blue-600' : 'text-gray-400'}`} />
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <span className={`font-medium ${isSkipped ? 'line-through text-gray-500' : isCurrent ? 'text-blue-900' : isCompleted ? 'text-green-900' : 'text-gray-700'}`}>
+                    {step.text || step.label}
+                  </span>
+                </div>
+                
+                <Badge variant="outline" className="text-xs">
+                  Step {index + 1}
+                </Badge>
+              </div>
+
+              {/* Inline Input Block for Current Step */}
+              {isCurrent && (
+                <div className="ml-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  {renderStepInput(step)}
+                  
+                  {/* Skip Button */}
+                  <div className="flex justify-end mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStepSkip(index)}
+                      className="text-gray-600 hover:text-gray-800"
+                    >
+                      Skip Step
+                    </Button>
+                  </div>
+                  
+                  {errors[step.id] && (
+                    <Alert className="mt-3" variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        {errors[step.id]}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Current Step */}
-      {currentStep < steps.length && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              {React.createElement(getStepIcon(steps[currentStep].type), { className: 'w-5 h-5' })}
-              <span>{steps[currentStep].label}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderStepInput(steps[currentStep])}
-            {errors[steps[currentStep].id] && (
-              <Alert className="mt-4" variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  {errors[steps[currentStep].id]}
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Navigation */}
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-          disabled={currentStep === 0 || isProcessing}
-        >
-          Previous
-        </Button>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
-            disabled={currentStep === steps.length - 1 || isProcessing}
+      {/* Complete Task when all steps done */}
+      {currentStep >= steps.length && (
+        <div className="text-center space-y-4 mt-6 pt-4 border-t">
+          <div className="flex items-center justify-center text-green-600">
+            <CheckCircle className="w-6 h-6 mr-2" />
+            <span className="font-medium">All steps completed!</span>
+          </div>
+          <Button 
+            onClick={onComplete} 
+            className="w-full bg-green-600 hover:bg-green-700"
+            disabled={isProcessing}
           >
-            Skip
+            Complete Task
           </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 };
