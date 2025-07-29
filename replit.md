@@ -135,7 +135,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 - **July 29, 2025**: Fixed inventory step configuration and improved user experience
-  - **Inventory Step Configuration Fix**: Enhanced recurring task creator with proper three-input inventory configuration
+  - **File-Based Persistence System**: Complete data preservation system to prevent data loss during development
+    - Created ./data directory with JSON files for tasks, recurring tasks, inventory items, and ID counters
+    - Implemented automatic syncing between in-memory storage and JSON files for all data operations
+    - Added PersistenceManager class with loadData() and saveData() methods for seamless file operations
+    - Enhanced server startup to load from persisted files or fall back to seed data if none exist
+    - All task creation, updates, inventory changes, and recurring task operations now persist to disk
+    - System maintains fast in-memory access while providing reliable data recovery across server restarts
+  - **ChecklistBuilder Settings Modal Fix**: Resolved configuration reset issue in recurring task creator
+    - Fixed inventory step configuration preservation during step updates with enhanced state management
+    - Added configuration merging logic to prevent settings from being reset to empty values
+    - Implemented debug logging to track inventory step configuration changes
+    - Enhanced updateStep method with proper config preservation using spread operators
+    - All three inventory inputs (item selection, custom text, default quantity) now properly persist
+    - Settings modal no longer closes immediately and maintains user-entered configuration data
+  - **Inventory Step Configuration Enhancement**: Enhanced recurring task creator with proper three-input inventory configuration
     - Fixed inventory-select steps to require item selection, custom text, and default quantity during recurring task setup
     - Added blue configuration panel with clear labels and pre-configured inventory items
     - Enhanced ChecklistExecution with proper fallback handling for misconfigured inventory steps

@@ -53,17 +53,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -93,17 +93,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -133,17 +133,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -173,17 +173,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -213,17 +213,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -253,17 +253,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -293,17 +293,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -333,17 +333,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -373,17 +373,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -413,17 +413,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -453,17 +453,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -493,17 +493,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -533,17 +533,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -573,17 +573,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -613,17 +613,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -653,17 +653,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -693,17 +693,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -733,17 +733,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -773,17 +773,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -813,17 +813,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -853,17 +853,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -893,17 +893,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -933,17 +933,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -973,17 +973,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1013,17 +1013,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1053,17 +1053,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1093,17 +1093,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1133,17 +1133,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1173,17 +1173,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],
@@ -1213,17 +1213,17 @@
     "progress": 0,
     "checklist": [
       {
-        "id": "water-step-1",
-        "text": "Record water usage for microgreens",
+        "id": "1753806730128",
+        "text": "",
         "completed": false,
         "required": true,
         "type": "inventory-select",
         "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
+          "inventoryItemId": "",
+          "inventoryItemName": "",
+          "inventoryUnit": "",
+          "customText": "",
+          "defaultQuantity": ""
         }
       }
     ],

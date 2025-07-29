@@ -16,21 +16,31 @@
     "checklistTemplate": {
       "steps": [
         {
-          "id": "water-step-1",
+          "id": "1753806730128",
           "type": "inventory-select",
-          "label": "Record water usage for microgreens",
+          "label": "",
           "required": true,
           "config": {
-            "inventoryItemId": "1",
-            "inventoryItemName": "RO Water",
-            "inventoryUnit": "gallons",
-            "customText": "How much water did you use?",
-            "defaultQuantity": "2.5"
+            "inventoryItemId": "",
+            "inventoryItemName": "",
+            "inventoryUnit": "",
+            "customText": "",
+            "defaultQuantity": ""
           }
         }
       ]
     },
     "id": 1,
-    "createdAt": "2025-07-29T16:31:12.128Z"
+    "createdAt": "2025-07-29T16:31:12.128Z",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    }
   }
 ]

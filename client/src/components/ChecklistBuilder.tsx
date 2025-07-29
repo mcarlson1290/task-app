@@ -50,7 +50,13 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
       case 'number-input':
         return { min: 0, max: 100, unit: '', default: 0 };
       case 'inventory-select':
-        return { inventoryItemId: '', inventoryItemName: '', inventoryUnit: '', customText: '', defaultQuantity: '' };
+        return { 
+          inventoryItemId: '', 
+          inventoryItemName: '', 
+          inventoryUnit: '', 
+          customText: '', 
+          defaultQuantity: '' 
+        };
       case 'system-assignment':
         return { systemType: '', autoSuggest: true };
       case 'data-capture':
@@ -85,9 +91,27 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
 
   const updateStep = (index: number, updatedStep: ChecklistStep) => {
     const newSteps = [...steps];
-    newSteps[index] = updatedStep;
+    
+    // Ensure config is preserved and not reset to default values
+    const currentStep = newSteps[index];
+    const preservedConfig = {
+      ...getDefaultConfig(updatedStep.type),
+      ...currentStep.config,
+      ...updatedStep.config
+    };
+    
+    newSteps[index] = {
+      ...updatedStep,
+      config: preservedConfig
+    };
+    
     setSteps(newSteps);
     onChange(newSteps);
+    
+    // Debug logging to track configuration changes
+    if (updatedStep.type === 'inventory-select') {
+      console.log('Updated inventory step config:', preservedConfig);
+    }
   };
 
   const deleteStep = (index: number) => {
@@ -440,7 +464,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                           { id: '10', name: 'Basil Seeds', unit: 'seeds' }
                         ];
                         const item = inventoryItems.find(i => i.id === value);
-                        onUpdate({
+                        const updatedStep = {
                           ...step,
                           config: { 
                             ...step.config, 
@@ -448,7 +472,9 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                             inventoryItemName: item?.name || '',
                             inventoryUnit: item?.unit || ''
                           }
-                        });
+                        };
+                        console.log('Updating inventory item:', item?.name, 'with config:', updatedStep.config);
+                        onUpdate(updatedStep);
                       }}
                     >
                       <SelectTrigger>
@@ -475,10 +501,14 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                     <Input
                       type="text"
                       value={step.config.customText || ''}
-                      onChange={(e) => onUpdate({
-                        ...step,
-                        config: { ...step.config, customText: e.target.value }
-                      })}
+                      onChange={(e) => {
+                        const updatedStep = {
+                          ...step,
+                          config: { ...step.config, customText: e.target.value }
+                        };
+                        console.log('Updating custom text:', e.target.value);
+                        onUpdate(updatedStep);
+                      }}
                       placeholder="e.g., How much RO water did you use?"
                     />
                     <p className="text-xs text-gray-600">This is what the user will see when completing the task</p>
@@ -491,10 +521,14 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                       <Input
                         type="number"
                         value={step.config.defaultQuantity || ''}
-                        onChange={(e) => onUpdate({
-                          ...step,
-                          config: { ...step.config, defaultQuantity: e.target.value }
-                        })}
+                        onChange={(e) => {
+                          const updatedStep = {
+                            ...step,
+                            config: { ...step.config, defaultQuantity: e.target.value }
+                          };
+                          console.log('Updating default quantity:', e.target.value);
+                          onUpdate(updatedStep);
+                        }}
                         placeholder="e.g., 2.5"
                         step="0.1"
                         min="0"
