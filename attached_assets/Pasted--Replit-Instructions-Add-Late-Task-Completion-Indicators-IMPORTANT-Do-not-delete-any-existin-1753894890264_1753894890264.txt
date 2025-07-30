@@ -1,0 +1,224 @@
+# Replit Instructions: Add Late Task Completion Indicators
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+Add visual indicators to show when tasks were completed after their due date/time.
+
+## Implementation:
+
+### 1. Update Task Data Structure
+Ensure tasks store both due date and completion date:
+
+```javascript
+// Task should have:
+{
+  id: 'task-123',
+  title: 'Morning Harvest',
+  dueDate: '2025-07-30T08:00:00',
+  completedAt: '2025-07-30T10:30:00', // When actually completed
+  status: 'completed',
+  // ... other fields
+}
+```
+
+### 2. Add Late Detection Logic
+Create a function to check if a task was completed late:
+
+```javascript
+const isTaskLate = (task) => {
+  if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
+    return false;
+  }
+  
+  const dueTime = new Date(task.dueDate).getTime();
+  const completedTime = new Date(task.completedAt).getTime();
+  
+  return completedTime > dueTime;
+};
+
+const getLateDuration = (task) => {
+  if (!isTaskLate(task)) return null;
+  
+  const dueTime = new Date(task.dueDate);
+  const completedTime = new Date(task.completedAt);
+  const diffMinutes = Math.floor((completedTime - dueTime) / (1000 * 60));
+  
+  if (diffMinutes < 60) {
+    return `${diffMinutes} min late`;
+  } else if (diffMinutes < 1440) { // Less than 24 hours
+    const hours = Math.floor(diffMinutes / 60);
+    return `${hours} hr${hours > 1 ? 's' : ''} late`;
+  } else {
+    const days = Math.floor(diffMinutes / 1440);
+    return `${days} day${days > 1 ? 's' : ''} late`;
+  }
+};
+```
+
+### 3. Update Task Card UI
+Add visual indicators for late tasks:
+
+```javascript
+const TaskCard = ({ task }) => {
+  const late = isTaskLate(task);
+  const lateDuration = getLateDuration(task);
+  
+  return (
+    <div className={`task-card ${late ? 'completed-late' : ''}`}>
+      {/* Existing task header */}
+      <div className="task-header">
+        <h3>{task.title}</h3>
+        {late && (
+          <span className="late-indicator" title={`Completed ${lateDuration}`}>
+            ⚠️ Late
+          </span>
+        )}
+      </div>
+      
+      {/* Task details */}
+      <div className="task-details">
+        {/* ... existing content ... */}
+        
+        {task.status === 'completed' && (
+          <div className="completion-info">
+            <span className="completed-label">Completed:</span>
+            <span className={`completed-time ${late ? 'late' : 'on-time'}`}>
+              {formatDateTime(task.completedAt)}
+              {late && <span className="late-duration"> ({lateDuration})</span>}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {/* Status badge update */}
+      <div className="task-status">
+        {task.status === 'completed' && (
+          <span className={`status-badge completed ${late ? 'late' : ''}`}>
+            {late ? '✓ Completed Late' : '✓ Completed'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+```
+
+### 4. Add CSS Styling
+Style the late indicators appropriately:
+
+```css
+/* Late task indicators */
+.task-card.completed-late {
+  border-left: 4px solid #f59e0b; /* Amber border */
+}
+
+.late-indicator {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.completed-time.late {
+  color: #dc2626; /* Red text for late completion time */
+}
+
+.late-duration {
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.status-badge.completed.late {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+/* Overdue tasks (not yet completed) */
+.task-card.overdue {
+  border-left: 4px solid #dc2626; /* Red border */
+}
+
+.overdue-indicator {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+```
+
+### 5. Add Filter Option
+Add a filter to show only late tasks:
+
+```javascript
+// In task filters
+const filters = [
+  { value: 'all', label: 'All Tasks' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'in-progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'completed-late', label: 'Completed Late' }, // NEW
+  { value: 'overdue', label: 'Overdue' }, // Currently overdue
+];
+
+// Filter logic
+const filterTasks = (tasks, filter) => {
+  switch (filter) {
+    case 'completed-late':
+      return tasks.filter(task => isTaskLate(task));
+    case 'overdue':
+      return tasks.filter(task => 
+        task.status !== 'completed' && 
+        new Date(task.dueDate) < new Date()
+      );
+    // ... other filters
+  }
+};
+```
+
+### 6. Add Summary Statistics
+Show late completion metrics:
+
+```javascript
+// At the top of the task manager
+const TaskSummary = ({ tasks }) => {
+  const completedTasks = tasks.filter(t => t.status === 'completed');
+  const lateTasks = completedTasks.filter(t => isTaskLate(t));
+  const onTimeTasks = completedTasks.length - lateTasks.length;
+  
+  return (
+    <div className="task-summary">
+      <div className="summary-item">
+        <span className="summary-label">On Time:</span>
+        <span className="summary-value on-time">{onTimeTasks}</span>
+      </div>
+      <div className="summary-item">
+        <span className="summary-label">Late:</span>
+        <span className="summary-value late">{lateTasks.length}</span>
+      </div>
+      <div className="summary-item">
+        <span className="summary-label">Completion Rate:</span>
+        <span className="summary-value">
+          {onTimeTasks > 0 ? Math.round((onTimeTasks / completedTasks.length) * 100) : 0}%
+        </span>
+      </div>
+    </div>
+  );
+};
+```
+
+## Visual Indicators Summary:
+- **Amber border** (4px) on left side of late completed tasks
+- **"⚠️ Late" badge** in task header with duration tooltip
+- **Red timestamp** showing when it was completed late
+- **Modified status badge** saying "Completed Late" instead of just "Completed"
+- **Filter option** to view only late tasks
+- **Summary stats** showing on-time vs late completion rates
+
+This gives managers clear visibility into task timeliness without being overly punitive.
