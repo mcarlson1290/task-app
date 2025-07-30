@@ -1162,15 +1162,25 @@ export class MemStorage implements IStorage {
           shouldCreate = selectedDays.includes(currentDayName);
           break;
           
-        case 'monthly':
-          // Check if current date matches selected day of month
+        case 'bi-weekly':
+          // Bi-weekly: Show on 1st (due 14th) and 15th (due last day)
           const dayOfMonth = currentDate.getDate();
-          shouldCreate = dayOfMonth === recurringTask.dayOfMonth;
+          const lastDayOfMonth = this.getLastDayOfMonth(currentDate);
+          
+          // First half: visible on 1st, due on 14th
+          // Second half: visible on 15th, due on last day
+          shouldCreate = dayOfMonth === 1 || dayOfMonth === 15;
+          break;
+          
+        case 'monthly':
+          // Monthly: Show on 1st, due on last day of month
+          const monthDay = currentDate.getDate();
+          shouldCreate = monthDay === 1;
           break;
       }
       
       if (shouldCreate && currentDate >= today) {
-        // Create task instance
+        // Create task instance (pass currentDate as visible date)
         const instance = await this.createTaskInstance(recurringTask, new Date(currentDate));
         instances.push(instance);
       }
@@ -1182,8 +1192,40 @@ export class MemStorage implements IStorage {
     console.log(`Generated ${instances.length} task instances for recurring task: ${recurringTask.title}`);
   }
 
+  // Helper method to get last day of month
+  private getLastDayOfMonth(date: Date): number {
+    const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    const lastDay = new Date(nextMonth.getTime() - 1);
+    return lastDay.getDate();
+  }
+
   // Create individual task instance
-  private async createTaskInstance(recurringTask: RecurringTask, dueDate: Date): Promise<Task> {
+  private async createTaskInstance(recurringTask: RecurringTask, visibleDate: Date): Promise<Task> {
+    // Calculate actual due date based on frequency
+    let actualDueDate = new Date(visibleDate);
+    
+    switch (recurringTask.frequency) {
+      case 'bi-weekly':
+        const dayOfMonth = visibleDate.getDate();
+        if (dayOfMonth === 1) {
+          // First half: due on 14th
+          actualDueDate.setDate(14);
+        } else if (dayOfMonth === 15) {
+          // Second half: due on last day of month
+          actualDueDate.setDate(this.getLastDayOfMonth(visibleDate));
+        }
+        break;
+        
+      case 'monthly':
+        // Due on last day of month
+        actualDueDate.setDate(this.getLastDayOfMonth(visibleDate));
+        break;
+        
+      default:
+        // For daily and weekly, due date is same as visible date
+        actualDueDate = visibleDate;
+        break;
+    }
     const newTask: Task = {
       id: this.currentTaskId++,
       title: recurringTask.title,
@@ -1210,7 +1252,7 @@ export class MemStorage implements IStorage {
         } : undefined
       })) || [],
       data: {},
-      dueDate: dueDate,
+      dueDate: actualDueDate,
       startedAt: null,
       completedAt: null,
       pausedAt: null,

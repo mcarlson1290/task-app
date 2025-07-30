@@ -139,8 +139,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   const frequencies = [
     { value: 'daily', label: 'Daily' },
     { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'custom', label: 'Custom' }
+    { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
+    { value: 'monthly', label: 'Monthly (Last Day)' }
   ];
 
   const daysOfWeek = [
@@ -359,23 +359,53 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Days of Week</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {daysOfWeek.map(day => (
-                    <div key={day.value} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={day.value}
-                        checked={formData.daysOfWeek.includes(day.value)}
-                        onCheckedChange={() => handleDayToggle(day.value)}
-                      />
-                      <Label htmlFor={day.value} className="text-sm">
-                        {day.label}
-                      </Label>
-                    </div>
-                  ))}
+              {/* Show day selection only for daily and weekly frequencies */}
+              {(formData.frequency === 'daily' || formData.frequency === 'weekly') && (
+                <div className="space-y-2">
+                  <Label>Days of Week</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {daysOfWeek.map(day => (
+                      <div key={day.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={day.value}
+                          checked={formData.daysOfWeek.includes(day.value)}
+                          onCheckedChange={() => handleDayToggle(day.value)}
+                        />
+                        <Label htmlFor={day.value} className="text-sm">
+                          {day.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Show explanation for bi-weekly tasks */}
+              {formData.frequency === 'bi-weekly' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-blue-900">📅 Bi-Weekly Schedule</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Task appears on <strong>1st of month</strong> → Due on <strong>14th</strong></li>
+                    <li>• Task appears on <strong>15th of month</strong> → Due on <strong>last day</strong></li>
+                  </ul>
+                  <p className="text-xs text-blue-600 mt-2">
+                    Two tasks per month with ample time to complete each one.
+                  </p>
+                </div>
+              )}
+
+              {/* Show explanation for monthly tasks */}
+              {formData.frequency === 'monthly' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-green-900">📅 Monthly Schedule</h4>
+                  <p className="text-sm text-green-800">
+                    Task appears on the <strong>1st of each month</strong> and is due on the <strong>last day of the month</strong>.
+                  </p>
+                  <p className="text-xs text-green-600 mt-2">
+                    Full month to complete the task with early visibility.
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="automation" className="space-y-4">

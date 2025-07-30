@@ -74,6 +74,43 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return `${mins}m`;
   };
 
+  const getDueDateDisplay = () => {
+    if (!task.dueDate) return null;
+    
+    const now = new Date();
+    const due = new Date(task.dueDate);
+    const diffTime = due.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      const absDays = Math.abs(diffDays);
+      return {
+        text: `Overdue by ${absDays} day${absDays !== 1 ? 's' : ''}`,
+        className: 'text-red-600 font-semibold'
+      };
+    } else if (diffDays === 0) {
+      return {
+        text: 'Due today',
+        className: 'text-orange-600 font-semibold'
+      };
+    } else if (diffDays === 1) {
+      return {
+        text: 'Due tomorrow',
+        className: 'text-yellow-600 font-medium'
+      };
+    } else {
+      const formatDate = (date: Date) => {
+        const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+      };
+      
+      return {
+        text: `Due in ${diffDays} days (${formatDate(due)})`,
+        className: 'text-gray-600'
+      };
+    }
+  };
+
   // Late task detection functions
   const isTaskLate = (task: Task): boolean => {
     if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
@@ -323,14 +360,26 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
           {task.dueDate && (
             <div className="space-y-1">
-              <div className={`flex items-center text-sm ${
-                isOverdue ? 'text-red-600' : 'text-gray-600'
-              }`}>
-                <Calendar className="h-4 w-4 mr-1" />
-                <span className={isOverdue ? 'font-semibold' : ''}>
-                  Due: {formatDueDate(task.dueDate)}
-                </span>
-              </div>
+              {(() => {
+                const dueDateDisplay = getDueDateDisplay();
+                return dueDateDisplay ? (
+                  <div className="flex items-center text-sm">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span className={dueDateDisplay.className}>
+                      📅 {dueDateDisplay.text}
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`flex items-center text-sm ${
+                    isOverdue ? 'text-red-600' : 'text-gray-600'
+                  }`}>
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span className={isOverdue ? 'font-semibold' : ''}>
+                      Due: {formatDueDate(task.dueDate)}
+                    </span>
+                  </div>
+                );
+              })()}
               {isOverdue && (
                 <div className="flex items-center text-sm text-red-600">
                   <AlertTriangle className="h-4 w-4 mr-1" />

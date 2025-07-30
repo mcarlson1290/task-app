@@ -1,0 +1,345 @@
+# Replit Instructions: Monthly and Bi-Weekly Task Scheduling
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+Implement special scheduling for Monthly and Bi-Weekly recurring tasks with specific visibility and due date rules.
+
+### Scheduling Rules:
+- **Monthly**: Visible on 1st, due on last day of month
+- **Bi-Weekly**: 
+  - First half: Visible on 1st, due on 14th
+  - Second half: Visible on 15th, due on last day of month
+
+## Implementation:
+
+### 1. Update Task Generation Logic for Monthly/Bi-Weekly
+
+```javascript
+const generateTasksFromRecurring = (recurringTask, lookAheadDays = 35) => {
+  const tasks = [];
+  const today = new Date();
+  
+  // Generate tasks for the look-ahead period
+  for (let i = 0; i < lookAheadDays; i++) {
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() + i);
+    
+    const taskInfo = getTaskInfoForDate(recurringTask, currentDate);
+    if (taskInfo) {
+      tasks.push(taskInfo);
+    }
+  }
+  
+  return tasks;
+};
+
+const getTaskInfoForDate = (recurringTask, date) => {
+  const frequency = recurringTask.frequency;
+  
+  switch (frequency) {
+    case 'daily':
+      return getDailyTaskInfo(recurringTask, date);
+    
+    case 'weekly':
+      return getWeeklyTaskInfo(recurringTask, date);
+    
+    case 'bi-weekly':
+      return getBiWeeklyTaskInfo(recurringTask, date);
+    
+    case 'monthly':
+      return getMonthlyTaskInfo(recurringTask, date);
+    
+    default:
+      return null;
+  }
+};
+
+// Get last day of month
+const getLastDayOfMonth = (date) => {
+  const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  const lastDay = new Date(nextMonth - 1);
+  return lastDay.getDate();
+};
+
+// Bi-Weekly Task Logic
+const getBiWeeklyTaskInfo = (recurringTask, date) => {
+  const dayOfMonth = date.getDate();
+  const lastDay = getLastDayOfMonth(date);
+  
+  // First half of month: visible on 1st, due on 14th
+  if (dayOfMonth === 1) {
+    const dueDate = new Date(date);
+    dueDate.setDate(14);
+    
+    return {
+      ...recurringTask,
+      id: `${recurringTask.id}-${date.getFullYear()}-${date.getMonth()}-1`,
+      title: recurringTask.title,
+      visibleDate: date,
+      dueDate: dueDate,
+      status: 'pending',
+      recurringTaskId: recurringTask.id,
+      period: 'first-half'
+    };
+  }
+  
+  // Second half of month: visible on 15th, due on last day
+  if (dayOfMonth === 15) {
+    const dueDate = new Date(date);
+    dueDate.setDate(lastDay);
+    
+    return {
+      ...recurringTask,
+      id: `${recurringTask.id}-${date.getFullYear()}-${date.getMonth()}-2`,
+      title: recurringTask.title,
+      visibleDate: date,
+      dueDate: dueDate,
+      status: 'pending',
+      recurringTaskId: recurringTask.id,
+      period: 'second-half'
+    };
+  }
+  
+  return null;
+};
+
+// Monthly Task Logic
+const getMonthlyTaskInfo = (recurringTask, date) => {
+  const dayOfMonth = date.getDate();
+  
+  // Only generate on the 1st of each month
+  if (dayOfMonth === 1) {
+    const lastDay = getLastDayOfMonth(date);
+    const dueDate = new Date(date);
+    dueDate.setDate(lastDay);
+    
+    return {
+      ...recurringTask,
+      id: `${recurringTask.id}-${date.getFullYear()}-${date.getMonth()}`,
+      title: recurringTask.title,
+      visibleDate: date,
+      dueDate: dueDate,
+      status: 'pending',
+      recurringTaskId: recurringTask.id
+    };
+  }
+  
+  return null;
+};
+```
+
+### 2. Update Task Display to Show Time Until Due
+
+```javascript
+const TaskCard = ({ task }) => {
+  const getDueDateDisplay = () => {
+    if (!task.dueDate) return 'No due date';
+    
+    const now = new Date();
+    const due = new Date(task.dueDate);
+    const diffTime = due - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+    } else if (diffDays === 0) {
+      return 'Due today';
+    } else if (diffDays === 1) {
+      return 'Due tomorrow';
+    } else {
+      return `Due in ${diffDays} days (${formatDate(due)})`;
+    }
+  };
+  
+  const formatDate = (date) => {
+    const options = { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+  
+  return (
+    <div className="task-card">
+      <h3>{task.title}</h3>
+      
+      {/* Show frequency type for recurring tasks */}
+      {task.recurringTaskId && (
+        <div className="recurring-info">
+          <span className="frequency-badge">
+            {task.frequency === 'bi-weekly' ? 'Bi-Weekly' : 'Monthly'}
+          </span>
+          {task.period === 'first-half' && <span className="period">1st-14th</span>}
+          {task.period === 'second-half' && <span className="period">15th-{getLastDayOfMonth(new Date())}</span>}
+        </div>
+      )}
+      
+      <div className="due-date-info">
+        <span className="due-label">📅</span>
+        <span className={`due-text ${diffDays < 0 ? 'overdue' : ''}`}>
+          {getDueDateDisplay()}
+        </span>
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. Update Recurring Task Editor for Monthly/Bi-Weekly
+
+```javascript
+const RecurringTaskEditor = ({ task, onSave }) => {
+  const [frequency, setFrequency] = useState(task.frequency || 'daily');
+  
+  return (
+    <div className="recurring-editor">
+      <div className="frequency-section">
+        <label>Frequency</label>
+        <select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="bi-weekly">Bi-Weekly (1st & 15th)</option>
+          <option value="monthly">Monthly (Last Day)</option>
+        </select>
+      </div>
+      
+      {/* Show explanation for monthly/bi-weekly */}
+      {frequency === 'bi-weekly' && (
+        <div className="frequency-explanation">
+          <p>📅 Tasks will appear:</p>
+          <ul>
+            <li>1st of month → Due on 14th</li>
+            <li>15th of month → Due on last day</li>
+          </ul>
+        </div>
+      )}
+      
+      {frequency === 'monthly' && (
+        <div className="frequency-explanation">
+          <p>📅 Task will appear on the 1st and be due on the last day of each month</p>
+        </div>
+      )}
+      
+      {/* Hide day selection for monthly/bi-weekly */}
+      {(frequency === 'daily' || frequency === 'weekly') && (
+        <div className="day-selection">
+          {/* Day of week selection */}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### 4. Add Visual Calendar Preview
+
+```javascript
+const RecurringTaskPreview = ({ frequency }) => {
+  const getPreviewDates = () => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    if (frequency === 'monthly') {
+      return [
+        { visible: `${currentMonth + 1}/1`, due: `${currentMonth + 1}/${getLastDayOfMonth(today)}` }
+      ];
+    }
+    
+    if (frequency === 'bi-weekly') {
+      return [
+        { visible: `${currentMonth + 1}/1`, due: `${currentMonth + 1}/14` },
+        { visible: `${currentMonth + 1}/15`, due: `${currentMonth + 1}/${getLastDayOfMonth(today)}` }
+      ];
+    }
+    
+    return [];
+  };
+  
+  const dates = getPreviewDates();
+  
+  return (
+    <div className="task-preview">
+      <h4>Preview:</h4>
+      {dates.map((date, index) => (
+        <div key={index} className="preview-item">
+          <span>Visible: {date.visible}</span>
+          <span>→</span>
+          <span>Due: {date.due}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+### 5. CSS for Visual Elements
+
+```css
+.frequency-badge {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.period {
+  color: #6b7280;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.frequency-explanation {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.frequency-explanation ul {
+  margin: 8px 0 0 20px;
+  padding: 0;
+}
+
+.task-preview {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.due-date-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.due-text.overdue {
+  color: #dc2626;
+  font-weight: 600;
+}
+```
+
+## Expected Behavior:
+
+### Monthly Tasks:
+- Appear on the 1st of each month
+- Due on the last day of the month (28th, 29th, 30th, or 31st)
+- Show "Due in X days" countdown
+
+### Bi-Weekly Tasks:
+- First task: Appears on 1st, due on 14th
+- Second task: Appears on 15th, due on last day
+- Each shows which half of the month it covers
+
+This gives staff ample time to complete monthly/bi-weekly tasks while ensuring they're visible when needed.

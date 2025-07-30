@@ -87,5 +87,39 @@
         "stages": []
       }
     }
+  },
+  {
+    "title": "Clean the Farm Windows",
+    "description": "Clean the windows",
+    "type": "cleaning",
+    "frequency": "monthly",
+    "daysOfWeek": [],
+    "isActive": true,
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "1753896269899",
+          "type": "instruction",
+          "label": "Check for smudges",
+          "required": true,
+          "config": {
+            "text": ""
+          }
+        }
+      ]
+    },
+    "location": "K",
+    "id": 2,
+    "createdAt": "2025-07-30T17:24:39.682Z"
   }
 ]
