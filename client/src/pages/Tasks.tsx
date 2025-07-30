@@ -49,6 +49,7 @@ const Tasks: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
+  const [debugOutput, setDebugOutput] = React.useState('');
 
 
 
@@ -586,6 +587,25 @@ const Tasks: React.FC = () => {
 
   const handleNewTask = () => {
     setAddTaskModalOpen(true);
+  };
+
+  // Debug recurring task system
+  const debugRecurringTasks = async () => {
+    try {
+      const response = await apiRequest('POST', '/api/debug-recurring-tasks');
+      setDebugOutput(JSON.stringify(response, null, 2));
+      toast({
+        title: "Debug Complete",
+        description: `Found ${response.recurringTasksFound} recurring tasks, generated ${response.tasksGenerated} new instances`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    } catch (error) {
+      console.error('Debug error:', error);
+      toast({
+        title: "Debug Error",
+        description: "Failed to debug recurring tasks",
+      });
+    }
   };
 
   // Task Summary Component - now responsive to filters

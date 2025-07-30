@@ -160,10 +160,80 @@ export class MemStorage implements IStorage {
         recurringTasks: persistedData.recurringTasks.length,
         inventoryItems: persistedData.inventoryItems.length
       });
+      
+      // CRITICAL: Ensure all recurring tasks have their instances generated
+      await this.ensureRecurringTaskInstances();
     } else {
       console.log('No persisted data found, initializing with seed data');
       this.seedInitialData();
     }
+  }
+
+  // Ensure all active recurring tasks have proper task instances for current periods
+  private async ensureRecurringTaskInstances() {
+    console.log('=== ENSURING RECURRING TASK INSTANCES ===');
+    const recurringTasks = Array.from(this.recurringTasks.values()).filter(rt => rt.isActive);
+    console.log(`Found ${recurringTasks.length} active recurring tasks`);
+    
+    for (const recurringTask of recurringTasks) {
+      console.log(`Checking instances for: ${recurringTask.title} (${recurringTask.frequency})`);
+      
+      // Count existing instances for this recurring task
+      const existingInstances = Array.from(this.tasks.values()).filter(t => t.recurringTaskId === recurringTask.id);
+      console.log(`  - Found ${existingInstances.length} existing instances`);
+      
+      // Check if we need to generate instances for current time period
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let needsGeneration = false;
+      
+      if (recurringTask.frequency === 'monthly' || recurringTask.frequency === 'bi-weekly') {
+        // For monthly/bi-weekly tasks, check if we have tasks for current month
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        
+        const currentMonthInstances = existingInstances.filter(task => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate);
+          return dueDate.getFullYear() === currentYear && dueDate.getMonth() === currentMonth && task.status === 'pending';
+        });
+        
+        console.log(`  - Found ${currentMonthInstances.length} instances for current month (${currentYear}-${currentMonth+1})`);
+        
+        if (recurringTask.frequency === 'monthly' && currentMonthInstances.length === 0) {
+          needsGeneration = true;
+        } else if (recurringTask.frequency === 'bi-weekly' && currentMonthInstances.length < 2) {
+          needsGeneration = true;
+        }
+      } else if (recurringTask.frequency === 'daily' && recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+        // For daily tasks with specific days, check if we have a task for today (if today is a selected day)
+        const dayOfWeek = today.getDay();
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const todayDayName = dayNames[dayOfWeek];
+        
+        if (recurringTask.daysOfWeek.includes(todayDayName)) {
+          const todayInstances = existingInstances.filter(task => {
+            if (!task.dueDate) return false;
+            const dueDate = new Date(task.dueDate);
+            return dueDate.toDateString() === today.toDateString();
+          });
+          
+          if (todayInstances.length === 0) {
+            needsGeneration = true;
+          }
+        }
+      }
+      
+      if (needsGeneration) {
+        console.log(`  - Generating missing instances for: ${recurringTask.title}`);
+        await this.generateTaskInstances(recurringTask);
+      } else {
+        console.log(`  - All instances up to date for: ${recurringTask.title}`);
+      }
+    }
+    
+    console.log('=== RECURRING TASK INSTANCES CHECK COMPLETE ===');
   }
 
   private async persistData() {
@@ -1167,8 +1237,8 @@ export class MemStorage implements IStorage {
           // First half: 1st-14th
           const firstHalfId = `${recurringTask.id}-${year}-${month}-1`;
           if (!generatedTaskIds.has(firstHalfId)) {
-            const visibleDate1 = new Date(year, month, 1);
-            const dueDate1 = new Date(year, month, 14);
+            const visibleDate1 = new Date(year, month, 1);  
+            const dueDate1 = new Date(year, month, 14);  // Due on the 14th of the month
             
             if (today <= dueDate1) {
               const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);

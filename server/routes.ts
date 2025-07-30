@@ -703,6 +703,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug recurring task system endpoint
+  app.post("/api/debug-recurring-tasks", async (req, res) => {
+    try {
+      console.log('=== RECURRING TASK DEBUG ===');
+      
+      const recurringTasks = await storage.getRecurringTasks();
+      console.log('Recurring tasks in system:', recurringTasks.map(rt => ({
+        id: rt.id,
+        title: rt.title,
+        frequency: rt.frequency,
+        location: rt.location,
+        isActive: rt.isActive
+      })));
+      
+      const allTasks = await storage.getTasks();
+      const recurringInstances = allTasks.filter(task => task.isRecurring);
+      console.log('Generated recurring task instances:', recurringInstances.map(t => ({
+        id: t.id,
+        title: t.title,
+        frequency: t.recurringTaskId ? recurringTasks.find(rt => rt.id === t.recurringTaskId)?.frequency : 'unknown',
+        dueDate: t.dueDate,
+        status: t.status
+      })));
+      
+      // Process all recurring tasks to ensure current month tasks exist
+      const today = new Date();
+      console.log(`Processing recurring tasks for ${today.toDateString()}`);
+      
+      let tasksGenerated = 0;
+      for (const recurringTask of recurringTasks) {
+        if (recurringTask.isActive) {
+          console.log(`Processing: ${recurringTask.title} (${recurringTask.frequency})`);
+          const beforeCount = allTasks.filter(t => t.recurringTaskId === recurringTask.id).length;
+          
+          // Force regenerate task instances for this recurring task
+          await (storage as any).regenerateTaskInstances(recurringTask.id);
+          
+          const afterTasks = await storage.getTasks();
+          const afterCount = afterTasks.filter(t => t.recurringTaskId === recurringTask.id).length;
+          const generated = afterCount - beforeCount;
+          tasksGenerated += Math.max(0, generated);
+          
+          console.log(`  - Generated ${Math.max(0, generated)} new task instances`);
+        }
+      }
+      
+      const finalTasks = await storage.getTasks();
+      const finalRecurringInstances = finalTasks.filter(task => task.isRecurring);
+      
+      res.json({ 
+        message: "Recurring task system debug complete",
+        recurringTasksFound: recurringTasks.length,
+        activeRecurringTasks: recurringTasks.filter(rt => rt.isActive).length,
+        totalRecurringInstances: finalRecurringInstances.length,
+        tasksGenerated,
+        recurringTasks: recurringTasks.map(rt => ({
+          id: rt.id,
+          title: rt.title,
+          frequency: rt.frequency,
+          isActive: rt.isActive,
+          instanceCount: finalRecurringInstances.filter(t => t.recurringTaskId === rt.id).length
+        }))
+      });
+    } catch (error) {
+      console.error('Error debugging recurring tasks:', error);
+      res.status(500).json({ error: 'Failed to debug recurring tasks' });
+    }
+  });
+
   // Clear all data endpoint
   app.post("/api/clear-data", async (req, res) => {
     try {
