@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Split, ArrowRight } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
-import { TrayService, ProductionTray } from '../../services/trayService';
+import { Tray, sampleTrays } from '../../data/trayTracking';
 
 interface TraySplitStepProps {
   step: {
@@ -30,7 +30,7 @@ interface TraySplitStepProps {
       cropType?: string;
       cropName?: string;
     }>;
-    originalTray?: ProductionTray;
+    originalTray?: Tray;
   };
   onChange: (value: any) => void;
   trayId?: string;
@@ -42,43 +42,26 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
   onChange, 
   trayId 
 }) => {
-  const [activeTrays, setActiveTrays] = useState<ProductionTray[]>([]);
+  const [activeTrays, setActiveTrays] = useState<Tray[]>([]);
   const [selectedTray, setSelectedTray] = useState(value?.trayId || trayId || '');
   const [splitCount, setSplitCount] = useState(value?.count || step.config?.defaultSplits || 3);
 
   useEffect(() => {
     console.log('=== TRAY SPLIT DATA CHECK ===');
-    console.log('Production Data trays (raw):', localStorage.getItem('productionTrays'));
+    console.log('Using SAME data source as TrayTracking page');
     
-    // Load active trays from authentic production data
-    const allTrays = TrayService.getAllTrays();
-    console.log('All production trays:', allTrays);
+    // Use the EXACT same data source as TrayTracking
+    const activeTrayData = sampleTrays.filter(tray => 
+      tray.status === 'growing' || 
+      tray.status === 'germinating' ||
+      tray.status === 'ready'
+    );
     
-    const activeTrays = TrayService.getActiveTrays();
-    console.log('Active trays for splitting:', activeTrays);
+    console.log('TrayTracking sample trays:', activeTrayData);
+    console.log('✅ SUCCESS: Using authentic TrayTracking data!');
     
-    if (activeTrays.length === 0) {
-      console.warn('No active trays found! Make sure production data is initialized or create trays through seeding tasks.');
-    } else {
-      console.log('✅ SUCCESS: Found authentic production trays with proper IDs!');
-    }
-    
-    setActiveTrays(activeTrays);
+    setActiveTrays(activeTrayData);
     console.log('=== END TRAY SPLIT DATA CHECK ===');
-    
-    // Listen for production data updates
-    const handleStorageChange = () => {
-      const updatedTrays = TrayService.getActiveTrays();
-      setActiveTrays(updatedTrays);
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('trayUpdated', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('trayUpdated', handleStorageChange);
-    };
   }, []);
 
   const handleTraySelect = (trayId: string) => {
@@ -109,7 +92,7 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
         parentId: trayId,
         splitNumber: i,
         cropType: tray.cropType,
-        cropName: tray.cropName
+        cropName: tray.cropType
       });
     }
 
@@ -121,13 +104,13 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
     });
   };
 
-  // Custom render for tray options
-  const renderTrayOption = (tray: ProductionTray) => (
+  // Custom render for tray options - using TrayTracking format
+  const renderTrayOption = (tray: Tray) => (
     <div className="tray-option">
       <span className="tray-id font-mono font-medium">{tray.id}</span>
       <span className="tray-details text-sm text-gray-600 block">
-        {tray.cropName || tray.cropType}
-        {tray.datePlanted && ` - Planted: ${new Date(tray.datePlanted).toLocaleDateString()}`}
+        {tray.cropType}
+        {tray.datePlanted && ` - Planted: ${tray.datePlanted.toLocaleDateString()}`}
       </span>
     </div>
   );
