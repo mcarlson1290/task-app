@@ -1029,37 +1029,56 @@ export class MemStorage implements IStorage {
     const updatedTask = { ...task, ...updates };
     this.recurringTasks.set(id, updatedTask);
     
-    // Update all pending future instances of this recurring task
-    const taskInstances = Array.from(this.tasks.values()).filter(t => 
-      t.recurringTaskId === id && 
-      t.status === 'pending' && 
-      t.dueDate && new Date(t.dueDate) >= new Date()
-    );
-    
-    taskInstances.forEach(instance => {
-      const updatedInstance = {
-        ...instance,
-        title: updatedTask.title || instance.title,
-        description: updatedTask.description || instance.description,
-        type: updatedTask.type || instance.type,
-        // Convert checklist template to checklist format if updated
-        checklist: updatedTask.checklistTemplate?.steps?.map((step: any, index: number) => ({
-          id: step.id || `${index + 1}`,
-          text: step.label || '',
-          completed: false,
-          required: step.required || false,
-          type: step.type,
-          config: step.config,
-          dataCollection: step.type === 'data-capture' ? { 
-            type: step.config?.dataType || 'text', 
-            label: step.label || '' 
-          } : undefined
-        })) || instance.checklist
-      };
-      this.tasks.set(instance.id, updatedInstance);
-    });
-    
-    console.log(`Updated ${taskInstances.length} pending task instances for recurring task: ${updatedTask.title}`);
+    // If frequency or daysOfWeek changed, regenerate all task instances
+    if (updates.frequency || updates.daysOfWeek) {
+      console.log('Frequency or days changed, regenerating task instances...');
+      
+      // Delete all future task instances for this recurring task
+      const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
+        const task = this.tasks.get(taskId);
+        return task?.recurringTaskId === id && 
+               task?.status === 'pending' && 
+               task?.dueDate && new Date(task.dueDate) >= new Date();
+      });
+      
+      taskIds.forEach(taskId => this.tasks.delete(taskId));
+      console.log(`Deleted ${taskIds.length} future task instances`);
+      
+      // Generate new task instances with updated schedule
+      await this.generateTaskInstances(updatedTask);
+    } else {
+      // Just update existing pending instances
+      const taskInstances = Array.from(this.tasks.values()).filter(t => 
+        t.recurringTaskId === id && 
+        t.status === 'pending' && 
+        t.dueDate && new Date(t.dueDate) >= new Date()
+      );
+      
+      taskInstances.forEach(instance => {
+        const updatedInstance = {
+          ...instance,
+          title: updatedTask.title || instance.title,
+          description: updatedTask.description || instance.description,
+          type: updatedTask.type || instance.type,
+          // Convert checklist template to checklist format if updated
+          checklist: updatedTask.checklistTemplate?.steps?.map((step: any, index: number) => ({
+            id: step.id || `${index + 1}`,
+            text: step.label || '',
+            completed: false,
+            required: step.required || false,
+            type: step.type,
+            config: step.config,
+            dataCollection: step.type === 'data-capture' ? { 
+              type: step.config?.dataType || 'text', 
+              label: step.label || '' 
+            } : undefined
+          })) || instance.checklist
+        };
+        this.tasks.set(instance.id, updatedInstance);
+      });
+      
+      console.log(`Updated ${taskInstances.length} pending task instances for recurring task: ${updatedTask.title}`);
+    }
     
     // Persist all changes
     await this.persistData();
@@ -1079,6 +1098,33 @@ export class MemStorage implements IStorage {
     return this.recurringTasks.delete(id);
   }
 
+  // Method to regenerate task instances (useful for fixing scheduling bugs)
+  async regenerateTaskInstances(id: number): Promise<boolean> {
+    const recurringTask = this.recurringTasks.get(id);
+    if (!recurringTask) return false;
+
+    console.log(`Regenerating task instances for recurring task: ${recurringTask.title}`);
+    
+    // Delete all future task instances for this recurring task
+    const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      return task?.recurringTaskId === id && 
+             task?.status === 'pending' && 
+             task?.dueDate && new Date(task.dueDate) >= new Date();
+    });
+    
+    taskIds.forEach(taskId => this.tasks.delete(taskId));
+    console.log(`Deleted ${taskIds.length} future task instances`);
+    
+    // Generate new task instances with correct schedule
+    await this.generateTaskInstances(recurringTask);
+    
+    // Persist changes
+    await this.persistData();
+    
+    return true;
+  }
+
   // Generate task instances from recurring task pattern
   private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
     const today = new Date();
@@ -1096,7 +1142,15 @@ export class MemStorage implements IStorage {
       
       switch (recurringTask.frequency) {
         case 'daily':
-          shouldCreate = true;
+          // For daily tasks, check if specific days are selected, otherwise create every day
+          if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+            const dayOfWeek = currentDate.getDay();
+            const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const currentDayName = dayNames[dayOfWeek];
+            shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
+          } else {
+            shouldCreate = true; // No specific days selected, create every day
+          }
           break;
           
         case 'weekly':

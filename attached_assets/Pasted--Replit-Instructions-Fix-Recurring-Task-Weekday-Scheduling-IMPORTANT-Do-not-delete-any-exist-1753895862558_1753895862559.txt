@@ -1,0 +1,229 @@
+# Replit Instructions: Fix Recurring Task Weekday Scheduling
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Issue: Recurring Tasks Ignoring Weekday Selection
+Tasks set to run Monday-Friday are appearing every day including weekends.
+
+## Fix Implementation:
+
+### 1. Update Task Generation Logic to Respect Selected Days
+
+```javascript
+// Function to generate tasks based on recurring schedule
+const generateTasksFromRecurring = (recurringTask) => {
+  const tasks = [];
+  const today = new Date();
+  const daysToGenerate = 7; // Generate a week ahead
+  
+  for (let i = 0; i < daysToGenerate; i++) {
+    const taskDate = new Date(today);
+    taskDate.setDate(today.getDate() + i);
+    
+    // Check if this day should have a task
+    if (shouldGenerateTaskForDay(recurringTask, taskDate)) {
+      tasks.push(createTaskFromRecurring(recurringTask, taskDate));
+    }
+  }
+  
+  return tasks;
+};
+
+// Helper function to check if task should be generated for specific day
+const shouldGenerateTaskForDay = (recurringTask, date) => {
+  const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  
+  // If no specific days selected, assume all days
+  if (!recurringTask.selectedDays || recurringTask.selectedDays.length === 0) {
+    return true;
+  }
+  
+  // Map day numbers to day names
+  const dayMap = {
+    0: 'Sunday',
+    1: 'Monday', 
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday'
+  };
+  
+  const dayName = dayMap[dayOfWeek];
+  return recurringTask.selectedDays.includes(dayName);
+};
+```
+
+### 2. Update Recurring Task Data Structure
+
+Ensure recurring tasks store selected days properly:
+
+```javascript
+// When saving a recurring task
+const saveRecurringTask = (taskData) => {
+  const selectedDays = [];
+  
+  // Collect selected days from the UI
+  const dayButtons = document.querySelectorAll('.day-selector.selected');
+  dayButtons.forEach(button => {
+    selectedDays.push(button.dataset.day);
+  });
+  
+  const recurringTask = {
+    ...taskData,
+    frequency: taskData.frequency, // 'daily', 'weekly', etc.
+    selectedDays: selectedDays, // ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    // other fields...
+  };
+  
+  // Save and generate initial tasks
+  saveToDatabase(recurringTask);
+  generateTasksFromRecurring(recurringTask);
+};
+```
+
+### 3. Fix the Day Selection UI to Save Properly
+
+```javascript
+// In the Edit Recurring Task component
+const EditRecurringTask = ({ task, onSave }) => {
+  const [selectedDays, setSelectedDays] = useState(task.selectedDays || []);
+  
+  const toggleDay = (day) => {
+    if (selectedDays.includes(day)) {
+      setSelectedDays(selectedDays.filter(d => d !== day));
+    } else {
+      setSelectedDays([...selectedDays, day]);
+    }
+  };
+  
+  const handleSave = () => {
+    const updatedTask = {
+      ...task,
+      selectedDays: selectedDays
+    };
+    onSave(updatedTask);
+  };
+  
+  return (
+    <div className="recurring-task-editor">
+      {/* Other fields... */}
+      
+      <div className="day-selection">
+        <h4>Days of Week</h4>
+        <div className="day-buttons">
+          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+            <button
+              key={day}
+              className={`day-button ${selectedDays.includes(day) ? 'selected' : ''}`}
+              onClick={() => toggleDay(day)}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      <button onClick={handleSave}>Update Task</button>
+    </div>
+  );
+};
+```
+
+### 4. Update Task Generation Cron/Scheduler
+
+If using a cron-like system, update the pattern:
+
+```javascript
+// Convert selected days to cron pattern
+const getCronPattern = (recurringTask) => {
+  if (recurringTask.frequency === 'daily' && recurringTask.selectedDays) {
+    // For Mon-Fri: "0 8 * * 1-5"
+    const dayNumbers = recurringTask.selectedDays.map(day => {
+      const dayMap = {
+        'Sunday': 0,
+        'Monday': 1,
+        'Tuesday': 2,
+        'Wednesday': 3,
+        'Thursday': 4,
+        'Friday': 5,
+        'Saturday': 6
+      };
+      return dayMap[day];
+    }).sort();
+    
+    // Create cron day pattern (e.g., "1,2,3,4,5" or "1-5")
+    let dayPattern = dayNumbers.join(',');
+    
+    // Optimize consecutive days (1,2,3,4,5 becomes 1-5)
+    if (dayNumbers.length > 2) {
+      const isConsecutive = dayNumbers.every((num, i) => 
+        i === 0 || num === dayNumbers[i-1] + 1
+      );
+      if (isConsecutive) {
+        dayPattern = `${dayNumbers[0]}-${dayNumbers[dayNumbers.length-1]}`;
+      }
+    }
+    
+    return `0 ${recurringTask.time || 8} * * ${dayPattern}`;
+  }
+  
+  // Default daily pattern
+  return `0 ${recurringTask.time || 8} * * *`;
+};
+```
+
+### 5. Visual Feedback for Generated Tasks
+
+Show which days tasks will be generated:
+
+```javascript
+// In the recurring task card
+const RecurringTaskCard = ({ task }) => {
+  const getDaysSummary = () => {
+    if (!task.selectedDays || task.selectedDays.length === 0) {
+      return 'Every day';
+    }
+    if (task.selectedDays.length === 7) {
+      return 'Every day';
+    }
+    if (task.selectedDays.length === 5 && 
+        ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].every(d => 
+          task.selectedDays.includes(d))) {
+      return 'Weekdays';
+    }
+    if (task.selectedDays.length === 2 && 
+        ['Saturday', 'Sunday'].every(d => task.selectedDays.includes(d))) {
+      return 'Weekends';
+    }
+    
+    // Abbreviate days
+    const abbreviated = task.selectedDays.map(day => day.substring(0, 3));
+    return abbreviated.join(', ');
+  };
+  
+  return (
+    <div className="recurring-task-card">
+      <h3>{task.title}</h3>
+      <div className="schedule-info">
+        <span className="frequency">{task.frequency}</span>
+        <span className="days">{getDaysSummary()}</span>
+      </div>
+    </div>
+  );
+};
+```
+
+## Testing:
+1. Edit the "Water the Microgreens" recurring task
+2. Ensure Monday-Friday are selected (green)
+3. Ensure Saturday-Sunday are deselected (gray)
+4. Save the task
+5. Check task manager - should only show tasks for weekdays
+6. No tasks should appear on Saturday or Sunday
+
+## Expected Result:
+- Tasks only generate on selected days
+- "Water the Microgreens" appears Monday-Friday only
+- Weekend dates show no microgreen watering tasks
+- Visual confirmation in recurring task list showing "Weekdays" or "Mon, Tue, Wed, Thu, Fri"

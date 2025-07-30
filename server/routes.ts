@@ -455,6 +455,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/recurring-tasks/:id/regenerate", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.regenerateTaskInstances(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      res.json({ message: "Task instances regenerated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to regenerate task instances" });
+    }
+  });
+
   // Course assignment routes
   app.get("/api/course-assignments", async (req, res) => {
     try {

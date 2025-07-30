@@ -245,2638 +245,6 @@
     "createdAt": "2025-07-29T16:31:12.129Z"
   },
   {
-    "id": 4,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-01T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 5,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-02T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 6,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-03T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 7,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-04T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 8,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-05T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 9,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-06T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 10,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-07T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 11,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-08T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 12,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-09T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 13,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-10T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 14,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-11T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 15,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-12T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 16,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-13T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 17,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-14T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 18,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-15T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 19,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-16T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 20,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-17T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 21,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-18T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 22,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-19T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 23,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-20T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 24,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-21T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 25,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-22T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 26,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-23T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 27,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-24T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 28,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-25T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 29,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-26T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 30,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-27T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
-    "id": 31,
-    "title": "Water the Microgreens",
-    "description": "Water them greens",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753806730128",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "inventory-select",
-        "config": {
-          "inventoryItemId": "1",
-          "inventoryItemName": "RO Water",
-          "inventoryUnit": "gallons",
-          "customText": "How much water did you use?",
-          "defaultQuantity": "2.5"
-        }
-      },
-      {
-        "id": "1753894363251",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1753894367938",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1753894371516",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "number-input",
-        "config": {
-          "min": 0,
-          "max": 100,
-          "unit": "",
-          "default": 0
-        }
-      },
-      {
-        "id": "1753894385077",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "data-capture",
-        "config": {
-          "dataType": "number",
-          "calculation": ""
-        },
-        "dataCollection": {
-          "type": "number",
-          "label": ""
-        }
-      },
-      {
-        "id": "1753894405731",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-28T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-29T16:31:12.129Z"
-  },
-  {
     "title": "TEST",
     "description": "TEST",
     "type": "seeding-microgreens",
@@ -2913,5 +281,2167 @@
     "completedAt": "2025-07-30T17:04:38.309Z",
     "id": 33,
     "createdAt": "2025-07-30T17:04:35.023Z"
+  },
+  {
+    "id": 34,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-07-30T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.271Z"
+  },
+  {
+    "id": 35,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-07-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.271Z"
+  },
+  {
+    "id": 36,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-01T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.271Z"
+  },
+  {
+    "id": 37,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-04T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.271Z"
+  },
+  {
+    "id": 38,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-05T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.271Z"
+  },
+  {
+    "id": 39,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-06T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 40,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-07T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 41,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-08T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 42,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-11T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 43,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-12T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 44,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-13T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 45,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-14T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 46,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-15T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 47,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-18T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 48,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-19T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 49,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-20T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 50,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-21T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 51,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-22T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 52,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-25T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 53,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-26T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 54,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-27T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 55,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-28T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 56,
+    "title": "Water the Microgreens",
+    "description": "Water them greens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753806730128",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "inventory-select",
+        "config": {
+          "inventoryItemId": "1",
+          "inventoryItemName": "RO Water",
+          "inventoryUnit": "gallons",
+          "customText": "How much water did you use?",
+          "defaultQuantity": "2.5"
+        }
+      },
+      {
+        "id": "1753894363251",
+        "text": "Water the Microgreens",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "We need to be more fragile with the microgreens then the leafy greens..."
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "Were the plants well maintained?",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "How many trays had mold?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "Trays",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "How much seeds had mold?",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": "How much seeds had mold?"
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "Take a picture of any mold",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-29T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T17:21:33.272Z"
   }
 ]

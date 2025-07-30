@@ -31,35 +31,35 @@
         {
           "id": "1753894363251",
           "type": "instruction",
-          "label": "",
+          "label": "Water the Microgreens",
           "required": true,
           "config": {
-            "text": ""
+            "text": "We need to be more fragile with the microgreens then the leafy greens..."
           }
         },
         {
           "id": "1753894367938",
           "type": "checkbox",
-          "label": "",
+          "label": "Were the plants well maintained?",
           "required": true,
           "config": {}
         },
         {
           "id": "1753894371516",
           "type": "number-input",
-          "label": "",
+          "label": "How many trays had mold?",
           "required": true,
           "config": {
             "min": 0,
             "max": 100,
-            "unit": "",
+            "unit": "Trays",
             "default": 0
           }
         },
         {
           "id": "1753894385077",
           "type": "data-capture",
-          "label": "",
+          "label": "How much seeds had mold?",
           "required": true,
           "config": {
             "dataType": "number",
@@ -69,7 +69,7 @@
         {
           "id": "1753894405731",
           "type": "photo",
-          "label": "",
+          "label": "Take a picture of any mold",
           "required": true,
           "config": {}
         }
