@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Split, ArrowRight } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
-import { Tray, sampleTrays } from '../../data/trayTracking';
+import { Tray } from '../../data/trayTracking';
+import TrayDataService from '../../services/trayDataService';
 
 interface TraySplitStepProps {
   step: {
@@ -48,20 +49,31 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
 
   useEffect(() => {
     console.log('=== TRAY SPLIT DATA CHECK ===');
-    console.log('Using SAME data source as TrayTracking page');
+    console.log('Using shared TrayDataService - SAME as TrayTracking page');
     
-    // Use the EXACT same data source as TrayTracking
-    const activeTrayData = sampleTrays.filter(tray => 
-      tray.status === 'growing' || 
-      tray.status === 'germinating' ||
-      tray.status === 'ready'
-    );
+    // Load active trays from the shared service
+    const loadActiveTrays = () => {
+      const activeTrayData = TrayDataService.getActiveTrays();
+      console.log('TraySplitStep: Loaded', activeTrayData.length, 'active trays');
+      setActiveTrays(activeTrayData);
+    };
     
-    console.log('TrayTracking sample trays:', activeTrayData);
-    console.log('✅ SUCCESS: Using authentic TrayTracking data!');
+    loadActiveTrays();
     
-    setActiveTrays(activeTrayData);
+    // Listen for tray data updates
+    const handleTrayUpdate = () => {
+      console.log('TraySplitStep: Received tray data update, reloading...');
+      loadActiveTrays();
+    };
+    
+    window.addEventListener('trayDataUpdated', handleTrayUpdate);
+    
+    console.log('✅ SUCCESS: Using shared TrayDataService!');
     console.log('=== END TRAY SPLIT DATA CHECK ===');
+    
+    return () => {
+      window.removeEventListener('trayDataUpdated', handleTrayUpdate);
+    };
   }, []);
 
   const handleTraySelect = (trayId: string) => {
@@ -83,7 +95,7 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
     const tray = activeTrays.find(t => t.id === trayId);
     if (!tray) return;
 
-    // Generate split preview
+    // Generate split preview - this is just for UI display
     const splits = [];
     for (let i = 1; i <= count; i++) {
       splits.push({
@@ -96,12 +108,22 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
       });
     }
 
-    onChange({
+    // When the step is completed, perform the actual split
+    const value = {
       trayId: trayId,
       count: count,
       splits: splits,
-      originalTray: tray
-    });
+      originalTray: tray,
+      // Add a method to execute the actual split
+      executeSplit: () => {
+        console.log('TraySplitStep: Executing split operation');
+        const result = TrayDataService.splitTray(trayId, count);
+        console.log('TraySplitStep: Split executed, result:', result);
+        return result;
+      }
+    };
+
+    onChange(value);
   };
 
   // Custom render for tray options - using TrayTracking format

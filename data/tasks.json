@@ -337,13 +337,13 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "status": "in_progress",
+    "status": "completed",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
     "estimatedTime": null,
     "actualTime": null,
-    "progress": 0,
+    "progress": 100,
     "checklist": [
       {
         "id": "1753902010337",
@@ -505,7 +505,7 @@
     "dueDate": "2025-07-31T12:00:00.000Z",
     "visibleFromDate": "2025-07-15T12:00:00.000Z",
     "startedAt": "2025-07-30T22:41:54.955Z",
-    "completedAt": null,
+    "completedAt": "2025-07-30T23:28:37.293Z",
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
@@ -925,5 +925,520 @@
     "isRecurring": true,
     "recurringTaskId": 1,
     "createdAt": "2025-07-30T22:41:50.746Z"
+  },
+  {
+    "id": 54,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      },
+      {
+        "id": "1753915279825",
+        "text": "Split the Trays like Tower 1 bla bla bla",
+        "completed": false,
+        "required": true,
+        "type": "tray-split",
+        "config": {
+          "allowCustomSplit": true,
+          "defaultSplits": 2
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-07-31T12:00:00.000Z",
+    "visibleFromDate": "2025-07-15T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T23:23:38.484Z"
+  },
+  {
+    "id": 55,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      },
+      {
+        "id": "1753915279825",
+        "text": "Split the Trays like Tower 1 bla bla bla",
+        "completed": false,
+        "required": true,
+        "type": "tray-split",
+        "config": {
+          "allowCustomSplit": true,
+          "defaultSplits": 2
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-14T12:00:00.000Z",
+    "visibleFromDate": "2025-08-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T23:23:38.484Z"
+  },
+  {
+    "id": 56,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      },
+      {
+        "id": "1753915279825",
+        "text": "Split the Trays like Tower 1 bla bla bla",
+        "completed": false,
+        "required": true,
+        "type": "tray-split",
+        "config": {
+          "allowCustomSplit": true,
+          "defaultSplits": 2
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-31T12:00:00.000Z",
+    "visibleFromDate": "2025-08-15T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T23:23:38.484Z"
+  },
+  {
+    "id": 57,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      },
+      {
+        "id": "1753915279825",
+        "text": "Split the Trays like Tower 1 bla bla bla",
+        "completed": false,
+        "required": true,
+        "type": "tray-split",
+        "config": {
+          "allowCustomSplit": true,
+          "defaultSplits": 2
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-14T12:00:00.000Z",
+    "visibleFromDate": "2025-09-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T23:23:38.485Z"
+  },
+  {
+    "id": 58,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      },
+      {
+        "id": "1753915279825",
+        "text": "Split the Trays like Tower 1 bla bla bla",
+        "completed": false,
+        "required": true,
+        "type": "tray-split",
+        "config": {
+          "allowCustomSplit": true,
+          "defaultSplits": 2
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-15T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T23:23:38.485Z"
   }
 ]

@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Package, MapPin, Clock, Users, Split, ArrowRight, Search, Filter, Calendar } from 'lucide-react';
-import { Tray, TrayMovement, sampleTrays } from '../data/trayTracking';
+import { Tray, TrayMovement } from '../data/trayTracking';
 import { GrowingSystem } from '../data/systemsData';
 import { TrayMovementService } from '../services/trayMovement';
 import { TraySplitInterface } from '../components/TraySplitInterface';
 import { useQuery } from '@tanstack/react-query';
+import TrayDataService from '../services/trayDataService';
 
 const TrayTracking: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,12 +20,35 @@ const TrayTracking: React.FC = () => {
   const [cropFilter, setCropFilter] = useState('all');
   const [selectedTray, setSelectedTray] = useState<Tray | null>(null);
   const [showSplitModal, setShowSplitModal] = useState(false);
-  const [trays, setTrays] = useState<Tray[]>(sampleTrays);
+  const [trays, setTrays] = useState<Tray[]>([]);
   const [movements, setMovements] = useState<TrayMovement[]>([]);
 
   const { data: systems = [] } = useQuery<GrowingSystem[]>({
     queryKey: ['/api/growing-systems']
   });
+
+  // Load trays on component mount
+  useEffect(() => {
+    const loadTrays = () => {
+      const loadedTrays = TrayDataService.loadTrays();
+      console.log('TrayTracking: Loaded', loadedTrays.length, 'trays');
+      setTrays(loadedTrays);
+    };
+    
+    loadTrays();
+    
+    // Listen for tray data updates
+    const handleTrayUpdate = (event: any) => {
+      console.log('TrayTracking: Received tray data update event');
+      loadTrays();
+    };
+    
+    window.addEventListener('trayDataUpdated', handleTrayUpdate);
+    
+    return () => {
+      window.removeEventListener('trayDataUpdated', handleTrayUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     // Check for automatic movements
@@ -73,18 +97,19 @@ const TrayTracking: React.FC = () => {
   }>) => {
     if (!selectedTray) return;
 
-    const { parentTray, childTrays } = TrayMovementService.splitTray(
-      selectedTray,
-      splits,
-      'K', // Location code
-      'Current User'
+    console.log('TrayTracking: Handling split for tray', selectedTray.id);
+    
+    // Use the shared TrayDataService for splitting
+    const { originalTray, splitTrays } = TrayDataService.splitTray(
+      selectedTray.id,
+      splits.length
     );
 
-    setTrays(prevTrays => [
-      ...prevTrays.filter(t => t.id !== selectedTray.id),
-      parentTray,
-      ...childTrays
-    ]);
+    console.log('TrayTracking: Split completed, reloading trays');
+    
+    // Reload trays from service (this will trigger re-render)
+    const updatedTrays = TrayDataService.loadTrays();
+    setTrays(updatedTrays);
 
     setShowSplitModal(false);
     setSelectedTray(null);
@@ -133,6 +158,27 @@ const TrayTracking: React.FC = () => {
             <ArrowRight className="w-4 h-4" />
             {movements.length} Pending Movements
           </Badge>
+          {/* Debug button for testing splits */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log('=== TESTING SPLIT FUNCTIONALITY ===');
+              const firstTray = trays.find(t => t.status === 'growing');
+              if (firstTray) {
+                console.log('Testing split for tray:', firstTray.id);
+                const result = TrayDataService.splitTray(firstTray.id, 2);
+                console.log('Split test result:', result);
+                // Reload trays to see changes
+                const updatedTrays = TrayDataService.loadTrays();
+                setTrays(updatedTrays);
+              } else {
+                console.log('No growing trays found for split test');
+              }
+            }}
+          >
+            🧪 Test Split
+          </Button>
         </div>
       </div>
 
