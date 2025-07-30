@@ -681,22 +681,60 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'tray-split':
+        const currentSplitData = stepData[step.id];
         return (
-          <TraySplitStep
-            step={step}
-            value={stepData[step.id]}
-            onChange={(value) => {
-              setStepData({ ...stepData, [step.id]: value });
-              // Update context for next steps
-              if (value?.splits) {
-                setStepContext(prev => ({
-                  ...prev,
-                  splitTrays: value.splits
-                }));
-              }
-            }}
-            trayId={stepContext.currentTrayId}
-          />
+          <div className="space-y-4">
+            <TraySplitStep
+              step={step}
+              value={currentSplitData}
+              onChange={(value) => {
+                setStepData({ ...stepData, [step.id]: value });
+                // Update context for next steps
+                if (value?.splits) {
+                  setStepContext(prev => ({
+                    ...prev,
+                    splitTrays: value.splits
+                  }));
+                }
+              }}
+              trayId={stepContext.currentTrayId}
+            />
+            
+            {/* Show complete step button when tray and split count are selected */}
+            {currentSplitData?.trayId && currentSplitData?.count && (
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={async () => {
+                    console.log('ChecklistExecution: Executing tray split...');
+                    try {
+                      // Execute the actual split operation
+                      if (currentSplitData.executeSplit) {
+                        const splitResult = currentSplitData.executeSplit();
+                        console.log('ChecklistExecution: Split executed:', splitResult);
+                      } else {
+                        console.warn('ChecklistExecution: No executeSplit method found, performing direct split');
+                        // Fallback to direct split
+                        const TrayDataService = (await import('../services/trayDataService')).default;
+                        const splitResult = TrayDataService.splitTray(currentSplitData.trayId, currentSplitData.count);
+                        console.log('ChecklistExecution: Fallback split executed:', splitResult);
+                      }
+                      
+                      // Mark step as complete and continue
+                      handleStepComplete();
+                    } catch (error) {
+                      console.error('ChecklistExecution: Split execution failed:', error);
+                      setErrors({ ...errors, [step.id]: 'Failed to execute tray split. Please try again.' });
+                    }
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={isProcessing}
+                >
+                  <Split className="w-4 h-4 mr-2" />
+                  Execute Tray Split ({currentSplitData.count} new trays)
+                </Button>
+              </div>
+            )}
+          </div>
         );
 
       default:

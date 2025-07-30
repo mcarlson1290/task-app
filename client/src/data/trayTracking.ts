@@ -5,7 +5,7 @@ export interface Tray {
   cropCategory: 'microgreens' | 'leafyGreens';
   datePlanted: Date;
   expectedHarvest: Date;
-  status: 'seeded' | 'germinating' | 'growing' | 'ready' | 'harvested' | 'discarded';
+  status: 'seeded' | 'germinating' | 'growing' | 'ready' | 'harvested' | 'split' | 'discarded';
   currentLocation: {
     systemId: string;
     systemType: string;

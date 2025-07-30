@@ -72,6 +72,7 @@ const TrayTracking: React.FC = () => {
       case 'growing': return 'bg-green-100 text-green-800';
       case 'ready': return 'bg-blue-100 text-blue-800';
       case 'harvested': return 'bg-gray-100 text-gray-800';
+      case 'split': return 'bg-purple-100 text-purple-800';
       case 'discarded': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -211,6 +212,7 @@ const TrayTracking: React.FC = () => {
                 <SelectItem value="germinating">Germinating</SelectItem>
                 <SelectItem value="growing">Growing</SelectItem>
                 <SelectItem value="ready">Ready</SelectItem>
+                <SelectItem value="split">Split</SelectItem>
                 <SelectItem value="harvested">Harvested</SelectItem>
               </SelectContent>
             </Select>

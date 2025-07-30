@@ -103,7 +103,7 @@ class TrayDataService {
     // Update original tray - mark as split
     const updatedOriginal: Tray = {
       ...originalTray,
-      status: 'discarded', // Original is no longer active after split
+      status: 'split', // Original has been split into multiple trays
       childTrayIds: splitTrays.map(t => t.id),
       notes: `${originalTray.notes} - Split into ${splitCount} trays: ${splitTrays.map(t => t.id).join(', ')}`
     };
