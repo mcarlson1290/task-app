@@ -237,8 +237,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       isCompleted && isTaskLate(task) ? 'border-l-4 border-l-amber-400' : ''
     }`}>
       <CardContent className="p-6">
-        {/* Status and Priority Badges - Properly positioned */}
-        <div className="absolute top-3 right-3 flex flex-col gap-1">
+        {/* Status, Priority, and Status Icons - Repositioned */}
+        <div className="absolute top-3 right-3 flex flex-col items-center gap-1">
           {/* Status Badge */}
           <div className={`px-2 py-1 rounded text-xs font-semibold ${
             isCompleted && isTaskLate(task) 
@@ -247,9 +247,27 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           }`}>
             {isCompleted && isTaskLate(task) ? '✓ Completed Late' : getStatusLabel(task.status as TaskStatus)}
           </div>
+          
           {/* Priority Badge */}
           <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
             {task.priority?.toUpperCase() || 'N/A'}
+          </div>
+          
+          {/* Status Icons Row - Positioned under priority */}
+          <div className="flex items-center gap-1 min-h-[20px]">
+            {task.isRecurring && task.recurringTaskId && (
+              <span className="text-sm text-blue-600" title="Recurring Task">
+                🔄
+              </span>
+            )}
+            {isCompleted && isTaskLate(task) && (
+              <span 
+                className="text-sm text-amber-600"
+                title={`Completed ${getLateDuration(task)}`}
+              >
+                ⚠️
+              </span>
+            )}
           </div>
         </div>
 
@@ -257,22 +275,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           <div className="flex items-center">
             <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
             <div>
-              <div className="flex items-center gap-2">
+              <div>
                 <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
-                {task.isRecurring && task.recurringTaskId && (
-                  <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full" title="Recurring Task Instance">
-                    🔄
-                  </span>
-                )}
-                {/* Late completion indicator in header */}
-                {isCompleted && isTaskLate(task) && (
-                  <span 
-                    className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"
-                    title={`Completed ${getLateDuration(task)}`}
-                  >
-                    ⚠️ Late
-                  </span>
-                )}
               </div>
               {task.assignedTo && (
                 <p className="text-sm text-gray-600">Assigned to: User {task.assignedTo}</p>

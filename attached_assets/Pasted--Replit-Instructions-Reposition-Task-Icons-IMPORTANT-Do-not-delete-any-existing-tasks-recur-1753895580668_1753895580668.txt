@@ -1,0 +1,208 @@
+# Replit Instructions: Reposition Task Icons
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+Move the recurring task icon (🔄) and late warning icon (⚠️) to display underneath the priority indicator for better visual organization.
+
+## Implementation:
+
+### 1. Update Task Card Layout Structure
+
+```javascript
+const TaskCard = ({ task }) => {
+  const isLate = task.status === 'completed' && isTaskLate(task);
+  const isRecurring = task.isRecurring || task.recurringTaskId;
+  
+  return (
+    <div className={`task-card ${task.status} ${isLate ? 'completed-late' : ''}`}>
+      <div className="task-header">
+        <div className="task-title-section">
+          <h3>{task.title}</h3>
+        </div>
+        
+        {/* Priority and Icons Section - Stacked Vertically */}
+        <div className="task-indicators">
+          {/* Priority Badge */}
+          <div className="priority-badge-container">
+            <span className={`priority-badge ${task.priority.toLowerCase()}`}>
+              {task.priority}
+            </span>
+          </div>
+          
+          {/* Status Icons Below Priority */}
+          <div className="status-icons">
+            {isRecurring && (
+              <span className="recurring-icon" title="Recurring Task">
+                🔄
+              </span>
+            )}
+            {isLate && (
+              <span className="late-icon" title={`Completed ${getLateDuration(task)}`}>
+                ⚠️
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Rest of task card content */}
+      <div className="task-body">
+        {/* Task details, checklist info, etc. */}
+      </div>
+      
+      {/* Task footer with actions */}
+      <div className="task-footer">
+        {/* Time, status, action button */}
+      </div>
+    </div>
+  );
+};
+```
+
+### 2. Update CSS for Vertical Icon Layout
+
+```css
+/* Task Header Layout */
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.task-title-section {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.task-title-section h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Task Indicators - Stacked Layout */
+.task-indicators {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Priority Badge Container */
+.priority-badge-container {
+  display: flex;
+  justify-content: center;
+}
+
+.priority-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.priority-badge.low {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.priority-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority-badge.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Status Icons Row */
+.status-icons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 20px; /* Maintain height even when empty */
+}
+
+.recurring-icon,
+.late-icon {
+  font-size: 16px;
+  cursor: help; /* Shows it has a tooltip */
+}
+
+.recurring-icon {
+  color: #3b82f6; /* Blue for recurring */
+}
+
+.late-icon {
+  color: #f59e0b; /* Amber for late warning */
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .task-header {
+    flex-wrap: wrap;
+  }
+  
+  .task-indicators {
+    margin-top: 8px;
+  }
+}
+
+/* Completed Late Card Border */
+.task-card.completed-late {
+  border-left: 4px solid #f59e0b;
+}
+```
+
+### 3. Alternative Compact Layout Option
+
+If you prefer a more compact side-by-side layout under the priority:
+
+```css
+/* Alternative: Side-by-side icons under priority */
+.task-indicators-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.status-icons-compact {
+  display: flex;
+  gap: 4px;
+  font-size: 14px;
+  background: #f9fafb;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+```
+
+## Visual Result:
+```
+┌─────────────────────────────────────┐
+│ Water the Microgreens        MEDIUM │
+│                                 🔄⚠️ │
+├─────────────────────────────────────┤
+│ ⏱ Water them greens                 │
+│ ✓ 0/1 checklist items               │
+│ 📅 Due: Jul 29, 2025                │
+│ ⚠️ Completed Late (1 day late)      │
+│ 👤 Completed and approved           │
+├─────────────────────────────────────┤
+│ ⏱ Completed Just now    View Details│
+└─────────────────────────────────────┘
+```
+
+## Benefits:
+- Cleaner visual hierarchy
+- Priority remains the primary indicator
+- Status icons (recurring, late) are secondary information
+- Better use of vertical space
+- Icons don't interfere with the task title
+- Maintains consistent alignment across all task cards

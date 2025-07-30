@@ -153,6 +153,12 @@ Preferred communication style: Simple, everyday language.
     - Shows "No tasks match current filters" message when filtered to empty results
     - Completion performance section only appears when there are completed tasks in current filter
     - Real-time updates when any filter changes (date, status, category, priority)
+  - **Repositioned Task Icons**: Improved visual hierarchy by moving status icons underneath priority indicators
+    - Moved recurring task icon (🔄) and late warning icon (⚠️) from task title area to underneath priority badge
+    - Created clean vertical stack: Status Badge → Priority Badge → Status Icons
+    - Removed duplicate icons from task title header for cleaner appearance
+    - Enhanced visual organization with consistent alignment and proper spacing
+    - Icons maintain tooltips for accessibility and context
 - **July 30, 2025**: Added late task completion indicators with comprehensive visual feedback system
   - **Late Task Detection System**: Implemented automatic detection of tasks completed after their due date
     - Added isTaskLate() function that compares completion time with due date
