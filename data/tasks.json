@@ -931,13 +931,13 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "status": "pending",
+    "status": "completed",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
     "estimatedTime": null,
     "actualTime": null,
-    "progress": 0,
+    "progress": 100,
     "checklist": [
       {
         "id": "1753902010337",
@@ -1019,15 +1019,15 @@
     "data": {},
     "dueDate": "2025-07-31T12:00:00.000Z",
     "visibleFromDate": "2025-07-15T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
+    "startedAt": "2025-07-30T23:33:24.337Z",
+    "completedAt": "2025-07-30T23:33:36.067Z",
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T23:23:38.484Z"
+    "createdAt": "2025-07-30T23:33:00.276Z"
   },
   {
     "id": 55,
@@ -1130,7 +1130,7 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T23:23:38.484Z"
+    "createdAt": "2025-07-30T23:33:00.276Z"
   },
   {
     "id": 56,
@@ -1233,7 +1233,7 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T23:23:38.484Z"
+    "createdAt": "2025-07-30T23:33:00.277Z"
   },
   {
     "id": 57,
@@ -1336,7 +1336,7 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T23:23:38.485Z"
+    "createdAt": "2025-07-30T23:33:00.277Z"
   },
   {
     "id": 58,
@@ -1439,6 +1439,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T23:23:38.485Z"
+    "createdAt": "2025-07-30T23:33:00.277Z"
   }
 ]
