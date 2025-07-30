@@ -50,28 +50,7 @@ const Tasks: React.FC = () => {
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
 
-  // Regenerate tasks mutation (admin feature)
-  const regenerateTasksMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('/api/regenerate-tasks', {
-        method: 'POST'
-      });
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Tasks Regenerated",
-        description: `${data.regeneratedTasks} tasks regenerated with fixed dates`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to regenerate tasks",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -126,6 +105,21 @@ const Tasks: React.FC = () => {
       const url = `/api/tasks?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json();
+    },
+    enabled: !!auth.user,
+  });
+
+  const { data: recurringTasks = [] } = useQuery({
+    queryKey: ["/api/recurring-tasks", { location: currentLocation.code }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (!isViewingAllLocations) {
+        params.append('location', currentLocation.code);
+      }
+      const url = `/api/recurring-tasks?${params.toString()}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch recurring tasks');
       return response.json();
     },
     enabled: !!auth.user,
@@ -273,7 +267,7 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - use visibility range for recurring tasks, due date for others
+    // Date filter - enhanced visibility for recurring tasks
     if (dateFilter) {
       const filterDate = new Date(dateFilter);
       filterDate.setHours(0, 0, 0, 0);
@@ -281,49 +275,57 @@ const Tasks: React.FC = () => {
       today.setHours(0, 0, 0, 0);
       const isToday = filterDate.getTime() === today.getTime();
       
+      console.log(`=== Date Filter Applied: ${dateFilter} ===`);
+      console.log(`Filter date: ${filterDate.toLocaleDateString()}, Day of month: ${filterDate.getDate()}`);
+      
       filtered = filtered.filter(task => {
-        // For recurring tasks with monthly/bi-weekly frequency - use visibility ranges
+        // For recurring tasks, use enhanced visibility logic
         if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
-          let visibleFrom: Date;
+          const taskMonth = dueDate.getMonth();
+          const taskYear = dueDate.getFullYear();
+          const filterMonth = filterDate.getMonth();
+          const filterYear = filterDate.getFullYear();
+          const filterDay = filterDate.getDate();
           
-          // If visibleFromDate exists, use it; otherwise calculate based on frequency
-          if (task.visibleFromDate) {
-            visibleFrom = new Date(task.visibleFromDate);
-          } else {
-            // Calculate visibility based on task patterns for monthly/bi-weekly
-            if (task.title?.includes('Monthly')) {
-              // Monthly tasks visible from 1st of the month
-              visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
-            } else if (task.title?.includes('Bi-Weekly')) {
-              // Bi-weekly tasks - check if this is first or second half
-              const dayOfMonth = dueDate.getDate();
-              if (dayOfMonth <= 14) {
-                // First half: visible from 1st
-                visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
-              } else {
-                // Second half: visible from 15th
-                visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 15);
-              }
+          // Must be same month and year
+          if (taskMonth !== filterMonth || taskYear !== filterYear) {
+            return false;
+          }
+          
+          // Get recurring task to check frequency
+          const recurringTask = recurringTasks?.find(rt => rt.id === task.recurringTaskId);
+          
+          // Check based on task patterns in title or recurring task frequency
+          const isMonthly = task.title?.includes('Monthly') || recurringTask?.frequency === 'monthly';
+          const isBiWeekly = task.title?.includes('Bi-Weekly') || recurringTask?.frequency === 'bi-weekly';
+          
+          if (isMonthly) {
+            // Monthly tasks: visible from 1st through due date
+            const isVisible = filterDay >= 1 && filterDate <= dueDate;
+            console.log(`Monthly task "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
+            return isVisible;
+          }
+          
+          if (isBiWeekly) {
+            const dueDay = dueDate.getDate();
+            
+            if (dueDay <= 14) {
+              // First bi-weekly period: visible days 1-14
+              const isVisible = filterDay >= 1 && filterDay <= 14;
+              console.log(`Bi-weekly task (first half) "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
+              return isVisible;
             } else {
-              // Default: visible on due date only
-              visibleFrom = new Date(dueDate);
+              // Second bi-weekly period: visible days 15-end of month
+              const isVisible = filterDay >= 15;
+              console.log(`Bi-weekly task (second half) "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
+              return isVisible;
             }
           }
           
-          visibleFrom.setHours(0, 0, 0, 0);
-          dueDate.setHours(23, 59, 59, 999);
-          
-          // Task is visible if filter date is within visibility range
-          const isInVisibilityRange = filterDate >= visibleFrom && filterDate <= dueDate;
-          
-          // If today is selected, also show overdue tasks
-          if (isToday) {
-            const isOverdue = dueDate < today && task.status !== 'completed' && task.status !== 'approved';
-            return isInVisibilityRange || isOverdue;
-          }
-          
-          return isInVisibilityRange;
+          // For other recurring tasks, use due date
+          const taskDateString = dueDate.toISOString().split('T')[0];
+          return taskDateString === dateFilter;
         }
         
         // For non-recurring tasks, use due date logic
@@ -840,22 +842,6 @@ const Tasks: React.FC = () => {
           >
             <Plus size={16} /> New Task
           </button>
-          
-          {/* Admin regenerate button - only show for debugging */}
-          {process.env.NODE_ENV === 'development' && (
-            <button
-              onClick={() => {
-                if (confirm('Regenerate all recurring tasks with fixed dates? This will delete and recreate all monthly/bi-weekly tasks.')) {
-                  regenerateTasksMutation.mutate();
-                }
-              }}
-              disabled={regenerateTasksMutation.isPending}
-              className="btn-admin"
-              title="Fix date generation issues for monthly/bi-weekly tasks"
-            >
-              {regenerateTasksMutation.isPending ? 'Regenerating...' : 'Fix Dates (Admin)'}
-            </button>
-          )}
         </div>
       </div>
 
