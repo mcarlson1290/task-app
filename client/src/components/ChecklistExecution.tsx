@@ -26,8 +26,12 @@ interface ChecklistStep {
   id: string;
   type: string;
   label: string;
+  text?: string;
   required: boolean;
   config: any;
+  completed?: boolean;
+  skipped?: boolean;
+  skippedAt?: string;
 }
 
 interface ChecklistExecutionProps {
@@ -457,7 +461,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                     onClick={() => handleStepSkip(currentStep)}
                     disabled={isProcessing}
                   >
-                    Skip Step
+                    Complete Step
                   </Button>
                 )}
               </div>
@@ -804,11 +808,11 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         return;
       }
       
+      // Mark step as completed (not skipped anymore!)
       updatedSteps[stepIndex] = {
         ...updatedSteps[stepIndex],
-        skipped: true,
-        completed: false,
-        skippedAt: new Date().toISOString()
+        completed: true,
+        skipped: false
       };
       
       setSteps(updatedSteps);
@@ -818,12 +822,12 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
       if (nextIndex < steps.length) {
         setCurrentStep(nextIndex);
       } else {
-        // All steps processed
-        onComplete(stepData);
+        // All steps processed - show completion message but don't auto-complete task
+        setCurrentStep(steps.length); // This will show the completion section
       }
     } catch (error) {
-      console.error('Error skipping step:', error);
-      setErrors({ ...errors, [steps[stepIndex]?.id]: 'Unable to skip step. Please try again.' });
+      console.error('Error completing step:', error);
+      setErrors({ ...errors, [steps[stepIndex]?.id]: 'Unable to complete step. Please try again.' });
     }
   };
 
@@ -834,7 +838,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Task Checklist</h3>
           <Badge variant="outline">
-            {steps.filter(s => s.completed || (s as any).skipped).length} of {steps.length} Steps
+            {steps.filter(s => s.completed || s.skipped).length} of {steps.length} Steps
           </Badge>
         </div>
         <Progress value={calculateProgress(steps)} className="w-full" />
@@ -845,7 +849,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         {steps.map((step, index) => {
           const StepIcon = getStepIcon(step.type);
           const isCompleted = step.completed;
-          const isSkipped = (step as any).skipped;
+          const isSkipped = step.skipped;
           const isCurrent = index === currentStep && !isCompleted && !isSkipped;
           
           return (
@@ -886,15 +890,15 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                 <div className="ml-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
                   {renderStepInput(step)}
                   
-                  {/* Skip Button */}
+                  {/* Complete Step Button */}
                   <div className="flex justify-end mt-3">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleStepSkip(index)}
-                      className="text-gray-600 hover:text-gray-800"
+                      className="text-green-600 hover:text-green-800"
                     >
-                      Skip Step
+                      Complete Step
                     </Button>
                   </div>
                   
@@ -913,20 +917,19 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         })}
       </div>
 
-      {/* Complete Task when all steps done */}
+      {/* Checklist completion message - Task completion is separate */}
       {currentStep >= steps.length && (
-        <div className="text-center space-y-4 mt-6 pt-4 border-t">
+        <div className="checklist-complete space-y-4 mt-6 pt-4 border-t bg-green-50 p-4 rounded-lg border-l-4 border-l-green-500">
           <div className="flex items-center justify-center text-green-600">
             <CheckCircle className="w-6 h-6 mr-2" />
-            <span className="font-medium">All steps completed!</span>
+            <span className="font-medium">✅ All checklist items completed!</span>
           </div>
-          <Button 
-            onClick={onComplete} 
-            className="w-full bg-green-600 hover:bg-green-700"
-            disabled={isProcessing}
-          >
-            Complete Task
-          </Button>
+          <p className="completion-note text-center text-green-700 text-sm">
+            Please complete any remaining work, then click "Complete Task" in the task modal.
+          </p>
+          <p className="text-center text-green-600 text-xs">
+            The task will remain open until you explicitly mark it as complete.
+          </p>
         </div>
       )}
     </div>

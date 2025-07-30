@@ -44,13 +44,13 @@
     "title": "Water the Microgreens",
     "description": "Water them greens",
     "type": "seeding-microgreens",
-    "status": "pending",
+    "status": "completed",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
     "estimatedTime": null,
     "actualTime": null,
-    "progress": 0,
+    "progress": 100,
     "checklist": [
       {
         "id": "1753806730128",
@@ -69,8 +69,8 @@
     ],
     "data": {},
     "dueDate": "2025-07-30T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
+    "startedAt": "2025-07-30T16:54:08.835Z",
+    "completedAt": "2025-07-30T16:54:29.955Z",
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
@@ -84,7 +84,7 @@
     "title": "Water the Microgreens",
     "description": "Water them greens",
     "type": "seeding-microgreens",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -105,11 +105,65 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
     "dueDate": "2025-07-31T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-07-30T16:54:36.120Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -145,6 +199,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -185,6 +293,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -225,6 +387,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -265,6 +481,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -305,6 +575,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -345,6 +669,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -385,6 +763,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -425,6 +857,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -465,6 +951,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -505,6 +1045,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -545,6 +1139,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -585,6 +1233,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -625,6 +1327,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -665,6 +1421,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -705,6 +1515,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -745,6 +1609,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -785,6 +1703,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -825,6 +1797,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -865,6 +1891,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -905,6 +1985,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -945,6 +2079,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -985,6 +2173,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1025,6 +2267,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1065,6 +2361,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1105,6 +2455,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1145,6 +2549,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1185,6 +2643,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},
@@ -1225,6 +2737,60 @@
           "customText": "How much water did you use?",
           "defaultQuantity": "2.5"
         }
+      },
+      {
+        "id": "1753894363251",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1753894367938",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753894371516",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753894385077",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "number",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "number",
+          "label": ""
+        }
+      },
+      {
+        "id": "1753894405731",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
       }
     ],
     "data": {},

@@ -27,6 +27,51 @@
             "customText": "How much water did you use?",
             "defaultQuantity": "2.5"
           }
+        },
+        {
+          "id": "1753894363251",
+          "type": "instruction",
+          "label": "",
+          "required": true,
+          "config": {
+            "text": ""
+          }
+        },
+        {
+          "id": "1753894367938",
+          "type": "checkbox",
+          "label": "",
+          "required": true,
+          "config": {}
+        },
+        {
+          "id": "1753894371516",
+          "type": "number-input",
+          "label": "",
+          "required": true,
+          "config": {
+            "min": 0,
+            "max": 100,
+            "unit": "",
+            "default": 0
+          }
+        },
+        {
+          "id": "1753894385077",
+          "type": "data-capture",
+          "label": "",
+          "required": true,
+          "config": {
+            "dataType": "number",
+            "calculation": ""
+          }
+        },
+        {
+          "id": "1753894405731",
+          "type": "photo",
+          "label": "",
+          "required": true,
+          "config": {}
         }
       ]
     },
