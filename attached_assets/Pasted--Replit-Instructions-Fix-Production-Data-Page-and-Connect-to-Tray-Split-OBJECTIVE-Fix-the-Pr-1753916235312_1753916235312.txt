@@ -1,0 +1,369 @@
+# Replit Instructions: Fix Production Data Page and Connect to Tray Split
+
+**OBJECTIVE: Fix the Production Data page error and connect Tray Split to use real tray data.**
+
+## Step 1: Debug and Fix Production Data Page Error
+
+First, let's fix the error on the Production Data page:
+
+```javascript
+// Check for common issues in ProductionData.jsx
+
+// 1. Initialize data properly
+const ProductionData = () => {
+  const [trays, setTrays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    try {
+      // Load trays from localStorage
+      const storedTrays = localStorage.getItem('productionTrays');
+      if (storedTrays) {
+        const parsedTrays = JSON.parse(storedTrays);
+        setTrays(Array.isArray(parsedTrays) ? parsedTrays : []);
+      } else {
+        // Initialize with empty array if no data
+        localStorage.setItem('productionTrays', JSON.stringify([]));
+        setTrays([]);
+      }
+    } catch (err) {
+      console.error('Error loading production data:', err);
+      setError('Failed to load tray data');
+      // Initialize with empty data on error
+      setTrays([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  if (loading) return <div>Loading production data...</div>;
+  if (error) return <div className="error-message">{error}</div>;
+  
+  // Rest of component...
+};
+```
+
+## Step 2: Update Tray Service to Use Production Data
+
+Update the tray service to pull from the Production Data storage:
+
+```javascript
+// src/services/trayService.js
+export const TrayService = {
+  // Get all trays from Production Data storage
+  getAllTrays() {
+    try {
+      const trays = JSON.parse(localStorage.getItem('productionTrays') || '[]');
+      return Array.isArray(trays) ? trays : [];
+    } catch (error) {
+      console.error('Error loading trays:', error);
+      return [];
+    }
+  },
+  
+  // Get only active trays (not harvested, not split)
+  getActiveTrays() {
+    const allTrays = this.getAllTrays();
+    
+    return allTrays.filter(tray => {
+      // Skip if already harvested
+      if (tray.harvestedAt || tray.status === 'harvested') return false;
+      
+      // Skip if already split
+      if (tray.status === 'split' || tray.splitInto) return false;
+      
+      // Include if status is active, growing, or no status
+      return !tray.status || 
+             tray.status === 'active' || 
+             tray.status === 'growing' ||
+             tray.status === 'germinating';
+    });
+  },
+  
+  // Get a specific tray by ID
+  getTrayById(trayId) {
+    const trays = this.getAllTrays();
+    return trays.find(t => t.id === trayId);
+  },
+  
+  // Create a new tray (from seeding tasks)
+  createTray(trayData) {
+    const trays = this.getAllTrays();
+    
+    const newTray = {
+      id: trayData.id || this.generateTrayId(trayData.cropType),
+      cropType: trayData.cropType,
+      cropName: trayData.cropName,
+      datePlanted: new Date().toISOString(),
+      status: 'active',
+      location: trayData.location || 'Nursery',
+      createdBy: getCurrentUser().id,
+      createdAt: new Date().toISOString(),
+      ...trayData
+    };
+    
+    trays.push(newTray);
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    return newTray;
+  },
+  
+  // Generate tray ID format: K073024-MG-LETT-1A
+  generateTrayId(cropType) {
+    const date = new Date();
+    const dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getFullYear().toString().substr(2)}`;
+    const location = 'K'; // Kenosha
+    const type = cropType?.substring(0, 4).toUpperCase() || 'UNKN';
+    const random = Math.random().toString(36).substring(2, 4).toUpperCase();
+    
+    return `${location}${dateStr}-${type}-${random}`;
+  },
+  
+  // Split a tray
+  splitTray(originalTrayId, splitCount) {
+    const trays = this.getAllTrays();
+    const originalIndex = trays.findIndex(t => t.id === originalTrayId);
+    
+    if (originalIndex === -1) {
+      console.error('Tray not found:', originalTrayId);
+      return null;
+    }
+    
+    const originalTray = trays[originalIndex];
+    const splitTrays = [];
+    
+    // Create split trays
+    for (let i = 1; i <= splitCount; i++) {
+      const splitTray = {
+        ...originalTray,
+        id: `${originalTrayId}-${i}`,
+        parentId: originalTrayId,
+        splitNumber: i,
+        splitTotal: splitCount,
+        status: 'active',
+        location: null, // Needs reassignment
+        systemId: null, // Needs reassignment
+        createdAt: new Date().toISOString(),
+        splitAt: new Date().toISOString()
+      };
+      
+      splitTrays.push(splitTray);
+      trays.push(splitTray);
+    }
+    
+    // Update original tray
+    trays[originalIndex] = {
+      ...originalTray,
+      status: 'split',
+      splitInto: splitTrays.map(t => t.id),
+      splitAt: new Date().toISOString()
+    };
+    
+    // Save all changes
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    return splitTrays;
+  }
+};
+```
+
+## Step 3: Fix Production Data Page Components
+
+Make sure the Production Data page components are working:
+
+```javascript
+// src/pages/ProductionData.jsx
+import React, { useState, useEffect } from 'react';
+import { TrayService } from '../services/trayService';
+
+const ProductionData = () => {
+  const [activeTab, setActiveTab] = useState('trays');
+  const [trays, setTrays] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Load trays
+  const loadTrays = () => {
+    const allTrays = TrayService.getAllTrays();
+    setTrays(allTrays);
+  };
+  
+  useEffect(() => {
+    loadTrays();
+    
+    // Listen for tray updates
+    const handleTrayUpdate = () => loadTrays();
+    window.addEventListener('trayUpdated', handleTrayUpdate);
+    
+    return () => {
+      window.removeEventListener('trayUpdated', handleTrayUpdate);
+    };
+  }, []);
+  
+  // Filter trays based on search
+  const filteredTrays = trays.filter(tray => 
+    tray.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tray.cropType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tray.cropName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  return (
+    <div className="production-data-page">
+      <h1>Production Data</h1>
+      
+      <div className="tabs">
+        <button 
+          className={activeTab === 'trays' ? 'active' : ''}
+          onClick={() => setActiveTab('trays')}
+        >
+          Tray Tracking ({trays.length})
+        </button>
+        <button 
+          className={activeTab === 'metrics' ? 'active' : ''}
+          onClick={() => setActiveTab('metrics')}
+        >
+          Metrics
+        </button>
+        <button 
+          className={activeTab === 'equipment' ? 'active' : ''}
+          onClick={() => setActiveTab('equipment')}
+        >
+          Equipment
+        </button>
+      </div>
+      
+      {activeTab === 'trays' && (
+        <div className="tray-tracking">
+          <div className="tray-controls">
+            <input
+              type="text"
+              placeholder="Search trays..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <button 
+              className="btn-primary"
+              onClick={() => {
+                // Test: Create a sample tray
+                TrayService.createTray({
+                  cropType: 'Lettuce',
+                  cropName: 'Romaine',
+                  location: 'Nursery'
+                });
+                loadTrays();
+              }}
+            >
+              + Add Test Tray
+            </button>
+          </div>
+          
+          <div className="tray-list">
+            {filteredTrays.length === 0 ? (
+              <p>No trays found. Create some from seeding tasks!</p>
+            ) : (
+              <table className="tray-table">
+                <thead>
+                  <tr>
+                    <th>Tray ID</th>
+                    <th>Crop</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Planted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTrays.map(tray => (
+                    <tr key={tray.id}>
+                      <td className="tray-id">{tray.id}</td>
+                      <td>{tray.cropName || tray.cropType}</td>
+                      <td>
+                        <span className={`status-badge ${tray.status}`}>
+                          {tray.status || 'active'}
+                        </span>
+                      </td>
+                      <td>{tray.location || 'Unassigned'}</td>
+                      <td>{new Date(tray.datePlanted).toLocaleDateString()}</td>
+                      <td>
+                        {tray.status !== 'split' && tray.status !== 'harvested' && (
+                          <button 
+                            className="btn-small"
+                            onClick={() => {
+                              // Test split
+                              TrayService.splitTray(tray.id, 2);
+                              loadTrays();
+                            }}
+                          >
+                            Split
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProductionData;
+```
+
+## Step 4: Connect Tray Split Step to Production Data
+
+Now update the Tray Split component to use the real data:
+
+```javascript
+// In TraySplitStep.jsx
+useEffect(() => {
+  // Load active trays from TrayService (which pulls from Production Data)
+  const trays = TrayService.getActiveTrays();
+  console.log('Loaded active trays:', trays.length);
+  setActiveTrays(trays);
+}, []);
+```
+
+## Step 5: Ensure Data Persistence
+
+Make sure tray data persists and updates properly:
+
+```javascript
+// When completing a task that creates/modifies trays
+const handleTaskComplete = async (taskData) => {
+  // If task creates a tray (e.g., seeding)
+  if (taskData.type === 'Seeding') {
+    TrayService.createTray({
+      cropType: taskData.cropType,
+      cropName: taskData.cropName,
+      seedsUsed: taskData.checklistData.seedsUsed,
+      // ... other data from checklist
+    });
+  }
+  
+  // If task splits trays
+  if (taskData.checklistData.traySplits) {
+    const { trayId, count } = taskData.checklistData.traySplits;
+    TrayService.splitTray(trayId, count);
+  }
+  
+  // Trigger update event
+  window.dispatchEvent(new Event('trayUpdated'));
+};
+```
+
+## Expected Result:
+
+1. **Production Data page loads** without errors
+2. **Shows real tray data** that persists across reloads
+3. **Tray Split dropdown** shows actual trays from Production Data
+4. **Data flows correctly** between pages:
+   - Seeding tasks create trays → appear in Production Data
+   - Production Data trays → appear in Tray Split dropdown
+   - Split trays → update in Production Data
+
+The system now uses one source of truth for all tray data!

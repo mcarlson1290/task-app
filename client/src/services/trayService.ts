@@ -17,9 +17,20 @@ export interface ProductionTray {
 }
 
 export const TrayService = {
+  // Get all trays from storage
+  getAllTrays(): ProductionTray[] {
+    try {
+      const trays = JSON.parse(localStorage.getItem('productionTrays') || '[]') as ProductionTray[];
+      return Array.isArray(trays) ? trays : [];
+    } catch (error) {
+      console.error('Error loading trays:', error);
+      return [];
+    }
+  },
+
   // Get all active trays (not split, not harvested)
   getActiveTrays(): ProductionTray[] {
-    const trays = JSON.parse(localStorage.getItem('productionTrays') || '[]') as ProductionTray[];
+    const trays = this.getAllTrays();
     
     // Filter for active trays only
     return trays.filter(tray => 
@@ -78,6 +89,50 @@ export const TrayService = {
     return splitTrays;
   },
 
+  // Get a specific tray by ID
+  getTrayById(trayId: string): ProductionTray | undefined {
+    const trays = this.getAllTrays();
+    return trays.find(t => t.id === trayId);
+  },
+
+  // Create a new tray (from seeding tasks)
+  createTray(trayData: Partial<ProductionTray>): ProductionTray {
+    const trays = this.getAllTrays();
+    
+    const newTray: ProductionTray = {
+      id: trayData.id || this.generateTrayId(trayData.cropType || 'UNKN'),
+      cropType: trayData.cropType || 'unknown',
+      cropName: trayData.cropName,
+      datePlanted: trayData.datePlanted || new Date().toISOString().split('T')[0],
+      status: trayData.status || 'active',
+      location: trayData.location || 'Nursery',
+      createdAt: new Date().toISOString(),
+      ...trayData
+    };
+    
+    trays.push(newTray);
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    // Trigger update event for real-time updates
+    window.dispatchEvent(new Event('trayUpdated'));
+    
+    return newTray;
+  },
+
+  // Generate tray ID format: K073025-LETT-1A
+  generateTrayId(cropType: string): string {
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear().toString().substr(2);
+    const dateStr = `${month}${day}${year}`;
+    const location = 'K'; // Kenosha default
+    const type = cropType.substring(0, 4).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 4).toUpperCase();
+    
+    return `${location}${dateStr}-${type}-${random}`;
+  },
+
   // Initialize with sample data if no trays exist
   initializeSampleTrays(): void {
     const existing = localStorage.getItem('productionTrays');
@@ -127,5 +182,24 @@ export const TrayService = {
       
       localStorage.setItem('productionTrays', JSON.stringify(sampleTrays));
     }
+  },
+
+  // Update tray data
+  updateTray(trayId: string, updates: Partial<ProductionTray>): ProductionTray | null {
+    const trays = this.getAllTrays();
+    const trayIndex = trays.findIndex(t => t.id === trayId);
+    
+    if (trayIndex === -1) {
+      console.error('Tray not found:', trayId);
+      return null;
+    }
+    
+    trays[trayIndex] = { ...trays[trayIndex], ...updates };
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    // Trigger update event
+    window.dispatchEvent(new Event('trayUpdated'));
+    
+    return trays[trayIndex];
   }
 };
