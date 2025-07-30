@@ -36,6 +36,7 @@ const Tasks: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
   });
+
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
@@ -612,68 +613,7 @@ const Tasks: React.FC = () => {
     setAddTaskModalOpen(true);
   };
 
-  // Fix task dates - regenerate with correct date calculations
-  const fixTaskDates = async () => {
-    if (!confirm('This will regenerate all recurring tasks with fixed dates. Continue?')) {
-      return;
-    }
-    
-    try {
-      // Trigger task regeneration with fixed dates
-      const response = await apiRequest('POST', '/api/regenerate-tasks');
-      
-      toast({
-        title: "Task Dates Fixed",
-        description: `Successfully regenerated ${response.regeneratedTasks} tasks with correct dates`,
-      });
-      
-      // Refresh the page to show updated tasks
-      setTimeout(() => window.location.reload(), 1000);
-    } catch (error) {
-      console.error('Fix dates error:', error);
-      toast({
-        title: "Fix Error", 
-        description: "Failed to fix task dates",
-        variant: "destructive"
-      });
-    }
-  };
 
-  // Reset app to clean slate
-  const resetAppToCleanSlate = async () => {
-    if (!confirm('This will DELETE all tasks, recurring tasks, and test data. Continue?')) {
-      return;
-    }
-    
-    try {
-      // Clear all data via API
-      await apiRequest('POST', '/api/clear-data');
-      
-      // Clear browser storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Clear IndexedDB if available
-      if ('indexedDB' in window) {
-        const databases = await indexedDB.databases();
-        databases.forEach(db => indexedDB.deleteDatabase(db.name));
-      }
-      
-      toast({
-        title: "Reset Complete",
-        description: "All data cleared. Page will reload.",
-      });
-      
-      // Reload the page to start fresh
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (error) {
-      console.error('Reset error:', error);
-      toast({
-        title: "Reset Error",
-        description: "Failed to reset app completely",
-      });
-    }
-  };
 
   // Task Summary Component - now responsive to filters
   const TaskSummary = ({ 
@@ -916,41 +856,31 @@ const Tasks: React.FC = () => {
             <Plus size={16} /> New Task
           </button>
 
-          {/* Corporate Only Buttons */}
-          {auth.user && auth.user.role === 'corporate' && (
-            <>
-              <button 
-                onClick={fixTaskDates}
-                style={{
-                  background: '#f59e0b',
-                  color: 'white',
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  marginRight: '8px'
-                }}
-                title="Fix off-by-one date issues in recurring tasks"
-              >
-                🔧 Fix Task Dates
-              </button>
-              <button 
-                onClick={resetAppToCleanSlate}
-                style={{
-                  background: '#dc2626',
-                  color: 'white',
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                🔄 Reset App (Delete All Data)
-              </button>
-            </>
-          )}
+          {/* Refresh Tasks Button */}
+          <button 
+            onClick={() => {
+              console.log('=== REFRESHING TASKS ===');
+              queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+              refetch();
+              toast({
+                title: "Tasks Refreshed",
+                description: "All tasks reloaded successfully",
+              });
+            }}
+            style={{
+              background: '#3b82f6',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              marginRight: '8px'
+            }}
+            title="Refresh and reload all tasks"
+          >
+            🔄 Refresh Tasks
+          </button>
         </div>
       </div>
 

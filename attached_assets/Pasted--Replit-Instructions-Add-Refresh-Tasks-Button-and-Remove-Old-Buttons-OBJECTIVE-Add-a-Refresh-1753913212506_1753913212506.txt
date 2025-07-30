@@ -1,0 +1,255 @@
+# Replit Instructions: Add Refresh Tasks Button and Remove Old Buttons
+
+**OBJECTIVE: Add a Refresh Tasks button that properly loads and displays all tasks, and remove the old debug buttons.**
+
+## Step 1: Remove Old Debug Buttons
+
+Find and remove these buttons:
+
+```javascript
+// REMOVE: Fix Task Date button
+<button onClick={fixTaskDates}>
+  Fix Task Dates
+</button>
+
+// REMOVE: Reset App button
+<button onClick={resetApp} style={{background: '#dc2626'}}>
+  🔄 Reset App (Delete All Data)
+</button>
+
+// Remove the associated functions too:
+const fixTaskDates = () => { ... }  // DELETE
+const resetApp = () => { ... }      // DELETE
+```
+
+## Step 2: Add Refresh Tasks Button
+
+Add a clean refresh button to the task page header:
+
+```javascript
+// In the Tasks page component
+const TasksPage = () => {
+  const [tasks, setTasks] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const refreshTasks = async () => {
+    setIsRefreshing(true);
+    console.log('=== REFRESHING TASKS ===');
+    
+    try {
+      // 1. Generate any missing recurring tasks for current period
+      await generateRecurringTasksForCurrentPeriod();
+      
+      // 2. Load all tasks from storage/database
+      const allTasks = await loadAllTasks();
+      console.log(`Loaded ${allTasks.length} total tasks`);
+      
+      // 3. Clean up any invalid or duplicate tasks
+      const cleanedTasks = cleanupTasks(allTasks);
+      console.log(`After cleanup: ${cleanedTasks.length} tasks`);
+      
+      // 4. Update the display
+      setTasks(cleanedTasks);
+      
+      // Show success feedback
+      showToast('Tasks refreshed successfully', 'success');
+      
+    } catch (error) {
+      console.error('Error refreshing tasks:', error);
+      showToast('Error refreshing tasks', 'error');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  
+  return (
+    <div className="tasks-page">
+      <div className="page-header">
+        <h1>Tasks</h1>
+        <div className="header-actions">
+          <button 
+            onClick={refreshTasks}
+            disabled={isRefreshing}
+            className="btn-refresh"
+          >
+            {isRefreshing ? (
+              <>🔄 Refreshing...</>
+            ) : (
+              <>🔄 Refresh Tasks</>
+            )}
+          </button>
+          <button className="btn-primary">
+            + New Task
+          </button>
+        </div>
+      </div>
+      
+      {/* Rest of the page */}
+    </div>
+  );
+};
+```
+
+## Step 3: Implement Comprehensive Task Generation
+
+```javascript
+const generateRecurringTasksForCurrentPeriod = async () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const dayOfMonth = today.getDate();
+  
+  console.log(`Generating tasks for ${today.toDateString()}`);
+  
+  const recurringTasks = await getRecurringTasks();
+  
+  for (const recurringTask of recurringTasks) {
+    if (!recurringTask.active) continue;
+    
+    switch (recurringTask.frequency) {
+      case 'daily':
+        await generateDailyTask(recurringTask, today);
+        break;
+        
+      case 'weekly':
+        await generateWeeklyTaskIfNeeded(recurringTask, today);
+        break;
+        
+      case 'monthly':
+        // Always check/generate for current month
+        await generateMonthlyTaskForMonth(recurringTask, year, month);
+        break;
+        
+      case 'bi-weekly':
+        // Generate both halves if applicable
+        if (dayOfMonth <= 14) {
+          await generateBiWeeklyFirstHalf(recurringTask, year, month);
+        }
+        if (dayOfMonth >= 15) {
+          await generateBiWeeklySecondHalf(recurringTask, year, month);
+        }
+        break;
+    }
+  }
+};
+
+// Helper to ensure monthly task exists
+const generateMonthlyTaskForMonth = async (recurringTask, year, month) => {
+  const taskId = `${recurringTask.id}-${year}-${month}-monthly`;
+  const existingTask = await getTaskById(taskId);
+  
+  if (!existingTask) {
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    
+    await createTask({
+      ...recurringTask,
+      id: taskId,
+      recurringTaskId: recurringTask.id,
+      visibleFromDate: new Date(year, month, 1, 12, 0, 0).toISOString(),
+      dueDate: new Date(year, month, lastDay, 12, 0, 0).toISOString(),
+      frequency: 'monthly',
+      status: 'pending'
+    });
+    
+    console.log(`Created monthly task: ${recurringTask.title} for ${month + 1}/${year}`);
+  }
+};
+```
+
+## Step 4: Implement Task Cleanup
+
+```javascript
+const cleanupTasks = (tasks) => {
+  // Remove duplicates
+  const uniqueTasks = [];
+  const seenIds = new Set();
+  
+  for (const task of tasks) {
+    if (!seenIds.has(task.id)) {
+      seenIds.add(task.id);
+      uniqueTasks.push(task);
+    } else {
+      console.warn(`Removing duplicate task: ${task.id}`);
+    }
+  }
+  
+  // Fix any date issues
+  const fixedTasks = uniqueTasks.map(task => {
+    // Ensure dates are valid
+    if (task.visibleFromDate && isNaN(new Date(task.visibleFromDate).getTime())) {
+      console.warn(`Fixing invalid visibleFromDate for task ${task.id}`);
+      task.visibleFromDate = new Date().toISOString();
+    }
+    
+    if (task.dueDate && isNaN(new Date(task.dueDate).getTime())) {
+      console.warn(`Fixing invalid dueDate for task ${task.id}`);
+      task.dueDate = new Date().toISOString();
+    }
+    
+    return task;
+  });
+  
+  return fixedTasks;
+};
+```
+
+## Step 5: Style the Refresh Button
+
+```css
+.btn-refresh {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-refresh:hover {
+  background: #2563eb;
+}
+
+.btn-refresh:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+```
+
+## Step 6: Auto-Refresh on Page Load
+
+```javascript
+// In the Tasks component
+useEffect(() => {
+  // Refresh tasks when page loads
+  refreshTasks();
+}, []);
+
+// Optional: Refresh every 5 minutes
+useEffect(() => {
+  const interval = setInterval(() => {
+    refreshTasks();
+  }, 5 * 60 * 1000); // 5 minutes
+  
+  return () => clearInterval(interval);
+}, []);
+```
+
+## Expected Result:
+- **Refresh Tasks button** in the header that:
+  - Generates any missing recurring tasks
+  - Loads all tasks properly
+  - Removes duplicates
+  - Shows loading state while refreshing
+- **No more debug buttons** cluttering the UI
+- **Auto-refresh** on page load ensures tasks are always current
