@@ -47,10 +47,7 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
   const [splitCount, setSplitCount] = useState(value?.count || step.config?.defaultSplits || 3);
 
   useEffect(() => {
-    // Initialize sample trays if none exist
-    TrayService.initializeSampleTrays();
-    
-    // Load active trays
+    // Load active trays from authentic production data
     const trays = TrayService.getActiveTrays();
     setActiveTrays(trays);
   }, []);
