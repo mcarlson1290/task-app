@@ -106,7 +106,7 @@ export class MemStorage implements IStorage {
   private recurringTasks: Map<number, RecurringTask> = new Map();
   private growingSystems: Map<number, GrowingSystem> = new Map();
   private trayMovements: Map<number, TrayMovement> = new Map();
-  private crops: Map<number, Crop> = new Map();
+  // private crops: Map<number, Crop> = new Map(); // Disabled until Crop type is defined
   private courseAssignments: Map<number, CourseAssignment> = new Map();
   private notifications: Map<number, Notification> = new Map();
   
@@ -119,7 +119,7 @@ export class MemStorage implements IStorage {
   private currentRecurringTaskId = 1;
   private currentGrowingSystemId = 1;
   private currentTrayMovementId = 1;
-  private currentCropId = 1;
+  // private currentCropId = 1; // Disabled until Crop type is defined
   private currentAssignmentId = 1;
   private currentNotificationId = 1;
 
