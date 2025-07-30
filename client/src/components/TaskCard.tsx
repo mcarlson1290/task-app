@@ -10,7 +10,7 @@ import { TaskType, TaskStatus } from "@/types";
 
 interface TaskCardProps {
   task: Task;
-  onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view') => void;
+  onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume') => void;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
@@ -55,8 +55,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return labels[status] || status;
   };
 
-  const getPriorityColor = (priority: string): string => {
-    const colors = {
+  const getPriorityColor = (priority: string | null): string => {
+    if (!priority) return "bg-gray-500";
+    const colors: Record<string, string> = {
       high: "bg-red-500",
       medium: "bg-yellow-500",
       low: "bg-green-500"
@@ -71,6 +72,36 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       return `${hours}h ${mins}m`;
     }
     return `${mins}m`;
+  };
+
+  // Late task detection functions
+  const isTaskLate = (task: Task): boolean => {
+    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
+      return false;
+    }
+    
+    const dueTime = new Date(task.dueDate).getTime();
+    const completedTime = new Date(task.completedAt).getTime();
+    
+    return completedTime > dueTime;
+  };
+
+  const getLateDuration = (task: Task): string | null => {
+    if (!isTaskLate(task) || !task.completedAt) return null;
+    
+    const dueTime = new Date(task.dueDate);
+    const completedTime = new Date(task.completedAt);
+    const diffMinutes = Math.floor((completedTime.getTime() - dueTime.getTime()) / (1000 * 60));
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes} min late`;
+    } else if (diffMinutes < 1440) { // Less than 24 hours
+      const hours = Math.floor(diffMinutes / 60);
+      return `${hours} hr${hours > 1 ? 's' : ''} late`;
+    } else {
+      const days = Math.floor(diffMinutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''} late`;
+    }
   };
 
   const getTimeAgo = (date: Date): string => {
@@ -202,17 +233,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       isSkipped ? 'bg-gray-50 border-l-4 border-l-gray-500' : ''
     } ${
       isOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
+    } ${
+      isCompleted && isTaskLate(task) ? 'border-l-4 border-l-amber-400' : ''
     }`}>
       <CardContent className="p-6">
         {/* Status and Priority Badges - Properly positioned */}
         <div className="absolute top-3 right-3 flex flex-col gap-1">
           {/* Status Badge */}
-          <div className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(task.status as TaskStatus)}`}>
-            {getStatusLabel(task.status as TaskStatus)}
+          <div className={`px-2 py-1 rounded text-xs font-semibold ${
+            isCompleted && isTaskLate(task) 
+              ? 'bg-amber-100 text-amber-800 border border-amber-300' 
+              : getStatusColor(task.status as TaskStatus)
+          }`}>
+            {isCompleted && isTaskLate(task) ? '✓ Completed Late' : getStatusLabel(task.status as TaskStatus)}
           </div>
           {/* Priority Badge */}
           <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
-            {task.priority.toUpperCase()}
+            {task.priority?.toUpperCase() || 'N/A'}
           </div>
         </div>
 
@@ -225,6 +262,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                 {task.isRecurring && task.recurringTaskId && (
                   <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full" title="Recurring Task Instance">
                     🔄
+                  </span>
+                )}
+                {/* Late completion indicator in header */}
+                {isCompleted && isTaskLate(task) && (
+                  <span 
+                    className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium"
+                    title={`Completed ${getLateDuration(task)}`}
+                  >
+                    ⚠️ Late
                   </span>
                 )}
               </div>
@@ -289,6 +335,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                   </span>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Late task completion indicator */}
+          {isCompleted && isTaskLate(task) && (
+            <div className="flex items-center text-sm text-amber-600 mb-2">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span className="font-semibold">
+                Completed Late ({getLateDuration(task)})
+              </span>
             </div>
           )}
 

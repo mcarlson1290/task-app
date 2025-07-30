@@ -182,9 +182,11 @@ const Tasks: React.FC = () => {
     { value: "pending", label: "Assigned" },
     { value: "in_progress", label: "In Progress" },
     { value: "completed", label: "Completed" },
+    { value: "completed-late", label: "Completed Late" },
     { value: "approved", label: "Approved" },
     { value: "paused", label: "Paused" },
-    { value: "skipped", label: "Skipped" }
+    { value: "skipped", label: "Skipped" },
+    { value: "overdue", label: "Overdue" }
   ];
 
   const priorityOptions = [
@@ -230,7 +232,17 @@ const Tasks: React.FC = () => {
 
     // Status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(task => task.status === statusFilter);
+      switch (statusFilter) {
+        case 'completed-late':
+          filtered = filtered.filter(task => isTaskLate(task));
+          break;
+        case 'overdue':
+          filtered = filtered.filter(task => isOverdue(task));
+          break;
+        default:
+          filtered = filtered.filter(task => task.status === statusFilter);
+          break;
+      }
     }
 
     // Priority filter
@@ -273,8 +285,61 @@ const Tasks: React.FC = () => {
     setSearchTerm("");
   };
 
+  // Late task detection functions
+  const isTaskLate = (task: Task): boolean => {
+    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
+      return false;
+    }
+    
+    const dueTime = new Date(task.dueDate).getTime();
+    const completedTime = new Date(task.completedAt).getTime();
+    
+    return completedTime > dueTime;
+  };
+
+  const isOverdue = (task: Task): boolean => {
+    if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
+      return false;
+    }
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Handle both Date objects and strings
+    let dateString: string;
+    if (task.dueDate instanceof Date) {
+      const year = task.dueDate.getFullYear();
+      const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
+      const day = String(task.dueDate.getDate()).padStart(2, '0');
+      dateString = `${year}-${month}-${day}`;
+    } else {
+      dateString = task.dueDate.split('T')[0];
+    }
+    
+    const [year, month, day] = dateString.split('-');
+    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    // If due date is before today, it's overdue
+    if (dueDate < today) {
+      return true;
+    }
+    
+    // If due date is today, check if it's after 8:30 PM
+    if (dueDate.getTime() === today.getTime()) {
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Check if it's after 8:30 PM (20:30 in 24-hour format)
+      if (currentHour > 20 || (currentHour === 20 && currentMinute >= 30)) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
   // Single task action handler
-  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view', reason?: string) => {
+  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -387,26 +452,18 @@ const Tasks: React.FC = () => {
         
       case 'resume':
         // Update paused task back to in-progress
-        const resumedTask = {
-          ...task,
-          status: 'in_progress' as const,
-          resumedAt: new Date().toISOString()
-        };
-        
         updateTaskMutation.mutate({
           taskId,
-          updates: { 
+          updates: {
             status: 'in_progress',
             resumedAt: new Date().toISOString()
           }
         });
-        
-        // Pass the updated task to modal
-        setSelectedTask(resumedTask);
+        setSelectedTask({ ...task, status: 'in_progress' });
         setModalOpen(true);
         toast({
           title: "Task Resumed",
-          description: "The task has been resumed and is now in progress.",
+          description: "The task has been resumed and you can continue working.",
         });
         break;
     }
@@ -456,6 +513,40 @@ const Tasks: React.FC = () => {
 
   const handleNewTask = () => {
     setAddTaskModalOpen(true);
+  };
+
+  // Task Summary Component
+  const TaskSummary = ({ tasks }: { tasks: Task[] }) => {
+    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const lateTasks = completedTasks.filter(t => isTaskLate(t));
+    const onTimeTasks = completedTasks.length - lateTasks.length;
+    const overdueTasks = tasks.filter(t => isOverdue(t));
+    
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+        <h3 className="text-lg font-semibold text-[#203B17] mb-3">Task Completion Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{onTimeTasks}</div>
+            <div className="text-sm text-green-700">On Time</div>
+          </div>
+          <div className="text-center p-3 bg-amber-50 rounded-lg">
+            <div className="text-2xl font-bold text-amber-600">{lateTasks.length}</div>
+            <div className="text-sm text-amber-700">Completed Late</div>
+          </div>
+          <div className="text-center p-3 bg-red-50 rounded-lg">
+            <div className="text-2xl font-bold text-red-600">{overdueTasks.length}</div>
+            <div className="text-sm text-red-700">Overdue</div>
+          </div>
+          <div className="text-center p-3 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">
+              {completedTasks.length > 0 ? Math.round((onTimeTasks / completedTasks.length) * 100) : 0}%
+            </div>
+            <div className="text-sm text-blue-700">On-Time Rate</div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -584,6 +675,9 @@ const Tasks: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Task Summary Statistics */}
+      <TaskSummary tasks={tasks} />
 
       {/* Task Content */}
       <div className="task-content">

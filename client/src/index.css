@@ -74,6 +74,50 @@
   background: #6b7280;
 }
 
+/* Late task completion indicators */
+.task-card.completed-late {
+  border-left: 4px solid #f59e0b !important; /* Amber border */
+}
+
+.late-indicator {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.completed-time.late {
+  color: #dc2626; /* Red text for late completion time */
+}
+
+.late-duration {
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.status-badge.completed.late {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+/* Overdue tasks (not yet completed) */
+.task-card.overdue {
+  border-left: 4px solid #dc2626; /* Red border */
+}
+
+.overdue-indicator {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .dark {
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);
