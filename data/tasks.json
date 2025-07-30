@@ -1,6 +1,6 @@
 [
   {
-    "id": 21,
+    "id": 24,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -69,7 +69,7 @@
     ],
     "data": {},
     "dueDate": "2025-07-31T12:00:00.000Z",
-    "visibleFromDate": "2025-07-01T12:00:00.000Z",
+    "visibleFromDate": "2025-07-15T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -78,10 +78,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T22:01:40.823Z"
+    "createdAt": "2025-07-30T22:16:43.464Z"
   },
   {
-    "id": 22,
+    "id": 25,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -149,7 +149,7 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-31T12:00:00.000Z",
+    "dueDate": "2025-08-14T12:00:00.000Z",
     "visibleFromDate": "2025-08-01T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
@@ -159,10 +159,229 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T22:01:40.824Z"
+    "createdAt": "2025-07-30T22:16:43.464Z"
   },
   {
-    "id": 23,
+    "id": 26,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "completed",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 100,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {
+      "checklistData": [
+        {
+          "id": "1753902010337",
+          "text": "Grab Supplies",
+          "completed": false,
+          "required": true,
+          "type": "instruction",
+          "config": {
+            "text": "You will need a broom..."
+          }
+        },
+        {
+          "id": "1753910733125",
+          "text": "Check for weird smudges",
+          "completed": false,
+          "required": true,
+          "type": "checkbox",
+          "config": {}
+        },
+        {
+          "id": "1753910746955",
+          "text": "How much windex did you use?",
+          "completed": false,
+          "required": true,
+          "type": "number-input",
+          "config": {
+            "min": 0,
+            "max": 100,
+            "unit": "windexes",
+            "default": 0
+          }
+        },
+        {
+          "id": "1753910787899",
+          "text": "What was the temperature of the glass",
+          "completed": false,
+          "required": true,
+          "type": "data-capture",
+          "config": {
+            "dataType": "temperature",
+            "calculation": ""
+          },
+          "dataCollection": {
+            "type": "temperature",
+            "label": "What was the temperature of the glass"
+          }
+        },
+        {
+          "id": "1753910801234",
+          "text": "Take a photo of the glass",
+          "completed": false,
+          "required": true,
+          "type": "photo",
+          "config": {}
+        }
+      ]
+    },
+    "dueDate": "2025-08-31T12:00:00.000Z",
+    "visibleFromDate": "2025-08-15T12:00:00.000Z",
+    "startedAt": "2025-07-30T22:17:39.588Z",
+    "completedAt": "2025-07-30T22:18:12.680Z",
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T22:16:43.464Z"
+  },
+  {
+    "id": 27,
+    "title": "Clean the Bathroom",
+    "description": "Clean the bathroom for cleansliness",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753902010337",
+        "text": "Grab Supplies",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "You will need a broom..."
+        }
+      },
+      {
+        "id": "1753910733125",
+        "text": "Check for weird smudges",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1753910746955",
+        "text": "How much windex did you use?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "windexes",
+          "default": 0
+        }
+      },
+      {
+        "id": "1753910787899",
+        "text": "What was the temperature of the glass",
+        "completed": false,
+        "required": true,
+        "type": "data-capture",
+        "config": {
+          "dataType": "temperature",
+          "calculation": ""
+        },
+        "dataCollection": {
+          "type": "temperature",
+          "label": "What was the temperature of the glass"
+        }
+      },
+      {
+        "id": "1753910801234",
+        "text": "Take a photo of the glass",
+        "completed": false,
+        "required": true,
+        "type": "photo",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-14T12:00:00.000Z",
+    "visibleFromDate": "2025-09-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-07-30T22:16:43.464Z"
+  },
+  {
+    "id": 28,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -231,7 +450,7 @@
     ],
     "data": {},
     "dueDate": "2025-09-30T12:00:00.000Z",
-    "visibleFromDate": "2025-09-01T12:00:00.000Z",
+    "visibleFromDate": "2025-09-15T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -240,6 +459,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-30T22:01:40.824Z"
+    "createdAt": "2025-07-30T22:16:43.466Z"
   }
 ]

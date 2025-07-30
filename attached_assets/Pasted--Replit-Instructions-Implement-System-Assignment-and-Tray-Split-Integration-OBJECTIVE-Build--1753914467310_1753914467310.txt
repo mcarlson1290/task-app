@@ -1,0 +1,399 @@
+# Replit Instructions: Implement System Assignment and Tray Split Integration
+
+**OBJECTIVE: Build System Assignment functionality that works standalone and integrates with Tray Split for multiple assignments.**
+
+## Step 1: Define Growing Systems Configuration
+
+First, create a system to manage available growing systems:
+
+```javascript
+// src/data/growingSystems.js
+export const growingSystems = [
+  // Towers
+  { id: 'tower-1', name: 'Tower 1', type: 'tower', capacity: 50, currentLoad: 0 },
+  { id: 'tower-2', name: 'Tower 2', type: 'tower', capacity: 50, currentLoad: 0 },
+  { id: 'tower-3', name: 'Tower 3', type: 'tower', capacity: 50, currentLoad: 0 },
+  
+  // NFT Channels
+  { id: 'nft-1', name: 'NFT Channel 1', type: 'nft', capacity: 20, currentLoad: 0 },
+  { id: 'nft-2', name: 'NFT Channel 2', type: 'nft', capacity: 20, currentLoad: 0 },
+  { id: 'nft-3', name: 'NFT Channel 3', type: 'nft', capacity: 20, currentLoad: 0 },
+  { id: 'nft-4', name: 'NFT Channel 4', type: 'nft', capacity: 20, currentLoad: 0 },
+  { id: 'nft-5', name: 'NFT Channel 5', type: 'nft', capacity: 20, currentLoad: 0 },
+  
+  // Ebb & Flow
+  { id: 'ebb-flow-1', name: 'Ebb & Flow Section 1', type: 'ebb-flow', capacity: 100, currentLoad: 0 },
+  { id: 'ebb-flow-2', name: 'Ebb & Flow Section 2', type: 'ebb-flow', capacity: 100, currentLoad: 0 },
+  
+  // Staging Areas
+  { id: 'nursery', name: 'Nursery', type: 'staging', capacity: 200, currentLoad: 0 },
+  { id: 'blackout', name: 'Blackout Room', type: 'staging', capacity: 150, currentLoad: 0 }
+];
+
+// Helper functions
+export const getAvailableSystems = (type = null) => {
+  const systems = JSON.parse(localStorage.getItem('growingSystems')) || growingSystems;
+  
+  if (type) {
+    return systems.filter(s => s.type === type && s.currentLoad < s.capacity);
+  }
+  
+  return systems.filter(s => s.currentLoad < s.capacity);
+};
+
+export const assignTrayToSystem = (trayId, systemId) => {
+  const systems = JSON.parse(localStorage.getItem('growingSystems')) || growingSystems;
+  const system = systems.find(s => s.id === systemId);
+  
+  if (system && system.currentLoad < system.capacity) {
+    system.currentLoad += 1;
+    localStorage.setItem('growingSystems', JSON.stringify(systems));
+    
+    // Record the assignment
+    const assignments = JSON.parse(localStorage.getItem('trayAssignments')) || {};
+    assignments[trayId] = {
+      systemId,
+      assignedAt: new Date().toISOString(),
+      assignedBy: getCurrentUser().id
+    };
+    localStorage.setItem('trayAssignments', JSON.stringify(assignments));
+    
+    return true;
+  }
+  
+  return false;
+};
+```
+
+## Step 2: Create System Assignment Component for Task Execution
+
+```javascript
+// src/components/checklist/SystemAssignmentStep.jsx
+import React, { useState, useEffect } from 'react';
+import { getAvailableSystems, assignTrayToSystem } from '../../data/growingSystems';
+
+const SystemAssignmentStep = ({ step, value, onChange, trayId, splitTrays }) => {
+  const [availableSystems, setAvailableSystems] = useState([]);
+  const [assignments, setAssignments] = useState({});
+  
+  useEffect(() => {
+    // Load available systems
+    const systems = getAvailableSystems();
+    setAvailableSystems(systems);
+    
+    // If we have split trays, initialize assignments for each
+    if (splitTrays && splitTrays.length > 0) {
+      const initialAssignments = {};
+      splitTrays.forEach(tray => {
+        initialAssignments[tray.id] = '';
+      });
+      setAssignments(initialAssignments);
+    }
+  }, [splitTrays]);
+  
+  const handleSingleAssignment = (systemId) => {
+    onChange({ trayId, systemId });
+  };
+  
+  const handleSplitAssignment = (trayId, systemId) => {
+    const newAssignments = { ...assignments, [trayId]: systemId };
+    setAssignments(newAssignments);
+    
+    // Check if all splits are assigned
+    const allAssigned = Object.values(newAssignments).every(id => id !== '');
+    if (allAssigned) {
+      onChange(newAssignments);
+    }
+  };
+  
+  // If we have split trays from a previous step
+  if (splitTrays && splitTrays.length > 0) {
+    return (
+      <div className="system-assignment-step split-assignment">
+        <h4>{step.label || 'Assign split trays to growing systems'}</h4>
+        <div className="split-assignments">
+          {splitTrays.map((tray, index) => (
+            <div key={tray.id} className="split-assignment-row">
+              <span className="tray-label">{tray.id}:</span>
+              <select
+                value={assignments[tray.id] || ''}
+                onChange={(e) => handleSplitAssignment(tray.id, e.target.value)}
+                className="system-select"
+              >
+                <option value="">Select system...</option>
+                {availableSystems.map(system => (
+                  <option key={system.id} value={system.id}>
+                    {system.name} ({system.capacity - system.currentLoad} spots available)
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  // Single tray assignment
+  return (
+    <div className="system-assignment-step">
+      <label>{step.label || 'Select growing system'}</label>
+      <select
+        value={value || ''}
+        onChange={(e) => handleSingleAssignment(e.target.value)}
+        className="system-select"
+      >
+        <option value="">Select system...</option>
+        {availableSystems.map(system => (
+          <option key={system.id} value={system.id}>
+            {system.name} ({system.capacity - system.currentLoad} spots available)
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+export default SystemAssignmentStep;
+```
+
+## Step 3: Create Tray Split Component
+
+```javascript
+// src/components/checklist/TraySplitStep.jsx
+import React, { useState } from 'react';
+
+const TraySplitStep = ({ step, value, onChange, trayId }) => {
+  const [splitCount, setSplitCount] = useState(value?.count || 2);
+  const [splitLabels, setSplitLabels] = useState(value?.labels || []);
+  
+  const handleSplitCountChange = (count) => {
+    const newCount = parseInt(count);
+    setSplitCount(newCount);
+    
+    // Generate split tray IDs
+    const splits = [];
+    for (let i = 1; i <= newCount; i++) {
+      splits.push({
+        id: `${trayId}-${i}`,
+        parentId: trayId,
+        splitNumber: i,
+        label: splitLabels[i-1] || `Split ${i}`
+      });
+    }
+    
+    onChange({
+      count: newCount,
+      splits: splits
+    });
+  };
+  
+  return (
+    <div className="tray-split-step">
+      <label>{step.label || 'Split tray into multiple portions'}</label>
+      
+      <div className="split-controls">
+        <label>Number of splits:</label>
+        <input
+          type="number"
+          min="2"
+          max="10"
+          value={splitCount}
+          onChange={(e) => handleSplitCountChange(e.target.value)}
+          className="split-count-input"
+        />
+      </div>
+      
+      <div className="split-preview">
+        <p>This will create {splitCount} new trays:</p>
+        <ul className="split-list">
+          {Array.from({ length: splitCount }, (_, i) => (
+            <li key={i}>
+              {trayId}-{i + 1}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default TraySplitStep;
+```
+
+## Step 4: Update Checklist Renderer to Handle These Steps
+
+```javascript
+// In your checklist renderer component
+import SystemAssignmentStep from './SystemAssignmentStep';
+import TraySplitStep from './TraySplitStep';
+
+const renderChecklistStep = (step, index, value, onChange, context = {}) => {
+  switch (step.type) {
+    case 'system-assignment':
+      return (
+        <SystemAssignmentStep
+          step={step}
+          value={value}
+          onChange={onChange}
+          trayId={context.currentTrayId}
+          splitTrays={context.splitTrays} // From previous tray split step
+        />
+      );
+      
+    case 'tray-split':
+      return (
+        <TraySplitStep
+          step={step}
+          value={value}
+          onChange={onChange}
+          trayId={context.currentTrayId}
+        />
+      );
+      
+    // ... other step types
+    
+    default:
+      return <div>Unknown step type: {step.type}</div>;
+  }
+};
+```
+
+## Step 5: Handle Step Context Flow
+
+```javascript
+// In the checklist execution component
+const TaskChecklistExecution = ({ task, checklist }) => {
+  const [stepValues, setStepValues] = useState({});
+  const [stepContext, setStepContext] = useState({
+    currentTrayId: task.trayId || 'K071725-MG-BROC-1A', // Example
+    splitTrays: null
+  });
+  
+  const handleStepChange = (stepIndex, value) => {
+    const step = checklist[stepIndex];
+    
+    // Update step value
+    setStepValues(prev => ({
+      ...prev,
+      [stepIndex]: value
+    }));
+    
+    // If this was a tray split, update context for next steps
+    if (step.type === 'tray-split' && value.splits) {
+      setStepContext(prev => ({
+        ...prev,
+        splitTrays: value.splits
+      }));
+    }
+    
+    // If this was system assignment, record the assignments
+    if (step.type === 'system-assignment') {
+      if (typeof value === 'object' && !value.trayId) {
+        // Multiple assignments from split
+        Object.entries(value).forEach(([trayId, systemId]) => {
+          assignTrayToSystem(trayId, systemId);
+        });
+      } else {
+        // Single assignment
+        assignTrayToSystem(value.trayId, value.systemId);
+      }
+    }
+  };
+  
+  return (
+    <div className="checklist-execution">
+      {checklist.map((step, index) => (
+        <div key={index} className="checklist-step">
+          {renderChecklistStep(
+            step,
+            index,
+            stepValues[index],
+            (value) => handleStepChange(index, value),
+            stepContext
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+## Step 6: Add Styling
+
+```css
+/* System Assignment Styles */
+.system-assignment-step {
+  margin: 16px 0;
+}
+
+.system-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.split-assignments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.split-assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tray-label {
+  font-weight: 500;
+  min-width: 150px;
+  font-family: monospace;
+}
+
+/* Tray Split Styles */
+.tray-split-step {
+  margin: 16px 0;
+}
+
+.split-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.split-count-input {
+  width: 80px;
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.split-preview {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.split-list {
+  margin: 8px 0 0 20px;
+  font-family: monospace;
+  font-size: 14px;
+}
+```
+
+## Expected Result:
+
+1. **System Assignment** works as a simple dropdown when used alone
+2. **Tray Split** creates multiple tray IDs with -1, -2, etc. suffixes
+3. When System Assignment follows Tray Split, it shows multiple dropdowns for each split
+4. System capacity is tracked and shown in the dropdown
+5. All assignments are recorded for tracking
+
+This creates a flexible system that handles both simple assignments and complex split scenarios!

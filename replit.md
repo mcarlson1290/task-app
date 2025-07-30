@@ -134,6 +134,36 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
+- **July 30, 2025**: Implemented System Assignment and Tray Split Integration functionality
+  - **Growing Systems Configuration**: Created comprehensive growing systems management with localStorage-based persistence
+    - Added growingSystems.ts with Tower, NFT, Ebb & Flow, and Staging system types
+    - Implemented system capacity tracking and assignment validation
+    - Created helper functions for system availability, tray assignments, and capacity management
+    - Support for location-based system filtering and utilization tracking
+  - **System Assignment Step Component**: Built standalone SystemAssignmentStep component for checklist integration
+    - Single tray assignment with system dropdown and capacity indicators
+    - Multiple tray assignment support for split tray scenarios with individual dropdowns
+    - Real-time system availability checking and utilization display
+    - Integration with growing systems storage for persistent assignments
+  - **Tray Split Step Component**: Created TraySplitStep component for tray division workflows
+    - Configurable split count with min/max validation (2-10 splits)
+    - Custom tray labeling with automatic ID generation (TRAY-001-1, TRAY-001-2, etc.)
+    - Split preview interface showing all generated tray IDs
+    - Context passing to subsequent system assignment steps
+  - **ChecklistExecution Integration**: Enhanced checklist system to support new step types
+    - Added step context management for passing split tray data between steps
+    - Integrated SystemAssignmentStep and TraySplitStep components into switch statement
+    - Context-aware system assignment that handles both single and multiple tray scenarios
+    - Automatic tray-to-system assignment recording with localStorage persistence
+  - **ChecklistBuilder Support**: Both new step types already configured in ChecklistBuilder
+    - System Assignment step type with Building icon and capacity-based configuration
+    - Tray Split step type with Split icon and configurable split parameters
+    - Complete step type configuration with default configs and validation
+  - **Data Flow Integration**: Seamless workflow from tray splitting to system assignment
+    - Tray split creates multiple tray IDs that flow to next system assignment step
+    - System assignment step detects split context and shows multiple assignment dropdowns
+    - All assignments recorded to localStorage with timestamps and user tracking
+    - Growing systems capacity automatically updated when assignments are made
 - **July 30, 2025**: Fixed off-by-one date error and completed refresh button implementation
   - **Off-By-One Date Error Fix**: Resolved critical timezone conversion issue causing dates to display one day earlier than intended
     - Problem was in TaskCard getDueDateDisplay() function using toLocaleDateString() which converted UTC timestamps to local timezone

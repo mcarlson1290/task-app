@@ -21,6 +21,9 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Circle, AlertTriangle, Camera, Package, Building, BarChart3, Split, ArrowRight, FileText, Edit3, PlusCircle } from 'lucide-react';
 import { GrowingSystem, InventoryItem, Task } from '@shared/schema';
+import SystemAssignmentStep from './checklist/SystemAssignmentStep';
+import TraySplitStep from './checklist/TraySplitStep';
+import { assignTrayToSystem } from '../data/growingSystems';
 
 interface ChecklistStep {
   id: string;
@@ -54,6 +57,10 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [steps, setSteps] = useState(checklist.steps);
+  const [stepContext, setStepContext] = useState({
+    currentTrayId: task.id?.toString() || 'TRAY-001',
+    splitTrays: null as any
+  });
   const isLastStep = currentStep === steps.length - 1;
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
 
@@ -470,111 +477,26 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'system-assignment':
-        // Smart system filtering based on crop type and capacity
-        const availableSystems = systems.filter(system => {
-          const hasCapacity = (system.currentOccupancy || 0) < (system.capacity || 0);
-          const matchesType = !step.config.systemType || system.category === step.config.systemType;
-          return hasCapacity && matchesType;
-        }).sort((a, b) => {
-          // Sort by utilization (lower utilization first)
-          const aUtil = (a.currentOccupancy || 0) / (a.capacity || 1);
-          const bUtil = (b.currentOccupancy || 0) / (b.capacity || 1);
-          return aUtil - bUtil;
-        });
-        
-        const selectedSystemId = stepData[step.id];
-        const selectedSystem = systems.find(s => s.id.toString() === selectedSystemId);
-        
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-base font-medium">System Assignment</Label>
-              <p className="text-sm text-gray-600">{step.label}</p>
-            </div>
-            
-            {availableSystems.length === 0 ? (
-              <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                <div className="flex items-center text-yellow-800">
-                  <AlertTriangle className="w-5 h-5 mr-2" />
-                  <span className="font-medium">No available systems found</span>
-                </div>
-                <p className="text-sm text-yellow-700 mt-1">
-                  All systems are at capacity or don't match the requirements
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="text-sm text-gray-600">
-                  Found {availableSystems.length} available system{availableSystems.length !== 1 ? 's' : ''}
-                </div>
-                
-                <div className="space-y-2">
-                  {availableSystems.map(system => {
-                    const isSelected = selectedSystemId === system.id.toString();
-                    const utilization = ((system.currentOccupancy || 0) / (system.capacity || 1)) * 100;
-                    
-                    return (
-                      <div 
-                        key={system.id}
-                        className={`
-                          p-3 rounded-lg border-2 cursor-pointer transition-all
-                          ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-blue-300'}
-                        `}
-                        onClick={() => setStepData({
-                          ...stepData,
-                          [step.id]: system.id.toString()
-                        })}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h5 className="font-medium">{system.name}</h5>
-                            <p className="text-sm text-gray-600">
-                              Type: {system.category} | Available spots: {(system.capacity || 0) - (system.currentOccupancy || 0)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant={utilization < 70 ? 'outline' : utilization < 90 ? 'secondary' : 'destructive'}>
-                              {Math.round(utilization)}% full
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {selectedSystem ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-green-600 font-medium">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Selected: {selectedSystem.name}
-                </div>
-                <Button 
-                  onClick={() => {
-                    // Save system assignment data
-                    setStepData({
-                      ...stepData,
-                      [step.id]: {
-                        systemId: selectedSystem.id,
-                        systemName: selectedSystem.name,
-                        systemType: selectedSystem.category,
-                        assignedAt: new Date().toISOString()
-                      }
-                    });
-                    handleStepComplete();
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                  disabled={isProcessing}
-                >
-                  Assign to System
-                </Button>
-              </div>
-            ) : availableSystems.length > 0 ? (
-              <p className="text-sm text-gray-500">Select a system to continue</p>
-            ) : null}
-          </div>
+          <SystemAssignmentStep
+            step={step}
+            value={stepData[step.id]}
+            onChange={(value) => {
+              setStepData({ ...stepData, [step.id]: value });
+              // Handle system assignments
+              if (typeof value === 'object' && !value.trayId) {
+                // Multiple assignments from split trays
+                Object.entries(value).forEach(([trayId, systemId]) => {
+                  assignTrayToSystem(trayId, systemId as string, 1);
+                });
+              } else if (value?.trayId && value?.systemId) {
+                // Single assignment
+                assignTrayToSystem(value.trayId, value.systemId, 1);
+              }
+            }}
+            trayId={stepContext.currentTrayId}
+            splitTrays={stepContext.splitTrays}
+          />
         );
 
       case 'data-capture':
@@ -756,6 +678,25 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
               </div>
             )}
           </div>
+        );
+
+      case 'tray-split':
+        return (
+          <TraySplitStep
+            step={step}
+            value={stepData[step.id]}
+            onChange={(value) => {
+              setStepData({ ...stepData, [step.id]: value });
+              // Update context for next steps
+              if (value?.splits) {
+                setStepContext(prev => ({
+                  ...prev,
+                  splitTrays: value.splits
+                }));
+              }
+            }}
+            trayId={stepContext.currentTrayId}
+          />
         );
 
       default:
