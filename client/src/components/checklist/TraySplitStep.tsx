@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Split, ArrowRight } from 'lucide-react';
+import SearchableDropdown from '../common/SearchableDropdown';
+import { TrayService, ProductionTray } from '../../services/trayService';
 
 interface TraySplitStepProps {
   step: {
@@ -8,16 +15,22 @@ interface TraySplitStepProps {
     config?: {
       maxSplits?: number;
       minSplits?: number;
+      allowCustomSplit?: boolean;
+      defaultSplits?: number;
     };
   };
   value?: {
+    trayId?: string;
     count: number;
     splits: Array<{
       id: string;
       parentId: string;
-      splitNumber: number;
+      splitNumber?: number;
       label: string;
+      cropType?: string;
+      cropName?: string;
     }>;
+    originalTray?: ProductionTray;
   };
   onChange: (value: any) => void;
   trayId?: string;
@@ -27,115 +40,138 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
   step, 
   value, 
   onChange, 
-  trayId = 'TRAY-001' 
+  trayId 
 }) => {
-  const [splitCount, setSplitCount] = useState(value?.count || 2);
-  const [splitLabels, setSplitLabels] = useState<string[]>(
-    value?.splits?.map(s => s.label) || []
-  );
-  
-  const minSplits = step.config?.minSplits || 2;
-  const maxSplits = step.config?.maxSplits || 10;
-  
+  const [activeTrays, setActiveTrays] = useState<ProductionTray[]>([]);
+  const [selectedTray, setSelectedTray] = useState(value?.trayId || trayId || '');
+  const [splitCount, setSplitCount] = useState(value?.count || step.config?.defaultSplits || 3);
+
   useEffect(() => {
-    // Initialize if we have existing value
-    if (value) {
-      setSplitCount(value.count);
-      setSplitLabels(value.splits.map(s => s.label));
-    }
-  }, [value]);
-  
-  const handleSplitCountChange = (count: number) => {
-    const newCount = Math.max(minSplits, Math.min(maxSplits, count));
-    setSplitCount(newCount);
+    // Initialize sample trays if none exist
+    TrayService.initializeSampleTrays();
     
-    // Generate split tray IDs
+    // Load active trays
+    const trays = TrayService.getActiveTrays();
+    setActiveTrays(trays);
+  }, []);
+
+  const handleTraySelect = (trayId: string) => {
+    setSelectedTray(trayId);
+    updateValue(trayId, splitCount);
+  };
+
+  const handleSplitCountChange = (count: number) => {
+    const minSplits = step.config?.minSplits || 2;
+    const maxSplits = step.config?.maxSplits || 10;
+    const newCount = Math.max(minSplits, Math.min(maxSplits, parseInt(count.toString()) || minSplits));
+    setSplitCount(newCount);
+    updateValue(selectedTray, newCount);
+  };
+
+  const updateValue = (trayId: string, count: number) => {
+    if (!trayId) return;
+
+    const tray = activeTrays.find(t => t.id === trayId);
+    if (!tray) return;
+
+    // Generate split preview
     const splits = [];
-    for (let i = 1; i <= newCount; i++) {
+    for (let i = 1; i <= count; i++) {
       splits.push({
         id: `${trayId}-${i}`,
+        label: `Split ${i}`,
         parentId: trayId,
         splitNumber: i,
-        label: splitLabels[i-1] || `Split ${i}`
+        cropType: tray.cropType,
+        cropName: tray.cropName
       });
     }
-    
+
     onChange({
-      count: newCount,
-      splits: splits
+      trayId: trayId,
+      count: count,
+      splits: splits,
+      originalTray: tray
     });
   };
-  
-  const handleLabelChange = (index: number, label: string) => {
-    const newLabels = [...splitLabels];
-    newLabels[index] = label;
-    setSplitLabels(newLabels);
-    
-    // Update the onChange with new labels
-    if (value) {
-      const updatedSplits = value.splits.map((split, i) => ({
-        ...split,
-        label: newLabels[i] || `Split ${i + 1}`
-      }));
-      
-      onChange({
-        ...value,
-        splits: updatedSplits
-      });
-    }
-  };
-  
+
+  // Custom render for tray options
+  const renderTrayOption = (tray: ProductionTray) => (
+    <div className="tray-option">
+      <span className="tray-id font-mono font-medium">{tray.id}</span>
+      <span className="tray-details text-sm text-gray-600 block">
+        {tray.cropName || tray.cropType}
+        {tray.datePlanted && ` - Planted: ${new Date(tray.datePlanted).toLocaleDateString()}`}
+      </span>
+    </div>
+  );
+
+  const minSplits = step.config?.minSplits || 2;
+  const maxSplits = step.config?.maxSplits || 10;
+
   return (
-    <div className="tray-split-step">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {step.label || 'Split tray into multiple portions'}
-      </label>
-      
-      <div className="split-controls mb-4">
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-600">Number of splits:</label>
-          <input
-            type="number"
-            min={minSplits}
-            max={maxSplits}
-            value={splitCount}
-            onChange={(e) => handleSplitCountChange(parseInt(e.target.value) || minSplits)}
-            className="split-count-input w-20 p-1 border border-gray-300 rounded text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <span className="text-xs text-gray-500">
-            ({minSplits}-{maxSplits} splits allowed)
-          </span>
-        </div>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label className="text-base font-medium flex items-center">
+          <Split className="w-4 h-4 mr-2" />
+          {step.label || 'Select a tray to split into multiple portions'}
+        </Label>
       </div>
-      
-      <div className="split-preview bg-gray-50 p-4 rounded-md">
-        <p className="text-sm font-medium text-gray-700 mb-3">
-          This will create {splitCount} new trays from {trayId}:
-        </p>
-        <div className="split-list space-y-2">
-          {Array.from({ length: splitCount }, (_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="font-mono text-sm bg-white px-2 py-1 rounded border min-w-24">
-                {trayId}-{i + 1}
-              </span>
-              <input
-                type="text"
-                placeholder={`Split ${i + 1}`}
-                value={splitLabels[i] || ''}
-                onChange={(e) => handleLabelChange(i, e.target.value)}
-                className="flex-1 p-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-          ))}
+
+      <div className="space-y-4 p-4 bg-blue-50 rounded-lg border">
+        <div className="space-y-2">
+          <Label>Select Tray:</Label>
+          <SearchableDropdown
+            options={activeTrays}
+            value={selectedTray}
+            onChange={handleTraySelect}
+            placeholder="Search by tray ID or crop..."
+            displayField="id"
+            valueField="id"
+            renderOption={renderTrayOption}
+          />
         </div>
-        
-        {/* Summary */}
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-600">
-            Original tray <code className="bg-white px-1 rounded">{trayId}</code> will be divided into {splitCount} separate trays
+
+        {selectedTray && (
+          <div className="space-y-2">
+            <Label htmlFor="split-count">Number of splits ({minSplits}-{maxSplits}):</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                id="split-count"
+                type="number"
+                min={minSplits}
+                max={maxSplits}
+                value={splitCount}
+                onChange={(e) => handleSplitCountChange(parseInt(e.target.value) || minSplits)}
+                className="w-24"
+              />
+              <span className="text-sm text-gray-500">({minSplits}-{maxSplits} splits allowed)</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selectedTray && value?.splits && (
+        <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
+          <h4 className="font-medium text-gray-900">
+            This will create {splitCount} new trays from {selectedTray}:
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {value.splits.map((split: any, index: number) => (
+              <div key={split.id} className="flex items-center space-x-2 p-3 bg-white border rounded">
+                <Badge variant="outline" className="text-xs">
+                  {index + 1}
+                </Badge>
+                <code className="text-sm font-mono text-blue-600">{split.id}</code>
+                <span className="text-sm text-gray-600">Split {index + 1}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-gray-500 italic mt-3">
+            Original tray {selectedTray} will be marked as split and archived.
           </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

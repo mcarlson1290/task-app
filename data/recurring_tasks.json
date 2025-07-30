@@ -62,6 +62,26 @@
           "label": "Take a photo of the glass",
           "required": true,
           "config": {}
+        },
+        {
+          "id": "1753915279825",
+          "type": "tray-split",
+          "label": "Split the Trays like Tower 1 bla bla bla",
+          "required": true,
+          "config": {
+            "allowCustomSplit": true,
+            "defaultSplits": 2
+          }
+        },
+        {
+          "id": "1753914909834",
+          "type": "system-assignment",
+          "label": "Move the Plants to Available towers.",
+          "required": true,
+          "config": {
+            "systemType": "",
+            "autoSuggest": true
+          }
         }
       ]
     },
