@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, ChevronUp, ChevronDown, Settings, FileText, CheckSquare, Hash, Package, Building, BarChart3, Camera, Split, ArrowRight, Edit3, PlusCircle } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, FileText, CheckSquare, Hash, Package, Building, BarChart3, Camera, Split, ArrowRight, Edit3, PlusCircle } from 'lucide-react';
 import { GrowingSystem } from '@shared/schema';
 
 interface ChecklistStep {
@@ -32,21 +32,23 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
   const [showAddStep, setShowAddStep] = useState(false);
 
   const stepTypes = [
-    { value: 'instruction', label: 'Text Instruction', icon: FileText },
-    { value: 'checkbox', label: 'Simple Checkbox', icon: CheckSquare },
-    { value: 'number-input', label: 'Number Input', icon: Hash },
-    { value: 'inventory-select', label: 'Inventory Selection', icon: Package },
-    { value: 'system-assignment', label: 'System Assignment', icon: Building },
-    { value: 'data-capture', label: 'Data Collection', icon: BarChart3 },
-    { value: 'photo', label: 'Photo Upload', icon: Camera },
-    { value: 'tray-split', label: 'Tray Split (Leafy Greens)', icon: Split },
-    { value: 'movement-trigger', label: 'Movement Trigger', icon: ArrowRight },
-    { value: 'edit-tray', label: 'Edit Tray', icon: Edit3 },
-    { value: 'create-tray', label: 'Create Tray', icon: PlusCircle }
+    { value: 'instruction', label: 'Text Instruction', icon: FileText, description: 'Display read-only information or instructions' },
+    { value: 'checkbox', label: 'Simple Checkbox', icon: CheckSquare, description: 'Simple yes/no or completion checkbox' },
+    { value: 'number-input', label: 'Number Input', icon: Hash, description: 'Numeric input with validation and units' },
+    { value: 'inventory-select', label: 'Inventory Selection', icon: Package, description: 'Select and track inventory usage' },
+    { value: 'system-assignment', label: 'System Assignment', icon: Building, description: 'Assign tasks to growing systems' },
+    { value: 'data-capture', label: 'Data Collection', icon: BarChart3, description: 'Collect measurements like pH, EC, temperature' },
+    { value: 'photo', label: 'Photo Upload', icon: Camera, description: 'Capture photos for documentation' },
+    { value: 'tray-split', label: 'Tray Split', icon: Split, description: 'Split trays into multiple new trays' },
+    { value: 'movement-trigger', label: 'Movement Trigger', icon: ArrowRight, description: 'Move trays between locations/systems' },
+    { value: 'edit-tray', label: 'Edit Tray', icon: Edit3, description: 'Update existing tray information' },
+    { value: 'create-tray', label: 'Create Tray', icon: PlusCircle, description: 'Create new trays with specifications' }
   ];
 
   const getDefaultConfig = (type: string) => {
     switch (type) {
+      case 'instruction':
+        return { text: '' };
       case 'number-input':
         return { min: 0, max: 100, unit: '', default: 0 };
       case 'inventory-select':
@@ -82,7 +84,7 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
       required: true,
       config: getDefaultConfig(type)
     };
-
+    
     const newSteps = [...steps, newStep];
     setSteps(newSteps);
     onChange(newSteps);
@@ -91,27 +93,9 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
 
   const updateStep = (index: number, updatedStep: ChecklistStep) => {
     const newSteps = [...steps];
-    
-    // Ensure config is preserved and not reset to default values
-    const currentStep = newSteps[index];
-    const preservedConfig = {
-      ...getDefaultConfig(updatedStep.type),
-      ...currentStep.config,
-      ...updatedStep.config
-    };
-    
-    newSteps[index] = {
-      ...updatedStep,
-      config: preservedConfig
-    };
-    
+    newSteps[index] = updatedStep;
     setSteps(newSteps);
     onChange(newSteps);
-    
-    // Debug logging to track configuration changes
-    if (updatedStep.type === 'inventory-select') {
-      console.log('Updated inventory step config:', preservedConfig);
-    }
   };
 
   const deleteStep = (index: number) => {
@@ -170,7 +154,10 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
                     onClick={() => addStep(type.value)}
                   >
                     <Icon className="w-6 h-6 text-gray-600" />
-                    <span className="text-sm text-center">{type.label}</span>
+                    <div className="text-center">
+                      <span className="text-sm font-medium">{type.label}</span>
+                      <p className="text-xs text-gray-500 mt-1">{type.description}</p>
+                    </div>
                   </Button>
                 );
               })}
@@ -215,7 +202,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
   onMoveUp,
   onMoveDown
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const getStepIcon = (type: string) => {
     const icons = {
@@ -234,25 +221,51 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
     return icons[type as keyof typeof icons] || FileText;
   };
 
+  const getStepTypeInfo = (type: string) => {
+    const stepTypes = [
+      { value: 'instruction', label: 'Text Instruction', description: 'Display read-only information or instructions' },
+      { value: 'checkbox', label: 'Simple Checkbox', description: 'Simple yes/no or completion checkbox' },
+      { value: 'number-input', label: 'Number Input', description: 'Numeric input with validation and units' },
+      { value: 'inventory-select', label: 'Inventory Selection', description: 'Select and track inventory usage' },
+      { value: 'system-assignment', label: 'System Assignment', description: 'Assign tasks to growing systems' },
+      { value: 'data-capture', label: 'Data Collection', description: 'Collect measurements like pH, EC, temperature' },
+      { value: 'photo', label: 'Photo Upload', description: 'Capture photos for documentation' },
+      { value: 'tray-split', label: 'Tray Split', description: 'Split trays into multiple new trays' },
+      { value: 'movement-trigger', label: 'Movement Trigger', description: 'Move trays between locations/systems' },
+      { value: 'edit-tray', label: 'Edit Tray', description: 'Update existing tray information' },
+      { value: 'create-tray', label: 'Create Tray', description: 'Create new trays with specifications' }
+    ];
+    return stepTypes.find(t => t.value === type);
+  };
+
   const StepIcon = getStepIcon(step.type);
+  const stepTypeInfo = getStepTypeInfo(step.type);
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-medium">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-700 rounded-full text-sm font-medium">
               {index + 1}
             </div>
             <StepIcon className="w-5 h-5 text-gray-600" />
             <div className="flex-1">
-              <Input
-                value={step.label}
-                onChange={(e) => onUpdate({ ...step, label: e.target.value })}
-                placeholder={`Enter ${step.type.replace('-', ' ')} label...`}
-                className="font-medium"
-              />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-900">
+                  {stepTypeInfo?.label || step.type}
+                </span>
+                <span className="text-xs text-gray-500">{stepTypeInfo?.description}</span>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpanded(!expanded)}
+              className="text-gray-500"
+            >
+              {expanded ? '▼' : '▶'}
+            </Button>
           </div>
           <div className="flex items-center gap-1">
             {onMoveUp && (
@@ -268,13 +281,6 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setExpanded(!expanded)}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={onDelete}
               className="text-red-600 hover:text-red-700"
             >
@@ -287,6 +293,16 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
       {expanded && (
         <CardContent className="pt-0">
           <div className="space-y-4">
+            {/* Step Label Input */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Step Label</Label>
+              <Input
+                value={step.label}
+                onChange={(e) => onUpdate({ ...step, label: e.target.value })}
+                placeholder={`Enter ${step.type.replace('-', ' ')} label...`}
+              />
+            </div>
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id={`required-${step.id}`}
@@ -297,145 +313,58 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
             </div>
 
             {/* Type-specific configuration */}
+            {step.type === 'instruction' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Instruction Text</Label>
+                <Textarea
+                  value={step.config.text || ''}
+                  onChange={(e) => onUpdate({
+                    ...step,
+                    config: { ...step.config, text: e.target.value }
+                  })}
+                  placeholder="Enter detailed instructions..."
+                  rows={3}
+                />
+              </div>
+            )}
+
             {step.type === 'number-input' && (
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <Label>Min Value</Label>
-                  <Input
-                    type="number"
-                    value={step.config.min || ''}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, min: parseInt(e.target.value) || 0 }
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Max Value</Label>
-                  <Input
-                    type="number"
-                    value={step.config.max || ''}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, max: parseInt(e.target.value) || 100 }
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Unit</Label>
-                  <Input
-                    type="text"
-                    value={step.config.unit || ''}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, unit: e.target.value }
-                    })}
-                    placeholder="e.g., trays, oz, plants"
-                  />
-                </div>
-              </div>
-            )}
-
-            {step.type === 'system-assignment' && (
               <div className="space-y-3">
-                <div>
-                  <Label>System Type</Label>
-                  <Select
-                    value={step.config.systemType || ''}
-                    onValueChange={(value) => onUpdate({
-                      ...step,
-                      config: { ...step.config, systemType: value }
-                    })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any System" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Any System</SelectItem>
-                      <SelectItem value="nursery">Nursery</SelectItem>
-                      <SelectItem value="staging">Staging</SelectItem>
-                      <SelectItem value="final">Final</SelectItem>
-                      <SelectItem value="blackout">Blackout Area</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`auto-suggest-${step.id}`}
-                    checked={step.config.autoSuggest}
-                    onCheckedChange={(checked) => onUpdate({
-                      ...step,
-                      config: { ...step.config, autoSuggest: !!checked }
-                    })}
-                  />
-                  <Label htmlFor={`auto-suggest-${step.id}`}>Auto-suggest available spots</Label>
-                </div>
-              </div>
-            )}
-
-            {step.type === 'data-capture' && (
-              <div className="space-y-3">
-                <div>
-                  <Label>Data Type</Label>
-                  <Select
-                    value={step.config.dataType || 'number'}
-                    onValueChange={(value) => onUpdate({
-                      ...step,
-                      config: { ...step.config, dataType: value }
-                    })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="number">Number</SelectItem>
-                      <SelectItem value="text">Text</SelectItem>
-                      <SelectItem value="select">Selection</SelectItem>
-                      <SelectItem value="weight">Weight</SelectItem>
-                      <SelectItem value="percentage">Percentage</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Auto-calculation (optional)</Label>
-                  <Input
-                    type="text"
-                    value={step.config.calculation || ''}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, calculation: e.target.value }
-                    })}
-                    placeholder="e.g., trays * 0.75"
-                  />
-                </div>
-              </div>
-            )}
-
-            {step.type === 'tray-split' && (
-              <div className="space-y-3">
-                <div>
-                  <Label>Default number of splits</Label>
-                  <Input
-                    type="number"
-                    value={step.config.defaultSplits || 2}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, defaultSplits: parseInt(e.target.value) || 2 }
-                    })}
-                    min="2"
-                    max="10"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`custom-split-${step.id}`}
-                    checked={step.config.allowCustomSplit}
-                    onCheckedChange={(checked) => onUpdate({
-                      ...step,
-                      config: { ...step.config, allowCustomSplit: !!checked }
-                    })}
-                  />
-                  <Label htmlFor={`custom-split-${step.id}`}>Allow custom split configuration</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label>Min Value</Label>
+                    <Input
+                      type="number"
+                      value={step.config.min || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, min: parseInt(e.target.value) || 0 }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Max Value</Label>
+                    <Input
+                      type="number"
+                      value={step.config.max || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, max: parseInt(e.target.value) || 100 }
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Unit</Label>
+                    <Input
+                      type="text"
+                      value={step.config.unit || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, unit: e.target.value }
+                      })}
+                      placeholder="e.g., trays, oz, plants"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -554,222 +483,116 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
               </div>
             )}
 
-            {step.type === 'instruction' && (
-              <div>
-                <Label>Instruction Text</Label>
-                <Textarea
-                  value={step.config.text || ''}
-                  onChange={(e) => onUpdate({
-                    ...step,
-                    config: { ...step.config, text: e.target.value }
-                  })}
-                  placeholder="Enter detailed instructions..."
-                  rows={3}
-                />
+            {step.type === 'data-capture' && (
+              <div className="space-y-3">
+                <div>
+                  <Label>Data Type</Label>
+                  <Select
+                    value={step.config.dataType || 'number'}
+                    onValueChange={(value) => onUpdate({
+                      ...step,
+                      config: { ...step.config, dataType: value }
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="number">Number</SelectItem>
+                      <SelectItem value="ph">pH Level</SelectItem>
+                      <SelectItem value="ec">EC Level</SelectItem>
+                      <SelectItem value="temperature">Temperature</SelectItem>
+                      <SelectItem value="humidity">Humidity</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {step.type === 'photo' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Photo Requirements</Label>
+                <p className="text-sm text-gray-600">Users will be able to capture photos using their device camera or upload from files.</p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`multiple-photos-${step.id}`}
+                    checked={step.config.allowMultiple || false}
+                    onCheckedChange={(checked) => onUpdate({
+                      ...step,
+                      config: { ...step.config, allowMultiple: !!checked }
+                    })}
+                  />
+                  <Label htmlFor={`multiple-photos-${step.id}`}>Allow multiple photos</Label>
+                </div>
               </div>
             )}
 
             {step.type === 'edit-tray' && (
               <div className="space-y-3">
+                <Label className="text-sm font-medium">Edit Tray Configuration</Label>
+                <p className="text-sm text-gray-600">Users will be able to update existing tray information including location, crop stage, and notes.</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Tray ID/Number</Label>
-                    <Input
-                      type="text"
-                      value={step.config.trayId || ''}
-                      onChange={(e) => onUpdate({
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`allow-location-${step.id}`}
+                      checked={step.config.allowLocation !== false}
+                      onCheckedChange={(checked) => onUpdate({
                         ...step,
-                        config: { ...step.config, trayId: e.target.value }
-                      })}
-                      placeholder="e.g., A1-001"
-                    />
-                  </div>
-                  <div>
-                    <Label>Current Location</Label>
-                    <Select
-                      value={step.config.location || ''}
-                      onValueChange={(value) => onUpdate({
-                        ...step,
-                        config: { ...step.config, location: value }
-                      })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="germination">Germination Chamber</SelectItem>
-                        <SelectItem value="nursery">Nursery</SelectItem>
-                        <SelectItem value="production">Production Area</SelectItem>
-                        <SelectItem value="harvest">Harvest Area</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Crop Type</Label>
-                    <Input
-                      type="text"
-                      value={step.config.crop || ''}
-                      onChange={(e) => onUpdate({
-                        ...step,
-                        config: { ...step.config, crop: e.target.value }
-                      })}
-                      placeholder="e.g., Buttercrunch Lettuce"
-                    />
-                  </div>
-                  <div>
-                    <Label>Seed Date</Label>
-                    <Input
-                      type="date"
-                      value={step.config.seedDate || ''}
-                      onChange={(e) => onUpdate({
-                        ...step,
-                        config: { ...step.config, seedDate: e.target.value }
+                        config: { ...step.config, allowLocation: !!checked }
                       })}
                     />
+                    <Label htmlFor={`allow-location-${step.id}`}>Allow location change</Label>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Expected Harvest</Label>
-                    <Input
-                      type="date"
-                      value={step.config.expectedHarvest || ''}
-                      onChange={(e) => onUpdate({
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`allow-notes-${step.id}`}
+                      checked={step.config.allowNotes !== false}
+                      onCheckedChange={(checked) => onUpdate({
                         ...step,
-                        config: { ...step.config, expectedHarvest: e.target.value }
+                        config: { ...step.config, allowNotes: !!checked }
                       })}
                     />
+                    <Label htmlFor={`allow-notes-${step.id}`}>Allow notes update</Label>
                   </div>
-                </div>
-                <div>
-                  <Label>Notes</Label>
-                  <Textarea
-                    value={step.config.notes || ''}
-                    onChange={(e) => onUpdate({
-                      ...step,
-                      config: { ...step.config, notes: e.target.value }
-                    })}
-                    placeholder="Any special instructions or observations..."
-                    rows={2}
-                  />
                 </div>
               </div>
             )}
 
             {step.type === 'create-tray' && (
               <div className="space-y-3">
+                <Label className="text-sm font-medium">Create Tray Configuration</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Number of Trays</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={step.config.numberOfTrays || 1}
-                      onChange={(e) => onUpdate({
-                        ...step,
-                        config: { ...step.config, numberOfTrays: parseInt(e.target.value) || 1 }
-                      })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Tray Type</Label>
+                    <Label>Default Tray Type</Label>
                     <Select
-                      value={step.config.trayType || ''}
+                      value={step.config.defaultTrayType || ''}
                       onValueChange={(value) => onUpdate({
                         ...step,
-                        config: { ...step.config, trayType: value }
+                        config: { ...step.config, defaultTrayType: value }
                       })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select tray type..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="128-cell">128 Cell Plug Tray</SelectItem>
-                        <SelectItem value="72-cell">72 Cell Plug Tray</SelectItem>
-                        <SelectItem value="50-cell">50 Cell Plug Tray</SelectItem>
-                        <SelectItem value="nft-channel">NFT Channel</SelectItem>
-                        <SelectItem value="deep-water">Deep Water Raft</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Crop Selection</Label>
-                    <Select
-                      value={step.config.crop || ''}
-                      onValueChange={(value) => onUpdate({
-                        ...step,
-                        config: { ...step.config, crop: value }
-                      })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select crop..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="romaine">Romaine Lettuce</SelectItem>
-                        <SelectItem value="buttercrunch">Buttercrunch Lettuce</SelectItem>
-                        <SelectItem value="arugula">Arugula</SelectItem>
-                        <SelectItem value="basil">Basil</SelectItem>
-                        <SelectItem value="kale">Kale</SelectItem>
-                        <SelectItem value="spinach">Spinach</SelectItem>
+                        <SelectItem value="microgreen">Microgreen Tray</SelectItem>
+                        <SelectItem value="leafy-green">Leafy Green Tray</SelectItem>
+                        <SelectItem value="seedling">Seedling Tray</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Seeds per Cell</Label>
+                    <Label>Default Quantity</Label>
                     <Input
                       type="number"
-                      min="1"
-                      max="5"
-                      value={step.config.seedsPerCell || 1}
+                      value={step.config.defaultQuantity || 1}
                       onChange={(e) => onUpdate({
                         ...step,
-                        config: { ...step.config, seedsPerCell: parseInt(e.target.value) || 1 }
+                        config: { ...step.config, defaultQuantity: parseInt(e.target.value) || 1 }
                       })}
+                      min="1"
+                      max="50"
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Growing Medium</Label>
-                    <Select
-                      value={step.config.growingMedium || ''}
-                      onValueChange={(value) => onUpdate({
-                        ...step,
-                        config: { ...step.config, growingMedium: value }
-                      })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select medium..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="rockwool">Rockwool</SelectItem>
-                        <SelectItem value="coco-coir">Coco Coir</SelectItem>
-                        <SelectItem value="peat-moss">Peat Moss Mix</SelectItem>
-                        <SelectItem value="vermiculite">Vermiculite</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Initial Location</Label>
-                    <Select
-                      value={step.config.location || ''}
-                      onValueChange={(value) => onUpdate({
-                        ...step,
-                        config: { ...step.config, location: value }
-                      })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="germination">Germination Chamber</SelectItem>
-                        <SelectItem value="nursery">Nursery</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </div>

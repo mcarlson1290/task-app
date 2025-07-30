@@ -1,0 +1,225 @@
+# Replit Instructions: Checklist UI Improvements and Bug Fixes
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+We need to improve the checklist system UI to make all options clearly visible instead of hidden behind settings. Also fix the input type functionality so each step type actually works with its intended input method.
+
+## Issue 1: Make All Checklist Options Visible
+Instead of hiding options behind a settings gear, display all configuration options directly in the UI:
+
+### For Recurring Task Creator/Editor:
+1. **Remove the settings button/modal** - All options should be visible inline
+2. **Display step configuration directly** - When a user selects a step type, show its configuration options immediately below
+3. **Use an expandable/collapsible design** - Each step should expand to show its options when selected
+
+### Visual Layout:
+```
+Step 1: [Text Instruction ▼]
+├─ Label: [_________________]
+└─ Instructions: [_________________]
+
+Step 2: [Number Input ▼]
+├─ Label: [_________________]
+├─ Min: [0] Max: [100]
+└─ Unit: [_________________]
+
+Step 3: [Inventory Selection ▼]
+├─ Label: [_________________]
+├─ Category: [Seeds ▼]
+└─ Allow Multiple: [✓]
+```
+
+## Issue 2: Implement Functional Step Types
+Each step type should actually function as intended when the task is executed:
+
+### 1. **Text Instruction**
+- Display as read-only text
+- No checkbox, just informational content
+- Style: Light gray background, no interaction
+
+### 2. **Number Input**
+- Show numeric input field
+- Validate min/max values
+- Display unit label (oz, lbs, etc.)
+- Store the entered value
+
+### 3. **Inventory Selection**
+- Dropdown showing available inventory items
+- Filter by category (Seeds, Media, Nutrients)
+- Show current quantity available
+- Update inventory when task completes
+
+### 4. **System Assignment**
+- Dropdown of available growing systems
+- Show system type and available capacity
+- Auto-suggest best available system
+- Visual indicator of system load
+
+### 5. **Data Collection**
+- Multiple input fields (pH, EC, Temperature)
+- Validate acceptable ranges
+- Show warning if out of range
+- Store for trend analysis
+
+### 6. **Photo Upload**
+- Camera button on mobile
+- File picker on desktop
+- Show preview after capture
+- Option to retake
+- Store with task completion data
+
+### 7. **Edit Tray** (NEW)
+- Form fields for:
+  - Tray ID (dropdown of existing trays)
+  - New Location
+  - Current Crop Stage
+  - Notes
+  - Status Update
+
+### 8. **Create Tray** (NEW)
+- Form fields for:
+  - Tray Type (Microgreens/Leafy Greens)
+  - Crop Selection
+  - Quantity
+  - Growing Medium
+  - Initial Location
+  - Generate Tray ID button
+
+### 9. **Tray Split**
+- Show current tray info
+- Number of splits selector
+- Location assignment for each split
+- Visual representation of split
+
+### 10. **Movement Trigger**
+- Current location display
+- Destination selector
+- Movement reason
+- Timestamp
+
+## Implementation Steps:
+
+### Step 1: Update Checklist Builder UI
+```javascript
+// Remove settings modal completely
+// Replace with inline configuration
+
+const ChecklistStepBuilder = ({ step, onChange, onDelete }) => {
+  const [expanded, setExpanded] = useState(true);
+  
+  return (
+    <div className="checklist-step-builder">
+      <div className="step-header" onClick={() => setExpanded(!expanded)}>
+        <span className="step-type-icon">{getStepIcon(step.type)}</span>
+        <span className="step-label">{step.label || 'New Step'}</span>
+        <span className="expand-icon">{expanded ? '▼' : '▶'}</span>
+      </div>
+      
+      {expanded && (
+        <div className="step-config">
+          {renderStepConfig(step.type, step, onChange)}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### Step 2: Create Step Type Renderers
+```javascript
+// In task execution, render correct input type
+const renderChecklistStep = (step, value, onChange) => {
+  switch (step.type) {
+    case 'text-instruction':
+      return <div className="instruction-text">{step.label}</div>;
+      
+    case 'number-input':
+      return (
+        <div className="number-input-step">
+          <label>{step.label}</label>
+          <input
+            type="number"
+            min={step.config.min}
+            max={step.config.max}
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <span className="unit">{step.config.unit}</span>
+        </div>
+      );
+      
+    case 'inventory-select':
+      return (
+        <InventorySelector
+          label={step.label}
+          category={step.config.category}
+          value={value}
+          onChange={onChange}
+          showQuantity={true}
+        />
+      );
+      
+    case 'photo':
+      return (
+        <PhotoCapture
+          label={step.label}
+          value={value}
+          onChange={onChange}
+        />
+      );
+      
+    // Add all other step types...
+  }
+};
+```
+
+### Step 3: Fix Data Storage
+```javascript
+// Store step responses with their types
+const taskCompletion = {
+  taskId: task.id,
+  completedAt: new Date(),
+  completedBy: currentUser.id,
+  checklistData: steps.map(step => ({
+    stepId: step.id,
+    type: step.type,
+    label: step.label,
+    value: stepValues[step.id],
+    // Include type-specific data
+    ...(step.type === 'inventory-select' && {
+      itemUsed: stepValues[step.id],
+      quantityUsed: stepValues[`${step.id}_quantity`]
+    }),
+    ...(step.type === 'photo' && {
+      photoUrl: stepValues[step.id]
+    })
+  }))
+};
+```
+
+### Step 4: Add Visual Feedback
+- Show completion status for each step
+- Use appropriate icons for each step type
+- Highlight required fields
+- Show validation errors inline
+- Progress indicator showing X of Y steps complete
+
+### Step 5: Mobile Optimization
+- Larger touch targets for mobile
+- Native camera access for photo steps
+- Number pad for numeric inputs
+- Optimized dropdowns for small screens
+
+## Testing Checklist:
+1. Create a recurring task with all step types
+2. Execute the task and verify each input works correctly
+3. Complete the task and verify data is saved
+4. View completed task to see all captured data
+5. Test on mobile device for camera and touch interactions
+
+## Expected Result:
+- All checklist configuration options are visible without clicking settings
+- Each step type functions with its appropriate input method
+- Data is properly captured and stored for later analysis
+- Better user experience with no hidden functionality
