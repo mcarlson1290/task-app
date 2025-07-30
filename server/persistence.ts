@@ -188,4 +188,33 @@ export class PersistenceManager {
       console.error('Error saving counters:', error);
     }
   }
+
+  async clearAllFiles(): Promise<void> {
+    console.log('Clearing all persistence files...');
+    try {
+      await this.ensureDataDirectory();
+      
+      const filesToClear = [
+        'tasks.json',
+        'recurring_tasks.json',
+        'inventory_levels.json',
+        'counters.json'
+      ];
+      
+      for (const filename of filesToClear) {
+        const filepath = this.getFilePath(filename);
+        try {
+          await fs.unlink(filepath);
+          console.log(`Deleted ${filename}`);
+        } catch (error) {
+          // File doesn't exist, which is fine
+          console.log(`${filename} didn't exist, skipping`);
+        }
+      }
+      
+      console.log('All persistence files cleared');
+    } catch (error) {
+      console.error('Error clearing files:', error);
+    }
+  }
 }

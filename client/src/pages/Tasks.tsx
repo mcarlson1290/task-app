@@ -49,7 +49,6 @@ const Tasks: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
-  const [debugOutput, setDebugOutput] = React.useState('');
 
 
 
@@ -589,40 +588,38 @@ const Tasks: React.FC = () => {
     setAddTaskModalOpen(true);
   };
 
-  // Debug recurring task system
-  const debugRecurringTasks = async () => {
-    try {
-      const response = await apiRequest('POST', '/api/debug-recurring-tasks');
-      setDebugOutput(JSON.stringify(response, null, 2));
-      toast({
-        title: "Debug Complete",
-        description: `Found ${response.recurringTasksFound} recurring tasks, generated ${response.tasksGenerated} new instances`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    } catch (error) {
-      console.error('Debug error:', error);
-      toast({
-        title: "Debug Error",
-        description: "Failed to debug recurring tasks",
-      });
+  // Reset app to clean slate
+  const resetAppToCleanSlate = async () => {
+    if (!confirm('This will DELETE all tasks, recurring tasks, and test data. Continue?')) {
+      return;
     }
-  };
-
-  // Clean up duplicate tasks
-  const cleanupDuplicates = async () => {
+    
     try {
-      const response = await apiRequest('POST', '/api/cleanup-duplicate-tasks');
+      // Clear all data via API
+      await apiRequest('POST', '/api/clear-data');
+      
+      // Clear browser storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Clear IndexedDB if available
+      if ('indexedDB' in window) {
+        const databases = await indexedDB.databases();
+        databases.forEach(db => indexedDB.deleteDatabase(db.name));
+      }
+      
       toast({
-        title: "Cleanup Complete",
-        description: `Removed ${response.duplicatesRemoved} duplicate tasks. Total tasks: ${response.finalTaskCount}`,
+        title: "Reset Complete",
+        description: "All data cleared. Page will reload.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
+      
+      // Reload the page to start fresh
+      setTimeout(() => window.location.reload(), 1500);
     } catch (error) {
-      console.error('Cleanup error:', error);
+      console.error('Reset error:', error);
       toast({
-        title: "Cleanup Error",
-        description: "Failed to cleanup duplicate tasks",
+        title: "Reset Error",
+        description: "Failed to reset app completely",
       });
     }
   };
@@ -868,22 +865,22 @@ const Tasks: React.FC = () => {
             <Plus size={16} /> New Task
           </button>
 
-          {/* Admin Buttons (Temporary) */}
-          {auth.user && (auth.user.role === 'manager' || auth.user.role === 'corporate') && (
-            <>
-              <button 
-                onClick={cleanupDuplicates}
-                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
-              >
-                🧹 Clean Duplicates
-              </button>
-              <button 
-                onClick={debugRecurringTasks}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm"
-              >
-                🔄 Debug Recurring
-              </button>
-            </>
+          {/* Reset Button (Temporary) */}
+          {auth.user && auth.user.role === 'corporate' && (
+            <button 
+              onClick={resetAppToCleanSlate}
+              style={{
+                background: '#dc2626',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🔄 Reset App (Delete All Data)
+            </button>
           )}
         </div>
       </div>

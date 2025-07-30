@@ -1535,6 +1535,7 @@ export class MemStorage implements IStorage {
   // Clear all data method
   async clearAllData(): Promise<boolean> {
     try {
+      console.log('Clearing all data maps...');
       this.users.clear();
       this.tasks.clear();
       this.inventoryItems.clear();
@@ -1562,6 +1563,10 @@ export class MemStorage implements IStorage {
       this.currentAssignmentId = 1;
       this.currentNotificationId = 1;
       
+      // Clear persistent storage files
+      await this.persistence.clearAllFiles();
+      
+      console.log('All data cleared successfully');
       return true;
     } catch (error) {
       console.error('Error clearing data:', error);

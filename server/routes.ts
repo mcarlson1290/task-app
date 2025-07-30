@@ -703,161 +703,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Debug recurring task system endpoint
-  app.post("/api/debug-recurring-tasks", async (req, res) => {
-    try {
-      console.log('=== RECURRING TASK DEBUG ===');
-      
-      const recurringTasks = await storage.getRecurringTasks();
-      console.log('Recurring tasks in system:', recurringTasks.map(rt => ({
-        id: rt.id,
-        title: rt.title,
-        frequency: rt.frequency,
-        location: rt.location,
-        isActive: rt.isActive
-      })));
-      
-      const allTasks = await storage.getTasks();
-      const recurringInstances = allTasks.filter(task => task.isRecurring);
-      console.log('Generated recurring task instances:', recurringInstances.map(t => ({
-        id: t.id,
-        title: t.title,
-        frequency: t.recurringTaskId ? recurringTasks.find(rt => rt.id === t.recurringTaskId)?.frequency : 'unknown',
-        dueDate: t.dueDate,
-        status: t.status
-      })));
-      
-      // Process all recurring tasks to ensure current month tasks exist
-      const today = new Date();
-      console.log(`Processing recurring tasks for ${today.toDateString()}`);
-      
-      let tasksGenerated = 0;
-      for (const recurringTask of recurringTasks) {
-        if (recurringTask.isActive) {
-          console.log(`Processing: ${recurringTask.title} (${recurringTask.frequency})`);
-          const beforeCount = allTasks.filter(t => t.recurringTaskId === recurringTask.id).length;
-          
-          // Force regenerate task instances for this recurring task
-          await (storage as any).regenerateTaskInstances(recurringTask.id);
-          
-          const afterTasks = await storage.getTasks();
-          const afterCount = afterTasks.filter(t => t.recurringTaskId === recurringTask.id).length;
-          const generated = afterCount - beforeCount;
-          tasksGenerated += Math.max(0, generated);
-          
-          console.log(`  - Generated ${Math.max(0, generated)} new task instances`);
-        }
-      }
-      
-      const finalTasks = await storage.getTasks();
-      const finalRecurringInstances = finalTasks.filter(task => task.isRecurring);
-      
-      res.json({ 
-        message: "Recurring task system debug complete",
-        recurringTasksFound: recurringTasks.length,
-        activeRecurringTasks: recurringTasks.filter(rt => rt.isActive).length,
-        totalRecurringInstances: finalRecurringInstances.length,
-        tasksGenerated,
-        recurringTasks: recurringTasks.map(rt => ({
-          id: rt.id,
-          title: rt.title,
-          frequency: rt.frequency,
-          isActive: rt.isActive,
-          instanceCount: finalRecurringInstances.filter(t => t.recurringTaskId === rt.id).length
-        }))
-      });
-    } catch (error) {
-      console.error('Error debugging recurring tasks:', error);
-      res.status(500).json({ error: 'Failed to debug recurring tasks' });
-    }
-  });
-
-  // Clean up duplicate task instances endpoint
-  app.post("/api/cleanup-duplicate-tasks", async (req, res) => {
-    try {
-      console.log('=== CLEANING UP DUPLICATE TASKS ===');
-      
-      const allTasks = await storage.getTasks();
-      const recurringTasks = await storage.getRecurringTasks();
-      const recurringInstances = allTasks.filter(task => task.isRecurring && task.recurringTaskId);
-      
-      console.log(`Found ${recurringInstances.length} recurring task instances`);
-      
-      // Group by recurring task ID and due date to find duplicates
-      const taskGroups = new Map<string, Task[]>();
-      
-      recurringInstances.forEach(task => {
-        if (task.recurringTaskId && task.dueDate) {
-          const dueDateStr = new Date(task.dueDate).toDateString();
-          const key = `${task.recurringTaskId}-${dueDateStr}`;
-          
-          if (!taskGroups.has(key)) {
-            taskGroups.set(key, []);
-          }
-          taskGroups.get(key)!.push(task);
-        }
-      });
-      
-      let duplicatesFound = 0;
-      let duplicatesRemoved = 0;
-      
-      // Find and remove duplicates, keeping the most recent one
-      for (const [key, tasks] of taskGroups.entries()) {
-        if (tasks.length > 1) {
-          duplicatesFound += tasks.length - 1;
-          console.log(`Found ${tasks.length} duplicates for ${key}`);
-          
-          // Sort by creation date, keep the most recent
-          tasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          const keepTask = tasks[0];
-          const removeTasks = tasks.slice(1);
-          
-          console.log(`Keeping task ${keepTask.id} (${keepTask.title}), removing ${removeTasks.length} duplicates`);
-          
-          // Remove duplicate tasks
-          for (const task of removeTasks) {
-            await storage.deleteTask(task.id);
-            duplicatesRemoved++;
-          }
-        }
-      }
-      
-      console.log(`Cleanup complete: Found ${duplicatesFound} duplicates, removed ${duplicatesRemoved}`);
-      
-      // Get updated counts
-      const finalTasks = await storage.getTasks();
-      const finalRecurringInstances = finalTasks.filter(task => task.isRecurring);
-      
-      res.json({ 
-        message: "Duplicate task cleanup complete",
-        duplicatesFound,
-        duplicatesRemoved,
-        finalTaskCount: finalTasks.length,
-        finalRecurringInstances: finalRecurringInstances.length,
-        taskGroups: Array.from(taskGroups.entries()).map(([key, tasks]) => ({
-          key,
-          count: tasks.length,
-          title: tasks[0]?.title || 'Unknown'
-        }))
-      });
-    } catch (error) {
-      console.error('Error cleaning up duplicates:', error);
-      res.status(500).json({ error: 'Failed to cleanup duplicates' });
-    }
-  });
-
-  // Clear all data endpoint
+  // Clear all data endpoint - Complete reset
   app.post("/api/clear-data", async (req, res) => {
     try {
+      console.log('=== CLEARING ALL DATA ===');
+      
       const success = await storage.clearAllData();
       
       if (!success) {
         return res.status(500).json({ message: "Failed to clear data" });
       }
 
-      res.json({ message: "All data cleared successfully" });
+      console.log('All data cleared successfully');
+      
+      res.json({ 
+        message: "All data cleared successfully",
+        tasks: 0,
+        recurringTasks: 0,
+        inventoryItems: 0
+      });
     } catch (error) {
-      res.status(500).json({ message: "Failed to clear data" });
+      console.error('Error clearing data:', error);
+      res.status(500).json({ error: "Failed to clear data" });
     }
   });
 
