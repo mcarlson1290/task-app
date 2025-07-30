@@ -1148,7 +1148,10 @@ export class MemStorage implements IStorage {
           const taskId = `${recurringTask.id}-${year}-${month}`;
           if (!generatedTaskIds.has(taskId)) {
             const visibleDate = new Date(year, month, 1);
-            const dueDate = new Date(year, month, lastDay);
+            // FIXED: Create due date using the actual last day of the month
+            const dueDate = new Date(year, month + 1, 0); // This gives us the last day of current month
+            
+            console.log(`Generating monthly task for ${year}-${month+1}: visible ${visibleDate.toLocaleDateString()}, due ${dueDate.toLocaleDateString()}`);
             
             // Only create if not already past due date
             if (today <= dueDate) {
@@ -1179,7 +1182,8 @@ export class MemStorage implements IStorage {
           const secondHalfId = `${recurringTask.id}-${year}-${month}-2`;
           if (!generatedTaskIds.has(secondHalfId)) {
             const visibleDate2 = new Date(year, month, 15);
-            const dueDate2 = new Date(year, month, lastDay);
+            // FIXED: Use proper last day calculation
+            const dueDate2 = new Date(year, month + 1, 0); // Last day of current month
             
             if (today <= dueDate2) {
               const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
@@ -1237,10 +1241,11 @@ export class MemStorage implements IStorage {
     console.log(`Generated ${instances.length} task instances for recurring task: ${recurringTask.title}`);
   }
 
-  // Helper method to get last day of month
+  // Helper method to get last day of month - FIXED
   private getLastDayOfMonth(date: Date): number {
-    const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
-    const lastDay = new Date(nextMonth.getTime() - 1);
+    // Create date for last day of the current month
+    // Month + 1 gives us next month, day 0 gives us last day of current month
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     return lastDay.getDate();
   }
 

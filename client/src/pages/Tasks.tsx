@@ -50,6 +50,29 @@ const Tasks: React.FC = () => {
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
 
+  // Regenerate tasks mutation (admin feature)
+  const regenerateTasksMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/regenerate-tasks', {
+        method: 'POST'
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Tasks Regenerated",
+        description: `${data.regeneratedTasks} tasks regenerated with fixed dates`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to regenerate tasks",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Close dropdown when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -817,6 +840,22 @@ const Tasks: React.FC = () => {
           >
             <Plus size={16} /> New Task
           </button>
+          
+          {/* Admin regenerate button - only show for debugging */}
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              onClick={() => {
+                if (confirm('Regenerate all recurring tasks with fixed dates? This will delete and recreate all monthly/bi-weekly tasks.')) {
+                  regenerateTasksMutation.mutate();
+                }
+              }}
+              disabled={regenerateTasksMutation.isPending}
+              className="btn-admin"
+              title="Fix date generation issues for monthly/bi-weekly tasks"
+            >
+              {regenerateTasksMutation.isPending ? 'Regenerating...' : 'Fix Dates (Admin)'}
+            </button>
+          )}
         </div>
       </div>
 

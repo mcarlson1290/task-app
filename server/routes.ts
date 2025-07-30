@@ -666,6 +666,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Regenerate tasks with fixed dates endpoint
+  app.post("/api/regenerate-tasks", async (req, res) => {
+    try {
+      // Delete all recurring task instances (not the recurring tasks themselves)
+      const recurringTasks = await storage.getRecurringTasks();
+      const tasks = await storage.getTasks();
+      
+      // Remove all task instances that were generated from recurring tasks
+      const recurringTaskIds = new Set(recurringTasks.map(rt => rt.id));
+      const tasksToDelete = tasks.filter(task => task.isRecurring && task.recurringTaskId && recurringTaskIds.has(task.recurringTaskId));
+      
+      console.log(`Deleting ${tasksToDelete.length} existing recurring task instances`);
+      for (const task of tasksToDelete) {
+        await storage.deleteTask(task.id);
+      }
+      
+      // Regenerate all task instances with fixed date logic
+      console.log(`Regenerating task instances for ${recurringTasks.length} recurring tasks`);
+      for (const recurringTask of recurringTasks) {
+        await (storage as any).generateTaskInstances(recurringTask);
+      }
+      
+      const newTasks = await storage.getTasks();
+      const newRecurringInstances = newTasks.filter(task => task.isRecurring);
+      
+      res.json({ 
+        message: "Tasks regenerated successfully with fixed dates",
+        deletedTasks: tasksToDelete.length,
+        regeneratedTasks: newRecurringInstances.length,
+        recurringTasks: recurringTasks.length
+      });
+    } catch (error) {
+      console.error("Failed to regenerate tasks:", error);
+      res.status(500).json({ message: "Failed to regenerate tasks" });
+    }
+  });
+
   // Clear all data endpoint
   app.post("/api/clear-data", async (req, res) => {
     try {

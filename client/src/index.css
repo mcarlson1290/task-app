@@ -3109,3 +3109,25 @@ textarea:focus {
     font-size: 14px;
   }
 }
+
+/* Admin Button Styles */
+.btn-admin {
+  background: #f97316;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.btn-admin:hover {
+  background: #ea580c;
+}
+
+.btn-admin:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
