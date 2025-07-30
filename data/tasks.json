@@ -2481,7 +2481,51 @@
     "createdAt": "2025-07-30T17:32:01.181Z"
   },
   {
-    "id": 60,
+    "id": 63,
+    "title": "Monthly Safety Inspection",
+    "description": "Comprehensive safety inspection of all farm equipment and systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "safety-1",
+        "text": "Inspect all electrical connections",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Check all electrical panels and connections for wear, corrosion, or damage"
+        }
+      },
+      {
+        "id": "safety-2",
+        "text": "Emergency exits clear and accessible",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-07-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 3,
+    "createdAt": "2025-07-30T17:45:08.964Z"
+  },
+  {
+    "id": 64,
     "title": "Monthly Safety Inspection",
     "description": "Comprehensive safety inspection of all farm equipment and systems",
     "type": "equipment-maintenance",
@@ -2522,10 +2566,103 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 3,
-    "createdAt": "2025-07-30T17:40:19.466Z"
+    "createdAt": "2025-07-30T17:45:08.964Z"
   },
   {
-    "id": 61,
+    "id": 65,
+    "title": "Monthly Safety Inspection",
+    "description": "Comprehensive safety inspection of all farm equipment and systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "safety-1",
+        "text": "Inspect all electrical connections",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Check all electrical panels and connections for wear, corrosion, or damage"
+        }
+      },
+      {
+        "id": "safety-2",
+        "text": "Emergency exits clear and accessible",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-30T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 3,
+    "createdAt": "2025-07-30T17:45:08.964Z"
+  },
+  {
+    "id": 66,
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "equip-1",
+        "text": "Check pump systems",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Inspect water pumps for proper operation and no leaks"
+        }
+      },
+      {
+        "id": "equip-2",
+        "text": "Record pump pressure (PSI)",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "PSI",
+          "default": 30
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-07-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 4,
+    "createdAt": "2025-07-30T17:45:10.320Z"
+  },
+  {
+    "id": 67,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2571,10 +2708,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:40:28.578Z"
+    "createdAt": "2025-07-30T17:45:10.320Z"
   },
   {
-    "id": 62,
+    "id": 68,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2620,6 +2757,104 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:40:28.578Z"
+    "createdAt": "2025-07-30T17:45:10.320Z"
+  },
+  {
+    "id": 69,
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "equip-1",
+        "text": "Check pump systems",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Inspect water pumps for proper operation and no leaks"
+        }
+      },
+      {
+        "id": "equip-2",
+        "text": "Record pump pressure (PSI)",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "PSI",
+          "default": 30
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-14T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 4,
+    "createdAt": "2025-07-30T17:45:10.320Z"
+  },
+  {
+    "id": 70,
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "equip-1",
+        "text": "Check pump systems",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Inspect water pumps for proper operation and no leaks"
+        }
+      },
+      {
+        "id": "equip-2",
+        "text": "Record pump pressure (PSI)",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "PSI",
+          "default": 30
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-30T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 4,
+    "createdAt": "2025-07-30T17:45:10.320Z"
   }
 ]

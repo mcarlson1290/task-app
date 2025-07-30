@@ -1154,6 +1154,7 @@ export class MemStorage implements IStorage {
             if (today <= dueDate) {
               const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
               instances.push(instance);
+              this.tasks.set(instance.id, instance); // Save to storage
               generatedTaskIds.add(taskId);
             }
           }
@@ -1169,6 +1170,7 @@ export class MemStorage implements IStorage {
             if (today <= dueDate1) {
               const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);
               instances.push(instance1);
+              this.tasks.set(instance1.id, instance1); // Save to storage
               generatedTaskIds.add(firstHalfId);
             }
           }
@@ -1182,6 +1184,7 @@ export class MemStorage implements IStorage {
             if (today <= dueDate2) {
               const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
               instances.push(instance2);
+              this.tasks.set(instance2.id, instance2); // Save to storage
               generatedTaskIds.add(secondHalfId);
             }
           }
@@ -1223,6 +1226,7 @@ export class MemStorage implements IStorage {
         if (shouldCreate && currentDate >= today) {
           const instance = await this.createTaskInstanceWithDates(recurringTask, new Date(currentDate), new Date(currentDate));
           instances.push(instance);
+          this.tasks.set(instance.id, instance); // Save to storage
         }
         
         // Move to next day
