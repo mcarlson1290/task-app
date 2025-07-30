@@ -29,6 +29,7 @@ export const tasks = pgTable("tasks", {
   checklist: json("checklist").$type<ChecklistItem[]>(),
   data: json("data").$type<Record<string, any>>(), // for collected data
   dueDate: timestamp("due_date"),
+  visibleFromDate: timestamp("visible_from_date"), // When task becomes visible
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
   pausedAt: timestamp("paused_at"),

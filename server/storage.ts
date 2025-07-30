@@ -1273,6 +1273,7 @@ export class MemStorage implements IStorage {
       })) || [],
       data: {},
       dueDate: dueDate,
+      visibleFromDate: visibleDate,
       startedAt: null,
       completedAt: null,
       pausedAt: null,

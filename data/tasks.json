@@ -2481,7 +2481,7 @@
     "createdAt": "2025-07-30T17:32:01.181Z"
   },
   {
-    "id": 63,
+    "id": 71,
     "title": "Monthly Safety Inspection",
     "description": "Comprehensive safety inspection of all farm equipment and systems",
     "type": "equipment-maintenance",
@@ -2522,10 +2522,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 3,
-    "createdAt": "2025-07-30T17:45:08.964Z"
+    "createdAt": "2025-07-30T17:49:06.198Z"
   },
   {
-    "id": 64,
+    "id": 72,
     "title": "Monthly Safety Inspection",
     "description": "Comprehensive safety inspection of all farm equipment and systems",
     "type": "equipment-maintenance",
@@ -2566,10 +2566,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 3,
-    "createdAt": "2025-07-30T17:45:08.964Z"
+    "createdAt": "2025-07-30T17:49:06.198Z"
   },
   {
-    "id": 65,
+    "id": 73,
     "title": "Monthly Safety Inspection",
     "description": "Comprehensive safety inspection of all farm equipment and systems",
     "type": "equipment-maintenance",
@@ -2610,10 +2610,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 3,
-    "createdAt": "2025-07-30T17:45:08.964Z"
+    "createdAt": "2025-07-30T17:49:06.198Z"
   },
   {
-    "id": 66,
+    "id": 74,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2659,10 +2659,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:45:10.320Z"
+    "createdAt": "2025-07-30T17:49:07.513Z"
   },
   {
-    "id": 67,
+    "id": 75,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2708,10 +2708,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:45:10.320Z"
+    "createdAt": "2025-07-30T17:49:07.513Z"
   },
   {
-    "id": 68,
+    "id": 76,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2757,10 +2757,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:45:10.320Z"
+    "createdAt": "2025-07-30T17:49:07.513Z"
   },
   {
-    "id": 69,
+    "id": 77,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2806,10 +2806,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:45:10.320Z"
+    "createdAt": "2025-07-30T17:49:07.513Z"
   },
   {
-    "id": 70,
+    "id": 78,
     "title": "Bi-Weekly Equipment Check",
     "description": "Check and maintain critical equipment systems",
     "type": "equipment-maintenance",
@@ -2855,6 +2855,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 4,
-    "createdAt": "2025-07-30T17:45:10.320Z"
+    "createdAt": "2025-07-30T17:49:07.513Z"
   }
 ]

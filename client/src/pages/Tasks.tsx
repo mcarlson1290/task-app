@@ -250,19 +250,42 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - smart handling for today vs other dates
+    // Date filter - use visibility range for recurring tasks, due date for others
     if (dateFilter) {
-      const today = new Date().toISOString().split('T')[0];
-      const isToday = dateFilter === today;
+      const filterDate = new Date(dateFilter);
+      filterDate.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isToday = filterDate.getTime() === today.getTime();
       
       filtered = filtered.filter(task => {
+        // For recurring tasks with visibility ranges
+        if (task.isRecurring && task.visibleFromDate && task.dueDate) {
+          const visibleFrom = new Date(task.visibleFromDate);
+          const dueDate = new Date(task.dueDate);
+          visibleFrom.setHours(0, 0, 0, 0);
+          dueDate.setHours(23, 59, 59, 999);
+          
+          // Task is visible if filter date is within visibility range
+          const isInVisibilityRange = filterDate >= visibleFrom && filterDate <= dueDate;
+          
+          // If today is selected, also show overdue tasks
+          if (isToday) {
+            const isOverdue = dueDate < today && task.status !== 'completed' && task.status !== 'approved';
+            return isInVisibilityRange || isOverdue;
+          }
+          
+          return isInVisibilityRange;
+        }
+        
+        // For non-recurring tasks, use due date logic
         if (task.dueDate) {
           const taskDate = new Date(task.dueDate);
           const taskDateString = taskDate.toISOString().split('T')[0];
           
           // If today is selected, show today's tasks AND overdue tasks
           if (isToday) {
-            const isOverdue = taskDate < new Date() && task.status !== 'completed';
+            const isOverdue = taskDate < today && task.status !== 'completed' && task.status !== 'approved';
             return taskDateString === dateFilter || isOverdue;
           }
           
@@ -294,7 +317,7 @@ const Tasks: React.FC = () => {
     if (!task.dueDate || !task.completedAt) return false;
     
     // For TEST tasks or tasks without proper dates, return false
-    if (task.dueDate === 'Not specified' || task.dueDate === '') return false;
+    if (!task.dueDate || task.dueDate === 'Not specified' || task.dueDate === '') return false;
     
     try {
       const dueTime = new Date(task.dueDate).getTime();
