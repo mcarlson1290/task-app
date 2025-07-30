@@ -8,6 +8,7 @@ export interface ProductionTray {
   systemId?: string;
   datePlanted?: string;
   harvestedAt?: string;
+  lastMoved?: string;
   splitFrom?: string;
   splitNumber?: number;
   splitTotal?: number;
@@ -133,55 +134,107 @@ export const TrayService = {
     return `${location}${dateStr}-${type}-${random}`;
   },
 
-  // Initialize with sample data if no trays exist
-  initializeSampleTrays(): void {
-    const existing = localStorage.getItem('productionTrays');
-    if (!existing || JSON.parse(existing).length === 0) {
-      const sampleTrays: ProductionTray[] = [
-        {
-          id: 'TRAY-001',
-          cropType: 'leafy-green',
-          cropName: 'Lettuce Mix',
-          status: 'active',
-          datePlanted: '2025-07-25',
-          createdAt: '2025-07-25T10:00:00.000Z'
-        },
-        {
-          id: 'TRAY-002',
-          cropType: 'microgreen',
-          cropName: 'Broccoli Microgreens',
-          status: 'growing',
-          datePlanted: '2025-07-28',
-          createdAt: '2025-07-28T09:00:00.000Z'
-        },
-        {
-          id: 'TRAY-003',
-          cropType: 'leafy-green',
-          cropName: 'Spinach',
-          status: 'active',
-          datePlanted: '2025-07-22',
-          createdAt: '2025-07-22T11:00:00.000Z'
-        },
-        {
-          id: 'TRAY-004',
-          cropType: 'microgreen',
-          cropName: 'Radish Microgreens',
-          status: 'active',
-          datePlanted: '2025-07-29',
-          createdAt: '2025-07-29T08:30:00.000Z'
-        },
-        {
-          id: 'TRAY-005',
-          cropType: 'leafy-green',
-          cropName: 'Kale',
-          status: 'growing',
-          datePlanted: '2025-07-26',
-          createdAt: '2025-07-26T14:00:00.000Z'
-        }
-      ];
-      
-      localStorage.setItem('productionTrays', JSON.stringify(sampleTrays));
+  // Validate tray data
+  validateTrayData(tray: Partial<ProductionTray>): boolean {
+    const required = ['id', 'cropType', 'datePlanted', 'status'];
+    const missing = required.filter(field => !tray[field as keyof ProductionTray]);
+    
+    if (missing.length > 0) {
+      throw new Error(`Missing required fields: ${missing.join(', ')}`);
     }
+    
+    // Validate status
+    const validStatuses = ['active', 'growing', 'harvested', 'split'];
+    if (!validStatuses.includes(tray.status!)) {
+      throw new Error(`Invalid status: ${tray.status}`);
+    }
+    
+    return true;
+  },
+
+  // Create tray from seeding task completion
+  createTrayFromSeedingTask(taskData: {
+    taskId: number;
+    cropType: string;
+    cropName?: string;
+    seedsUsed?: number;
+    location?: string;
+    checklistData?: any[];
+  }): ProductionTray {
+    const tray: ProductionTray = {
+      id: this.generateTrayId(taskData.cropType),
+      cropType: taskData.cropType,
+      cropName: taskData.cropName || taskData.cropType,
+      datePlanted: new Date().toISOString().split('T')[0],
+      status: 'active',
+      location: taskData.location || 'Nursery',
+      createdAt: new Date().toISOString()
+    };
+
+    // Validate before creating
+    this.validateTrayData(tray);
+    
+    const trays = this.getAllTrays();
+    trays.push(tray);
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    // Trigger update event
+    window.dispatchEvent(new Event('trayUpdated'));
+    
+    console.log(`Created tray ${tray.id} from seeding task ${taskData.taskId}`);
+    return tray;
+  },
+
+  // Update tray location (for movement operations)
+  updateTrayLocation(trayId: string, newLocation: string, systemId?: string): ProductionTray | null {
+    const trays = this.getAllTrays();
+    const trayIndex = trays.findIndex(t => t.id === trayId);
+    
+    if (trayIndex === -1) {
+      console.error('Tray not found:', trayId);
+      return null;
+    }
+    
+    const oldLocation = trays[trayIndex].location;
+    trays[trayIndex] = {
+      ...trays[trayIndex],
+      location: newLocation,
+      systemId: systemId,
+      lastMoved: new Date().toISOString()
+    };
+    
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    // Trigger update event
+    window.dispatchEvent(new Event('trayUpdated'));
+    
+    console.log(`Moved tray ${trayId} from ${oldLocation} to ${newLocation}`);
+    return trays[trayIndex];
+  },
+
+  // Mark tray as harvested
+  harvestTray(trayId: string, actualYield?: number): ProductionTray | null {
+    const trays = this.getAllTrays();
+    const trayIndex = trays.findIndex(t => t.id === trayId);
+    
+    if (trayIndex === -1) {
+      console.error('Tray not found:', trayId);
+      return null;
+    }
+    
+    trays[trayIndex] = {
+      ...trays[trayIndex],
+      status: 'harvested',
+      harvestedAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('productionTrays', JSON.stringify(trays));
+    
+    // Trigger update event
+    window.dispatchEvent(new Event('trayUpdated'));
+    
+    console.log(`Harvested tray ${trayId}`);
+    return trays[trayIndex];
   },
 
   // Update tray data

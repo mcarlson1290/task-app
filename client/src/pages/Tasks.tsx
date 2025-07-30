@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
-import { TrayIntegration } from "@/utils/trayIntegration";
+import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
 
 const Tasks: React.FC = () => {
@@ -473,33 +473,20 @@ const Tasks: React.FC = () => {
         });
         setModalOpen(false);
         
-        // Check if this is a seeding task and create tray
-        if (task.type.includes('seeding') || task.type.includes('Seeding')) {
-          TrayService.createTrayFromTask(task, auth.user).then(newTray => {
-            if (newTray) {
-              toast({
-                title: "🎉 Task completed!",
-                description: `Great job! Task completed and tray ${newTray.id} created for ${newTray.cropType}. Used ${newTray.seedsUsedOz} oz of seeds.`,
-              });
-            } else {
-              toast({
-                title: "🎉 Task completed!",
-                description: "Great job! The task has been marked as completed.",
-              });
-            }
-          }).catch(error => {
-            console.error('Error creating tray:', error);
-            toast({
-              title: "🎉 Task completed!",
-              description: "Great job! The task has been marked as completed.",
-            });
-          });
-        } else {
-          toast({
-            title: "🎉 Task completed!",
-            description: "Great job! The task has been marked as completed.",
-          });
-        }
+        // Process task completion through TaskCompletionService
+        TaskCompletionService.handleTaskCompletion({
+          taskId: task.id,
+          title: task.title,
+          type: task.type,
+          checklistData: task.checklistData,
+          completedBy: auth.user.id
+        });
+        
+        // Show completion message
+        toast({
+          title: "🎉 Task completed!",
+          description: "Great job! The task has been marked as completed.",
+        });
         
         // Celebrate with confetti!
         confetti({

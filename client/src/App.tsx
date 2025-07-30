@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ import NotFound from "@/pages/not-found";
 import { getStoredAuth } from "@/lib/auth";
 import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { initializeProductionData } from "@/data/initialData";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = getStoredAuth();
@@ -90,6 +92,11 @@ function Router() {
 }
 
 function App() {
+  // Initialize production data on app startup
+  useEffect(() => {
+    initializeProductionData();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

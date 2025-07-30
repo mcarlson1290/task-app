@@ -273,20 +273,26 @@ const ProductionDashboard: React.FC<{
 }> = ({ trays, crops, onUpdateTray }) => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      active: { label: 'Active', className: 'bg-green-100 text-green-800' },
       growing: { label: 'Growing', className: 'bg-blue-100 text-blue-800' },
-      'ready-to-harvest': { label: 'Ready to Harvest', className: 'bg-yellow-100 text-yellow-800' },
-      harvested: { label: 'Harvested', className: 'bg-green-100 text-green-800' },
-      failed: { label: 'Failed', className: 'bg-red-100 text-red-800' }
+      split: { label: 'Split', className: 'bg-purple-100 text-purple-800' },
+      harvested: { label: 'Harvested', className: 'bg-gray-100 text-gray-800' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.growing;
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.active;
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const activeTrayCount = trays.filter(t => t.status === 'growing').length;
-  const readyToHarvestCount = trays.filter(t => t.status === 'active').length; // Use 'active' for ready trays
+  // Calculate metrics from actual tray data
+  const activeTrayCount = trays.filter(t => t.status === 'active' || t.status === 'growing').length;
+  const readyToHarvestCount = trays.filter(t => {
+    // Ready if planted more than expected growth time ago
+    const plantedDate = new Date(t.datePlanted);
+    const daysGrowing = Math.floor((Date.now() - plantedDate.getTime()) / (1000 * 60 * 60 * 24));
+    return t.status === 'growing' && daysGrowing >= 25; // Approximate ready threshold
+  }).length;
   const harvestedCount = trays.filter(t => t.status === 'harvested').length;
-  const totalYield = trays.length; // Simplified for now
+  const totalTrayCount = trays.length;
 
   return (
     <div className="space-y-6">
@@ -331,12 +337,66 @@ const ProductionDashboard: React.FC<{
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalYield}</div>
-            <p className="text-xs text-muted-foreground">Total trays</p>
+            <div className="text-2xl font-bold">{totalTrayCount}</div>
+            <p className="text-xs text-muted-foreground">All trays tracked</p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Recent Production Trays Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Production Trays</CardTitle>
+          <p className="text-sm text-gray-600">
+            {trays.length === 0 
+              ? "No trays found. Trays are created automatically when seeding tasks are completed." 
+              : `Showing ${Math.min(trays.length, 10)} of ${trays.length} trays`
+            }
+          </p>
+        </CardHeader>
+        <CardContent>
+          {trays.length === 0 ? (
+            <div className="text-center py-8">
+              <Sprout className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-2">No production trays yet</p>
+              <p className="text-sm text-gray-500">
+                Complete seeding tasks to automatically create production trays
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Tray ID</th>
+                    <th className="text-left py-2">Crop</th>
+                    <th className="text-left py-2">Date Planted</th>
+                    <th className="text-left py-2">Location</th>
+                    <th className="text-left py-2">Status</th>
+                    <th className="text-left py-2">Days Growing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trays.slice(0, 10).map((tray) => {
+                    const plantedDate = new Date(tray.datePlanted || tray.createdAt);
+                    const daysGrowing = Math.floor((Date.now() - plantedDate.getTime()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <tr key={tray.id} className="border-b">
+                        <td className="py-2 font-mono text-sm">{tray.id}</td>
+                        <td className="py-2">{tray.cropName || tray.cropType}</td>
+                        <td className="py-2">{plantedDate.toLocaleDateString()}</td>
+                        <td className="py-2">{tray.location || 'Not assigned'}</td>
+                        <td className="py-2">{getStatusBadge(tray.status)}</td>
+                        <td className="py-2">{daysGrowing} days</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
     </div>
   );
@@ -487,7 +547,6 @@ const ProductionData: React.FC = () => {
 
   // Initialize trays from TrayService
   useEffect(() => {
-    TrayService.initializeSampleTrays(); // Initialize sample data if none exists
     setTrays(TrayService.getAllTrays());
   }, []);
 
