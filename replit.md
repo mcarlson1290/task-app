@@ -134,6 +134,25 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
+- **July 30, 2025**: Fixed task visibility on the 1st of the month - Enhanced date filtering for monthly and bi-weekly tasks
+  - **Task Visibility Logic Fix**: Completely overhauled date filtering to properly show monthly and bi-weekly tasks during their visibility periods
+    - Monthly tasks: Now visible from the 1st day through their due date within the same month
+    - Bi-weekly tasks: First half visible days 1-14, second half visible days 15-end of month
+    - Enhanced filtering checks both task title patterns and recurring task frequency properties
+    - Proper month/year matching ensures tasks only show in correct time periods
+    - Fixed issue where monthly tasks like "Monthly Safety Inspection" weren't appearing on August 1st
+  - **Recurring Tasks Query Integration**: Added proper recurring tasks data fetching to support enhanced filtering
+    - Integrated recurring tasks query with location-based filtering
+    - Enhanced task filtering logic uses recurring task frequency data for accurate visibility calculations
+    - Supports both title-based detection ("Monthly", "Bi-Weekly") and database frequency field
+  - **Console Logging and Debug Tools**: Added comprehensive logging for date filtering behavior (removed after testing)
+    - Detailed console output showing task visibility calculations during filtering
+    - Real-time debugging of monthly and bi-weekly task visibility periods
+    - Verified correct filtering behavior across different date selections and task types
+  - **Admin Button Removal**: Removed temporary admin regenerate button after identifying real issue was filtering, not generation
+    - Task generation was working correctly - issue was purely in the visibility filtering logic
+    - Preserved all existing task data while fixing the underlying display problem
+    - Tasks are now properly visible during their intended periods without needing regeneration
 - **July 30, 2025**: Fixed late task detection logic and made statistics responsive to filters
   - **Fixed False Late Detection**: Enhanced isTaskLate() function to properly validate task completion timing
     - Only marks tasks as late if they have valid due dates (not "Not specified" or empty)

@@ -125,12 +125,7 @@ const Tasks: React.FC = () => {
     enabled: !!auth.user,
   });
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('Current tasks:', tasks);
-    console.log('Date filter:', dateFilter);
-    console.log('Filtered tasks:', filteredTasks);
-  }, [tasks, dateFilter]);
+
 
   // Periodic overdue status check (every minute)
   React.useEffect(() => {
@@ -275,9 +270,6 @@ const Tasks: React.FC = () => {
       today.setHours(0, 0, 0, 0);
       const isToday = filterDate.getTime() === today.getTime();
       
-      console.log(`=== Date Filter Applied: ${dateFilter} ===`);
-      console.log(`Filter date: ${filterDate.toLocaleDateString()}, Day of month: ${filterDate.getDate()}`);
-      
       filtered = filtered.filter(task => {
         // For recurring tasks, use enhanced visibility logic
         if (task.isRecurring && task.dueDate) {
@@ -302,9 +294,7 @@ const Tasks: React.FC = () => {
           
           if (isMonthly) {
             // Monthly tasks: visible from 1st through due date
-            const isVisible = filterDay >= 1 && filterDate <= dueDate;
-            console.log(`Monthly task "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
-            return isVisible;
+            return filterDay >= 1 && filterDate <= dueDate;
           }
           
           if (isBiWeekly) {
@@ -312,14 +302,10 @@ const Tasks: React.FC = () => {
             
             if (dueDay <= 14) {
               // First bi-weekly period: visible days 1-14
-              const isVisible = filterDay >= 1 && filterDay <= 14;
-              console.log(`Bi-weekly task (first half) "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
-              return isVisible;
+              return filterDay >= 1 && filterDay <= 14;
             } else {
               // Second bi-weekly period: visible days 15-end of month
-              const isVisible = filterDay >= 15;
-              console.log(`Bi-weekly task (second half) "${task.title}": Due ${dueDate.toLocaleDateString()}, Filter day ${filterDay}, Visible: ${isVisible}`);
-              return isVisible;
+              return filterDay >= 15;
             }
           }
           
