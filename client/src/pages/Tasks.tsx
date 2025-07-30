@@ -319,10 +319,21 @@ const Tasks: React.FC = () => {
           const taskDate = new Date(task.dueDate);
           const taskDateString = taskDate.toISOString().split('T')[0];
           
-          // If today is selected, show today's tasks AND overdue tasks
+          // For today filter, check both due date match and visibility range
           if (isToday) {
-            const isOverdue = taskDate < today && task.status !== 'completed' && task.status !== 'approved';
-            return taskDateString === dateFilter || isOverdue;
+            // Show if due today
+            if (taskDateString === dateFilter) {
+              return true;
+            }
+            
+            // Show if task has a visibility range that includes today
+            if (task.visibleFromDate) {
+              const visibleFrom = new Date(task.visibleFromDate);
+              visibleFrom.setHours(0, 0, 0, 0);
+              return today >= visibleFrom && today <= taskDate;
+            }
+            
+            return false;
           }
           
           // For other dates, only show tasks due on that exact date
@@ -332,7 +343,20 @@ const Tasks: React.FC = () => {
       });
     }
 
-    return filtered;
+    // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
+    const taskIds = new Set<number>();
+    const uniqueFiltered = filtered.filter(task => {
+      if (taskIds.has(task.id)) {
+        console.warn(`Duplicate task detected and removed: ${task.id} - ${task.title}`);
+        return false;
+      }
+      taskIds.add(task.id);
+      return true;
+    });
+    
+    console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
+    
+    return uniqueFiltered;
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.code, isViewingAllLocations]);
 
   // Clear all filters function

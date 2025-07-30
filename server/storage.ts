@@ -1550,7 +1550,7 @@ export class MemStorage implements IStorage {
       this.recurringTasks.clear();
       this.growingSystems.clear();
       this.trayMovements.clear();
-      this.crops.clear();
+      // this.crops.clear(); // Disabled until Crop type is defined
       this.courseAssignments.clear();
       this.notifications.clear();
       
@@ -1564,7 +1564,7 @@ export class MemStorage implements IStorage {
       this.currentRecurringTaskId = 1;
       this.currentGrowingSystemId = 1;
       this.currentTrayMovementId = 1;
-      this.currentCropId = 1;
+      // this.currentCropId = 1; // Disabled until Crop type is defined
       this.currentAssignmentId = 1;
       this.currentNotificationId = 1;
       

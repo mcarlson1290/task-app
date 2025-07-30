@@ -134,6 +134,25 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
+- **July 30, 2025**: Fixed ghost duplicate tasks in Today filter and date display issues
+  - **Fixed Ghost Duplicate Tasks**: Resolved critical issue where "Today" filter was showing duplicate tasks
+    - Problem was in filter logic that showed tasks if they matched date OR were overdue, causing same task to appear twice
+    - Enhanced filtering to use proper visibility range logic instead of OR conditions
+    - Added comprehensive duplicate prevention with Set-based deduplication by task ID
+    - Tasks now filter cleanly without phantom duplicates that disappear when clearing filters
+  - **Enhanced Date Display**: Always show actual dates alongside relative timing for better user clarity
+    - Fixed "Due Tomorrow" to show "Due in 1 day (Jul 31)" with actual date included
+    - Enhanced overdue display to show "Overdue by 2 days (Jul 28)" with specific dates
+    - Improved today's tasks to show "Due today (Jul 30)" with current date
+    - Fixed timezone-safe date calculations using proper midnight comparisons
+  - **Fixed Reset Data Functionality**: Resolved server error preventing data clearing operations
+    - Fixed TypeError in clearAllData() method by commenting out undefined crops reference
+    - Reset system now works correctly for Corporate users to clean test data
+    - All TypeScript compilation issues resolved for proper date generation logic
+  - **Verified Date Calculation Fixes**: All recurring task dates now use noon UTC instead of midnight UTC
+    - Successfully converted all stored timestamps from T00:00:00.000Z to T12:00:00.000Z
+    - Monthly tasks due July 31st now display correctly without day-shifting issues
+    - Bi-weekly and monthly recurring task visibility periods working accurately
 - **July 30, 2025**: Fixed the ACTUAL recurring task system - Automated task instance generation now working for ALL recurring tasks
   - **Recurring Task Generation System Fix**: Implemented comprehensive automatic task instance generation for all recurring tasks
     - **Universal System**: Works for ANY recurring task created through the UI, not just hardcoded test tasks
