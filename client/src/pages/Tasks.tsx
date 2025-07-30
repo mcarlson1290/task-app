@@ -259,10 +259,35 @@ const Tasks: React.FC = () => {
       const isToday = filterDate.getTime() === today.getTime();
       
       filtered = filtered.filter(task => {
-        // For recurring tasks with visibility ranges
-        if (task.isRecurring && task.visibleFromDate && task.dueDate) {
-          const visibleFrom = new Date(task.visibleFromDate);
+        // For recurring tasks with monthly/bi-weekly frequency - use visibility ranges
+        if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
+          let visibleFrom: Date;
+          
+          // If visibleFromDate exists, use it; otherwise calculate based on frequency
+          if (task.visibleFromDate) {
+            visibleFrom = new Date(task.visibleFromDate);
+          } else {
+            // Calculate visibility based on task patterns for monthly/bi-weekly
+            if (task.title?.includes('Monthly')) {
+              // Monthly tasks visible from 1st of the month
+              visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
+            } else if (task.title?.includes('Bi-Weekly')) {
+              // Bi-weekly tasks - check if this is first or second half
+              const dayOfMonth = dueDate.getDate();
+              if (dayOfMonth <= 14) {
+                // First half: visible from 1st
+                visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
+              } else {
+                // Second half: visible from 15th
+                visibleFrom = new Date(dueDate.getFullYear(), dueDate.getMonth(), 15);
+              }
+            } else {
+              // Default: visible on due date only
+              visibleFrom = new Date(dueDate);
+            }
+          }
+          
           visibleFrom.setHours(0, 0, 0, 0);
           dueDate.setHours(23, 59, 59, 999);
           
