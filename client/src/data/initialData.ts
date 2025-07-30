@@ -4,8 +4,28 @@ import { ProductionTray } from '../services/trayService';
 export const initializeProductionData = (): void => {
   const existingTrays = localStorage.getItem('productionTrays');
   
-  // Only initialize if no data exists
-  if (!existingTrays || JSON.parse(existingTrays).length === 0) {
+  // Check if we have fake test data and replace it with authentic data
+  let shouldInitialize = false;
+  
+  if (!existingTrays) {
+    shouldInitialize = true;
+    console.log('No production data found, initializing with authentic data');
+  } else {
+    try {
+      const trays = JSON.parse(existingTrays);
+      // Check for fake test data (IDs like TRAY-001, TRAY-002)
+      const hasFakeData = trays.some((tray: any) => tray.id && tray.id.startsWith('TRAY-'));
+      if (hasFakeData) {
+        shouldInitialize = true;
+        console.log('Found fake test data, replacing with authentic production data');
+      }
+    } catch (error) {
+      shouldInitialize = true;
+      console.warn('Error parsing existing tray data, reinitializing with authentic data');
+    }
+  }
+  
+  if (shouldInitialize) {
     const initialTrays: ProductionTray[] = [
       {
         id: 'K072924-ROM-A1',

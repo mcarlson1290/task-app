@@ -47,9 +47,38 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
   const [splitCount, setSplitCount] = useState(value?.count || step.config?.defaultSplits || 3);
 
   useEffect(() => {
+    console.log('=== TRAY SPLIT DATA CHECK ===');
+    console.log('Production Data trays (raw):', localStorage.getItem('productionTrays'));
+    
     // Load active trays from authentic production data
-    const trays = TrayService.getActiveTrays();
-    setActiveTrays(trays);
+    const allTrays = TrayService.getAllTrays();
+    console.log('All production trays:', allTrays);
+    
+    const activeTrays = TrayService.getActiveTrays();
+    console.log('Active trays for splitting:', activeTrays);
+    
+    if (activeTrays.length === 0) {
+      console.warn('No active trays found! Make sure production data is initialized or create trays through seeding tasks.');
+    } else {
+      console.log('✅ SUCCESS: Found authentic production trays with proper IDs!');
+    }
+    
+    setActiveTrays(activeTrays);
+    console.log('=== END TRAY SPLIT DATA CHECK ===');
+    
+    // Listen for production data updates
+    const handleStorageChange = () => {
+      const updatedTrays = TrayService.getActiveTrays();
+      setActiveTrays(updatedTrays);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('trayUpdated', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('trayUpdated', handleStorageChange);
+    };
   }, []);
 
   const handleTraySelect = (trayId: string) => {
