@@ -343,60 +343,7 @@ const ProductionDashboard: React.FC<{
         </Card>
       </div>
 
-      {/* Recent Production Trays Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Production Trays</CardTitle>
-          <p className="text-sm text-gray-600">
-            {trays.length === 0 
-              ? "No trays found. Trays are created automatically when seeding tasks are completed." 
-              : `Showing ${Math.min(trays.length, 10)} of ${trays.length} trays`
-            }
-          </p>
-        </CardHeader>
-        <CardContent>
-          {trays.length === 0 ? (
-            <div className="text-center py-8">
-              <Sprout className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">No production trays yet</p>
-              <p className="text-sm text-gray-500">
-                Complete seeding tasks to automatically create production trays
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Tray ID</th>
-                    <th className="text-left py-2">Crop</th>
-                    <th className="text-left py-2">Date Planted</th>
-                    <th className="text-left py-2">Location</th>
-                    <th className="text-left py-2">Status</th>
-                    <th className="text-left py-2">Days Growing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trays.slice(0, 10).map((tray) => {
-                    const plantedDate = new Date(tray.datePlanted || tray.createdAt);
-                    const daysGrowing = Math.floor((Date.now() - plantedDate.getTime()) / (1000 * 60 * 60 * 24));
-                    return (
-                      <tr key={tray.id} className="border-b">
-                        <td className="py-2 font-mono text-sm">{tray.id}</td>
-                        <td className="py-2">{tray.cropName || tray.cropType}</td>
-                        <td className="py-2">{plantedDate.toLocaleDateString()}</td>
-                        <td className="py-2">{tray.location || 'Not assigned'}</td>
-                        <td className="py-2">{getStatusBadge(tray.status)}</td>
-                        <td className="py-2">{daysGrowing} days</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
 
     </div>
   );
