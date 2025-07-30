@@ -1,0 +1,207 @@
+# Replit Instructions: Start Backend Server and Fix 503 Error
+
+**IMPORTANT: The app needs a backend server for multi-user sync. We need to find and start it.**
+
+## Step 1: Find the Backend Code
+
+Look for these folders in your Replit project:
+```
+/server
+/backend
+/api
+/src/server
+/src/api
+```
+
+Or look for files like:
+```
+server.js
+server.ts
+app.js
+index.js (in a server folder)
+```
+
+## Step 2: Check Replit Configuration
+
+Find and examine these files:
+
+### `.replit` file
+Should contain something like:
+```toml
+run = "npm run dev"
+# or
+run = ["npm", "run", "start"]
+# or might have both frontend and backend commands
+```
+
+### `package.json` scripts
+Look for scripts that start both frontend and backend:
+```json
+{
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server.js",
+    "client": "vite",
+    "start": "node server.js"
+  }
+}
+```
+
+## Step 3: Start the Backend Server
+
+### Option A: If backend exists but isn't running
+```bash
+# In the Replit Shell, try:
+npm run dev
+# or
+npm run server
+# or
+npm start
+```
+
+### Option B: Check if it's a separate process
+The backend might need to run in a separate terminal:
+1. Open a new Shell tab in Replit
+2. Navigate to backend folder: `cd server` (or wherever it is)
+3. Run: `npm install` then `npm start`
+
+## Step 4: Check Server Configuration
+
+Look for environment variables or config files:
+
+### `.env` or `.env.example`
+```
+PORT=3001
+DATABASE_URL=...
+API_URL=http://localhost:3001
+```
+
+### `src/config.js` or similar
+```javascript
+const config = {
+  apiUrl: process.env.API_URL || 'http://localhost:3001'
+};
+```
+
+## Step 5: Fix API Endpoint Configuration
+
+Find where the frontend makes API calls (likely in `src/lib/queryClient.ts`):
+
+```javascript
+// Find code like:
+const API_BASE_URL = 'https://your-replit-url.repl.co/api';
+
+// Should be:
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-replit-url.repl.co/api'
+  : 'http://localhost:3001/api';
+```
+
+## Step 6: If No Backend Exists
+
+If you can't find backend code, check if it's using a service like:
+- Replit Database
+- PostgreSQL
+- Firebase
+- Supabase
+
+Look for configuration in:
+```javascript
+// Firebase example
+import { initializeApp } from 'firebase/app';
+
+// Supabase example  
+import { createClient } from '@supabase/supabase-js';
+
+// Replit DB example
+import Database from '@replit/database';
+```
+
+## Step 7: Temporary Fix for Testing
+
+If you need to test NOW while figuring out the backend:
+
+```javascript
+// In src/pages/RecurringTasks.tsx
+// Add this at the top of the file
+const BACKEND_AVAILABLE = false; // Set to true when backend is running
+
+// Temporary mock storage (ONLY FOR TESTING)
+const mockStorage = {
+  recurringTasks: []
+};
+
+// Modify the save function
+const saveRecurringTask = async (taskData) => {
+  if (!BACKEND_AVAILABLE) {
+    console.warn('⚠️ BACKEND NOT RUNNING - Using temporary storage that will reset on reload!');
+    
+    // Temporary storage for testing
+    const newTask = {
+      ...taskData,
+      id: `temp-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    mockStorage.recurringTasks.push(newTask);
+    
+    // Show warning to user
+    alert('⚠️ Backend not connected - data is temporary!');
+    
+    return { success: true, data: newTask };
+  }
+  
+  // Normal API call when backend is available
+  return apiRequest('/api/recurring-tasks', {
+    method: 'POST',
+    body: JSON.stringify(taskData)
+  });
+};
+```
+
+## Step 8: Check Replit Logs
+
+1. Look at the Console output for error messages
+2. Check the "Logs" tab in Replit
+3. Look for messages like:
+   - "Server running on port 3001"
+   - "Database connection failed"
+   - "Cannot find module"
+
+## Step 9: Common Fixes
+
+### Port conflicts
+```javascript
+// Make sure frontend and backend use different ports
+// Frontend: usually 3000, 5173 (Vite), or 8080
+// Backend: usually 3001, 5000, or 8000
+```
+
+### CORS issues
+Backend needs to allow frontend origin:
+```javascript
+// In backend server.js
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://your-replit-url.repl.co']
+}));
+```
+
+### Missing dependencies
+```bash
+# Install all dependencies
+npm install
+
+# If separate backend folder
+cd server && npm install
+```
+
+## Expected Result:
+- Backend server starts and shows "Server running on port XXXX"
+- No more 503 errors
+- Recurring tasks save properly
+- Data syncs across all users/devices
+
+## If Still Stuck:
+1. Share the project structure (what folders/files exist)
+2. Share the `.replit` file contents
+3. Share any error messages from the console
+4. Check if there's documentation in README.md about running the project
