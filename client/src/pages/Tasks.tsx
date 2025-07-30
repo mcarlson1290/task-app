@@ -608,6 +608,25 @@ const Tasks: React.FC = () => {
     }
   };
 
+  // Clean up duplicate tasks
+  const cleanupDuplicates = async () => {
+    try {
+      const response = await apiRequest('POST', '/api/cleanup-duplicate-tasks');
+      toast({
+        title: "Cleanup Complete",
+        description: `Removed ${response.duplicatesRemoved} duplicate tasks. Total tasks: ${response.finalTaskCount}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      toast({
+        title: "Cleanup Error",
+        description: "Failed to cleanup duplicate tasks",
+      });
+    }
+  };
+
   // Task Summary Component - now responsive to filters
   const TaskSummary = ({ 
     tasks, 
@@ -848,6 +867,24 @@ const Tasks: React.FC = () => {
           >
             <Plus size={16} /> New Task
           </button>
+
+          {/* Admin Buttons (Temporary) */}
+          {auth.user && (auth.user.role === 'manager' || auth.user.role === 'corporate') && (
+            <>
+              <button 
+                onClick={cleanupDuplicates}
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
+              >
+                🧹 Clean Duplicates
+              </button>
+              <button 
+                onClick={debugRecurringTasks}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm"
+              >
+                🔄 Debug Recurring
+              </button>
+            </>
+          )}
         </div>
       </div>
 

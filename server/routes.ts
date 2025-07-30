@@ -772,6 +772,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clean up duplicate task instances endpoint
+  app.post("/api/cleanup-duplicate-tasks", async (req, res) => {
+    try {
+      console.log('=== CLEANING UP DUPLICATE TASKS ===');
+      
+      const allTasks = await storage.getTasks();
+      const recurringTasks = await storage.getRecurringTasks();
+      const recurringInstances = allTasks.filter(task => task.isRecurring && task.recurringTaskId);
+      
+      console.log(`Found ${recurringInstances.length} recurring task instances`);
+      
+      // Group by recurring task ID and due date to find duplicates
+      const taskGroups = new Map<string, Task[]>();
+      
+      recurringInstances.forEach(task => {
+        if (task.recurringTaskId && task.dueDate) {
+          const dueDateStr = new Date(task.dueDate).toDateString();
+          const key = `${task.recurringTaskId}-${dueDateStr}`;
+          
+          if (!taskGroups.has(key)) {
+            taskGroups.set(key, []);
+          }
+          taskGroups.get(key)!.push(task);
+        }
+      });
+      
+      let duplicatesFound = 0;
+      let duplicatesRemoved = 0;
+      
+      // Find and remove duplicates, keeping the most recent one
+      for (const [key, tasks] of taskGroups.entries()) {
+        if (tasks.length > 1) {
+          duplicatesFound += tasks.length - 1;
+          console.log(`Found ${tasks.length} duplicates for ${key}`);
+          
+          // Sort by creation date, keep the most recent
+          tasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          const keepTask = tasks[0];
+          const removeTasks = tasks.slice(1);
+          
+          console.log(`Keeping task ${keepTask.id} (${keepTask.title}), removing ${removeTasks.length} duplicates`);
+          
+          // Remove duplicate tasks
+          for (const task of removeTasks) {
+            await storage.deleteTask(task.id);
+            duplicatesRemoved++;
+          }
+        }
+      }
+      
+      console.log(`Cleanup complete: Found ${duplicatesFound} duplicates, removed ${duplicatesRemoved}`);
+      
+      // Get updated counts
+      const finalTasks = await storage.getTasks();
+      const finalRecurringInstances = finalTasks.filter(task => task.isRecurring);
+      
+      res.json({ 
+        message: "Duplicate task cleanup complete",
+        duplicatesFound,
+        duplicatesRemoved,
+        finalTaskCount: finalTasks.length,
+        finalRecurringInstances: finalRecurringInstances.length,
+        taskGroups: Array.from(taskGroups.entries()).map(([key, tasks]) => ({
+          key,
+          count: tasks.length,
+          title: tasks[0]?.title || 'Unknown'
+        }))
+      });
+    } catch (error) {
+      console.error('Error cleaning up duplicates:', error);
+      res.status(500).json({ error: 'Failed to cleanup duplicates' });
+    }
+  });
+
   // Clear all data endpoint
   app.post("/api/clear-data", async (req, res) => {
     try {
