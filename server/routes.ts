@@ -703,6 +703,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Clear all data endpoint - Complete reset
   app.post("/api/clear-data", async (req, res) => {
     try {

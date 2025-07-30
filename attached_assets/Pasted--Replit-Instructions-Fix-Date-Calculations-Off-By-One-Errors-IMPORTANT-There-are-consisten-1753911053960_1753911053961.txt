@@ -1,0 +1,239 @@
+# Replit Instructions: Fix Date Calculations - Off-By-One Errors
+
+**IMPORTANT: There are consistent off-by-one errors in the date calculations. Let's fix them properly.**
+
+## The Problems:
+1. Monthly tasks not visible on 1st
+2. Bi-weekly due on 13th instead of 14th  
+3. Bi-weekly second half visible from 16th instead of 15th
+
+## Root Cause: JavaScript Date Issues
+
+JavaScript months are 0-indexed (0-11) and dates can shift due to timezone handling. Here's how to fix it:
+
+## Step 1: Fix the Date Creation Logic
+
+Find where dates are being created and replace with explicit date setting:
+
+```javascript
+// BAD - Can cause off-by-one errors
+const date = new Date(year, month, 14); // Might become 13th due to timezone
+
+// GOOD - Explicitly set the date components
+const createDate = (year, month, day) => {
+  const date = new Date(year, month, day, 12, 0, 0); // Set to noon to avoid timezone shifts
+  return date;
+};
+
+// For bi-weekly tasks
+const generateBiWeeklyTasks = (recurringTask) => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  
+  // First half: 1st to 14th
+  if (today.getDate() === 1) {
+    const task = {
+      ...recurringTask,
+      visibleFromDate: createDate(year, month, 1),  // Visible from 1st
+      dueDate: createDate(year, month, 14),         // Due on 14th (not 13th!)
+      period: 'first-half'
+    };
+  }
+  
+  // Second half: 15th to last day
+  if (today.getDate() === 15) {
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const task = {
+      ...recurringTask,
+      visibleFromDate: createDate(year, month, 15),  // Visible from 15th (not 16th!)
+      dueDate: createDate(year, month, lastDay),      // Due on last day
+      period: 'second-half'
+    };
+  }
+};
+```
+
+## Step 2: Fix Monthly Task Visibility
+
+The monthly task should be VISIBLE on the 1st, not just generated:
+
+```javascript
+// Fix monthly task generation
+const generateMonthlyTask = (recurringTask) => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  
+  // Generate on 1st OR if we're past the 1st and task doesn't exist
+  if (today.getDate() >= 1) {
+    const taskId = `${recurringTask.id}-${year}-${month}-monthly`;
+    const existingTask = getTaskById(taskId);
+    
+    if (!existingTask) {
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      
+      const task = {
+        ...recurringTask,
+        id: taskId,
+        visibleFromDate: createDate(year, month, 1),   // ALWAYS visible from 1st
+        dueDate: createDate(year, month, lastDay),      // Due on last day
+        createdDate: today,                             // Created today
+        status: 'pending'
+      };
+      
+      saveTask(task);
+      console.log(`Created monthly task: visible from ${month+1}/1, due ${month+1}/${lastDay}`);
+    }
+  }
+};
+```
+
+## Step 3: Fix Task Filtering for Display
+
+The filtering logic might be hiding tasks that should be visible:
+
+```javascript
+const isTaskVisibleOnDate = (task, viewDate) => {
+  // Ensure we're comparing dates without time
+  const viewDay = new Date(viewDate);
+  viewDay.setHours(0, 0, 0, 0);
+  
+  // Parse task dates
+  const visibleFrom = new Date(task.visibleFromDate);
+  visibleFrom.setHours(0, 0, 0, 0);
+  
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(23, 59, 59, 999); // Include entire due date day
+  
+  // Task is visible if viewDay is between visible and due dates (inclusive)
+  const isVisible = viewDay >= visibleFrom && viewDay <= dueDate;
+  
+  // Debug log for monthly/bi-weekly tasks
+  if (task.frequency === 'monthly' || task.frequency === 'bi-weekly') {
+    console.log(`Task: ${task.title}`);
+    console.log(`  View date: ${viewDay.toDateString()}`);
+    console.log(`  Visible from: ${visibleFrom.toDateString()}`);
+    console.log(`  Due date: ${dueDate.toDateString()}`);
+    console.log(`  Is visible: ${isVisible}`);
+  }
+  
+  return isVisible;
+};
+```
+
+## Step 4: Force Regenerate Tasks with Correct Dates
+
+Add a debug function to regenerate tasks with correct dates:
+
+```javascript
+const fixExistingTaskDates = () => {
+  console.log('Fixing task dates...');
+  
+  const tasks = getAllTasks();
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  
+  tasks.forEach(task => {
+    let updated = false;
+    
+    // Fix bi-weekly first half
+    if (task.frequency === 'bi-weekly' && task.period === 'first-half') {
+      // Should be due on 14th, not 13th
+      const correctDueDate = createDate(year, month, 14);
+      if (new Date(task.dueDate).getDate() !== 14) {
+        task.dueDate = correctDueDate;
+        task.visibleFromDate = createDate(year, month, 1);
+        updated = true;
+        console.log(`Fixed bi-weekly first half: now due on 14th`);
+      }
+    }
+    
+    // Fix bi-weekly second half
+    if (task.frequency === 'bi-weekly' && task.period === 'second-half') {
+      // Should be visible from 15th, not 16th
+      const visibleDate = new Date(task.visibleFromDate);
+      if (visibleDate.getDate() !== 15) {
+        task.visibleFromDate = createDate(year, month, 15);
+        updated = true;
+        console.log(`Fixed bi-weekly second half: now visible from 15th`);
+      }
+    }
+    
+    // Fix monthly tasks
+    if (task.frequency === 'monthly') {
+      // Should be visible from 1st
+      const visibleDate = new Date(task.visibleFromDate);
+      if (visibleDate.getDate() !== 1) {
+        task.visibleFromDate = createDate(year, month, 1);
+        updated = true;
+        console.log(`Fixed monthly task: now visible from 1st`);
+      }
+    }
+    
+    if (updated) {
+      updateTask(task);
+    }
+  });
+  
+  console.log('Date fixes complete!');
+};
+
+// Add a button to run this
+<button onClick={fixExistingTaskDates}>
+  Fix Task Dates
+</button>
+```
+
+## Step 5: Ensure Consistent Date Handling
+
+Add these utility functions for consistent date handling:
+
+```javascript
+// Utility functions for date handling
+const DateUtils = {
+  // Create a date at noon to avoid timezone issues
+  createDate(year, month, day) {
+    return new Date(year, month, day, 12, 0, 0);
+  },
+  
+  // Get start of day
+  startOfDay(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  },
+  
+  // Get end of day
+  endOfDay(date) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  },
+  
+  // Get last day of month
+  getLastDayOfMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  },
+  
+  // Check if date is between two dates (inclusive)
+  isBetween(date, start, end) {
+    const d = this.startOfDay(date);
+    const s = this.startOfDay(start);
+    const e = this.endOfDay(end);
+    return d >= s && d <= e;
+  }
+};
+```
+
+## Expected Results:
+- Monthly tasks: Visible on 1st, due on last day (30th/31st)
+- Bi-weekly first: Visible 1st-14th, due on 14th (not 13th)
+- Bi-weekly second: Visible 15th-last day, due on last day
+
+## Testing:
+1. Set date to 1st - should see monthly and bi-weekly tasks
+2. Set date to 14th - bi-weekly should show "due today"
+3. Set date to 15th - should see second bi-weekly task
+4. Run the "Fix Task Dates" function to correct existing tasks

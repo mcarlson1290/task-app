@@ -1217,9 +1217,9 @@ export class MemStorage implements IStorage {
           // Monthly: one task per month, visible from 1st, due on last day
           const taskId = `${recurringTask.id}-${year}-${month}`;
           if (!generatedTaskIds.has(taskId)) {
-            const visibleDate = new Date(year, month, 1);
-            // FIXED: Create due date using the actual last day of the month
-            const dueDate = new Date(year, month + 1, 0); // This gives us the last day of current month
+            // FIXED: Create dates at noon to avoid timezone shifts
+            const visibleDate = new Date(year, month, 1, 12, 0, 0); // Visible from 1st at noon
+            const dueDate = new Date(year, month + 1, 0, 12, 0, 0); // Last day of month at noon
             
             console.log(`Generating monthly task for ${year}-${month+1}: visible ${visibleDate.toLocaleDateString()}, due ${dueDate.toLocaleDateString()}`);
             
@@ -1237,8 +1237,11 @@ export class MemStorage implements IStorage {
           // First half: 1st-14th
           const firstHalfId = `${recurringTask.id}-${year}-${month}-1`;
           if (!generatedTaskIds.has(firstHalfId)) {
-            const visibleDate1 = new Date(year, month, 1);  
-            const dueDate1 = new Date(year, month, 14);  // Due on the 14th of the month
+            // FIXED: Create dates at noon to avoid timezone shifts
+            const visibleDate1 = new Date(year, month, 1, 12, 0, 0);  // Visible from 1st at noon
+            const dueDate1 = new Date(year, month, 14, 12, 0, 0);  // Due on the 14th at noon
+            
+            console.log(`Generating bi-weekly first half for ${year}-${month+1}: visible ${visibleDate1.toLocaleDateString()}, due ${dueDate1.toLocaleDateString()}`);
             
             if (today <= dueDate1) {
               const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);
@@ -1251,9 +1254,11 @@ export class MemStorage implements IStorage {
           // Second half: 15th-last day
           const secondHalfId = `${recurringTask.id}-${year}-${month}-2`;
           if (!generatedTaskIds.has(secondHalfId)) {
-            const visibleDate2 = new Date(year, month, 15);
-            // FIXED: Use proper last day calculation
-            const dueDate2 = new Date(year, month + 1, 0); // Last day of current month
+            // FIXED: Create dates at noon to avoid timezone shifts
+            const visibleDate2 = new Date(year, month, 15, 12, 0, 0); // Visible from 15th at noon
+            const dueDate2 = new Date(year, month + 1, 0, 12, 0, 0); // Last day of current month at noon
+            
+            console.log(`Generating bi-weekly second half for ${year}-${month+1}: visible ${visibleDate2.toLocaleDateString()}, due ${dueDate2.toLocaleDateString()}`);
             
             if (today <= dueDate2) {
               const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
