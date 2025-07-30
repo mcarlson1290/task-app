@@ -2443,5 +2443,183 @@
     "isRecurring": true,
     "recurringTaskId": 1,
     "createdAt": "2025-07-30T17:21:33.272Z"
+  },
+  {
+    "id": 59,
+    "title": "Clean the Farm Windows",
+    "description": "Clean the windows",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1753896269899",
+        "text": "Check for smudges",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 2,
+    "createdAt": "2025-07-30T17:32:01.181Z"
+  },
+  {
+    "id": 60,
+    "title": "Monthly Safety Inspection",
+    "description": "Comprehensive safety inspection of all farm equipment and systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "safety-1",
+        "text": "Inspect all electrical connections",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Check all electrical panels and connections for wear, corrosion, or damage"
+        }
+      },
+      {
+        "id": "safety-2",
+        "text": "Emergency exits clear and accessible",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 3,
+    "createdAt": "2025-07-30T17:40:19.466Z"
+  },
+  {
+    "id": 61,
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "equip-1",
+        "text": "Check pump systems",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Inspect water pumps for proper operation and no leaks"
+        }
+      },
+      {
+        "id": "equip-2",
+        "text": "Record pump pressure (PSI)",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "PSI",
+          "default": 30
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-14T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 4,
+    "createdAt": "2025-07-30T17:40:28.578Z"
+  },
+  {
+    "id": 62,
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "equip-1",
+        "text": "Check pump systems",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "Inspect water pumps for proper operation and no leaks"
+        }
+      },
+      {
+        "id": "equip-2",
+        "text": "Record pump pressure (PSI)",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "PSI",
+          "default": 30
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-31T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 4,
+    "createdAt": "2025-07-30T17:40:28.578Z"
   }
 ]

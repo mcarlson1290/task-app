@@ -121,5 +121,92 @@
     "location": "K",
     "id": 2,
     "createdAt": "2025-07-30T17:24:39.682Z"
+  },
+  {
+    "title": "Monthly Safety Inspection",
+    "description": "Comprehensive safety inspection of all farm equipment and systems",
+    "type": "equipment-maintenance",
+    "frequency": "monthly",
+    "daysOfWeek": [],
+    "isActive": true,
+    "location": "K",
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "safety-1",
+          "type": "instruction",
+          "label": "Inspect all electrical connections",
+          "required": true,
+          "config": {
+            "text": "Check all electrical panels and connections for wear, corrosion, or damage"
+          }
+        },
+        {
+          "id": "safety-2",
+          "type": "checkbox",
+          "label": "Emergency exits clear and accessible",
+          "required": true,
+          "config": {}
+        }
+      ]
+    },
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 0,
+      "cropType": "",
+      "flow": {
+        "enabled": false,
+        "stages": []
+      }
+    },
+    "id": 3,
+    "createdAt": "2025-07-30T17:40:19.466Z"
+  },
+  {
+    "title": "Bi-Weekly Equipment Check",
+    "description": "Check and maintain critical equipment systems",
+    "type": "equipment-maintenance",
+    "frequency": "bi-weekly",
+    "daysOfWeek": [],
+    "isActive": true,
+    "location": "K",
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "equip-1",
+          "type": "instruction",
+          "label": "Check pump systems",
+          "required": true,
+          "config": {
+            "text": "Inspect water pumps for proper operation and no leaks"
+          }
+        },
+        {
+          "id": "equip-2",
+          "type": "number-input",
+          "label": "Record pump pressure (PSI)",
+          "required": true,
+          "config": {
+            "min": 0,
+            "max": 100,
+            "unit": "PSI",
+            "default": 30
+          }
+        }
+      ]
+    },
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 0,
+      "cropType": "",
+      "flow": {
+        "enabled": false,
+        "stages": []
+      }
+    },
+    "id": 4,
+    "createdAt": "2025-07-30T17:40:28.578Z"
   }
 ]

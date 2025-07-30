@@ -1125,68 +1125,109 @@ export class MemStorage implements IStorage {
     return true;
   }
 
-  // Generate task instances from recurring task pattern
+  // Generate task instances from recurring task pattern with proper visibility ranges
   private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    // Generate instances for next 30 days
-    const endGeneration = new Date();
-    endGeneration.setDate(endGeneration.getDate() + 30);
-    
-    let currentDate = new Date(today);
     const instances: Task[] = [];
     
-    while (currentDate <= endGeneration) {
-      let shouldCreate = false;
+    // For monthly/bi-weekly, generate tasks for current and next 2 months
+    if (recurringTask.frequency === 'monthly' || recurringTask.frequency === 'bi-weekly') {
+      const generatedTaskIds = new Set<string>(); // Track unique tasks to avoid duplicates
       
-      switch (recurringTask.frequency) {
-        case 'daily':
-          // For daily tasks, check if specific days are selected, otherwise create every day
-          if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+      for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+        const checkMonth = new Date(today);
+        checkMonth.setMonth(today.getMonth() + monthOffset);
+        
+        const year = checkMonth.getFullYear();
+        const month = checkMonth.getMonth();
+        const lastDay = this.getLastDayOfMonth(checkMonth);
+        
+        if (recurringTask.frequency === 'monthly') {
+          // Monthly: one task per month, visible from 1st, due on last day
+          const taskId = `${recurringTask.id}-${year}-${month}`;
+          if (!generatedTaskIds.has(taskId)) {
+            const visibleDate = new Date(year, month, 1);
+            const dueDate = new Date(year, month, lastDay);
+            
+            // Only create if not already past due date
+            if (today <= dueDate) {
+              const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
+              instances.push(instance);
+              generatedTaskIds.add(taskId);
+            }
+          }
+        } else if (recurringTask.frequency === 'bi-weekly') {
+          // Bi-weekly: two tasks per month
+          
+          // First half: 1st-14th
+          const firstHalfId = `${recurringTask.id}-${year}-${month}-1`;
+          if (!generatedTaskIds.has(firstHalfId)) {
+            const visibleDate1 = new Date(year, month, 1);
+            const dueDate1 = new Date(year, month, 14);
+            
+            if (today <= dueDate1) {
+              const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);
+              instances.push(instance1);
+              generatedTaskIds.add(firstHalfId);
+            }
+          }
+          
+          // Second half: 15th-last day
+          const secondHalfId = `${recurringTask.id}-${year}-${month}-2`;
+          if (!generatedTaskIds.has(secondHalfId)) {
+            const visibleDate2 = new Date(year, month, 15);
+            const dueDate2 = new Date(year, month, lastDay);
+            
+            if (today <= dueDate2) {
+              const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
+              instances.push(instance2);
+              generatedTaskIds.add(secondHalfId);
+            }
+          }
+        }
+      }
+    } else {
+      // Daily/weekly tasks - generate for next 30 days
+      const endGeneration = new Date();
+      endGeneration.setDate(endGeneration.getDate() + 30);
+      
+      let currentDate = new Date(today);
+      
+      while (currentDate <= endGeneration) {
+        let shouldCreate = false;
+        
+        switch (recurringTask.frequency) {
+          case 'daily':
+            // For daily tasks, check if specific days are selected
+            if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+              const dayOfWeek = currentDate.getDay();
+              const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+              const currentDayName = dayNames[dayOfWeek];
+              shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
+            } else {
+              shouldCreate = true; // No specific days selected, create every day
+            }
+            break;
+            
+          case 'weekly':
+            // Check if current day matches selected days
             const dayOfWeek = currentDate.getDay();
             const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const currentDayName = dayNames[dayOfWeek];
-            shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
-          } else {
-            shouldCreate = true; // No specific days selected, create every day
-          }
-          break;
-          
-        case 'weekly':
-          // Check if current day matches selected days
-          const dayOfWeek = currentDate.getDay();
-          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const currentDayName = dayNames[dayOfWeek];
-          const selectedDays = recurringTask.daysOfWeek || [];
-          shouldCreate = selectedDays.includes(currentDayName);
-          break;
-          
-        case 'bi-weekly':
-          // Bi-weekly: Show on 1st (due 14th) and 15th (due last day)
-          const dayOfMonth = currentDate.getDate();
-          const lastDayOfMonth = this.getLastDayOfMonth(currentDate);
-          
-          // First half: visible on 1st, due on 14th
-          // Second half: visible on 15th, due on last day
-          shouldCreate = dayOfMonth === 1 || dayOfMonth === 15;
-          break;
-          
-        case 'monthly':
-          // Monthly: Show on 1st, due on last day of month
-          const monthDay = currentDate.getDate();
-          shouldCreate = monthDay === 1;
-          break;
+            const selectedDays = recurringTask.daysOfWeek || [];
+            shouldCreate = selectedDays.includes(currentDayName);
+            break;
+        }
+        
+        if (shouldCreate && currentDate >= today) {
+          const instance = await this.createTaskInstanceWithDates(recurringTask, new Date(currentDate), new Date(currentDate));
+          instances.push(instance);
+        }
+        
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
       }
-      
-      if (shouldCreate && currentDate >= today) {
-        // Create task instance (pass currentDate as visible date)
-        const instance = await this.createTaskInstance(recurringTask, new Date(currentDate));
-        instances.push(instance);
-      }
-      
-      // Move to next day
-      currentDate.setDate(currentDate.getDate() + 1);
     }
     
     console.log(`Generated ${instances.length} task instances for recurring task: ${recurringTask.title}`);
@@ -1199,33 +1240,8 @@ export class MemStorage implements IStorage {
     return lastDay.getDate();
   }
 
-  // Create individual task instance
-  private async createTaskInstance(recurringTask: RecurringTask, visibleDate: Date): Promise<Task> {
-    // Calculate actual due date based on frequency
-    let actualDueDate = new Date(visibleDate);
-    
-    switch (recurringTask.frequency) {
-      case 'bi-weekly':
-        const dayOfMonth = visibleDate.getDate();
-        if (dayOfMonth === 1) {
-          // First half: due on 14th
-          actualDueDate.setDate(14);
-        } else if (dayOfMonth === 15) {
-          // Second half: due on last day of month
-          actualDueDate.setDate(this.getLastDayOfMonth(visibleDate));
-        }
-        break;
-        
-      case 'monthly':
-        // Due on last day of month
-        actualDueDate.setDate(this.getLastDayOfMonth(visibleDate));
-        break;
-        
-      default:
-        // For daily and weekly, due date is same as visible date
-        actualDueDate = visibleDate;
-        break;
-    }
+  // Create individual task instance with specific visible and due dates
+  private async createTaskInstanceWithDates(recurringTask: RecurringTask, visibleDate: Date, dueDate: Date): Promise<Task> {
     const newTask: Task = {
       id: this.currentTaskId++,
       title: recurringTask.title,
@@ -1252,7 +1268,7 @@ export class MemStorage implements IStorage {
         } : undefined
       })) || [],
       data: {},
-      dueDate: actualDueDate,
+      dueDate: dueDate,
       startedAt: null,
       completedAt: null,
       pausedAt: null,

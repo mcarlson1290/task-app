@@ -1,0 +1,265 @@
+# Replit Instructions: Fix Monthly/Bi-Weekly Task Visibility Range
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Issue: Tasks Only Visible on Generation Date
+Monthly and bi-weekly tasks need to be visible throughout their entire active period, not just on the day they're generated.
+
+## Solution: Generate Tasks with Proper Visibility Windows
+
+### 1. Update Task Generation to Include Visibility Range
+
+```javascript
+const getTaskInfoForDate = (recurringTask, checkDate) => {
+  const frequency = recurringTask.frequency;
+  
+  // For monthly/bi-weekly, check if checkDate falls within any task's visibility range
+  if (frequency === 'monthly' || frequency === 'bi-weekly') {
+    return getMonthlyBiWeeklyTaskForDate(recurringTask, checkDate, frequency);
+  }
+  
+  // Daily/weekly logic remains the same
+  return getDailyWeeklyTaskInfo(recurringTask, checkDate);
+};
+
+// Check if a date falls within a monthly/bi-weekly task's visibility range
+const getMonthlyBiWeeklyTaskForDate = (recurringTask, checkDate, frequency) => {
+  const year = checkDate.getFullYear();
+  const month = checkDate.getMonth();
+  const day = checkDate.getDate();
+  const lastDay = getLastDayOfMonth(checkDate);
+  
+  if (frequency === 'monthly') {
+    // Monthly: visible 1st through last day
+    if (day >= 1) {
+      const visibleDate = new Date(year, month, 1);
+      const dueDate = new Date(year, month, lastDay);
+      
+      // Only return if we haven't passed the due date
+      if (checkDate <= dueDate) {
+        return {
+          ...recurringTask,
+          id: `${recurringTask.id}-${year}-${month}`,
+          title: recurringTask.title,
+          visibleDate: visibleDate,
+          dueDate: dueDate,
+          status: 'pending',
+          recurringTaskId: recurringTask.id,
+          frequency: 'monthly'
+        };
+      }
+    }
+  }
+  
+  if (frequency === 'bi-weekly') {
+    // First half: visible 1st-14th
+    if (day >= 1 && day <= 14) {
+      const visibleDate = new Date(year, month, 1);
+      const dueDate = new Date(year, month, 14);
+      
+      return {
+        ...recurringTask,
+        id: `${recurringTask.id}-${year}-${month}-1`,
+        title: recurringTask.title,
+        visibleDate: visibleDate,
+        dueDate: dueDate,
+        status: 'pending',
+        recurringTaskId: recurringTask.id,
+        frequency: 'bi-weekly',
+        period: 'first-half'
+      };
+    }
+    
+    // Second half: visible 15th through last day
+    if (day >= 15) {
+      const visibleDate = new Date(year, month, 15);
+      const dueDate = new Date(year, month, lastDay);
+      
+      return {
+        ...recurringTask,
+        id: `${recurringTask.id}-${year}-${month}-2`,
+        title: recurringTask.title,
+        visibleDate: visibleDate,
+        dueDate: dueDate,
+        status: 'pending',
+        recurringTaskId: recurringTask.id,
+        frequency: 'bi-weekly',
+        period: 'second-half'
+      };
+    }
+  }
+  
+  return null;
+};
+```
+
+### 2. Update Task Filtering to Show All Visible Tasks
+
+```javascript
+// In the task manager, filter tasks based on current date
+const getVisibleTasks = (allTasks, currentDate = new Date()) => {
+  return allTasks.filter(task => {
+    // For tasks with visibleDate, check if current date is after visible date
+    if (task.visibleDate) {
+      const visibleDate = new Date(task.visibleDate);
+      return currentDate >= visibleDate;
+    }
+    
+    // Regular tasks are always visible
+    return true;
+  });
+};
+
+// When displaying tasks
+const TaskManager = () => {
+  const [allTasks, setAllTasks] = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Get tasks that should be visible on the current date
+  const visibleTasks = useMemo(() => {
+    return getVisibleTasks(allTasks, currentDate);
+  }, [allTasks, currentDate]);
+  
+  return (
+    <div className="task-manager">
+      {/* Date selector for testing */}
+      <div className="date-selector">
+        <label>Viewing tasks for:</label>
+        <input 
+          type="date" 
+          value={currentDate.toISOString().split('T')[0]}
+          onChange={(e) => setCurrentDate(new Date(e.target.value))}
+        />
+      </div>
+      
+      {/* Task list */}
+      <div className="task-list">
+        {visibleTasks.map(task => (
+          <TaskCard key={task.id} task={task} />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+### 3. Ensure Tasks Are Generated for Current Month on Load
+
+```javascript
+// When app loads or recurring tasks are updated
+const initializeRecurringTasks = () => {
+  const recurringTasks = getRecurringTasks();
+  const today = new Date();
+  const tasks = [];
+  
+  recurringTasks.forEach(recurringTask => {
+    // For monthly/bi-weekly, always check current month
+    if (recurringTask.frequency === 'monthly' || recurringTask.frequency === 'bi-weekly') {
+      // Check every day of current month to find applicable tasks
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const lastDay = getLastDayOfMonth(today);
+      
+      for (let day = 1; day <= lastDay; day++) {
+        const checkDate = new Date(year, month, day);
+        const taskInfo = getTaskInfoForDate(recurringTask, checkDate);
+        
+        if (taskInfo && !tasks.find(t => t.id === taskInfo.id)) {
+          tasks.push(taskInfo);
+        }
+      }
+    } else {
+      // Daily/weekly tasks - generate for next 7 days
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() + i);
+        
+        const taskInfo = getTaskInfoForDate(recurringTask, checkDate);
+        if (taskInfo) {
+          tasks.push(taskInfo);
+        }
+      }
+    }
+  });
+  
+  // Save generated tasks
+  saveTasks(tasks);
+};
+```
+
+### 4. Add Debug Information to Task Cards
+
+```javascript
+const TaskCard = ({ task }) => {
+  // Add debug info in development
+  const getDebugInfo = () => {
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <div className="debug-info">
+          <small>
+            Visible: {task.visibleDate ? new Date(task.visibleDate).toLocaleDateString() : 'Always'} | 
+            Due: {new Date(task.dueDate).toLocaleDateString()} |
+            ID: {task.id}
+          </small>
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  return (
+    <div className="task-card">
+      {/* Regular task content */}
+      {getDebugInfo()}
+    </div>
+  );
+};
+```
+
+### 5. Fix Task Generation Timing
+
+```javascript
+// Run task generation at key times
+useEffect(() => {
+  // Initial load
+  initializeRecurringTasks();
+  
+  // Check for new tasks at midnight
+  const checkNewTasks = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const msUntilMidnight = tomorrow - now;
+    
+    setTimeout(() => {
+      initializeRecurringTasks();
+      // Set up daily check
+      setInterval(initializeRecurringTasks, 24 * 60 * 60 * 1000);
+    }, msUntilMidnight);
+  };
+  
+  checkNewTasks();
+}, []);
+```
+
+## Testing Instructions:
+
+1. Create a monthly recurring task
+2. Set the date selector to the 1st of next month
+3. The task should appear with "Due in 30 days" (or appropriate number)
+4. Change date to the 15th - task should still be visible
+5. Change date to the last day - task should show "Due today"
+
+For bi-weekly tasks:
+1. Set date to 1st - should see first half task (due 14th)
+2. Set date to 14th - should still see first half task (due today)
+3. Set date to 15th - should see second half task (due last day)
+4. Set date to last day - should see second half task (due today)
+
+## Expected Result:
+- Monthly tasks visible from 1st through last day
+- Bi-weekly first half visible from 1st-14th
+- Bi-weekly second half visible from 15th-last day
+- Tasks show appropriate "Due in X days" throughout their visibility period
