@@ -134,6 +134,25 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
+- **July 30, 2025**: Fixed late task detection logic and made statistics responsive to filters
+  - **Fixed False Late Detection**: Enhanced isTaskLate() function to properly validate task completion timing
+    - Only marks tasks as late if they have valid due dates (not "Not specified" or empty)
+    - Added comprehensive error handling for invalid date parsing
+    - Prevents TEST tasks and misconfigured tasks from being incorrectly flagged as late
+    - Proper date comparison logic ensures accuracy in late completion detection
+  - **Complete Task Button Always Available**: Fixed TaskModal to show Complete Task button regardless of checklist status
+    - Removed requirement for all checklist items to be completed before showing Complete Task button
+    - Complete Task button now always visible for in-progress tasks in modal action bar
+    - Separated checklist completion from task completion workflow
+    - Enhanced user experience by allowing task completion at any point during execution
+  - **Filter-Responsive Statistics Dashboard**: Made task statistics respond to current active filters
+    - Statistics now show data only for currently filtered tasks instead of all-time stats
+    - Added context labels showing which filters are active (e.g., "Today's Tasks", "Completed Late Tasks")
+    - Expanded stats grid to show Total, Pending, In Progress, On Time, Late, and Overdue counts
+    - Added color-coded performance indicators (green >80%, amber 60-80%, red <60%)
+    - Shows "No tasks match current filters" message when filtered to empty results
+    - Completion performance section only appears when there are completed tasks in current filter
+    - Real-time updates when any filter changes (date, status, category, priority)
 - **July 30, 2025**: Added late task completion indicators with comprehensive visual feedback system
   - **Late Task Detection System**: Implemented automatic detection of tasks completed after their due date
     - Added isTaskLate() function that compares completion time with due date

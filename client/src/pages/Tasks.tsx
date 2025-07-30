@@ -285,16 +285,30 @@ const Tasks: React.FC = () => {
     setSearchTerm("");
   };
 
-  // Late task detection functions
+  // Late task detection functions - fixed to avoid false positives
   const isTaskLate = (task: Task): boolean => {
-    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
+    // Must be completed
+    if (task.status !== 'completed') return false;
+    
+    // Must have BOTH a due date and completion time
+    if (!task.dueDate || !task.completedAt) return false;
+    
+    // For TEST tasks or tasks without proper dates, return false
+    if (task.dueDate === 'Not specified' || task.dueDate === '') return false;
+    
+    try {
+      const dueTime = new Date(task.dueDate).getTime();
+      const completedTime = new Date(task.completedAt).getTime();
+      
+      // Check if dates are valid
+      if (isNaN(dueTime) || isNaN(completedTime)) return false;
+      
+      // Only late if completed AFTER due date
+      return completedTime > dueTime;
+    } catch (error) {
+      // If any date parsing fails, task is not late
       return false;
     }
-    
-    const dueTime = new Date(task.dueDate).getTime();
-    const completedTime = new Date(task.completedAt).getTime();
-    
-    return completedTime > dueTime;
   };
 
   const isOverdue = (task: Task): boolean => {

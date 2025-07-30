@@ -221,7 +221,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
   };
 
   const allChecklistCompleted = checklist.every(item => item.completed);
-  const canComplete = task.status === 'in_progress' && allChecklistCompleted;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -283,8 +282,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                 })) }}
                 systems={growingSystems}
                 onComplete={(stepData) => {
-                  // Handle task completion when all checklist steps are done
-                  onTaskAction(task.id, 'complete');
+                  // Show completion message instead of auto-completing task
+                  toast({
+                    title: "All checklist items completed!",
+                    description: "Please complete any remaining work, then click 'Complete Task' in the task modal.",
+                  });
                 }}
                 onProgress={(progress) => {
                   // Handle progress updates
@@ -371,14 +373,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                 {/* Show action buttons only if in-progress */}
                 {task.status === 'in_progress' && (
                   <>
-                    {canComplete && (
-                      <Button
-                        onClick={() => onTaskAction(task.id, 'complete')}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        ✅ Complete Task
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => onTaskAction(task.id, 'complete')}
+                      className="bg-green-600 hover:bg-green-700 text-white ml-auto"
+                    >
+                      ✅ Complete Task
+                    </Button>
                     
                     <Button
                       onClick={() => onTaskAction(task.id, 'pause')}
