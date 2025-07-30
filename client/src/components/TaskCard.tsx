@@ -77,35 +77,50 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const getDueDateDisplay = () => {
     if (!task.dueDate) return null;
     
-    const now = new Date();
+    // Calculate days until due with proper date comparison
+    const calculateDaysUntilDue = (dueDateString: string) => {
+      const dueDate = new Date(dueDateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const dueDateMidnight = new Date(dueDate);
+      dueDateMidnight.setHours(0, 0, 0, 0);
+      
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const diffDays = Math.floor((dueDateMidnight.getTime() - today.getTime()) / msPerDay);
+      
+      return diffDays;
+    };
+    
+    const diffDays = calculateDaysUntilDue(task.dueDate as string);
     const due = new Date(task.dueDate);
-    const diffTime = due.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Format the actual date - ALWAYS include it
+    const formatDate = (date: Date) => {
+      const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    };
+    const dateStr = formatDate(due);
     
     if (diffDays < 0) {
       const absDays = Math.abs(diffDays);
       return {
-        text: `Overdue by ${absDays} day${absDays !== 1 ? 's' : ''}`,
+        text: `Overdue by ${absDays} day${absDays !== 1 ? 's' : ''} (${dateStr})`,
         className: 'text-red-600 font-semibold'
       };
     } else if (diffDays === 0) {
       return {
-        text: 'Due today',
+        text: `Due today (${dateStr})`,
         className: 'text-orange-600 font-semibold'
       };
     } else if (diffDays === 1) {
       return {
-        text: 'Due tomorrow',
+        text: `Due in 1 day (${dateStr})`, // ALWAYS include the actual date
         className: 'text-yellow-600 font-medium'
       };
     } else {
-      const formatDate = (date: Date) => {
-        const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-      };
-      
       return {
-        text: `Due in ${diffDays} days (${formatDate(due)})`,
+        text: `Due in ${diffDays} days (${dateStr})`,
         className: 'text-gray-600'
       };
     }
@@ -126,8 +141,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const getLateDuration = (task: Task): string | null => {
     if (!isTaskLate(task) || !task.completedAt) return null;
     
-    const dueTime = new Date(task.dueDate);
-    const completedTime = new Date(task.completedAt);
+    const dueTime = new Date(task.dueDate!);
+    const completedTime = new Date(task.completedAt!);
     const diffMinutes = Math.floor((completedTime.getTime() - dueTime.getTime()) / (1000 * 60));
     
     if (diffMinutes < 60) {
