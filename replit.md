@@ -134,7 +134,21 @@ Preferred communication style: Simple, everyday language.
 - TypeScript interfaces for all component props
 
 ## Recent Changes
-- **July 30, 2025**: Fixed ghost duplicate tasks in Today filter and date display issues
+- **July 30, 2025**: Fixed off-by-one date error and completed refresh button implementation
+  - **Off-By-One Date Error Fix**: Resolved critical timezone conversion issue causing dates to display one day earlier than intended
+    - Problem was in TaskCard getDueDateDisplay() function using toLocaleDateString() which converted UTC timestamps to local timezone
+    - Replaced timezone-dependent date formatting with timezone-safe string parsing approach
+    - Date display now uses same logic as formatDueDate() function to extract date components without timezone conversion
+    - Tasks with dueDate "2025-07-31T12:00:00.000Z" now correctly display "Jul 31" instead of "Jul 30"
+    - Enhanced calculateDaysUntilDue() function to handle both Date objects and ISO strings without timezone shifts
+    - All date displays (due dates, overdue messages, relative timing) now show accurate dates
+  - **Clean Refresh Button Implementation**: Replaced cluttered debug buttons with professional refresh functionality
+    - Removed problematic "Fix Task Dates" and "Reset App" debug buttons that were causing interface clutter
+    - Added clean blue "🔄 Refresh Tasks" button with proper styling and user feedback
+    - Refresh button properly invalidates TanStack Query cache and refetches all task data
+    - Shows success toast notification and console logging for debugging
+    - Eliminated duplicate state management and TypeScript errors from previous implementation
+    - Simple inline onClick handler with comprehensive query cache invalidation
   - **Fixed Ghost Duplicate Tasks**: Resolved critical issue where "Today" filter was showing duplicate tasks
     - Problem was in filter logic that showed tasks if they matched date OR were overdue, causing same task to appear twice
     - Enhanced filtering to use proper visibility range logic instead of OR conditions

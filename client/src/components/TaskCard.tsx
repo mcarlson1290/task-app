@@ -77,30 +77,61 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const getDueDateDisplay = () => {
     if (!task.dueDate) return null;
     
-    // Calculate days until due with proper date comparison
-    const calculateDaysUntilDue = (dueDateString: string) => {
-      const dueDate = new Date(dueDateString);
+    // Calculate days until due with timezone-safe date comparison
+    const calculateDaysUntilDue = (dueDateInput: string | Date) => {
+      // Extract date string without timezone conversion
+      let dateString: string;
+      if (dueDateInput instanceof Date) {
+        const year = dueDateInput.getFullYear();
+        const month = String(dueDateInput.getMonth() + 1).padStart(2, '0');
+        const day = String(dueDateInput.getDate()).padStart(2, '0');
+        dateString = `${year}-${month}-${day}`;
+      } else {
+        dateString = dueDateInput.split('T')[0];
+      }
+      
+      // Parse dates without timezone issues
+      const [year, month, day] = dateString.split('-');
+      const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const dueDateMidnight = new Date(dueDate);
-      dueDateMidnight.setHours(0, 0, 0, 0);
-      
       const msPerDay = 24 * 60 * 60 * 1000;
-      const diffDays = Math.floor((dueDateMidnight.getTime() - today.getTime()) / msPerDay);
+      const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / msPerDay);
       
       return diffDays;
     };
     
-    const diffDays = calculateDaysUntilDue(task.dueDate as string);
-    const due = new Date(task.dueDate);
+    const diffDays = calculateDaysUntilDue(task.dueDate);
     
-    // Format the actual date - ALWAYS include it
-    const formatDate = (date: Date) => {
-      const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-      return date.toLocaleDateString('en-US', options);
+    // Format the actual date - ALWAYS include it (timezone-safe)
+    const formatDate = (dateInput: string | Date) => {
+      let dateString: string;
+      
+      // Handle both Date objects and strings
+      if (dateInput instanceof Date) {
+        // Convert Date to YYYY-MM-DD format without timezone issues
+        const year = dateInput.getFullYear();
+        const month = String(dateInput.getMonth() + 1).padStart(2, '0');
+        const day = String(dateInput.getDate()).padStart(2, '0');
+        dateString = `${year}-${month}-${day}`;
+      } else {
+        // Handle ISO string format by extracting date part
+        dateString = dateInput.split('T')[0];
+      }
+      
+      // Parse the date string without timezone conversion
+      const [year, month, day] = dateString.split('-');
+      
+      // Create month names array
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      // Return formatted date (e.g., "Jul 31")
+      return `${months[parseInt(month) - 1]} ${parseInt(day)}`;
     };
-    const dateStr = formatDate(due);
+    const dateStr = formatDate(task.dueDate);
     
     if (diffDays < 0) {
       const absDays = Math.abs(diffDays);
