@@ -945,7 +945,7 @@
     "createdAt": "2025-07-31T00:45:06.268Z"
   },
   {
-    "id": 147,
+    "id": 167,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -977,17 +977,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1001,6 +990,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1015,10 +1015,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 148,
+    "id": 168,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1050,17 +1050,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1074,6 +1063,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1088,10 +1088,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 149,
+    "id": 169,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1123,17 +1123,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1147,6 +1136,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1161,10 +1161,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 150,
+    "id": 170,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1196,17 +1196,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1220,6 +1209,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1234,10 +1234,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 151,
+    "id": 171,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1269,17 +1269,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1293,6 +1282,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1307,10 +1307,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 152,
+    "id": 172,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1342,17 +1342,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1366,6 +1355,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1380,10 +1380,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 153,
+    "id": 173,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1415,17 +1415,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1439,6 +1428,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1453,10 +1453,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 154,
+    "id": 174,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1488,17 +1488,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1512,6 +1501,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1526,10 +1526,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 155,
+    "id": 175,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1561,17 +1561,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1585,6 +1574,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1599,10 +1599,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 156,
+    "id": 176,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1634,17 +1634,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1658,6 +1647,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1672,10 +1672,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.269Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 157,
+    "id": 177,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1707,17 +1707,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1731,6 +1720,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1745,10 +1745,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.604Z"
   },
   {
-    "id": 158,
+    "id": 178,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1780,17 +1780,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1804,6 +1793,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1818,10 +1818,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 159,
+    "id": 179,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1853,17 +1853,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1877,6 +1866,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1891,10 +1891,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 160,
+    "id": 180,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1926,17 +1926,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -1950,6 +1939,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -1964,10 +1964,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 161,
+    "id": 181,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1999,17 +1999,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2023,6 +2012,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -2037,10 +2037,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 162,
+    "id": 182,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2072,17 +2072,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2096,6 +2085,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -2110,10 +2110,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 163,
+    "id": 183,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2145,17 +2145,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2169,6 +2158,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -2183,10 +2183,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 164,
+    "id": 184,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2218,17 +2218,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2242,6 +2231,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -2256,10 +2256,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 165,
+    "id": 185,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2291,17 +2291,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2315,6 +2304,17 @@
           "growingMedium": "",
           "location": "",
           "defaultTrayType": "microgreen"
+        }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
         }
       }
     ],
@@ -2329,10 +2329,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   },
   {
-    "id": 166,
+    "id": 186,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2364,17 +2364,6 @@
         }
       },
       {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
         "id": "1753922698847",
         "text": "",
         "completed": false,
@@ -2389,6 +2378,17 @@
           "location": "",
           "defaultTrayType": "microgreen"
         }
+      },
+      {
+        "id": "1753914909834",
+        "text": "Move the Plants to Available towers.",
+        "completed": false,
+        "required": true,
+        "type": "system-assignment",
+        "config": {
+          "systemType": "",
+          "autoSuggest": true
+        }
       }
     ],
     "data": {},
@@ -2402,6 +2402,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:45:06.270Z"
+    "createdAt": "2025-07-31T00:54:28.605Z"
   }
 ]

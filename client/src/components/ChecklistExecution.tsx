@@ -759,6 +759,10 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                 handleStepComplete();
               }}
               defaultInstance={step.config?.defaultInstance || 1}
+              defaultTrayType={step.config?.defaultTrayType || 'LG'}
+              defaultSeedsOz={step.config?.defaultSeedsOz || ''}
+              defaultGrowingMedium={step.config?.defaultGrowingMedium || ''}
+              instructions={step.config?.instructions || ''}
             />
           </div>
         );

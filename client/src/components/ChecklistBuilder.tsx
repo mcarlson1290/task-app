@@ -573,7 +573,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                   <div>
                     <Label>Default Tray Type</Label>
                     <Select
-                      value={step.config.defaultTrayType || ''}
+                      value={step.config.defaultTrayType || 'LG'}
                       onValueChange={(value) => onUpdate({
                         ...step,
                         config: { ...step.config, defaultTrayType: value }
@@ -583,25 +583,77 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                         <SelectValue placeholder="Select tray type..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="microgreen">Microgreen Tray</SelectItem>
-                        <SelectItem value="leafy-green">Leafy Green Tray</SelectItem>
-                        <SelectItem value="seedling">Seedling Tray</SelectItem>
+                        <SelectItem value="LG">LG - Leafy Greens</SelectItem>
+                        <SelectItem value="MG">MG - Microgreens</SelectItem>
+                        <SelectItem value="HB">HB - Herbs</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Default Quantity</Label>
+                    <Label>Default Instance #</Label>
                     <Input
                       type="number"
-                      value={step.config.defaultQuantity || 1}
+                      value={step.config.defaultInstance || 1}
                       onChange={(e) => onUpdate({
                         ...step,
-                        config: { ...step.config, defaultQuantity: parseInt(e.target.value) || 1 }
+                        config: { ...step.config, defaultInstance: parseInt(e.target.value) || 1 }
                       })}
                       min="1"
-                      max="50"
+                      max="99"
                     />
                   </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Default Seeds (oz)</Label>
+                    <Input
+                      type="number"
+                      value={step.config.defaultSeedsOz || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, defaultSeedsOz: e.target.value }
+                      })}
+                      placeholder="0.5"
+                      step="0.1"
+                    />
+                    <small className="text-xs text-gray-500">Suggested amount for this task</small>
+                  </div>
+                  <div>
+                    <Label>Default Growing Medium</Label>
+                    <Select
+                      value={step.config.defaultGrowingMedium || ''}
+                      onValueChange={(value) => onUpdate({
+                        ...step,
+                        config: { ...step.config, defaultGrowingMedium: value }
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="User selects..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">User selects</SelectItem>
+                        <SelectItem value="Oasis Cubes">Oasis Cubes</SelectItem>
+                        <SelectItem value="Rockwool">Rockwool</SelectItem>
+                        <SelectItem value="Hemp Mat">Hemp Mat</SelectItem>
+                        <SelectItem value="Coco Mat">Coco Mat</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Step Instructions</Label>
+                  <textarea
+                    value={step.config.instructions || ''}
+                    onChange={(e) => onUpdate({
+                      ...step,
+                      config: { ...step.config, instructions: e.target.value }
+                    })}
+                    placeholder="Additional instructions for this create tray step..."
+                    rows={2}
+                    className="w-full p-2 border border-gray-300 rounded-md resize-none"
+                  />
                 </div>
               </div>
             )}

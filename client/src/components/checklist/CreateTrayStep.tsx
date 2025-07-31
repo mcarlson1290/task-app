@@ -10,6 +10,7 @@ interface CreateTrayStepProps {
   defaultTrayType?: 'MG' | 'LG' | 'HB';
   defaultSeedsOz?: string;
   defaultGrowingMedium?: string;
+  instructions?: string;
 }
 
 interface Variety {
@@ -33,7 +34,8 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   defaultInstance = 1,
   defaultTrayType = 'LG',
   defaultSeedsOz = '',
-  defaultGrowingMedium = ''
+  defaultGrowingMedium = '',
+  instructions = ''
 }) => {
   const [selectedSeed, setSelectedSeed] = useState<InventoryItem | null>(null);
   const [trayType, setTrayType] = useState<'MG' | 'LG' | 'HB'>(
@@ -226,9 +228,18 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     }
   };
 
+  const displayInstructions = stepData?.config?.instructions || instructions;
+
   return (
     <div className="create-tray-step">
       <h3 className="text-lg font-semibold mb-4">Create New Tray</h3>
+      
+      {displayInstructions && (
+        <div className="instructions bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <h4 className="text-sm font-medium text-blue-800 mb-1">Instructions:</h4>
+          <p className="text-sm text-blue-700">{displayInstructions}</p>
+        </div>
+      )}
       
       {generatedId && (
         <div className="tray-id-preview bg-green-50 border border-green-200 rounded-lg p-3 mb-4">

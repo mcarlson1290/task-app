@@ -1,0 +1,216 @@
+# Replit Instructions: Add Missing Create Tray Default Fields
+
+**ISSUE: The recurring task builder is missing several default configuration fields for Create Tray steps.**
+
+## Find the Create Tray Configuration Section
+
+Look for where "Create Tray Configuration" is rendered in the recurring task builder. It currently only shows:
+- Default Tray Type
+- Default Quantity
+
+## Add the Missing Fields
+
+Replace or update the Create Tray configuration section to include ALL fields:
+
+```tsx
+{selectedStepType === 'Create Tray' && (
+  <div className="create-tray-configuration">
+    <h4>Create Tray Configuration</h4>
+    
+    <div className="form-row">
+      <div className="form-group">
+        <label>Default Tray Type</label>
+        <select 
+          value={stepConfig.defaultTrayType || 'LG'} 
+          onChange={(e) => updateStepConfig('defaultTrayType', e.target.value)}
+          className="form-control"
+        >
+          <option value="LG">LG - Leafy Greens</option>
+          <option value="MG">MG - Microgreens</option>
+          <option value="HB">HB - Herbs</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Default Instance #</label>
+        <input
+          type="number"
+          value={stepConfig.defaultInstance || 1}
+          onChange={(e) => updateStepConfig('defaultInstance', parseInt(e.target.value) || 1)}
+          min={1}
+          max={99}
+          className="form-control"
+        />
+      </div>
+    </div>
+
+    <div className="form-row">
+      <div className="form-group">
+        <label>Default Seeds (oz)</label>
+        <input
+          type="number"
+          value={stepConfig.defaultSeedsOz || ''}
+          onChange={(e) => updateStepConfig('defaultSeedsOz', e.target.value)}
+          placeholder="0.5"
+          step="0.1"
+          className="form-control"
+        />
+        <small>Suggested amount for this task</small>
+      </div>
+
+      <div className="form-group">
+        <label>Default Growing Medium</label>
+        <select 
+          value={stepConfig.defaultGrowingMedium || ''} 
+          onChange={(e) => updateStepConfig('defaultGrowingMedium', e.target.value)}
+          className="form-control"
+        >
+          <option value="">User selects</option>
+          <option value="Oasis Cubes">Oasis Cubes</option>
+          <option value="Rockwool">Rockwool</option>
+          <option value="Hemp Mat">Hemp Mat</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="form-group">
+      <label>Pre-select Seed Type</label>
+      <select 
+        value={stepConfig.defaultSeedId || ''} 
+        onChange={(e) => updateStepConfig('defaultSeedId', e.target.value)}
+        className="form-control"
+      >
+        <option value="">User selects from inventory</option>
+        {availableSeeds.map(seed => (
+          <option key={seed.id} value={seed.id}>
+            {seed.name} - {seed.sku}
+          </option>
+        ))}
+      </select>
+      <small>Optionally pre-select a specific seed type</small>
+    </div>
+
+    <div className="form-group">
+      <label>Step Instructions</label>
+      <textarea
+        value={stepConfig.instructions || ''}
+        onChange={(e) => updateStepConfig('instructions', e.target.value)}
+        placeholder="Additional instructions for this create tray step..."
+        rows={2}
+        className="form-control"
+      />
+    </div>
+  </div>
+)}
+```
+
+## Update the Step Data Structure
+
+Make sure when saving the step, all these configuration values are included:
+
+```tsx
+const addStep = () => {
+  const newStep = {
+    id: Date.now(),
+    type: selectedStepType,
+    label: stepLabel,
+    required: isRequired,
+    // Include all Create Tray specific configs
+    ...(selectedStepType === 'Create Tray' && {
+      defaultTrayType: stepConfig.defaultTrayType || 'LG',
+      defaultInstance: stepConfig.defaultInstance || 1,
+      defaultSeedsOz: stepConfig.defaultSeedsOz || '',
+      defaultGrowingMedium: stepConfig.defaultGrowingMedium || '',
+      defaultSeedId: stepConfig.defaultSeedId || '',
+      instructions: stepConfig.instructions || ''
+    })
+  };
+  
+  // Add to steps array
+  setSteps([...steps, newStep]);
+  
+  // Reset form
+  resetStepForm();
+};
+```
+
+## Load Available Seeds for Pre-selection
+
+Add this to load seeds when the recurring task form loads:
+
+```tsx
+const [availableSeeds, setAvailableSeeds] = useState([]);
+
+useEffect(() => {
+  // Load seeds from inventory
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  const seeds = inventory.filter(item => 
+    item.category?.toLowerCase().includes('seed') || 
+    item.name?.toLowerCase().includes('seed')
+  );
+  setAvailableSeeds(seeds);
+}, []);
+```
+
+## Pass Defaults to Create Tray Step
+
+When the Create Tray step is executed during a task, make sure all defaults are passed:
+
+```tsx
+<CreateTrayStep
+  stepData={step}
+  onComplete={(data) => handleStepComplete(index, data)}
+  // Pass all the defaults
+  defaultTrayType={step.defaultTrayType || 'LG'}
+  defaultInstance={step.defaultInstance || 1}
+  defaultSeedsOz={step.defaultSeedsOz || ''}
+  defaultGrowingMedium={step.defaultGrowingMedium || ''}
+  defaultSeedId={step.defaultSeedId || ''}
+  instructions={step.instructions || ''}
+/>
+```
+
+## Update Create Tray Component to Use Defaults
+
+In the Create Tray component, initialize with the passed defaults:
+
+```tsx
+const CreateTrayStep = ({ 
+  stepData, 
+  onComplete,
+  defaultTrayType = 'LG',
+  defaultInstance = 1,
+  defaultSeedsOz = '',
+  defaultGrowingMedium = '',
+  defaultSeedId = '',
+  instructions = ''
+}) => {
+  // Initialize state with defaults
+  const [trayType, setTrayType] = useState(defaultTrayType);
+  const [instanceNumber, setInstanceNumber] = useState(defaultInstance);
+  const [seedsOz, setSeedsOz] = useState(defaultSeedsOz);
+  const [growingMedium, setGrowingMedium] = useState(defaultGrowingMedium);
+  const [selectedSeed, setSelectedSeed] = useState(null);
+
+  // Pre-select seed if defaultSeedId is provided
+  useEffect(() => {
+    if (defaultSeedId && availableSeeds.length > 0) {
+      const seed = availableSeeds.find(s => s.id === defaultSeedId);
+      if (seed) setSelectedSeed(seed);
+    }
+  }, [defaultSeedId, availableSeeds]);
+
+  // ... rest of component
+};
+```
+
+## Summary
+
+This adds all missing configuration fields:
+1. **Default Instance #** - Starting number for tray instances
+2. **Default Seeds (oz)** - Suggested seed amount
+3. **Default Growing Medium** - Pre-selected growing medium
+4. **Pre-select Seed Type** - Option to pre-select a specific seed
+5. **Step Instructions** - Additional instructions for the operator
+
+All these defaults can be overridden by the user during task execution, but provide helpful starting values based on the specific recurring task.
