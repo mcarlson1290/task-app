@@ -29,9 +29,9 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       return {
         name: item.name,
         sku: item.sku || '',
-        currentStock: item.currentStock,
+        currentStock: item.currentStock || 0,
         unit: item.unit,
-        minimumStock: item.minimumStock,
+        minimumStock: item.minimumStock || 0,
         category: item.category,
         supplier: item.supplier || '',
         estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
@@ -49,15 +49,17 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     };
   });
 
-  // Update form data when item changes
+  // Update form data when item changes OR when modal opens
   useEffect(() => {
+    console.log('InventoryModal useEffect - Mode:', mode, 'Item:', item, 'isOpen:', isOpen);
     if (mode === 'edit' && item) {
+      console.log('Setting form data for editing:', item);
       setFormData({
         name: item.name,
         sku: item.sku || '',
-        currentStock: item.currentStock,
+        currentStock: item.currentStock || 0,
         unit: item.unit,
-        minimumStock: item.minimumStock,
+        minimumStock: item.minimumStock || 0,
         category: item.category,
         supplier: item.supplier || '',
         estimatedTotalValue: '' // Not used in edit mode
@@ -74,7 +76,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         estimatedTotalValue: ''
       });
     }
-  }, [item, mode]);
+  }, [item, mode, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +96,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       return;
     }
     
-    if (formData.currentStock < 0 || formData.minimumStock < 0) {
+    if ((formData.currentStock || 0) < 0 || (formData.minimumStock || 0) < 0) {
       alert('Stock quantities cannot be negative');
       return;
     }
@@ -117,7 +119,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     }
 
     // Calculate cost data for new items
-    const stock = parseInt(formData.currentStock.toString()) || 0;
+    const stock = parseInt((formData.currentStock || 0).toString()) || 0;
     const totalValue = parseFloat(formData.estimatedTotalValue) || 0;
     const costPerUnit = stock > 0 ? totalValue / stock : 0;
 
@@ -219,7 +221,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               <Input
                 id="currentStock"
                 type="number"
-                value={formData.currentStock}
+                value={formData.currentStock || 0}
                 onChange={(e) => setFormData({...formData, currentStock: parseInt(e.target.value) || 0})}
                 min="0"
                 required
@@ -247,7 +249,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
             <Input
               id="minimumStock"
               type="number"
-              value={formData.minimumStock}
+              value={formData.minimumStock || 0}
               onChange={(e) => setFormData({...formData, minimumStock: parseInt(e.target.value) || 0})}
               min="0"
               required
@@ -275,7 +277,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               </div>
 
               {/* Show calculated cost per unit if both values are entered */}
-              {formData.currentStock > 0 && formData.estimatedTotalValue && (
+              {(formData.currentStock || 0) > 0 && formData.estimatedTotalValue && (
                 <div className="bg-gray-50 p-3 rounded-lg border">
                   <p className="text-sm font-medium text-gray-700">
                     Calculated Cost Per {formData.unit}: <span className="text-[#203B17] font-bold">${calculateCostPerUnit()}</span>

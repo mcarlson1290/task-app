@@ -223,10 +223,18 @@ Please process this reorder request at your earliest convenience.`;
   };
 
   const handleEditItem = (item: InventoryItem) => {
+    console.log('handleEditItem called with:', item);
     setEditingItem(item);
     setModalMode('edit');
     setShowModal(true);
   };
+
+  // Open modal after editingItem is set for edit mode
+  React.useEffect(() => {
+    if (modalMode === 'edit' && editingItem && showModal) {
+      console.log('Modal opened for editing:', editingItem);
+    }
+  }, [editingItem, modalMode, showModal]);
 
   const handleSaveItem = (itemData: any) => {
     if (modalMode === 'edit') {
