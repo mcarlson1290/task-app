@@ -15,8 +15,11 @@ interface CreateTrayStepProps {
 
 interface Variety {
   id: string;
-  name: string;
-  percentage: number;
+  seedId: string;
+  seedName: string;
+  sku: string;
+  quantity: number;
+  seedsOz: number;
 }
 
 interface InventoryItem {
@@ -52,12 +55,16 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     stepData?.config?.defaultGrowingMedium || defaultGrowingMedium
   );
   const [varieties, setVarieties] = useState<Variety[]>([
-    { id: '1', name: '', percentage: 100 }
+    { id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }
   ]);
+  const [totalSlots, setTotalSlots] = useState(0);
   const [notes, setNotes] = useState('');
   const [generatedId, setGeneratedId] = useState('');
   const [availableSeeds, setAvailableSeeds] = useState<InventoryItem[]>([]);
   const [availableVarieties, setAvailableVarieties] = useState<string[]>(['Standard']);
+  
+  // Calculate total plants
+  const totalPlants = varieties.reduce((sum, v) => sum + (parseInt(v.quantity.toString()) || 0), 0);
 
   // Get current user and location
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -107,7 +114,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       setAvailableVarieties(seedVarieties);
       
       // Reset varieties when seed changes
-      setVarieties([{ id: '1', name: '', percentage: 100 }]);
+      setVarieties([{ id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }]);
     } else {
       setAvailableVarieties(['Standard']);
     }
@@ -115,29 +122,41 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
   // Generate tray ID whenever inputs change
   useEffect(() => {
-    if (selectedSeed && selectedSeed.sku) {
-      const date = new Date();
-      const dateStr = 
-        (date.getMonth() + 1).toString().padStart(2, '0') +
-        date.getDate().toString().padStart(2, '0') +
-        date.getFullYear().toString().slice(2);
-      
-      const id = `${locationCode}${dateStr}-${trayType}-${selectedSeed.sku}-${instanceNumber}`;
-      setGeneratedId(id);
-    } else {
-      setGeneratedId('');
+    const date = new Date();
+    const dateStr = 
+      (date.getMonth() + 1).toString().padStart(2, '0') +
+      date.getDate().toString().padStart(2, '0') +
+      date.getFullYear().toString().slice(2);
+    
+    // If multiple varieties, use MIX, otherwise use first seed's SKU
+    let sku = 'MIX';
+    if (varieties.length === 1 && varieties[0].seedId) {
+      const seed = availableSeeds.find(s => s.id === varieties[0].seedId);
+      if (seed) sku = seed.sku || seed.productCode || 'MIX';
     }
-  }, [locationCode, trayType, selectedSeed, instanceNumber]);
+    
+    const id = `${locationCode}${dateStr}-${trayType}-${sku}-${instanceNumber}`;
+    setGeneratedId(id);
+  }, [locationCode, trayType, varieties, instanceNumber, availableSeeds]);
 
   const addVariety = () => {
-    setVarieties([...varieties, { id: Date.now().toString(), name: '', percentage: 0 }]);
+    setVarieties([...varieties, { 
+      id: Date.now().toString(), 
+      seedId: '', 
+      seedName: '', 
+      sku: '', 
+      quantity: 0, 
+      seedsOz: 0 
+    }]);
   };
 
   const removeVariety = (id: string) => {
-    setVarieties(varieties.filter(v => v.id !== id));
+    if (varieties.length > 1) {
+      setVarieties(varieties.filter(v => v.id !== id));
+    }
   };
 
-  const updateVariety = (id: string, field: 'name' | 'percentage', value: any) => {
+  const updateVariety = (id: string, field: keyof Variety, value: any) => {
     setVarieties(varieties.map(v => 
       v.id === id ? { ...v, [field]: value } : v
     ));
@@ -145,25 +164,52 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
   const handleCreate = async () => {
     // Validate inputs
-    if (!selectedSeed || !seedsOz || !growingMedium) {
-      alert('Please select a seed type and fill in all required fields.');
+    if (!growingMedium || totalSlots === 0) {
+      alert('Please fill in growing medium and total slots');
       return;
     }
 
-    // Check if we have enough seeds in inventory
-    if (parseFloat(seedsOz) > selectedSeed.quantity) {
-      alert(`Not enough ${selectedSeed.name} in inventory. Available: ${selectedSeed.quantity} ${selectedSeed.unit}`);
+    if (totalPlants > totalSlots) {
+      alert(`Total plants (${totalPlants}) exceeds available slots (${totalSlots})`);
       return;
+    }
+
+    // Build variety details
+    const varietyDetails = varieties
+      .filter(v => v.seedId && v.quantity > 0)
+      .map(v => {
+        const seed = availableSeeds.find(s => s.id === v.seedId);
+        return {
+          seedId: v.seedId,
+          seedName: seed?.name || 'Unknown',
+          sku: seed?.sku || seed?.productCode || '',
+          quantity: parseInt(v.quantity.toString()),
+          seedsOz: parseFloat(v.seedsOz.toString()) || 0
+        };
+      });
+
+    if (varietyDetails.length === 0) {
+      alert('Please add at least one variety with quantity');
+      return;
+    }
+
+    // Check inventory for each variety
+    for (const variety of varietyDetails) {
+      const seed = availableSeeds.find(s => s.id === variety.seedId);
+      if (seed && variety.seedsOz > seed.currentStock) {
+        alert(`Not enough ${seed.name} in inventory. Available: ${seed.currentStock} ${seed.unit}`);
+        return;
+      }
     }
 
     try {
-      // Create new tray object matching the Tray interface
+      // Create new tray object with multiple varieties
       const newTray: Tray = {
         id: generatedId,
-        cropType: selectedSeed.name,
+        cropType: varietyDetails.length === 1 ? varietyDetails[0].seedName : 'Mixed Varieties',
         cropCategory: trayType === 'MG' ? 'microgreens' : 'leafyGreens',
         datePlanted: new Date(),
-        expectedHarvest: new Date(Date.now() + (trayType === 'MG' ? 7 : 30) * 24 * 60 * 60 * 1000), // 7 days for MG, 30 for LG
+        expectedHarvest: new Date(Date.now() + (trayType === 'MG' ? 7 : 30) * 24 * 60 * 60 * 1000),
         status: 'seeded',
         currentLocation: {
           systemId: trayType === 'MG' ? 'nursery-A1' : 'staging-B1',
@@ -179,8 +225,9 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           movedBy: currentUser.username || 'Unknown',
           reason: 'Initial seeding'
         }],
-        plantCount: trayType === 'MG' ? Math.floor(parseFloat(seedsOz) * 1000) : Math.floor(parseFloat(seedsOz) * 200), // Rough estimates
-        notes: notes || `Seeds: ${seedsOz}oz ${selectedSeed.name}, Medium: ${growingMedium}`,
+        plantCount: totalPlants,
+        varieties: varietyDetails, // Store variety information
+        notes: notes || `Varieties: ${varietyDetails.map(v => `${v.quantity} ${v.seedName} (${v.seedsOz}oz)`).join(', ')}, Medium: ${growingMedium}`,
         createdBy: currentUser.username || 'Unknown',
         createdDate: new Date()
       };
@@ -188,29 +235,31 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       // Add to tray tracking system using the addTray method
       TrayDataService.addTray(newTray);
 
-      // Deduct inventory through API if available, otherwise update locally
-      try {
-        await fetch('/api/inventory/deduct', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            itemId: selectedSeed.id,
-            quantity: parseFloat(seedsOz),
-            reason: `Seeded tray ${generatedId}`
-          })
-        });
-        console.log(`Deducted ${seedsOz} ${selectedSeed.unit} of ${selectedSeed.name} from inventory`);
-      } catch (err) {
-        console.warn('Failed to deduct from API, updating locally:', err);
-        // Fallback to local inventory update
-        const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
-        const updatedInventory = inventory.map((item: InventoryItem) => {
-          if (item.id === selectedSeed.id) {
-            return { ...item, quantity: item.quantity - parseFloat(seedsOz) };
-          }
-          return item;
-        });
-        localStorage.setItem('inventory', JSON.stringify(updatedInventory));
+      // Deduct inventory for each variety
+      for (const variety of varietyDetails) {
+        try {
+          await fetch('/api/inventory/deduct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              itemId: variety.seedId,
+              quantity: variety.seedsOz,
+              reason: `Seeded tray ${generatedId}`
+            })
+          });
+          console.log(`Deducted ${variety.seedsOz} oz of ${variety.seedName} from inventory`);
+        } catch (err) {
+          console.warn('Failed to deduct from API, updating locally:', err);
+          // Fallback to local inventory update
+          const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+          const updatedInventory = inventory.map((item: InventoryItem) => {
+            if (item.id === variety.seedId) {
+              return { ...item, currentStock: item.currentStock - variety.seedsOz };
+            }
+            return item;
+          });
+          localStorage.setItem('inventory', JSON.stringify(updatedInventory));
+        }
       }
       
       console.log('Created tray:', newTray);
@@ -218,7 +267,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       // Complete the step with tray data
       onComplete({
         trayId: generatedId,
-        seedsUsed: parseFloat(seedsOz),
+        varietiesUsed: varietyDetails,
         trayCreated: true,
         ...newTray
       });
@@ -250,25 +299,6 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       )}
 
       <div className="space-y-4">
-        <div className="form-group">
-          <label className="block text-sm font-medium mb-2">Select Seed Type*</label>
-          <select 
-            className="w-full p-2 border border-gray-300 rounded-md"
-            value={selectedSeed?.id || ''} 
-            onChange={(e) => {
-              const seed = availableSeeds.find(s => s.id === e.target.value);
-              setSelectedSeed(seed || null);
-            }}
-          >
-            <option value="">Select seed...</option>
-            {availableSeeds.map(seed => (
-              <option key={seed.id} value={seed.id}>
-                {seed.name} - {seed.sku} ({seed.quantity} {seed.unit} available)
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
           <div className="form-group">
             <label className="block text-sm font-medium mb-2">Type*</label>
@@ -296,84 +326,107 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           </div>
         </div>
 
-        <div className="form-group">
-          <label className="block text-sm font-medium mb-2">Seeds Planted (oz)*</label>
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            type="number"
-            value={seedsOz}
-            onChange={(e) => setSeedsOz(e.target.value)}
-            placeholder="0.5"
-            step="0.1"
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="form-group">
+            <label className="block text-sm font-medium mb-2">Growing Medium*</label>
+            <select 
+              className="w-full p-2 border border-gray-300 rounded-md"
+              value={growingMedium} 
+              onChange={(e) => setGrowingMedium(e.target.value)}
+            >
+              <option value="">Select Medium</option>
+              <option value="Oasis Cubes">Oasis Cubes</option>
+              <option value="Rockwool">Rockwool</option>
+              <option value="Hemp Mat">Hemp Mat</option>
+            </select>
+          </div>
 
-        <div className="form-group">
-          <label className="block text-sm font-medium mb-2">Growing Medium*</label>
-          <select 
-            className="w-full p-2 border border-gray-300 rounded-md"
-            value={growingMedium} 
-            onChange={(e) => setGrowingMedium(e.target.value)}
-          >
-            <option value="">Select Medium</option>
-            {trayType === 'MG' ? (
-              <>
-                <option value="Coco Mat">Coco Mat</option>
-                <option value="Hemp Mat">Hemp Mat</option>
-                <option value="Burlap">Burlap</option>
-              </>
-            ) : (
-              <>
-                <option value="Rockwool">Rockwool</option>
-                <option value="Oasis Cubes">Oasis Cubes</option>
-                <option value="Coco Coir">Coco Coir</option>
-              </>
-            )}
-          </select>
+          <div className="form-group">
+            <label className="block text-sm font-medium mb-2">Total Slots Available*</label>
+            <input
+              className="w-full p-2 border border-gray-300 rounded-md"
+              type="number"
+              value={totalSlots}
+              onChange={(e) => setTotalSlots(parseInt(e.target.value) || 0)}
+              placeholder="e.g., 200"
+              min={1}
+            />
+            <small className="text-xs text-gray-500">Rockwool: typically 200, Oasis: varies</small>
+          </div>
         </div>
 
         <div className="varieties-section">
-          <label className="block text-sm font-medium mb-2">Varieties</label>
-          {varieties.map((variety) => (
-            <div key={variety.id} className="grid grid-cols-3 gap-2 mb-2">
-              <select
-                className="col-span-2 p-2 border border-gray-300 rounded-md"
-                value={variety.name}
-                onChange={(e) => updateVariety(variety.id, 'name', e.target.value)}
-              >
-                <option value="">Select variety...</option>
-                {availableVarieties.map(v => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-              <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-medium">Crop Varieties</h4>
+            <div className="text-sm text-gray-600">
+              Total Plants: <span className="font-medium">{totalPlants}</span> / <span className="font-medium">{totalSlots || '?'}</span>
+              {totalSlots > 0 && totalPlants > totalSlots && (
+                <span className="ml-2 text-red-600 font-medium">⚠️ Exceeds capacity!</span>
+              )}
+            </div>
+          </div>
+
+          {varieties.map((variety, index) => (
+            <div key={variety.id} className="variety-row bg-gray-50 p-3 rounded-lg mb-3">
+              <div className="grid grid-cols-4 gap-3">
+                <select
+                  className="col-span-2 p-2 border border-gray-300 rounded-md"
+                  value={variety.seedId}
+                  onChange={(e) => {
+                    const seed = availableSeeds.find(s => s.id === e.target.value);
+                    updateVariety(variety.id, 'seedId', e.target.value);
+                    updateVariety(variety.id, 'seedName', seed?.name || '');
+                    updateVariety(variety.id, 'sku', seed?.sku || seed?.productCode || '');
+                  }}
+                >
+                  <option value="">Select seed...</option>
+                  {availableSeeds.map(seed => (
+                    <option key={seed.id} value={seed.id}>
+                      [{seed.sku || seed.productCode}] {seed.name}
+                    </option>
+                  ))}
+                </select>
+                
                 <input
-                  className="w-full p-2 border border-gray-300 rounded-md"
                   type="number"
-                  value={variety.percentage}
-                  onChange={(e) => updateVariety(variety.id, 'percentage', parseInt(e.target.value) || 0)}
-                  placeholder="%"
+                  value={variety.quantity}
+                  onChange={(e) => updateVariety(variety.id, 'quantity', parseInt(e.target.value) || 0)}
+                  placeholder="Plants"
                   min={0}
-                  max={100}
+                  className="p-2 border border-gray-300 rounded-md"
                 />
-                {varieties.length > 1 && (
+                
+                <input
+                  type="number"
+                  value={variety.seedsOz}
+                  onChange={(e) => updateVariety(variety.id, 'seedsOz', parseFloat(e.target.value) || 0)}
+                  placeholder="Seeds (oz)"
+                  step="0.1"
+                  min={0}
+                  className="p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              {varieties.length > 1 && (
+                <div className="mt-2 flex justify-end">
                   <button 
                     type="button"
                     onClick={() => removeVariety(variety.id)} 
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md"
                   >
-                    <Minus size={16} />
+                    ✕ Remove
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
+          
           <button 
             type="button"
             onClick={addVariety} 
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md"
+            className="flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 border border-green-300 rounded-md"
           >
-            <Plus size={16} /> Add Variety
+            <Plus size={16} /> Add Another Variety
           </button>
         </div>
 
@@ -390,10 +443,10 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
         <button 
           onClick={handleCreate} 
-          className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-green-700 transition-colors"
-          disabled={!selectedSeed || !seedsOz || !growingMedium}
+          className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400"
+          disabled={!growingMedium || totalSlots === 0 || totalPlants === 0}
         >
-          Create Tray
+          Create Multi-Variety Tray
         </button>
       </div>
     </div>

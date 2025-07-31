@@ -1,3 +1,11 @@
+export interface TrayVariety {
+  seedId: string;
+  seedName: string;
+  sku: string;
+  quantity: number;
+  seedsOz: number;
+}
+
 export interface Tray {
   id: string; // e.g., "K071725-MG-BROC-1A"
   barcode?: string;
@@ -23,6 +31,7 @@ export interface Tray {
   parentTrayId?: string; // For split trays
   childTrayIds?: string[]; // For parent trays that were split
   plantCount: number;
+  varieties?: TrayVariety[]; // Multiple crop varieties in one tray
   notes: string;
   createdBy: string;
   createdDate: Date;
