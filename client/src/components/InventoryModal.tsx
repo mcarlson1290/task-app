@@ -24,20 +24,38 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
   onDelete,
   onClose
 }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    sku: '',
-    currentStock: 0,
-    unit: 'units',
-    minimumStock: 0,
-    category: 'other-supplies',
-    supplier: '',
-    estimatedTotalValue: ''
+  const [formData, setFormData] = useState(() => {
+    if (mode === 'edit' && item) {
+      // Handle null values properly - convert null to number or use 0 as fallback
+      const currentStock = typeof item.currentStock === 'number' ? item.currentStock : (item.currentStock || 0);
+      const minimumStock = typeof item.minimumStock === 'number' ? item.minimumStock : (item.minimumStock || 0);
+      
+      return {
+        name: item.name,
+        sku: item.sku || (item as any).productCode || '',
+        currentStock: currentStock,
+        unit: item.unit,
+        minimumStock: minimumStock,
+        category: item.category,
+        supplier: item.supplier || '',
+        estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
+      };
+    }
+    return {
+      name: '',
+      sku: '',
+      currentStock: 0,
+      unit: 'units',
+      minimumStock: 0,
+      category: 'other-supplies',
+      supplier: '',
+      estimatedTotalValue: ''
+    };
   });
 
   // Update form data when item changes OR when modal opens
   useEffect(() => {
-    if (mode === 'edit' && item && isOpen) {
+    if (mode === 'edit' && item) {
       console.log('Edit form - item data:', item); // Debug log
       console.log('Available fields:', Object.keys(item)); // Debug log
       
@@ -60,7 +78,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       
       console.log('Setting form data:', newFormData); // Debug log
       setFormData(newFormData);
-    } else if (mode === 'add' && isOpen) {
+    } else if (mode === 'add') {
       setFormData({
         name: '',
         sku: '',
@@ -215,6 +233,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="currentStock">Current Stock *</Label>
+              {console.log('RENDER - currentStock value:', formData.currentStock, 'type:', typeof formData.currentStock)}
               <Input
                 id="currentStock"
                 type="number"
