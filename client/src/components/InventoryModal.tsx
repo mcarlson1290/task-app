@@ -233,7 +233,6 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="currentStock">Current Stock *</Label>
-              {console.log('RENDER - currentStock value:', formData.currentStock, 'type:', typeof formData.currentStock)}
               <Input
                 id="currentStock"
                 type="number"
