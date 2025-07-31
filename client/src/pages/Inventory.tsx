@@ -580,53 +580,7 @@ Please process this reorder request at your earliest convenience.`;
         onSave={handleAddInventory}
       />
 
-      {/* Temporary Debug Button */}
-      <button 
-        onClick={() => {
-          console.log('=== FULL INVENTORY DATA ===');
-          console.log('Inventory from state:', inventory);
-          console.log('Total items:', inventory.length);
-          
-          // Show first 3 items in detail
-          inventory.slice(0, 3).forEach((item, index) => {
-            console.log(`\n--- Item ${index + 1}: ${item.name || 'Unknown'} ---`);
-            console.log('Full object:', item);
-            console.log('All fields:', Object.entries(item).map(([key, value]) => `${key}: ${value}`).join('\n'));
-          });
-          
-          // Specifically look for Arugula
-          const arugula = inventory.find(item => 
-            (item.name && item.name.includes('Arugula'))
-          );
-          
-          if (arugula) {
-            console.log('\n=== ARUGULA ITEM STRUCTURE ===');
-            console.log(JSON.stringify(arugula, null, 2));
-          }
-          
-          // Show all unique field names across all items
-          const allFields = new Set();
-          inventory.forEach(item => {
-            Object.keys(item).forEach(key => allFields.add(key));
-          });
-          console.log('\n=== ALL FIELD NAMES IN INVENTORY ===');
-          console.log(Array.from(allFields).sort());
-        }}
-        style={{ 
-          position: 'fixed', 
-          bottom: '20px', 
-          right: '20px', 
-          padding: '10px 20px',
-          background: '#ff0000',
-          color: 'white',
-          zIndex: 9999,
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
-      >
-        🔍 Inspect Data
-      </button>
+
     </div>
   );
 };
