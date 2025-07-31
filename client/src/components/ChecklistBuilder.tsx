@@ -682,7 +682,6 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                       placeholder="e.g., 200"
                       min="1"
                     />
-                    <small className="text-xs text-gray-500">Typical: Rockwool 200, Oasis varies</small>
                   </div>
                 </div>
 
