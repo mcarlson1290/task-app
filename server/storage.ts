@@ -167,6 +167,12 @@ export class MemStorage implements IStorage {
       console.log('No persisted data found, initializing with seed data');
       this.seedInitialData();
     }
+    
+    // Always ensure growing systems are initialized (they're not persisted yet)
+    if (this.growingSystems.size === 0) {
+      console.log('Initializing growing systems...');
+      this.initializeGrowingSystems();
+    }
   }
 
   // Ensure all active recurring tasks have proper task instances for current periods
@@ -281,7 +287,8 @@ export class MemStorage implements IStorage {
         ...userData,
         password: "test123", // Default password for testing
         approved: userData.isApproved,
-        createdAt: new Date()
+        createdAt: new Date(),
+        location: userData.location || null
       };
       delete (user as any).isApproved; // Remove the temporary property
       this.users.set(user.id, user);
@@ -597,7 +604,9 @@ export class MemStorage implements IStorage {
         createdAt: new Date(),
         currentStock: item.currentStock || null,
         minimumStock: item.minimumStock || null,
-        supplier: item.supplier || null
+        supplier: item.supplier || null,
+        totalValue: null,
+        avgCostPerUnit: null
       };
       this.inventoryItems.set(newItem.id, newItem);
     });
@@ -710,7 +719,11 @@ export class MemStorage implements IStorage {
       const newModule: TrainingModule = {
         ...module,
         id: this.currentModuleId++,
-        createdAt: new Date()
+        createdAt: new Date(),
+        duration: module.duration || null,
+        description: module.description || null,
+        createdBy: module.createdBy || null,
+        requiredForRole: module.requiredForRole || null
       };
       this.trainingModules.set(newModule.id, newModule);
     });
@@ -754,60 +767,104 @@ export class MemStorage implements IStorage {
       const newRecurringTask: RecurringTask = {
         ...task,
         id: this.currentRecurringTaskId++,
-        createdAt: new Date()
+        createdAt: new Date(),
+        checklistTemplate: null,
+        dayOfMonth: null,
+        automation: null
       };
       this.recurringTasks.set(newRecurringTask.id, newRecurringTask);
     });
 
-    // Create sample crops with location-specific assignments
-    const sampleCrops = [
+    // Note: Crops functionality removed - using existing data sources only
+    
+    // Initialize growing systems (separated for clarity)
+    this.initializeGrowingSystems();
+  }
+  
+  private initializeGrowingSystems() {
+    // Create location-based growing systems
+    const kenoshaGrowingSystems = [
       {
-        name: "Arugula",
-        category: "microgreens",
-        description: "Peppery microgreens",
-        growthTime: 7,
-        daysToHarvest: 7,
-        systemType: "microgreen",
+        name: 'Kenosha Microgreen Nursery A',
+        type: 'microgreen',
+        category: 'nursery',
+        capacity: 120,
+        currentOccupancy: 75,
+        systemData: {
+          sections: {
+            'A1': { capacity: 60, occupied: ['MG-001', 'MG-002', 'MG-003'] },
+            'A2': { capacity: 60, occupied: ['MG-004', 'MG-005'] }
+          }
+        },
+        isActive: true,
         location: "K"
       },
       {
-        name: "Broccoli",
-        category: "microgreens",
-        description: "Nutrient-rich microgreens",
-        growthTime: 5,
-        daysToHarvest: 5,
-        systemType: "microgreen",
+        name: 'Kenosha Blackout System',
+        type: 'microgreen',
+        category: 'blackout',
+        capacity: 100,
+        currentOccupancy: 45,
+        systemData: {
+          sections: {
+            'B1': { capacity: 50, occupied: ['BL-001', 'BL-002'] },
+            'B2': { capacity: 50, occupied: ['BL-003'] }
+          }
+        },
+        isActive: true,
         location: "K"
-      },
+      }
+    ];
+
+    const racineGrowingSystems = [
       {
-        name: "Romaine",
-        category: "leafy-greens",
-        description: "Crisp lettuce variety",
-        growthTime: 35,
-        daysToHarvest: 35,
-        systemType: "leafy-green",
+        name: 'Racine Tower System B',
+        type: 'leafy-green',
+        category: 'final',
+        capacity: 176,
+        currentOccupancy: 88,
+        systemData: {
+          units: [
+            { id: 'B1', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-001', 'LG-002'] },
+            { id: 'B2', type: 'regular', totalPorts: 44, occupiedPorts: ['LG-003', 'LG-004'] },
+            { id: 'B3', type: 'HD', totalPorts: 176, occupiedPorts: ['LG-005', 'LG-006'] }
+          ]
+        },
+        isActive: true,
         location: "R"
       },
       {
-        name: "Spinach",
-        category: "leafy-greens",
-        description: "Nutrient-dense leafy green",
-        growthTime: 30,
-        daysToHarvest: 30,
-        systemType: "leafy-green",
+        name: 'Racine Ebb & Flow System C',
+        type: 'leafy-green',
+        category: 'staging',
+        capacity: 100,
+        currentOccupancy: 45,
+        systemData: {
+          channels: [
+            { id: 1, capacity: 20, crop: 'Romaine', occupied: ['ROM-001', 'ROM-002'] },
+            { id: 2, capacity: 20, crop: 'Spinach', occupied: ['SPI-001'] },
+            { id: 3, capacity: 20, crop: null, occupied: [] },
+            { id: 4, capacity: 20, crop: 'Basil', occupied: ['BAS-001', 'BAS-002'] },
+            { id: 5, capacity: 20, crop: null, occupied: [] }
+          ]
+        },
+        isActive: true,
         location: "R"
       }
     ];
 
-    sampleCrops.forEach(crop => {
-      const newCrop: Crop = {
-        ...crop,
-        id: this.currentCropId++,
-        createdAt: new Date(),
-        isActive: true
+    const allGrowingSystems = [...kenoshaGrowingSystems, ...racineGrowingSystems];
+
+    allGrowingSystems.forEach(system => {
+      const newSystem: GrowingSystem = {
+        ...system,
+        id: this.currentGrowingSystemId++,
+        createdAt: new Date()
       };
-      this.crops.set(newCrop.id, newCrop);
+      this.growingSystems.set(newSystem.id, newSystem);
     });
+    
+    console.log(`Initialized ${allGrowingSystems.length} growing systems`)
   }
 
   // Get user by ID
@@ -869,7 +926,14 @@ export class MemStorage implements IStorage {
       ...taskData,
       id: this.currentTaskId++,
       createdAt: new Date(),
-      data: taskData.data || {}
+      data: taskData.data || {},
+      visibleFromDate: null,
+      pausedAt: null,
+      resumedAt: null,
+      skippedAt: null,
+      skipReason: null,
+      completedBy: null,
+      approvedBy: null
     };
     this.tasks.set(newTask.id, newTask);
     await this.persistence.saveTasks(Array.from(this.tasks.values()));
@@ -931,7 +995,9 @@ export class MemStorage implements IStorage {
     const newItem: InventoryItem = {
       ...itemData,
       id: this.currentInventoryId++,
-      createdAt: new Date()
+      createdAt: new Date(),
+      totalValue: null,
+      avgCostPerUnit: null
     };
     this.inventoryItems.set(newItem.id, newItem);
     return newItem;

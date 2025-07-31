@@ -1,0 +1,259 @@
+# Replit Instructions: Connect Equipment Tab Data to System Assignment
+
+**ISSUE: System Assignment is using fake data instead of the Equipment tab from Production Data.**
+
+## Step 1: Find the Equipment Tab in Production Data
+
+Look for the existing Equipment tab implementation:
+
+```javascript
+// In ProductionData component, find something like:
+{activeTab === 'equipment' && (
+  <EquipmentTab /> // or similar component
+)}
+
+// Or:
+{activeTab === 'equipment' && (
+  <div className="equipment-section">
+    // Equipment display code
+  </div>
+)}
+```
+
+## Step 2: Add Test Equipment Data to Equipment Tab
+
+The Equipment tab is currently empty. Add realistic test data WHERE THE EQUIPMENT TAB READS FROM:
+
+```javascript
+// Find where Equipment tab loads its data, then initialize with test data
+const initializeEquipmentData = () => {
+  // Find the ACTUAL storage key/method the Equipment tab uses
+  // Don't assume - look at the Equipment tab code
+  
+  const testEquipment = [
+    // Towers
+    {
+      id: 'tower-1',
+      name: 'Tower 1',
+      type: 'Tower',
+      capacity: 50,
+      currentOccupancy: 24,
+      location: 'Grow Room A',
+      status: 'active'
+    },
+    {
+      id: 'tower-2', 
+      name: 'Tower 2',
+      type: 'Tower',
+      capacity: 50,
+      currentOccupancy: 38,
+      location: 'Grow Room A',
+      status: 'active'
+    },
+    {
+      id: 'tower-3',
+      name: 'Tower 3',
+      type: 'Tower',
+      capacity: 50,
+      currentOccupancy: 0,
+      location: 'Grow Room A',
+      status: 'active'
+    },
+    
+    // NFT Channels
+    {
+      id: 'nft-1',
+      name: 'NFT Channel 1',
+      type: 'NFT',
+      capacity: 20,
+      currentOccupancy: 15,
+      location: 'Grow Room B',
+      status: 'active'
+    },
+    {
+      id: 'nft-2',
+      name: 'NFT Channel 2',
+      type: 'NFT',
+      capacity: 20,
+      currentOccupancy: 0,
+      location: 'Grow Room B',
+      status: 'active'
+    },
+    {
+      id: 'nft-3',
+      name: 'NFT Channel 3',
+      type: 'NFT',
+      capacity: 20,
+      currentOccupancy: 7,
+      location: 'Grow Room B',
+      status: 'active'
+    },
+    
+    // Ebb & Flow
+    {
+      id: 'ebb-flow-1',
+      name: 'Ebb & Flow Section 1',
+      type: 'Ebb & Flow',
+      capacity: 100,
+      currentOccupancy: 45,
+      location: 'Grow Room C',
+      status: 'active'
+    },
+    {
+      id: 'ebb-flow-2',
+      name: 'Ebb & Flow Section 2',
+      type: 'Ebb & Flow',
+      capacity: 100,
+      currentOccupancy: 0,
+      location: 'Grow Room C',
+      status: 'maintenance'
+    },
+    
+    // Staging Areas
+    {
+      id: 'nursery',
+      name: 'Nursery',
+      type: 'Staging',
+      capacity: 200,
+      currentOccupancy: 150,
+      location: 'Propagation Room',
+      status: 'active'
+    },
+    {
+      id: 'blackout',
+      name: 'Blackout Room',
+      type: 'Staging',
+      capacity: 150,
+      currentOccupancy: 75,
+      location: 'Propagation Room',
+      status: 'active'
+    },
+    
+    // Microgreen Racks
+    {
+      id: 'microgreen-rack-a',
+      name: 'Microgreen Rack A',
+      type: 'Rack',
+      capacity: 40,
+      currentOccupancy: 28,
+      location: 'Microgreen Room',
+      status: 'active'
+    }
+  ];
+  
+  // Save to wherever Equipment tab reads from
+  // Look at the Equipment tab code to find this
+};
+```
+
+## Step 3: Connect System Assignment to Equipment Tab Data
+
+Update System Assignment to read from the SAME source as Equipment tab:
+
+```javascript
+// In SystemAssignmentStep component
+const SystemAssignmentStep = ({ step, value, onChange, trayId, splitTrays }) => {
+  const [systems, setSystems] = useState([]);
+  
+  useEffect(() => {
+    // Load systems from SAME source as Equipment tab
+    const loadSystems = () => {
+      // Find how Equipment tab loads its data
+      // Use the EXACT SAME method here
+      console.log('Loading systems from Equipment tab data source...');
+      
+      // This should match Equipment tab's data loading
+      const equipmentData = // however Equipment tab loads it
+      
+      // Filter for available systems
+      const availableSystems = equipmentData.filter(system => {
+        const availableSpace = system.capacity - system.currentOccupancy;
+        return system.status === 'active' && availableSpace > 0;
+      });
+      
+      setSystems(availableSystems);
+    };
+    
+    loadSystems();
+    
+    // Listen for equipment updates
+    window.addEventListener('equipmentUpdated', loadSystems);
+    
+    return () => {
+      window.removeEventListener('equipmentUpdated', loadSystems);
+    };
+  }, []);
+  
+  // Render dropdown with REAL equipment
+  return (
+    <select>
+      <option value="">Select system...</option>
+      {systems.map(system => (
+        <option key={system.id} value={system.id}>
+          {system.name} ({system.capacity - system.currentOccupancy} spaces available)
+        </option>
+      ))}
+    </select>
+  );
+};
+```
+
+## Step 4: Update Equipment When System is Assigned
+
+When a tray is assigned to a system, update the equipment data:
+
+```javascript
+const assignTrayToSystem = (trayId, systemId) => {
+  // Load equipment data (same way as Equipment tab)
+  const equipment = // load from Equipment tab's source
+  
+  // Find the system
+  const systemIndex = equipment.findIndex(s => s.id === systemId);
+  if (systemIndex === -1) {
+    console.error('System not found:', systemId);
+    return false;
+  }
+  
+  // Update occupancy
+  equipment[systemIndex].currentOccupancy += 1;
+  
+  // Save back to Equipment tab's data source
+  // Use same save method as Equipment tab
+  
+  // Trigger update
+  window.dispatchEvent(new Event('equipmentUpdated'));
+  
+  return true;
+};
+```
+
+## Step 5: Debug Connection
+
+Add logging to verify the connection:
+
+```javascript
+// In Equipment tab
+console.log('Equipment tab data:', equipmentData);
+
+// In System Assignment
+console.log('System Assignment loading from:', /* same source */);
+console.log('Available systems:', systems);
+
+// They should show the SAME data
+```
+
+## Key Points:
+
+1. **DO NOT create separate equipment data** - Use Equipment tab's data
+2. **Equipment tab is the source of truth** - All systems come from there
+3. **Test data goes in Equipment tab's storage** - Not separate
+4. **Both components use SAME data source** - No duplication
+
+## Expected Result:
+
+1. Equipment tab shows the test systems
+2. System Assignment dropdown shows the SAME systems
+3. When you assign a tray, Equipment tab updates
+4. Everything stays in sync
+
+The Equipment tab and System Assignment must share the SAME data source!

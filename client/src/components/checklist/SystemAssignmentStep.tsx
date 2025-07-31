@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getAvailableSystems, assignTrayToSystem, type GrowingSystem } from '../../data/growingSystems';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation } from '../../contexts/LocationContext';
+import type { GrowingSystem } from '@shared/schema';
 
 interface SystemAssignmentStepProps {
   step: {
@@ -28,15 +30,29 @@ const SystemAssignmentStep: React.FC<SystemAssignmentStepProps> = ({
   trayId, 
   splitTrays 
 }) => {
-  const [availableSystems, setAvailableSystems] = useState<GrowingSystem[]>([]);
   const [assignments, setAssignments] = useState<Record<string, string>>({});
+  const { currentLocation } = useLocation();
+  
+  // Fetch systems data from API
+  const { data: systemsData = [] } = useQuery<GrowingSystem[]>({
+    queryKey: ['/api/growing-systems', currentLocation.code],
+    queryFn: async () => {
+      const response = await fetch(`/api/growing-systems?location=${currentLocation.code}`);
+      if (!response.ok) throw new Error('Failed to fetch systems');
+      return response.json();
+    },
+  });
+
+  // Filter available systems based on step config and availability
+  const availableSystems = systemsData.filter(system => {
+    if (!system.isActive) return false;
+    if (step.config?.systemType && system.type !== step.config.systemType) return false;
+    // Only show systems with available capacity
+    const occupancyRate = system.capacity ? (system.currentOccupancy || 0) / system.capacity : 0;
+    return occupancyRate < 1; // Less than 100% occupied
+  });
   
   useEffect(() => {
-    // Load available systems
-    const systemType = step.config?.systemType;
-    const systems = getAvailableSystems(systemType);
-    setAvailableSystems(systems);
-    
     // If we have split trays, initialize assignments for each
     if (splitTrays && splitTrays.length > 0) {
       const initialAssignments: Record<string, string> = {};
@@ -45,14 +61,14 @@ const SystemAssignmentStep: React.FC<SystemAssignmentStepProps> = ({
       });
       setAssignments(initialAssignments);
     }
-  }, [splitTrays, step.config?.systemType]);
+  }, [splitTrays]);
   
-  const handleSingleAssignment = (systemId: string) => {
+  const handleSingleAssignment = (systemId: number) => {
     onChange({ trayId, systemId });
   };
   
-  const handleSplitAssignment = (trayId: string, systemId: string) => {
-    const newAssignments = { ...assignments, [trayId]: systemId };
+  const handleSplitAssignment = (trayId: string, systemId: number) => {
+    const newAssignments = { ...assignments, [trayId]: systemId.toString() };
     setAssignments(newAssignments);
     
     // Check if all splits are assigned
@@ -60,6 +76,17 @@ const SystemAssignmentStep: React.FC<SystemAssignmentStepProps> = ({
     if (allAssigned) {
       onChange(newAssignments);
     }
+  };
+
+  const getUtilizationRate = (system: GrowingSystem) => {
+    if (!system.capacity) return 0;
+    return ((system.currentOccupancy || 0) / system.capacity) * 100;
+  };
+
+  const getSystemStatusColor = (utilization: number) => {
+    if (utilization < 50) return 'text-green-600';
+    if (utilization < 80) return 'text-yellow-600';
+    return 'text-red-600';
   };
   
   // If we have split trays from a previous step
@@ -77,15 +104,19 @@ const SystemAssignmentStep: React.FC<SystemAssignmentStepProps> = ({
               </span>
               <select
                 value={assignments[tray.id] || ''}
-                onChange={(e) => handleSplitAssignment(tray.id, e.target.value)}
+                onChange={(e) => handleSplitAssignment(tray.id, parseInt(e.target.value))}
                 className="system-select flex-1 p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select system...</option>
-                {availableSystems.map(system => (
-                  <option key={system.id} value={system.id}>
-                    {system.name} ({system.capacity - system.currentLoad} spots available)
-                  </option>
-                ))}
+                {availableSystems.map(system => {
+                  const utilization = getUtilizationRate(system);
+                  const available = (system.capacity || 0) - (system.currentOccupancy || 0);
+                  return (
+                    <option key={system.id} value={system.id}>
+                      {system.name} ({available} spots available - {utilization.toFixed(0)}% used)
+                    </option>
+                  );
+                })}
               </select>
             </div>
           ))}
@@ -111,15 +142,20 @@ const SystemAssignmentStep: React.FC<SystemAssignmentStepProps> = ({
       </label>
       <select
         value={value?.systemId || ''}
-        onChange={(e) => handleSingleAssignment(e.target.value)}
+        onChange={(e) => handleSingleAssignment(parseInt(e.target.value))}
         className="system-select w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Select system...</option>
-        {availableSystems.map(system => (
-          <option key={system.id} value={system.id}>
-            {system.name} ({system.capacity - system.currentLoad} spots available)
-          </option>
-        ))}
+        {availableSystems.map(system => {
+          const utilization = getUtilizationRate(system);
+          const available = (system.capacity || 0) - (system.currentOccupancy || 0);
+          const statusColor = getSystemStatusColor(utilization);
+          return (
+            <option key={system.id} value={system.id}>
+              {system.name} - {available} spots available ({utilization.toFixed(0)}% used)
+            </option>
+          );
+        })}
       </select>
       
       {/* System Type Filter Info */}
