@@ -30,6 +30,7 @@ interface ChecklistBuilderProps {
 const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, onChange }) => {
   const [steps, setSteps] = useState<ChecklistStep[]>(template?.steps || []);
   const [showAddStep, setShowAddStep] = useState(false);
+  const [availableSeeds, setAvailableSeeds] = useState<any[]>([]);
 
   const stepTypes = [
     { value: 'instruction', label: 'Text Instruction', icon: FileText, description: 'Display read-only information or instructions' },
@@ -44,6 +45,46 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
     { value: 'edit-tray', label: 'Edit Tray', icon: Edit3, description: 'Update existing tray information' },
     { value: 'create-tray', label: 'Create Tray', icon: PlusCircle, description: 'Create new trays with specifications' }
   ];
+
+  // Load available seeds from inventory
+  React.useEffect(() => {
+    const loadSeeds = async () => {
+      try {
+        const response = await fetch('/api/inventory');
+        const inventory = await response.json();
+        
+        // Filter to only seed items
+        const seeds = inventory.filter((item: any) => 
+          item.category === 'Seeds' || 
+          item.category === 'seeds' || 
+          (item.name && item.name.toLowerCase().includes('seed'))
+        );
+        
+        console.log('Available seeds loaded:', seeds);
+        setAvailableSeeds(seeds);
+      } catch (error) {
+        console.error('Failed to load seeds from inventory:', error);
+        // Fallback to localStorage if API fails
+        const localInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+        const seeds = localInventory.filter((item: any) => 
+          item.category === 'Seeds' || 
+          item.category === 'seeds' || 
+          (item.name && item.name.toLowerCase().includes('seed'))
+        );
+        setAvailableSeeds(seeds);
+      }
+    };
+
+    loadSeeds();
+
+    // Listen for inventory updates
+    const handleInventoryUpdate = () => loadSeeds();
+    window.addEventListener('inventoryUpdated', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
+    };
+  }, []);
 
   const getDefaultConfig = (type: string) => {
     switch (type) {
@@ -647,7 +688,12 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                   <Label className="text-sm font-medium mb-2 block">Default Crop Varieties</Label>
                   <p className="text-xs text-gray-600 mb-3">Set default quantities for each crop type</p>
                   
-                  {(!step.config.defaultVarieties || step.config.defaultVarieties.length === 0) ? (
+                  {availableSeeds.length === 0 ? (
+                    <div className="no-seeds-message p-3 text-center text-gray-500 italic border rounded">
+                      <p>No seeds found in inventory.</p>
+                      <p className="text-xs mt-1">Please add seeds to inventory before creating tray defaults.</p>
+                    </div>
+                  ) : (!step.config.defaultVarieties || step.config.defaultVarieties.length === 0) ? (
                     <div className="no-varieties-message p-3 text-center text-gray-500 italic">
                       No default varieties set. Click below to add.
                     </div>
@@ -659,21 +705,12 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                             value={variety.seedId || ''}
                             onValueChange={(value) => {
                               const newVarieties = [...(step.config.defaultVarieties || [])];
-                              const inventoryItems = [
-                                { id: '1', name: 'Arugula Seeds', sku: 'ARU' },
-                                { id: '2', name: 'Basil Seeds', sku: 'BAS' },
-                                { id: '3', name: 'Broccoli Seeds', sku: 'BROC' },
-                                { id: '4', name: 'Kale Seeds', sku: 'KALE' },
-                                { id: '5', name: 'Lettuce Seeds', sku: 'LET' },
-                                { id: '6', name: 'Radish Seeds', sku: 'RAD' },
-                                { id: '7', name: 'Spinach Seeds', sku: 'SPN' }
-                              ];
-                              const seed = inventoryItems.find(s => s.id === value);
+                              const seed = availableSeeds.find(s => s.id.toString() === value);
                               newVarieties[index] = { 
                                 ...variety, 
                                 seedId: value,
                                 seedName: seed?.name || '',
-                                sku: seed?.sku || ''
+                                sku: seed?.sku || seed?.SKU || seed?.productCode || ''
                               };
                               onUpdate({
                                 ...step,
@@ -685,13 +722,19 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                               <SelectValue placeholder="Select seed..." />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="1">[ARU] Arugula Seeds</SelectItem>
-                              <SelectItem value="2">[BAS] Basil Seeds</SelectItem>
-                              <SelectItem value="3">[BROC] Broccoli Seeds</SelectItem>
-                              <SelectItem value="4">[KALE] Kale Seeds</SelectItem>
-                              <SelectItem value="5">[LET] Lettuce Seeds</SelectItem>
-                              <SelectItem value="6">[RAD] Radish Seeds</SelectItem>
-                              <SelectItem value="7">[SPN] Spinach Seeds</SelectItem>
+                              {availableSeeds.length === 0 ? (
+                                <SelectItem value="no-seeds" disabled>No seeds in inventory</SelectItem>
+                              ) : (
+                                availableSeeds.map(seed => {
+                                  const sku = seed.sku || seed.SKU || seed.productCode || '';
+                                  const displaySKU = sku ? `[${sku}]` : '[NO-SKU]';
+                                  return (
+                                    <SelectItem key={seed.id} value={seed.id.toString()}>
+                                      {displaySKU} {seed.name}
+                                    </SelectItem>
+                                  );
+                                })
+                              )}
                             </SelectContent>
                           </Select>
                           
@@ -774,10 +817,17 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                       });
                     }}
                     className="mt-3"
+                    disabled={availableSeeds.length === 0}
                   >
                     <Plus className="w-4 h-4 mr-1" />
                     Add Default Variety
                   </Button>
+                  
+                  {availableSeeds.length === 0 && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Add seeds to inventory first to enable variety configuration
+                    </p>
+                  )}
                 </div>
 
                 <div>

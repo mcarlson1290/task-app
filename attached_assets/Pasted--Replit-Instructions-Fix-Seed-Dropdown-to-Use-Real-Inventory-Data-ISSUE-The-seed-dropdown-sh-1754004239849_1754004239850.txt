@@ -1,0 +1,203 @@
+# Replit Instructions: Fix Seed Dropdown to Use Real Inventory Data
+
+**ISSUE: The seed dropdown shows hardcoded options instead of pulling from actual inventory**
+
+## Step 1: Remove Hardcoded Seed Options
+
+Find and remove the hardcoded dropdown options:
+
+```tsx
+// REMOVE THIS hardcoded list:
+<option>[ARU] Arugula Seeds</option>
+<option>[BAS] Basil Seeds</option>
+<option>[BROC] Broccoli Seeds</option>
+// etc...
+
+// REPLACE WITH dynamic options from inventory
+```
+
+## Step 2: Load Seeds from Inventory
+
+In the recurring task component, ensure seeds are loaded from inventory:
+
+```tsx
+// In the recurring task editor component
+const [availableSeeds, setAvailableSeeds] = useState([]);
+
+useEffect(() => {
+  // Load ONLY seeds from inventory
+  const loadSeeds = () => {
+    const inventoryData = localStorage.getItem('inventory');
+    if (inventoryData) {
+      const allInventory = JSON.parse(inventoryData);
+      
+      // Filter to ONLY seed items
+      const seedItems = allInventory.filter(item => 
+        item.category === 'Seeds' || 
+        item.category === 'seeds' || 
+        (item.name && item.name.toLowerCase().includes('seed'))
+      );
+      
+      console.log('Available seeds:', seedItems); // Debug
+      setAvailableSeeds(seedItems);
+    }
+  };
+  
+  loadSeeds();
+  
+  // Listen for inventory updates
+  const handleInventoryUpdate = () => loadSeeds();
+  window.addEventListener('inventoryUpdated', handleInventoryUpdate);
+  
+  return () => {
+    window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
+  };
+}, []);
+```
+
+## Step 3: Update the Seed Dropdown
+
+Replace the hardcoded dropdown with dynamic options:
+
+```tsx
+<div className="default-variety-row">
+  <select
+    value={variety.seedId || ''}
+    onChange={(e) => {
+      const newVarieties = [...(stepConfig.defaultVarieties || [])];
+      newVarieties[index] = { ...variety, seedId: e.target.value };
+      updateStepConfig('defaultVarieties', newVarieties);
+    }}
+    className="seed-select"
+  >
+    <option value="">Select seed...</option>
+    {availableSeeds.length === 0 ? (
+      <option disabled>No seeds in inventory</option>
+    ) : (
+      availableSeeds.map(seed => (
+        <option key={seed.id} value={seed.id}>
+          [{seed.sku || seed.productCode || 'NO-SKU'}] {seed.name}
+        </option>
+      ))
+    )}
+  </select>
+  
+  {/* Quantity input */}
+  <input
+    type="number"
+    value={variety.quantity || ''}
+    onChange={(e) => {
+      const newVarieties = [...(stepConfig.defaultVarieties || [])];
+      newVarieties[index] = { ...variety, quantity: parseInt(e.target.value) || 0 };
+      updateStepConfig('defaultVarieties', newVarieties);
+    }}
+    placeholder="Qty"
+    min={0}
+    className="quantity-input"
+  />
+  
+  {/* Seeds oz input */}
+  <input
+    type="number"
+    value={variety.seedsOz || ''}
+    onChange={(e) => {
+      const newVarieties = [...(stepConfig.defaultVarieties || [])];
+      newVarieties[index] = { ...variety, seedsOz: parseFloat(e.target.value) || 0 };
+      updateStepConfig('defaultVarieties', newVarieties);
+    }}
+    placeholder="Seeds (oz)"
+    step="0.1"
+    min={0}
+    className="seeds-oz-input"
+  />
+  
+  {/* Remove button */}
+  <button 
+    type="button"
+    onClick={() => removeVariety(index)}
+    className="remove-btn"
+  >
+    ✕
+  </button>
+</div>
+```
+
+## Step 4: Fix SKU Display Format
+
+Based on your inventory screenshot showing items have SKU field, ensure proper display:
+
+```tsx
+// When displaying seed options, use the actual SKU from inventory
+availableSeeds.map(seed => {
+  // Get SKU - check multiple possible field names
+  const sku = seed.sku || seed.SKU || seed.productCode || '';
+  const displaySKU = sku ? `[${sku}]` : '[NO-SKU]';
+  
+  return (
+    <option key={seed.id} value={seed.id}>
+      {displaySKU} {seed.name}
+    </option>
+  );
+})
+```
+
+## Step 5: Add Debug Check
+
+Add a temporary check to see what's in inventory:
+
+```tsx
+// Add this temporarily to debug
+useEffect(() => {
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  const seeds = inventory.filter(item => item.category === 'Seeds');
+  console.log('Seeds in inventory:', seeds);
+  console.log('First seed structure:', seeds[0]);
+}, []);
+```
+
+## Step 6: Handle Empty Inventory
+
+Add user-friendly message if no seeds exist:
+
+```tsx
+{availableSeeds.length === 0 && (
+  <div className="no-seeds-message">
+    <p>No seeds found in inventory.</p>
+    <p>Please add seeds to inventory before creating tray defaults.</p>
+    <a href="/inventory">Go to Inventory →</a>
+  </div>
+)}
+```
+
+## Step 7: Ensure Proper Data Flow
+
+When saving the recurring task step:
+
+```tsx
+// The saved variety should store the seed ID, not the display text
+const varietyData = {
+  seedId: selectedSeedId, // This is the inventory item ID
+  quantity: quantity,
+  seedsOz: seedsOz
+};
+
+// When displaying later, look up the seed details from inventory
+const seed = inventory.find(item => item.id === variety.seedId);
+const displayName = seed ? `[${seed.sku}] ${seed.name}` : 'Unknown Seed';
+```
+
+## Summary
+
+This fix:
+1. **Removes hardcoded options** - No more fake [ARU], [BAS] entries
+2. **Pulls from real inventory** - Only shows seeds that actually exist
+3. **Uses real SKUs** - Shows the actual SKU from your inventory data
+4. **Filters correctly** - Only shows items with category "Seeds"
+5. **Updates dynamically** - If you add new seeds to inventory, they appear here
+
+The dropdown will now show real entries like:
+- [SPIN] Spinach Seeds
+- [ARUG] Arugula Seeds  
+- [ROMN] Romaine Seeds
+
+Based on what's actually in your inventory!
