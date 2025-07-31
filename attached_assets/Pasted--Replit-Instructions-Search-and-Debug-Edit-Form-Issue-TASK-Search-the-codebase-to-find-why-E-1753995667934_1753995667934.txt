@@ -1,0 +1,230 @@
+# Replit Instructions: Search and Debug Edit Form Issue
+
+**TASK: Search the codebase to find why Edit form shows 0 instead of actual inventory quantities**
+
+## Step 1: Search for Inventory Data Structure
+
+Search for these patterns to understand how inventory data is stored:
+
+```bash
+# Search for where inventory is saved/loaded
+Search for: "localStorage.setItem.*inventory"
+Search for: "localStorage.getItem.*inventory"
+Search for: "JSON.parse.*inventory"
+
+# Search for inventory item structure
+Search for: "currentStock"
+Search for: "minimumStock" 
+Search for: "quantity"
+Search for: "450" (the actual value we see in the table)
+```
+
+## Step 2: Trace the Edit Button Click
+
+```bash
+# Find the Edit button in inventory
+Search for: "Edit" near "onClick"
+Search for: "handleEdit"
+Search for: "editItem"
+Search for: "openEdit"
+Search for: "setEditingItem"
+Search for: "setEditModal"
+```
+
+## Step 3: Find the Edit Modal Component
+
+```bash
+# Find the edit modal/form
+Search for: "Edit Inventory"
+Search for: "EditInventoryModal"
+Search for: "EditInventoryForm"
+Search for: "Update the inventory item"
+Search for: "Current Stock *" (the label in the form)
+```
+
+## Step 4: Create a Debug Component
+
+Add this temporary debug component to the inventory page to inspect the data:
+
+```tsx
+// Add this component temporarily to the inventory page
+const DebugInventoryData = () => {
+  const [debugInfo, setDebugInfo] = useState('');
+
+  const runDebug = () => {
+    // Get inventory from localStorage
+    const inventoryRaw = localStorage.getItem('inventory');
+    const inventory = inventoryRaw ? JSON.parse(inventoryRaw) : [];
+    
+    // Find Arugula Seeds
+    const arugulaItem = inventory.find(item => 
+      item.name?.includes('Arugula') || 
+      item.sku === 'ARUG'
+    );
+    
+    // Create debug report
+    const report = {
+      totalItems: inventory.length,
+      firstItem: inventory[0],
+      arugulaItem: arugulaItem,
+      arugulaFields: arugulaItem ? Object.keys(arugulaItem) : [],
+      arugulaValues: arugulaItem ? {
+        name: arugulaItem.name,
+        allStockFields: {
+          currentStock: arugulaItem.currentStock,
+          current_stock: arugulaItem.current_stock,
+          'Current Stock': arugulaItem['Current Stock'],
+          quantity: arugulaItem.quantity,
+          stock: arugulaItem.stock,
+          Stock: arugulaItem.Stock
+        },
+        allMinFields: {
+          minimumStock: arugulaItem.minimumStock,
+          minimum_stock: arugulaItem.minimum_stock,
+          'Minimum Stock': arugulaItem['Minimum Stock'],
+          minStock: arugulaItem.minStock,
+          min_stock: arugulaItem.min_stock,
+          reorderPoint: arugulaItem.reorderPoint
+        }
+      } : null
+    };
+    
+    setDebugInfo(JSON.stringify(report, null, 2));
+    console.log('DEBUG REPORT:', report);
+  };
+
+  return (
+    <div style={{ margin: '20px', padding: '10px', background: '#f0f0f0' }}>
+      <button onClick={runDebug}>Debug Inventory Data Structure</button>
+      {debugInfo && (
+        <pre style={{ 
+          background: 'white', 
+          padding: '10px', 
+          marginTop: '10px',
+          maxHeight: '400px',
+          overflow: 'auto'
+        }}>
+          {debugInfo}
+        </pre>
+      )}
+    </div>
+  );
+};
+
+// Add this to the inventory page:
+<DebugInventoryData />
+```
+
+## Step 5: Trace the Data Flow
+
+Create a tracing function to follow data through the edit process:
+
+```tsx
+// Add this to the Edit button click handler
+const traceEditFlow = (item) => {
+  console.group('EDIT FLOW TRACE');
+  
+  // 1. Log what the table row shows
+  const row = event.target.closest('tr') || event.target.closest('.inventory-item');
+  console.log('1. Table row HTML:', row?.innerHTML);
+  
+  // 2. Log what's passed to edit
+  console.log('2. Item passed to edit:', item);
+  console.log('   Item type:', typeof item);
+  console.log('   Item keys:', Object.keys(item || {}));
+  
+  // 3. Log what's in localStorage
+  const stored = localStorage.getItem('inventory');
+  const inventory = stored ? JSON.parse(stored) : [];
+  const storedItem = inventory.find(i => i.id === item?.id || i.name === item?.name);
+  console.log('3. Item in localStorage:', storedItem);
+  
+  // 4. Check global state
+  console.log('4. Window objects:', {
+    editingItem: window.editingItem,
+    currentEditItem: window.currentEditItem,
+    modalItem: window.modalItem
+  });
+  
+  console.groupEnd();
+  
+  // Continue with normal edit
+  handleEdit(item);
+};
+```
+
+## Step 6: Common Issues to Check
+
+Look for these specific patterns that might cause the issue:
+
+```javascript
+// Issue 1: Data transformation
+// Search for code that might transform the data:
+Search for: "map.*inventory"
+Search for: "reduce.*inventory"
+Search for: "filter.*inventory"
+
+// Issue 2: Different data sources
+// The table might use one source, edit form another:
+Search for: "inventory" near "useState"
+Search for: "inventory" near "useEffect"
+Search for: "fetchInventory"
+Search for: "loadInventory"
+
+// Issue 3: Field mapping
+// Look for code that maps fields:
+Search for: "currentStock:"
+Search for: "quantity:"
+Search for: "...item"
+Search for: "spread.*item"
+```
+
+## Step 7: Nuclear Option - Override the Edit Function
+
+If we can't find the issue, add this override to force it to work:
+
+```tsx
+// Find the Edit button and wrap it
+const InventoryEditButtonOverride = ({ item, children }) => {
+  const handleEditOverride = () => {
+    // Get the actual displayed values from the DOM
+    const row = event.target.closest('tr');
+    const cells = row.querySelectorAll('td');
+    
+    // Parse out the values (adjust indices based on your table)
+    const currentStockCell = Array.from(cells).find(cell => 
+      cell.textContent.includes('grams') || 
+      cell.textContent.includes('kg') ||
+      cell.textContent.includes('liters')
+    );
+    
+    const currentStock = currentStockCell ? 
+      parseFloat(currentStockCell.textContent.match(/[\d.]+/)?.[0] || '0') : 
+      0;
+    
+    // Build complete item
+    const completeItem = {
+      ...item,
+      currentStock: currentStock,
+      quantity: currentStock,
+      minimumStock: item.minimumStock || item.minimum_stock || 100, // We saw 100 in screenshot
+      // Add every possible field name
+      current_stock: currentStock,
+      'Current Stock': currentStock,
+      stock: currentStock
+    };
+    
+    console.log('OVERRIDE: Forcing edit with:', completeItem);
+    
+    // Force update the edit modal's data
+    window.forceEditItem = completeItem;
+    
+    // Trigger original edit
+    originalHandleEdit(completeItem);
+  };
+  
+  return React.cloneElement(children, { onClick: handleEditOverride });
+};
+```
+
+Run these searches and add the debug component to find exactly where the disconnect is happening!

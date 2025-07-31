@@ -32,7 +32,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       
       return {
         name: item.name,
-        sku: item.sku || '',
+        sku: item.sku || item.productCode || '',
         currentStock: currentStock,
         unit: item.unit,
         minimumStock: minimumStock,
@@ -67,7 +67,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       
       const newFormData = {
         name: item.name,
-        sku: item.sku || '',
+        sku: item.sku || item.productCode || '',
         currentStock: currentStock,
         unit: item.unit,
         minimumStock: minimumStock,
@@ -200,6 +200,12 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
           <DialogDescription>
             {mode === 'edit' ? 'Update the inventory item details below.' : 'Enter the details for the new inventory item.'}
           </DialogDescription>
+          {/* Debug display for edit mode */}
+          {mode === 'edit' && (
+            <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+              Debug: Stock={formData.currentStock}, Min={formData.minimumStock}
+            </div>
+          )}
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
