@@ -105,7 +105,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
               <SelectContent>
                 {items.map(item => (
                   <SelectItem key={item.id} value={item.id.toString()}>
-                    {item.name} ({item.category})
+                    [{item.sku || 'NO-SKU'}] {item.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -115,11 +115,14 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
           {/* Current Stock Display */}
           {selectedItem && (
             <div className="bg-gray-50 p-3 rounded-lg">
+              <div className="text-sm text-gray-600">
+                <strong>SKU:</strong> {selectedItem.sku || 'No SKU'}
+              </div>
               <div className="text-sm text-gray-600">Current Stock</div>
               <div className="text-lg font-semibold text-[#203B17]">
                 {selectedItem.currentStock} {selectedItem.unit}
               </div>
-              {selectedItem.avgCostPerUnit > 0 && (
+              {(selectedItem.avgCostPerUnit && selectedItem.avgCostPerUnit > 0) && (
                 <div className="text-sm text-gray-600">
                   Current avg. cost: ${selectedItem.avgCostPerUnit.toFixed(2)}/{selectedItem.unit}
                 </div>

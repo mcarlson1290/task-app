@@ -51,9 +51,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
 
   // Update form data when item changes OR when modal opens
   useEffect(() => {
-    console.log('InventoryModal useEffect - Mode:', mode, 'Item:', item, 'isOpen:', isOpen);
     if (mode === 'edit' && item) {
-      console.log('Setting form data for editing:', item);
       setFormData({
         name: item.name,
         sku: item.sku || '',

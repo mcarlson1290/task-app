@@ -102,9 +102,9 @@ const Inventory: React.FC = () => {
     
     inventory.forEach(item => {
       const categoryKey = item.category?.toLowerCase().replace(/\s+/g, '-') || 'other-supplies';
-      if (totals[categoryKey]) {
-        totals[categoryKey].value += getItemTotalValue(item);
-        totals[categoryKey].count += 1;
+      if (totals[categoryKey as keyof typeof totals]) {
+        totals[categoryKey as keyof typeof totals].value += getItemTotalValue(item);
+        totals[categoryKey as keyof typeof totals].count += 1;
       }
     });
     
@@ -112,8 +112,9 @@ const Inventory: React.FC = () => {
     
     // Add percentages
     Object.keys(totals).forEach(category => {
-      totals[category].percentage = grandTotal > 0 
-        ? ((totals[category].value / grandTotal) * 100).toFixed(1)
+      const cat = category as keyof typeof totals;
+      (totals[cat] as any).percentage = grandTotal > 0 
+        ? ((totals[cat].value / grandTotal) * 100).toFixed(1)
         : '0.0';
     });
     
@@ -128,7 +129,7 @@ const Inventory: React.FC = () => {
 
   const getItemTotalValue = (item: InventoryItem): number => {
     // Use the total value from the database or calculate it
-    return item.totalValue || (item.currentStock * getItemCostPerUnit(item));
+    return item.totalValue || ((item.currentStock || 0) * getItemCostPerUnit(item));
   };
 
   const getTotalInventoryValue = (): number => {
@@ -150,7 +151,7 @@ const Inventory: React.FC = () => {
     }
 
     if (showLowStockOnly) {
-      filtered = filtered.filter(item => item.currentStock <= item.minimumStock);
+      filtered = filtered.filter(item => (item.currentStock || 0) <= (item.minimumStock || 0));
     }
 
     // Sort the filtered items
@@ -159,7 +160,7 @@ const Inventory: React.FC = () => {
         case "name":
           return a.name.localeCompare(b.name);
         case "stock":
-          return a.currentStock - b.currentStock;
+          return (a.currentStock || 0) - (b.currentStock || 0);
         case "category":
           return a.category.localeCompare(b.category);
         case "cost":
@@ -175,10 +176,12 @@ const Inventory: React.FC = () => {
   }, [inventory, searchTerm, categoryFilter, showLowStockOnly, sortBy]);
 
   const getStockStatus = (item: InventoryItem) => {
-    if (item.currentStock <= item.minimumStock) {
+    const currentStock = item.currentStock || 0;
+    const minimumStock = item.minimumStock || 0;
+    if (currentStock <= minimumStock) {
       return { status: "low", color: "bg-red-100 text-red-800", label: "Low Stock" };
     }
-    if (item.currentStock <= item.minimumStock * 1.5) {
+    if (currentStock <= minimumStock * 1.5) {
       return { status: "warning", color: "bg-yellow-100 text-yellow-800", label: "Warning" };
     }
     return { status: "good", color: "bg-green-100 text-green-800", label: "In Stock" };
@@ -223,18 +226,10 @@ Please process this reorder request at your earliest convenience.`;
   };
 
   const handleEditItem = (item: InventoryItem) => {
-    console.log('handleEditItem called with:', item);
     setEditingItem(item);
     setModalMode('edit');
     setShowModal(true);
   };
-
-  // Open modal after editingItem is set for edit mode
-  React.useEffect(() => {
-    if (modalMode === 'edit' && editingItem && showModal) {
-      console.log('Modal opened for editing:', editingItem);
-    }
-  }, [editingItem, modalMode, showModal]);
 
   const handleSaveItem = (itemData: any) => {
     if (modalMode === 'edit') {
@@ -312,7 +307,8 @@ Please process this reorder request at your earliest convenience.`;
             {/* Category Breakdown Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {categoryDetails.map((category) => {
-                const categoryData = calculateCategoryTotals().totals[category.id];
+                const totals = calculateCategoryTotals().totals;
+                const categoryData = totals[category.id as keyof typeof totals];
                 return (
                   <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
                     <div className="text-2xl mb-2">{category.icon}</div>
@@ -421,7 +417,7 @@ Please process this reorder request at your earliest convenience.`;
                   <div>
                     <p className="font-medium text-red-900">{item.name}</p>
                     <p className="text-sm text-red-700">
-                      {item.currentStock} {item.unit} remaining • Reorder at {item.reorderLevel} {item.unit}
+                      {item.currentStock} {item.unit} remaining • Reorder at {item.minimumStock} {item.unit}
                     </p>
                   </div>
                 </div>

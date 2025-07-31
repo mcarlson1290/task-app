@@ -217,7 +217,6 @@ export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
 export type GrowingSystem = typeof growingSystems.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
-export type InventoryItem = typeof inventoryItems.$inferSelect;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
