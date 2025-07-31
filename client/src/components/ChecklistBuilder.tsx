@@ -178,6 +178,7 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
             step={step}
             index={index}
             systems={systems}
+            availableSeeds={availableSeeds}
             onUpdate={(updatedStep) => updateStep(index, updatedStep)}
             onDelete={() => deleteStep(index)}
             onMoveUp={index > 0 ? () => moveStep(index, 'up') : undefined}
@@ -236,6 +237,7 @@ interface ChecklistStepEditorProps {
   step: ChecklistStep;
   index: number;
   systems: GrowingSystem[];
+  availableSeeds: any[];
   onUpdate: (step: ChecklistStep) => void;
   onDelete: () => void;
   onMoveUp?: () => void;
@@ -246,6 +248,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
   step,
   index,
   systems,
+  availableSeeds,
   onUpdate,
   onDelete,
   onMoveUp,
