@@ -42,6 +42,16 @@
           }
         },
         {
+          "id": "1753914909834",
+          "type": "system-assignment",
+          "label": "Move the Plants to Available towers.",
+          "required": true,
+          "config": {
+            "systemType": "",
+            "autoSuggest": true
+          }
+        },
+        {
           "id": "1753922698847",
           "type": "create-tray",
           "label": "",
@@ -54,16 +64,6 @@
             "growingMedium": "",
             "location": "",
             "defaultTrayType": "microgreen"
-          }
-        },
-        {
-          "id": "1753914909834",
-          "type": "system-assignment",
-          "label": "Move the Plants to Available towers.",
-          "required": true,
-          "config": {
-            "systemType": "",
-            "autoSuggest": true
           }
         }
       ]

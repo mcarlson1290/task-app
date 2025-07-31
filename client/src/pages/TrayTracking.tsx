@@ -240,6 +240,11 @@ const TrayTracking: React.FC = () => {
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">{tray.cropType}</p>
+                  {tray.varieties && tray.varieties.length > 0 && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      🌱 {tray.varieties.map(v => `${v.quantity} ${v.seedName}`).join(', ')}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
@@ -288,6 +293,17 @@ const TrayTracking: React.FC = () => {
                               <p className="font-medium">Crop Information</p>
                               <p className="text-sm text-gray-600">{tray.cropType}</p>
                               <p className="text-sm text-gray-600">{tray.cropCategory}</p>
+                              {tray.varieties && tray.varieties.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-sm font-medium text-green-800">🌱 Varieties:</p>
+                                  {tray.varieties.map((variety, idx) => (
+                                    <p key={idx} className="text-xs text-gray-600">
+                                      • {variety.quantity} plants of {variety.seedName}
+                                      {variety.sku && ` (${variety.sku})`}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <div>
                               <p className="font-medium">Timeline</p>

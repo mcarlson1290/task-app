@@ -182,7 +182,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         return {
           seedId: v.seedId,
           seedName: seed?.name || 'Unknown',
-          sku: seed?.sku || seed?.productCode || '',
+          sku: seed?.sku || '',
           quantity: parseInt(v.quantity.toString()),
           seedsOz: parseFloat(v.seedsOz.toString()) || 0
         };
@@ -196,8 +196,8 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     // Check inventory for each variety
     for (const variety of varietyDetails) {
       const seed = availableSeeds.find(s => s.id === variety.seedId);
-      if (seed && variety.seedsOz > seed.currentStock) {
-        alert(`Not enough ${seed.name} in inventory. Available: ${seed.currentStock} ${seed.unit}`);
+      if (seed && variety.seedsOz > (seed as any).currentStock) {
+        alert(`Not enough ${seed.name} in inventory. Available: ${(seed as any).currentStock} ${seed.unit}`);
         return;
       }
     }
@@ -254,7 +254,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
           const updatedInventory = inventory.map((item: InventoryItem) => {
             if (item.id === variety.seedId) {
-              return { ...item, currentStock: item.currentStock - variety.seedsOz };
+              return { ...item, currentStock: (item as any).currentStock - variety.seedsOz };
             }
             return item;
           });
@@ -376,13 +376,13 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
                     const seed = availableSeeds.find(s => s.id === e.target.value);
                     updateVariety(variety.id, 'seedId', e.target.value);
                     updateVariety(variety.id, 'seedName', seed?.name || '');
-                    updateVariety(variety.id, 'sku', seed?.sku || seed?.productCode || '');
+                    updateVariety(variety.id, 'sku', seed?.sku || '');
                   }}
                 >
                   <option value="">Select seed...</option>
                   {availableSeeds.map(seed => (
                     <option key={seed.id} value={seed.id}>
-                      [{seed.sku || seed.productCode}] {seed.name}
+                      [{seed.sku}] {seed.name}
                     </option>
                   ))}
                 </select>

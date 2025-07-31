@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Split, ArrowRight } from 'lucide-react';
+import { Split, ArrowRight, Plus, Minus } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
-import { Tray } from '../../data/trayTracking';
+import { Tray, TrayVariety } from '../../data/trayTracking';
 import TrayDataService from '../../services/trayDataService';
 
 interface TraySplitStepProps {
@@ -37,6 +37,16 @@ interface TraySplitStepProps {
   trayId?: string;
 }
 
+interface VarietySplit {
+  varietyId: string;
+  varietyName: string;
+  originalQuantity: number;
+  splits: Array<{
+    trayIndex: number;
+    quantity: number;
+  }>;
+}
+
 const TraySplitStep: React.FC<TraySplitStepProps> = ({ 
   step, 
   value, 
@@ -46,6 +56,8 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
   const [activeTrays, setActiveTrays] = useState<Tray[]>([]);
   const [selectedTray, setSelectedTray] = useState(value?.trayId || trayId || '');
   const [splitCount, setSplitCount] = useState(value?.count || step.config?.defaultSplits || 3);
+  const [varietySplits, setVarietySplits] = useState<VarietySplit[]>([]);
+  const [splitMode, setSplitMode] = useState<'auto' | 'manual'>('auto');
 
   useEffect(() => {
     console.log('=== TRAY SPLIT DATA CHECK ===');
@@ -89,22 +101,65 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
     updateValue(selectedTray, newCount);
   };
 
+  // Calculate smart variety distribution across child trays
+  const calculateVarietyDistribution = (tray: Tray, splitCount: number) => {
+    if (!tray.varieties || tray.varieties.length === 0) {
+      return [];
+    }
+
+    const splits: VarietySplit[] = tray.varieties.map(variety => {
+      const baseQuantityPerTray = Math.floor(variety.quantity / splitCount);
+      const remainder = variety.quantity % splitCount;
+      
+      const varietySplit: VarietySplit = {
+        varietyId: variety.seedId,
+        varietyName: variety.seedName,
+        originalQuantity: variety.quantity,
+        splits: []
+      };
+
+      // Distribute plants across trays
+      for (let i = 0; i < splitCount; i++) {
+        const quantity = baseQuantityPerTray + (i < remainder ? 1 : 0);
+        varietySplit.splits.push({
+          trayIndex: i,
+          quantity: quantity
+        });
+      }
+
+      return varietySplit;
+    });
+
+    return splits;
+  };
+
   const updateValue = (trayId: string, count: number) => {
     if (!trayId) return;
 
     const tray = activeTrays.find(t => t.id === trayId);
     if (!tray) return;
 
-    // Generate split preview - this is just for UI display
+    // Calculate variety distribution
+    const varietyDistribution = calculateVarietyDistribution(tray, count);
+    setVarietySplits(varietyDistribution);
+
+    // Generate split preview with variety information
     const splits = [];
     for (let i = 1; i <= count; i++) {
+      const trayVarieties = varietyDistribution.map(vs => ({
+        varietyName: vs.varietyName,
+        quantity: vs.splits[i - 1]?.quantity || 0
+      })).filter(v => v.quantity > 0);
+
       splits.push({
         id: `${trayId}-${i}`,
         label: `Split ${i}`,
         parentId: trayId,
         splitNumber: i,
         cropType: tray.cropType,
-        cropName: tray.cropType
+        cropName: tray.cropType,
+        varieties: trayVarieties,
+        totalPlants: trayVarieties.reduce((sum, v) => sum + v.quantity, 0)
       });
     }
 
@@ -114,11 +169,12 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
       count: count,
       splits: splits,
       originalTray: tray,
+      varietyDistribution: varietyDistribution,
       // Add a method to execute the actual split
       executeSplit: () => {
-        console.log('TraySplitStep: Executing split operation');
+        console.log('TraySplitStep: Executing multi-variety split operation');
         const result = TrayDataService.splitTray(trayId, count);
-        console.log('TraySplitStep: Split executed, result:', result);
+        console.log('TraySplitStep: Multi-variety split executed, result:', result);
         return result;
       }
     };
@@ -164,19 +220,21 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
         </div>
 
         {selectedTray && (
-          <div className="space-y-2">
-            <Label htmlFor="split-count">Number of splits ({minSplits}-{maxSplits}):</Label>
-            <div className="flex items-center space-x-2">
-              <Input
-                id="split-count"
-                type="number"
-                min={minSplits}
-                max={maxSplits}
-                value={splitCount}
-                onChange={(e) => handleSplitCountChange(parseInt(e.target.value) || minSplits)}
-                className="w-24"
-              />
-              <span className="text-sm text-gray-500">({minSplits}-{maxSplits} splits allowed)</span>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="split-count">Number of splits ({minSplits}-{maxSplits}):</Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="split-count"
+                  type="number"
+                  min={minSplits}
+                  max={maxSplits}
+                  value={splitCount}
+                  onChange={(e) => handleSplitCountChange(parseInt(e.target.value) || minSplits)}
+                  className="w-24"
+                />
+                <span className="text-sm text-gray-500">({minSplits}-{maxSplits} splits allowed)</span>
+              </div>
             </div>
           </div>
         )}
@@ -187,14 +245,46 @@ const TraySplitStep: React.FC<TraySplitStepProps> = ({
           <h4 className="font-medium text-gray-900">
             This will create {splitCount} new trays from {selectedTray}:
           </h4>
+          
+          {/* Show variety distribution if available */}
+          {varietySplits.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <h5 className="font-medium text-blue-800 mb-2">🌱 Variety Distribution</h5>
+              {varietySplits.map((variety, vIdx) => (
+                <div key={variety.varietyId} className="mb-2">
+                  <div className="text-sm font-medium text-blue-700">{variety.varietyName}:</div>
+                  <div className="flex gap-1 mt-1">
+                    {variety.splits.map((split, sIdx) => (
+                      <div key={sIdx} className="bg-white px-2 py-1 rounded text-xs border">
+                        T{sIdx + 1}: {split.quantity}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {value.splits.map((split: any, index: number) => (
-              <div key={split.id} className="flex items-center space-x-2 p-3 bg-white border rounded">
-                <Badge variant="outline" className="text-xs">
-                  {index + 1}
-                </Badge>
-                <code className="text-sm font-mono text-blue-600">{split.id}</code>
-                <span className="text-sm text-gray-600">Split {index + 1}</span>
+              <div key={split.id} className="p-3 bg-white border rounded">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Badge variant="outline" className="text-xs">
+                    {index + 1}
+                  </Badge>
+                  <code className="text-sm font-mono text-blue-600">{split.id}</code>
+                </div>
+                {split.varieties && split.varieties.length > 0 && (
+                  <div className="text-xs text-gray-600">
+                    {split.varieties.map((v: any, i: number) => (
+                      <span key={i}>
+                        {v.quantity} {v.varietyName}
+                        {i < split.varieties.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                    <div className="mt-1 font-medium">Total: {split.totalPlants} plants</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

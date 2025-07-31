@@ -61,7 +61,7 @@ class TrayDataService {
     );
   }
   
-  // Split tray implementation with proper persistence
+  // Split tray implementation with multi-variety support
   static splitTray(originalTrayId: string, splitCount: number): { 
     originalTray: Tray | null, 
     splitTrays: Tray[] 
@@ -83,21 +83,64 @@ class TrayDataService {
     const originalTray = allTrays[originalIndex];
     console.log('Found original tray:', originalTray);
     
-    // Create split trays
+    // Create split trays with variety distribution
     const splitTrays: Tray[] = [];
+    
+    // Calculate variety distribution if original tray has varieties
+    let varietyDistribution: any[] = [];
+    if (originalTray.varieties && originalTray.varieties.length > 0) {
+      varietyDistribution = originalTray.varieties.map(variety => {
+        const baseQuantityPerTray = Math.floor(variety.quantity / splitCount);
+        const remainder = variety.quantity % splitCount;
+        
+        const splits = [];
+        for (let i = 0; i < splitCount; i++) {
+          const quantity = baseQuantityPerTray + (i < remainder ? 1 : 0);
+          splits.push({ trayIndex: i, quantity });
+        }
+        
+        return {
+          varietyId: variety.seedId,
+          varietyName: variety.seedName,
+          sku: variety.sku,
+          originalQuantity: variety.quantity,
+          splits
+        };
+      });
+    }
+    
     for (let i = 1; i <= splitCount; i++) {
+      // Calculate varieties for this specific tray
+      let trayVarieties: any[] = [];
+      let totalPlantsForTray = Math.floor(originalTray.plantCount / splitCount);
+      
+      if (varietyDistribution.length > 0) {
+        trayVarieties = varietyDistribution.map(vd => ({
+          seedId: vd.varietyId,
+          seedName: vd.varietyName,
+          sku: vd.sku,
+          quantity: vd.splits[i - 1].quantity,
+          seedsOz: 0 // Will be calculated if needed
+        })).filter(v => v.quantity > 0);
+        
+        totalPlantsForTray = trayVarieties.reduce((sum, v) => sum + v.quantity, 0);
+      }
+      
       const splitTray: Tray = {
         ...originalTray,
         id: `${originalTrayId}-${i}`,
         parentTrayId: originalTrayId,
-        status: 'growing', // Split trays are active
-        plantCount: Math.floor(originalTray.plantCount / splitCount),
-        notes: `Split ${i} of ${splitCount} from ${originalTrayId}`,
+        status: 'growing',
+        plantCount: totalPlantsForTray,
+        varieties: trayVarieties.length > 0 ? trayVarieties : undefined,
+        cropType: trayVarieties.length > 1 ? 'Mixed Varieties' : (trayVarieties[0]?.seedName || originalTray.cropType),
+        notes: `Split ${i} of ${splitCount} from ${originalTrayId}${trayVarieties.length > 0 ? ` - Varieties: ${trayVarieties.map(v => `${v.quantity} ${v.seedName}`).join(', ')}` : ''}`,
         createdDate: new Date(),
         createdBy: 'System (Split Operation)'
       };
+      
       splitTrays.push(splitTray);
-      console.log('Created split tray:', splitTray);
+      console.log('Created split tray with varieties:', splitTray);
     }
     
     // Update original tray - mark as split

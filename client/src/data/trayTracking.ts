@@ -122,6 +122,73 @@ export const sampleTrays: Tray[] = [
     createdDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
   },
   {
+    id: "K071825-MV-MIX-03A",
+    cropType: "Mixed Varieties",
+    cropCategory: "microgreens",
+    datePlanted: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    expectedHarvest: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+    status: "growing",
+    currentLocation: {
+      systemId: "microgreen-rack-b",
+      systemType: "microgreens",
+      spotIds: ["B3", "B4"],
+      movedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    },
+    locationHistory: [
+      {
+        systemId: "nursery-b",
+        systemType: "nursery",
+        spotIds: ["N3"],
+        movedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        movedBy: "Jane Smith",
+        reason: "Initial multi-variety seeding"
+      },
+      {
+        systemId: "blackout-b",
+        systemType: "blackout",
+        spotIds: ["B3"],
+        movedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        movedBy: "System",
+        reason: "Automatic movement: Nursery to Blackout"
+      },
+      {
+        systemId: "microgreen-rack-b",
+        systemType: "microgreens",
+        spotIds: ["B3", "B4"],
+        movedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        movedBy: "System",
+        reason: "Automatic movement: Blackout to Racks"
+      }
+    ],
+    plantCount: 450,
+    varieties: [
+      {
+        seedId: "1",
+        seedName: "Broccoli Microgreens",
+        sku: "BROC-MG-001",
+        quantity: 150,
+        seedsOz: 0.75
+      },
+      {
+        seedId: "2", 
+        seedName: "Radish Microgreens",
+        sku: "RAD-MG-002",
+        quantity: 200,
+        seedsOz: 1.0
+      },
+      {
+        seedId: "3",
+        seedName: "Kale Microgreens", 
+        sku: "KALE-MG-003",
+        quantity: 100,
+        seedsOz: 0.5
+      }
+    ],
+    notes: "Multi-variety tray: 150 Broccoli (0.75oz), 200 Radish (1.0oz), 100 Kale (0.5oz) - Excellent variety mix",
+    createdBy: "Jane Smith",
+    createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+  },
+  {
     id: "K071725-LG-ROML-02B",
     cropType: "Romaine Lettuce",
     cropCategory: "leafyGreens",
