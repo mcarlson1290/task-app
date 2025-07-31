@@ -266,19 +266,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       return true;
     }
     
-    // If due date is today, check if it's after 8:30 PM
-    if (dueDate.getTime() === today.getTime()) {
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      
-      // Check if it's after 8:30 PM (20:30 in 24-hour format)
-      if (currentHour > 20 || (currentHour === 20 && currentMinute >= 30)) {
-        return true;
-      }
-    }
+    // Set time to 8:30 AM Chicago time for due date
+    const chicagoTime = new Date(dueDate);
+    chicagoTime.setHours(8, 30, 0, 0); // 8:30 AM cutoff
     
-    // Otherwise, not overdue
-    return false;
+    // Task is overdue if current time is past 8:30 AM on due date
+    return now > chicagoTime;
   };
 
   const formatDueDate = (dateInput: string | Date): string => {
@@ -318,7 +311,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       task.dueDate.split('T')[0];
     
     if (taskDateString === today) {
-      return 'OVERDUE (8:30 PM deadline passed)';
+      return 'OVERDUE (8:30 AM deadline passed)';
     }
     
     const daysDiff = Math.abs(differenceInDays(new Date(), new Date(task.dueDate)));
@@ -433,6 +426,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
         {/* Task Details */}
         <div className="mb-4">
+          {/* Debug Date Info - Temporary */}
+          <div className="task-debug" style={{ fontSize: '10px', color: '#666', backgroundColor: '#f0f0f0', padding: '4px', borderRadius: '4px', marginBottom: '8px' }}>
+            Created: {new Date(task.createdAt).toLocaleDateString()}
+            {task.dueDate && ` | Due: ${new Date(task.dueDate).toLocaleDateString()}`}
+            {task.completedAt && ` | Completed: ${new Date(task.completedAt).toLocaleDateString()}`}
+          </div>
+          
           {task.description && (
             <div className="flex items-center text-sm text-gray-600 mb-2">
               <Info className="h-4 w-4 mr-1" />

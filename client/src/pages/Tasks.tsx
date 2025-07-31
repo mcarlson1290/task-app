@@ -272,6 +272,19 @@ const Tasks: React.FC = () => {
       const isToday = filterDate.getTime() === today.getTime();
       
       filtered = filtered.filter(task => {
+        // Helper function to compare dates without time
+        const isSameDay = (date1: Date, date2: Date) => {
+          return date1.getFullYear() === date2.getFullYear() &&
+                 date1.getMonth() === date2.getMonth() &&
+                 date1.getDate() === date2.getDate();
+        };
+
+        // For completed tasks, use completion date
+        if (task.status === 'completed' && task.completedAt) {
+          const completionDate = new Date(task.completedAt);
+          return isSameDay(completionDate, filterDate);
+        }
+        
         // For recurring tasks, use enhanced visibility logic
         if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
@@ -311,36 +324,18 @@ const Tasks: React.FC = () => {
           }
           
           // For other recurring tasks, use due date
-          const taskDateString = dueDate.toISOString().split('T')[0];
-          return taskDateString === dateFilter;
+          return isSameDay(dueDate, filterDate);
         }
         
-        // For non-recurring tasks, use due date logic
+        // For pending/in-progress tasks, use due date
         if (task.dueDate) {
-          const taskDate = new Date(task.dueDate);
-          const taskDateString = taskDate.toISOString().split('T')[0];
-          
-          // For today filter, check both due date match and visibility range
-          if (isToday) {
-            // Show if due today
-            if (taskDateString === dateFilter) {
-              return true;
-            }
-            
-            // Show if task has a visibility range that includes today
-            if (task.visibleFromDate) {
-              const visibleFrom = new Date(task.visibleFromDate);
-              visibleFrom.setHours(0, 0, 0, 0);
-              return today >= visibleFrom && today <= taskDate;
-            }
-            
-            return false;
-          }
-          
-          // For other dates, only show tasks due on that exact date
-          return taskDateString === dateFilter;
+          const dueDate = new Date(task.dueDate);
+          return isSameDay(dueDate, filterDate);
         }
-        return false;
+        
+        // For tasks without due date, show on created date
+        const createdDate = new Date(task.createdAt);
+        return isSameDay(createdDate, filterDate);
       });
     }
 
@@ -403,12 +398,12 @@ const Tasks: React.FC = () => {
   const isTaskLate = isTaskCompletedLate;;
 
   const isOverdue = (task: Task): boolean => {
+    // Can't be overdue if already completed
     if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
       return false;
     }
     
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     // Handle both Date objects and strings
     let dateString: string;
@@ -424,23 +419,12 @@ const Tasks: React.FC = () => {
     const [year, month, day] = dateString.split('-');
     const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     
-    // If due date is before today, it's overdue
-    if (dueDate < today) {
-      return true;
-    }
+    // Set time to 8:30 AM Chicago time for due date
+    const chicagoTime = new Date(dueDate);
+    chicagoTime.setHours(8, 30, 0, 0); // 8:30 AM cutoff
     
-    // If due date is today, check if it's after 8:30 PM
-    if (dueDate.getTime() === today.getTime()) {
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      
-      // Check if it's after 8:30 PM (20:30 in 24-hour format)
-      if (currentHour > 20 || (currentHour === 20 && currentMinute >= 30)) {
-        return true;
-      }
-    }
-    
-    return false;
+    // Task is overdue if current time is past 8:30 AM on due date
+    return now > chicagoTime;
   };
 
   // Single task action handler

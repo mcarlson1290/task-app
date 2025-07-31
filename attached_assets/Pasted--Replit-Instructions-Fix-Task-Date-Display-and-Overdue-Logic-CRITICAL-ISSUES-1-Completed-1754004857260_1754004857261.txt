@@ -1,0 +1,193 @@
+# Replit Instructions: Fix Task Date Display and Overdue Logic
+
+**CRITICAL ISSUES:**
+1. Completed tasks are appearing on today instead of their completion date
+2. Tasks due tomorrow (Aug 1) are marked as overdue on July 31
+3. Date filter (08/01/2025) seems to be showing wrong tasks
+
+## Issue 1: Fix Completed Tasks Date Display
+
+Tasks should appear on their COMPLETION date, not today:
+
+```tsx
+// In the task filtering logic, find where tasks are filtered by date
+const getTasksForDate = (tasks, selectedDate) => {
+  return tasks.filter(task => {
+    // For completed tasks, use completion date
+    if (task.status === 'completed' && task.completedAt) {
+      const completionDate = new Date(task.completedAt);
+      return isSameDay(completionDate, selectedDate);
+    }
+    
+    // For pending/in-progress tasks, use due date
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      return isSameDay(dueDate, selectedDate);
+    }
+    
+    // For tasks without due date, show on created date
+    const createdDate = new Date(task.createdAt);
+    return isSameDay(createdDate, selectedDate);
+  });
+};
+
+// Helper function to compare dates without time
+const isSameDay = (date1, date2) => {
+  return date1.getFullYear() === date2.getFullYear() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getDate() === date2.getDate();
+};
+```
+
+## Issue 2: Fix Overdue Logic for Future Tasks
+
+A task due TOMORROW cannot be overdue TODAY:
+
+```tsx
+// Fix the overdue calculation
+const isTaskOverdue = (task) => {
+  // Can't be overdue if already completed
+  if (task.status === 'completed') {
+    return false;
+  }
+  
+  // Must have a due date to be overdue
+  if (!task.dueDate) {
+    return false;
+  }
+  
+  const now = new Date();
+  const dueDate = new Date(task.dueDate);
+  
+  // Set time to 8:30 AM Chicago time for due date
+  const chicagoTime = new Date(dueDate);
+  chicagoTime.setHours(8, 30, 0, 0); // 8:30 AM cutoff
+  
+  // Task is overdue if current time is past 8:30 AM on due date
+  return now > chicagoTime;
+};
+
+// For display, also fix the "Due in X days" calculation
+const getDueDateDisplay = (task) => {
+  if (!task.dueDate) return '';
+  
+  const now = new Date();
+  const dueDate = new Date(task.dueDate);
+  
+  // Reset times to midnight for date comparison
+  now.setHours(0, 0, 0, 0);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = dueDate - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+  } else if (diffDays === 0) {
+    return 'Due today';
+  } else if (diffDays === 1) {
+    return 'Due tomorrow';
+  } else {
+    return `Due in ${diffDays} days`;
+  }
+};
+```
+
+## Issue 3: Fix Date Filter
+
+The date picker shows "08/01/2025" but might be filtering incorrectly:
+
+```tsx
+// Ensure date filter uses local dates, not UTC
+const handleDateFilterChange = (selectedDate) => {
+  // Create date in local timezone
+  const localDate = new Date(selectedDate);
+  localDate.setHours(0, 0, 0, 0); // Reset to midnight local time
+  
+  // Filter tasks for this specific date
+  setFilteredDate(localDate);
+  
+  // Update displayed tasks
+  const tasksForDate = getTasksForDate(allTasks, localDate);
+  setDisplayedTasks(tasksForDate);
+};
+```
+
+## Issue 4: Fix Task Persistence
+
+Ensure completed tasks stay on their completion date:
+
+```tsx
+// When completing a task, save the completion timestamp
+const completeTask = (taskId) => {
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    const updatedTask = {
+      ...task,
+      status: 'completed',
+      completedAt: new Date().toISOString(), // Save exact completion time
+      completedBy: currentUser.id
+    };
+    
+    // Update task in storage
+    updateTask(updatedTask);
+  }
+};
+```
+
+## Issue 5: Fix Recurring Task Generation Dates
+
+Ensure recurring tasks are generated for the correct dates:
+
+```tsx
+// When generating daily/weekly recurring tasks
+const generateRecurringTasks = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to midnight
+  
+  recurringTasks.forEach(recurring => {
+    // Check if task already exists for today
+    const existingTask = tasks.find(t => 
+      t.recurringTaskId === recurring.id &&
+      isSameDay(new Date(t.dueDate), today)
+    );
+    
+    if (!existingTask) {
+      // Create task for TODAY, not tomorrow
+      const newTask = {
+        ...recurring,
+        id: generateId(),
+        recurringTaskId: recurring.id,
+        dueDate: today.toISOString(),
+        createdAt: new Date().toISOString(),
+        status: 'pending'
+      };
+      
+      createTask(newTask);
+    }
+  });
+};
+```
+
+## Issue 6: Add Debug Info
+
+Temporarily add date info to task display to debug:
+
+```tsx
+// In task card component
+<div className="task-debug" style={{ fontSize: '10px', color: '#666' }}>
+  Created: {new Date(task.createdAt).toLocaleDateString()}
+  {task.dueDate && ` | Due: ${new Date(task.dueDate).toLocaleDateString()}`}
+  {task.completedAt && ` | Completed: ${new Date(task.completedAt).toLocaleDateString()}`}
+</div>
+```
+
+## Summary of Fixes:
+
+1. **Completed tasks** - Display on completedAt date, not today
+2. **Overdue logic** - Only mark overdue if past 8:30 AM on due date
+3. **Future tasks** - Cannot be overdue if due date hasn't arrived
+4. **Date filtering** - Use local dates consistently
+5. **Task persistence** - Save completion timestamps
+
+The key is ensuring all date comparisons use consistent timezone handling and that completed tasks are "locked" to their completion date.
