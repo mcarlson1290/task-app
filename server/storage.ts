@@ -166,6 +166,12 @@ export class MemStorage implements IStorage {
       
       // CRITICAL: Ensure all recurring tasks have their instances generated
       await this.ensureRecurringTaskInstances();
+      
+      // Initialize inventory if empty (even with persisted data)
+      if (this.inventoryItems.size === 0) {
+        console.log('Inventory is empty, initializing with seed inventory...');
+        this.initializeInventoryData();
+      }
     } else {
       console.log('No persisted data found, initializing with seed data');
       this.seedInitialData();
@@ -822,6 +828,106 @@ export class MemStorage implements IStorage {
     
     // Initialize growing systems (separated for clarity)
     this.initializeGrowingSystems();
+  }
+  
+  private initializeInventoryData() {
+    // Create location-based inventory items
+    const kenoshaInventory = [
+      { 
+        name: "Arugula Seeds", 
+        category: "seeds", 
+        currentStock: 450, 
+        minimumStock: 100, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "ARU",
+        ozPerTray: 0.5,
+        cropId: 1,
+        location: "K"
+      },
+      { 
+        name: "Broccoli Microgreen Seeds", 
+        category: "seeds", 
+        currentStock: 800, 
+        minimumStock: 150, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "BROC",
+        ozPerTray: 1.0,
+        cropId: 3,
+        location: "K"
+      },
+      { 
+        name: "Growing Medium", 
+        category: "supplies", 
+        currentStock: 80, 
+        minimumStock: 40, 
+        unit: "kg", 
+        supplier: "Farm Supply Plus",
+        productCode: "GROW-MED",
+        ozPerTray: null,
+        cropId: null,
+        location: "K"
+      }
+    ];
+
+    const racineInventory = [
+      { 
+        name: "Romaine Seeds", 
+        category: "seeds", 
+        currentStock: 1200, 
+        minimumStock: 200, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "ROM",
+        ozPerTray: 0.75,
+        cropId: 2,
+        location: "R"
+      },
+      { 
+        name: "Spinach Seeds", 
+        category: "seeds", 
+        currentStock: 25, 
+        minimumStock: 30, 
+        unit: "grams", 
+        supplier: "Green Thumb Seeds",
+        productCode: "SPI",
+        ozPerTray: 0.6,
+        cropId: 5,
+        location: "R"
+      },
+      { 
+        name: "Nutrient Solution A", 
+        category: "nutrients", 
+        currentStock: 45, 
+        minimumStock: 20, 
+        unit: "liters", 
+        supplier: "Hydro Nutrients Co",
+        productCode: "NUT-A",
+        ozPerTray: null,
+        cropId: null,
+        location: "R"
+      }
+    ];
+
+    const allInventory = [...kenoshaInventory, ...racineInventory];
+
+    allInventory.forEach(item => {
+      const newItem: InventoryItem = {
+        ...item,
+        id: this.currentInventoryId++,
+        lastRestocked: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+        createdAt: new Date(),
+        currentStock: item.currentStock || null,
+        minimumStock: item.minimumStock || null,
+        supplier: item.supplier || null,
+        totalValue: null,
+        avgCostPerUnit: null
+      };
+      this.inventoryItems.set(newItem.id, newItem);
+    });
+    
+    console.log(`Initialized ${allInventory.length} inventory items`);
   }
   
   private initializeGrowingSystems() {

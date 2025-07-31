@@ -23,6 +23,7 @@ import { CheckCircle, Circle, AlertTriangle, Camera, Package, Building, BarChart
 import { GrowingSystem, InventoryItem, Task } from '@shared/schema';
 import SystemAssignmentStep from './checklist/SystemAssignmentStep';
 import TraySplitStep from './checklist/TraySplitStep';
+import CreateTrayStep from './checklist/CreateTrayStep';
 import { assignTrayToSystem } from '../data/growingSystems';
 
 interface ChecklistStep {
@@ -737,6 +738,31 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
           </div>
         );
 
+      case 'create-tray':
+        return (
+          <div className="space-y-4">
+            <CreateTrayStep
+              stepData={step}
+              onComplete={(data) => {
+                // Update step data with tray creation results
+                setStepData({ ...stepData, [step.id]: data });
+                
+                // Update context with new tray ID for subsequent steps
+                if (data.trayId) {
+                  setStepContext(prev => ({
+                    ...prev,
+                    currentTrayId: data.trayId
+                  }));
+                }
+                
+                // Mark step as complete and continue
+                handleStepComplete();
+              }}
+              defaultInstance={step.config?.defaultInstance || 1}
+            />
+          </div>
+        );
+
       default:
         return (
           <div className="space-y-4">
@@ -763,7 +789,8 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
       'data-capture': BarChart3,
       photo: Camera,
       'tray-split': Split,
-      'movement-trigger': ArrowRight
+      'movement-trigger': ArrowRight,
+      'create-tray': PlusCircle
     };
     return icons[type as keyof typeof icons] || Circle;
   };
