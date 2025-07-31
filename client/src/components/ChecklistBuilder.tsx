@@ -618,7 +618,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                         <SelectValue placeholder="User selects..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">User selects...</SelectItem>
+                        <SelectItem value="user-selects">User selects...</SelectItem>
                         <SelectItem value="Oasis Cubes">Oasis Cubes</SelectItem>
                         <SelectItem value="Rockwool">Rockwool</SelectItem>
                         <SelectItem value="Hemp Mat">Hemp Mat</SelectItem>
