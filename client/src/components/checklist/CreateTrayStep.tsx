@@ -48,6 +48,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     stepData?.config?.defaultSeedsOz || defaultSeedsOz
   );
   const [growingMedium, setGrowingMedium] = useState(
+    stepData?.config?.defaultGrowingMedium === 'user-selects' ? '' : 
     stepData?.config?.defaultGrowingMedium || defaultGrowingMedium
   );
   const [varieties, setVarieties] = useState<Variety[]>([
