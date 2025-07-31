@@ -3,7 +3,7 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "frequency": "daily",
+    "frequency": "monthly",
     "daysOfWeek": [
       "monday",
       "friday",
@@ -24,16 +24,6 @@
     },
     "checklistTemplate": {
       "steps": [
-        {
-          "id": "1753910787899",
-          "type": "data-capture",
-          "label": "What was the temperature of the glass",
-          "required": true,
-          "config": {
-            "dataType": "temperature",
-            "calculation": ""
-          }
-        },
         {
           "id": "1753910801234",
           "type": "photo",

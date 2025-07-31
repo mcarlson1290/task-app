@@ -370,30 +370,37 @@ const Tasks: React.FC = () => {
   };
 
   // Late task detection functions - fixed to avoid false positives
-  const isTaskLate = (task: Task): boolean => {
-    // Must be completed
-    if (task.status !== 'completed') return false;
-    
-    // Must have BOTH a due date and completion time
-    if (!task.dueDate || !task.completedAt) return false;
+  // Check if task was completed AFTER becoming overdue (8:30 AM on due date)
+  const isTaskCompletedLate = (task: Task): boolean => {
+    // Must be completed to be late
+    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
+      return false;
+    }
     
     // For TEST tasks or tasks without proper dates, return false
-    if (!task.dueDate || task.dueDate === 'Not specified' || task.dueDate === '') return false;
+    if (task.dueDate === 'Not specified' || task.dueDate === '') return false;
     
     try {
-      const dueTime = new Date(task.dueDate).getTime();
-      const completedTime = new Date(task.completedAt).getTime();
+      const dueDate = new Date(task.dueDate);
+      const completedTime = new Date(task.completedAt);
       
       // Check if dates are valid
-      if (isNaN(dueTime) || isNaN(completedTime)) return false;
+      if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
       
-      // Only late if completed AFTER due date
-      return completedTime > dueTime;
+      // Create overdue cutoff time: 8:30 AM on due date
+      const overdueTime = new Date(dueDate);
+      overdueTime.setHours(8, 30, 0, 0);
+      
+      // Task is late if completed AFTER the overdue time (8:30 AM on due date)
+      return completedTime > overdueTime;
     } catch (error) {
       // If any date parsing fails, task is not late
       return false;
     }
   };
+
+  // Legacy function name for compatibility
+  const isTaskLate = isTaskCompletedLate;;
 
   const isOverdue = (task: Task): boolean => {
     if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {

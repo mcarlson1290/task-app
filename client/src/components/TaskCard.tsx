@@ -158,16 +158,51 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   };
 
   // Late task detection functions
-  const isTaskLate = (task: Task): boolean => {
+  // Check if task was overdue at a specific time (8:30 AM Chicago time on due date)
+  const isTaskOverdue = (task: Task, checkTime: Date = new Date()): boolean => {
+    if (!task.dueDate || task.status === 'completed') return false;
+    
+    try {
+      const dueDate = new Date(task.dueDate);
+      if (isNaN(dueDate.getTime())) return false;
+      
+      // Create overdue cutoff time: 8:30 AM Chicago time on due date
+      // For simplicity, using 8:30 AM local time as the overdue cutoff
+      const overdueTime = new Date(dueDate);
+      overdueTime.setHours(8, 30, 0, 0);
+      
+      return checkTime > overdueTime;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // Check if task was completed AFTER becoming overdue (truly late)
+  const isTaskCompletedLate = (task: Task): boolean => {
+    // Must be completed to be late
     if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
       return false;
     }
     
-    const dueTime = new Date(task.dueDate).getTime();
-    const completedTime = new Date(task.completedAt).getTime();
-    
-    return completedTime > dueTime;
+    try {
+      const dueDate = new Date(task.dueDate);
+      const completedTime = new Date(task.completedAt);
+      
+      if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
+      
+      // Create overdue cutoff time: 8:30 AM on due date
+      const overdueTime = new Date(dueDate);
+      overdueTime.setHours(8, 30, 0, 0);
+      
+      // Task is late if completed AFTER the overdue time (8:30 AM on due date)
+      return completedTime > overdueTime;
+    } catch (error) {
+      return false;
+    }
   };
+
+  // Legacy function name for compatibility
+  const isTaskLate = isTaskCompletedLate;
 
   const getLateDuration = (task: Task): string | null => {
     if (!isTaskLate(task) || !task.completedAt) return null;
@@ -275,7 +310,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   };
 
   const getOverdueMessage = (task: any): string => {
-    if (!task.isOverdue) return '';
+    if (!isCurrentlyOverdue) return '';
     
     const today = new Date().toISOString().split('T')[0];
     const taskDateString = task.dueDate instanceof Date ? 
@@ -295,7 +330,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   const isPending = task.status === 'pending';
   const isPaused = task.status === 'paused';
   const isSkipped = task.status === 'skipped';
-  const isOverdue = task.dueDate && task.status !== 'completed' && task.status !== 'approved' ? checkIfOverdue(task.dueDate) : false;
+  
+  // NEW LOGIC: Distinguish between overdue (pending) and late (completed after overdue)
+  const isCurrentlyOverdue = isTaskOverdue(task, new Date()); // For pending tasks that are overdue
+  const wasCompletedLate = isTaskCompletedLate(task); // For completed tasks that were completed late
 
   const getCardClassName = () => {
     let baseClass = "hover:shadow-lg transition-all duration-200 cursor-pointer";
@@ -315,20 +353,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     } ${
       isSkipped ? 'bg-gray-50 border-l-4 border-l-gray-500' : ''
     } ${
-      isOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
+      isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
     } ${
-      isCompleted && isTaskLate(task) ? 'border-l-4 border-l-amber-400' : ''
+      wasCompletedLate ? 'border-l-4 border-l-amber-400' : ''
     }`}>
       <CardContent className="p-6">
         {/* Status, Priority, and Status Icons - Repositioned */}
         <div className="absolute top-3 right-3 flex flex-col items-center gap-1">
           {/* Status Badge */}
           <div className={`px-2 py-1 rounded text-xs font-semibold ${
-            isCompleted && isTaskLate(task) 
+            wasCompletedLate
               ? 'bg-amber-100 text-amber-800 border border-amber-300' 
+              : isCurrentlyOverdue && !isCompleted
+              ? 'bg-red-100 text-red-800 border border-red-300'
               : getStatusColor(task.status as TaskStatus)
           }`}>
-            {isCompleted && isTaskLate(task) ? '✓ Completed Late' : getStatusLabel(task.status as TaskStatus)}
+            {wasCompletedLate ? '✓ Completed Late' : 
+             isCurrentlyOverdue && !isCompleted ? '🔴 Overdue' :
+             getStatusLabel(task.status as TaskStatus)}
           </div>
           
           {/* Priority Badge */}
@@ -343,12 +385,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                 🔄
               </span>
             )}
-            {isCompleted && isTaskLate(task) && (
+            {wasCompletedLate && (
               <span 
                 className="text-sm text-amber-600"
-                title={`Completed ${getLateDuration(task)}`}
+                title={`Completed Late: ${getLateDuration(task)}`}
               >
                 ⚠️
+              </span>
+            )}
+            {isCurrentlyOverdue && !isCompleted && (
+              <span 
+                className="text-sm text-red-600"
+                title="Currently Overdue (due before 8:30 AM)"
+              >
+                🔴
               </span>
             )}
           </div>
@@ -417,16 +467,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                   </div>
                 ) : (
                   <div className={`flex items-center text-sm ${
-                    isOverdue ? 'text-red-600' : 'text-gray-600'
+                    isCurrentlyOverdue ? 'text-red-600' : 'text-gray-600'
                   }`}>
                     <Calendar className="h-4 w-4 mr-1" />
-                    <span className={isOverdue ? 'font-semibold' : ''}>
+                    <span className={isCurrentlyOverdue ? 'font-semibold' : ''}>
                       Due: {formatDueDate(task.dueDate)}
                     </span>
                   </div>
                 );
               })()}
-              {isOverdue && (
+              {isCurrentlyOverdue && (
                 <div className="flex items-center text-sm text-red-600">
                   <AlertTriangle className="h-4 w-4 mr-1" />
                   <span className="font-semibold">
@@ -438,7 +488,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           )}
 
           {/* Late task completion indicator */}
-          {isCompleted && isTaskLate(task) && (
+          {wasCompletedLate && (
             <div className="flex items-center text-sm text-amber-600 mb-2">
               <AlertTriangle className="h-4 w-4 mr-1" />
               <span className="font-semibold">
