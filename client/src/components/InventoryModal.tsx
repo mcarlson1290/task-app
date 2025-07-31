@@ -26,9 +26,9 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
 }) => {
   const [formData, setFormData] = useState(() => {
     if (mode === 'edit' && item) {
-      // Handle multiple possible field names for current stock
-      const currentStock = item.currentStock ?? item.current_stock ?? item.quantity ?? 0;
-      const minimumStock = item.minimumStock ?? item.minimum_stock ?? item.minStock ?? item.reorderLevel ?? 0;
+      // Handle null values properly - convert null to number or use 0 as fallback
+      const currentStock = typeof item.currentStock === 'number' ? item.currentStock : (item.currentStock || 0);
+      const minimumStock = typeof item.minimumStock === 'number' ? item.minimumStock : (item.minimumStock || 0);
       
       return {
         name: item.name,
@@ -59,13 +59,13 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       console.log('Edit form - item data:', item); // Debug log
       console.log('Available fields:', Object.keys(item)); // Debug log
       
-      // Handle multiple possible field names for current stock
-      const currentStock = item.currentStock ?? item.current_stock ?? item.quantity ?? 0;
-      const minimumStock = item.minimumStock ?? item.minimum_stock ?? item.minStock ?? item.reorderLevel ?? 0;
+      // Handle null values properly - convert null to number or use 0 as fallback
+      const currentStock = typeof item.currentStock === 'number' ? item.currentStock : (item.currentStock || 0);
+      const minimumStock = typeof item.minimumStock === 'number' ? item.minimumStock : (item.minimumStock || 0);
       
       console.log('Current stock value:', currentStock, 'Minimum stock value:', minimumStock); // Debug log
       
-      setFormData({
+      const newFormData = {
         name: item.name,
         sku: item.sku || '',
         currentStock: currentStock,
@@ -74,7 +74,10 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         category: item.category,
         supplier: item.supplier || '',
         estimatedTotalValue: '' // Not used in edit mode
-      });
+      };
+      
+      console.log('Setting form data:', newFormData); // Debug log
+      setFormData(newFormData);
     } else if (mode === 'add') {
       setFormData({
         name: '',
@@ -232,7 +235,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               <Input
                 id="currentStock"
                 type="number"
-                value={formData.currentStock || 0}
+                value={formData.currentStock}
                 onChange={(e) => setFormData({...formData, currentStock: parseInt(e.target.value) || 0})}
                 min="0"
                 required
@@ -260,7 +263,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
             <Input
               id="minimumStock"
               type="number"
-              value={formData.minimumStock || 0}
+              value={formData.minimumStock}
               onChange={(e) => setFormData({...formData, minimumStock: parseInt(e.target.value) || 0})}
               min="0"
               required

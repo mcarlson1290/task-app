@@ -1,0 +1,180 @@
+# Replit Instructions: Direct Fix for Edit Form Quantities
+
+**CRITICAL: The Edit form shows 0 for quantities when it should show 450 grams and 100 grams**
+
+## Look at the Inventory Data Structure
+
+Based on your screenshot, the inventory displays:
+- Current Stock: 450 grams
+- Minimum Stock: 100 grams
+
+## Find the Edit Modal Component
+
+Look for the Edit Inventory Modal and trace back where the data comes from:
+
+```tsx
+// Step 1: Find where the Edit button is clicked
+// In the inventory item display, find the Edit button:
+<button onClick={() => handleEdit(item)}>Edit</button>
+
+// Step 2: Check what 'item' contains
+const handleEdit = (item) => {
+  // ADD THIS DEBUG LINE
+  console.log('EDIT ITEM DATA:', {
+    fullItem: item,
+    currentStock: item.currentStock,
+    quantity: item.quantity,
+    current_stock: item.current_stock,
+    minimumStock: item.minimumStock,
+    minimum_stock: item.minimum_stock,
+    minStock: item.minStock
+  });
+  
+  // Then check how it opens the modal
+  setEditingItem(item);
+  setShowEditModal(true);
+};
+```
+
+## Fix the Modal to Use the Correct Data
+
+In the Edit Inventory Modal component:
+
+```tsx
+const EditInventoryModal = ({ isOpen, onClose }) => {
+  // Get the editing item from wherever it's stored
+  const editingItem = /* wherever the item is stored - could be props, context, or state */;
+  
+  // LOG IT to see structure
+  useEffect(() => {
+    if (editingItem) {
+      console.log('MODAL EDITING ITEM:', editingItem);
+      console.log('Keys available:', Object.keys(editingItem));
+    }
+  }, [editingItem]);
+
+  // Initialize form with ACTUAL values from the item
+  const [formData, setFormData] = useState({
+    name: '',
+    sku: '',
+    currentStock: '',
+    minimumStock: '',
+    unit: '',
+    category: '',
+    supplier: ''
+  });
+
+  // CRITICAL: Update form when item changes
+  useEffect(() => {
+    if (editingItem && isOpen) {
+      // Try every possible field name
+      const currentStockValue = 
+        editingItem.currentStock || 
+        editingItem.current_stock || 
+        editingItem.quantity || 
+        editingItem.stock ||
+        editingItem.Current_Stock ||
+        editingItem['Current Stock'] ||
+        0;
+        
+      const minimumStockValue = 
+        editingItem.minimumStock || 
+        editingItem.minimum_stock || 
+        editingItem.minStock ||
+        editingItem.min_stock ||
+        editingItem.Minimum_Stock ||
+        editingItem['Minimum Stock'] ||
+        0;
+
+      console.log('Setting form values:', {
+        currentStock: currentStockValue,
+        minimumStock: minimumStockValue
+      });
+
+      setFormData({
+        name: editingItem.name || '',
+        sku: editingItem.sku || '',
+        currentStock: currentStockValue,
+        minimumStock: minimumStockValue,
+        unit: editingItem.unit || '',
+        category: editingItem.category || 'Other Supplies',
+        supplier: editingItem.supplier || ''
+      });
+    }
+  }, [editingItem, isOpen]);
+
+  // In the form inputs:
+  return (
+    <div>
+      <input
+        type="number"
+        value={formData.currentStock}
+        onChange={(e) => setFormData({...formData, currentStock: e.target.value})}
+      />
+      {/* Show what unit this is */}
+      <span>{formData.unit || editingItem?.unit || 'units'}</span>
+    </div>
+  );
+};
+```
+
+## Alternative: Direct State Check
+
+If the modal uses a different pattern, it might be getting the item differently:
+
+```tsx
+// Check if the item is stored in a context or global state
+// Look for patterns like:
+// - useContext(InventoryContext)
+// - useSelector(state => state.inventory.editingItem)
+// - props.item
+// - window.editingItem (unlikely but possible)
+
+// Add this temporary debug button to the inventory page:
+<button onClick={() => {
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  console.log('Full inventory data:', inventory);
+  console.log('First item structure:', inventory[0]);
+}}>
+  Debug Inventory Structure
+</button>
+```
+
+## Force a Quick Fix
+
+If you can't find where the issue is, add this to the Edit button:
+
+```tsx
+// When Edit is clicked, ensure data is in the expected format
+const handleEdit = (item) => {
+  // Get fresh data from the display
+  const row = event.target.closest('tr') || event.target.closest('.inventory-item');
+  const currentStockText = row.querySelector('.current-stock')?.textContent || '0';
+  const minStockText = row.querySelector('.minimum-stock')?.textContent || '0';
+  
+  // Parse the values
+  const currentStock = parseInt(currentStockText.match(/\d+/)?.[0] || '0');
+  const minStock = parseInt(minStockText.match(/\d+/)?.[0] || '0');
+  
+  // Create properly formatted item
+  const itemWithStock = {
+    ...item,
+    currentStock: currentStock,
+    minimumStock: minStock,
+    // Also set alternate field names
+    quantity: currentStock,
+    minStock: minStock
+  };
+  
+  console.log('Edited item with stock:', itemWithStock);
+  openEditModal(itemWithStock);
+};
+```
+
+## The Issue is Likely:
+
+1. **Field name mismatch** - The display uses one field name, the edit form expects another
+2. **Data not being passed** - The item object doesn't include the stock values
+3. **Wrong data source** - The edit form might be loading from a different source than the display
+
+Add the console.log statements first to see exactly what data structure you're working with!
