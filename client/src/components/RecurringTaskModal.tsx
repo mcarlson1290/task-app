@@ -137,8 +137,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   ];
 
   const frequencies = [
-    { value: 'daily', label: 'Daily' },
-    { value: 'weekly', label: 'Weekly' },
+    { value: 'daily', label: 'Weekly' },  // Keep value as 'daily' for compatibility
     { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
     { value: 'monthly', label: 'Monthly (Last Day)' }
   ];
@@ -359,8 +358,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 </Select>
               </div>
 
-              {/* Show day selection only for daily and weekly frequencies */}
-              {(formData.frequency === 'daily' || formData.frequency === 'weekly') && (
+              {/* Show day selection only for weekly frequency (stored as 'daily') */}
+              {formData.frequency === 'daily' && (
                 <div className="space-y-2">
                   <Label>Days of Week</Label>
                   <div className="grid grid-cols-4 gap-2">

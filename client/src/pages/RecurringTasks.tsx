@@ -110,15 +110,18 @@ const RecurringTasks: React.FC = () => {
   });
 
   const getFrequencyDisplay = (task: RecurringTask) => {
-    if (task.frequency === 'daily') return 'Daily';
-    if (task.frequency === 'weekly') {
+    // Display "Weekly" for both 'daily' and 'weekly' frequencies (migration compatibility)
+    if (task.frequency === 'daily' || task.frequency === 'weekly') {
       const days = task.daysOfWeek?.map(day => 
         typeof day === 'string' ? day.charAt(0).toUpperCase() + day.slice(1) : String(day)
       ).join(', ');
       return `Weekly on ${days}`;
     }
+    if (task.frequency === 'bi-weekly') {
+      return 'Bi-Weekly (1st & 15th)';
+    }
     if (task.frequency === 'monthly') {
-      return `Monthly on day ${task.dayOfMonth}`;
+      return 'Monthly (Last Day)';
     }
     return task.frequency;
   };

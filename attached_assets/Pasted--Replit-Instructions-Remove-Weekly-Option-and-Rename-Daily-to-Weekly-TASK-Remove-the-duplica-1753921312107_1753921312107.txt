@@ -1,0 +1,150 @@
+# Replit Instructions: Remove Weekly Option and Rename Daily to Weekly
+
+**TASK: Remove the duplicate "Weekly" option and rename "Daily" to "Weekly" since they have the same functionality.**
+
+## Step 1: Update Frequency Options
+
+Find where the frequency options are defined and update them:
+
+```javascript
+// FIND code like this:
+const frequencyOptions = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'bi-weekly', label: 'Bi-Weekly' },
+  { value: 'monthly', label: 'Monthly' }
+];
+
+// CHANGE TO:
+const frequencyOptions = [
+  { value: 'daily', label: 'Weekly' },  // Keep value as 'daily' for compatibility
+  { value: 'bi-weekly', label: 'Bi-Weekly' },
+  { value: 'monthly', label: 'Monthly' }
+];
+```
+
+## Step 2: Update the Select/Dropdown Component
+
+Find the frequency selector in the recurring task editor:
+
+```javascript
+// FIND:
+<select value={frequency} onChange={handleFrequencyChange}>
+  <option value="daily">Daily</option>
+  <option value="weekly">Weekly</option>
+  <option value="bi-weekly">Bi-Weekly</option>
+  <option value="monthly">Monthly</option>
+</select>
+
+// CHANGE TO:
+<select value={frequency} onChange={handleFrequencyChange}>
+  <option value="daily">Weekly</option>
+  <option value="bi-weekly">Bi-Weekly</option>
+  <option value="monthly">Monthly</option>
+</select>
+```
+
+## Step 3: Update Any Display Logic
+
+Find places where the frequency is displayed to users:
+
+```javascript
+// FIND code that displays frequency:
+const getFrequencyLabel = (frequency) => {
+  switch (frequency) {
+    case 'daily': return 'Daily';
+    case 'weekly': return 'Weekly';
+    case 'bi-weekly': return 'Bi-Weekly';
+    case 'monthly': return 'Monthly';
+    default: return frequency;
+  }
+};
+
+// CHANGE TO:
+const getFrequencyLabel = (frequency) => {
+  switch (frequency) {
+    case 'daily': return 'Weekly';  // Display as Weekly
+    case 'bi-weekly': return 'Bi-Weekly';
+    case 'monthly': return 'Monthly';
+    default: return frequency;
+  }
+};
+```
+
+## Step 4: Handle Migration for Existing Tasks
+
+Update any existing "weekly" tasks to use "daily":
+
+```javascript
+// One-time migration function
+const migrateWeeklyTasks = () => {
+  // Migrate recurring tasks
+  const recurringTasks = getRecurringTasks();
+  recurringTasks.forEach(task => {
+    if (task.frequency === 'weekly') {
+      task.frequency = 'daily';
+      console.log(`Migrated recurring task ${task.id} from weekly to daily`);
+    }
+  });
+  saveRecurringTasks(recurringTasks);
+  
+  // Migrate existing task instances
+  const allTasks = getAllTasks();
+  allTasks.forEach(task => {
+    if (task.frequency === 'weekly') {
+      task.frequency = 'daily';
+      console.log(`Migrated task ${task.id} from weekly to daily`);
+    }
+  });
+  saveAllTasks(allTasks);
+};
+
+// Run once on app initialization
+migrateWeeklyTasks();
+```
+
+## Step 5: Update Task Generation Logic (if needed)
+
+Make sure the task generation doesn't have separate logic for "weekly":
+
+```javascript
+// FIND any code like:
+switch (recurringTask.frequency) {
+  case 'daily':
+    // daily logic
+    break;
+  case 'weekly':
+    // weekly logic
+    break;
+  // ...
+}
+
+// REMOVE the 'weekly' case - let it fall through to default or handle with 'daily'
+```
+
+## Step 6: Update UI Labels
+
+Find any place that shows "Daily" to the user and change to "Weekly":
+
+```javascript
+// In recurring task list/cards
+{task.frequency === 'daily' && <span>Weekly</span>}
+
+// In task cards
+<div className="frequency-badge">
+  {task.frequency === 'daily' ? 'Weekly' : task.frequency}
+</div>
+```
+
+## Important Notes:
+
+1. **Keep the value as 'daily'** internally for backward compatibility
+2. **Only change the display label** to "Weekly"
+3. **Remove all "weekly" options** from dropdowns
+4. **Migrate any existing "weekly" tasks** to "daily"
+
+## Expected Result:
+- Frequency dropdown shows: Weekly, Bi-Weekly, Monthly (only 3 options)
+- All tasks with daily scheduling show as "Weekly" to users
+- No duplicate functionality between Daily and Weekly
+- Existing data continues to work

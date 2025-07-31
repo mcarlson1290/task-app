@@ -161,6 +161,9 @@ export class MemStorage implements IStorage {
         inventoryItems: persistedData.inventoryItems.length
       });
       
+      // Migrate any "weekly" frequency to "daily" for UI compatibility
+      await this.migrateWeeklyFrequencies();
+      
       // CRITICAL: Ensure all recurring tasks have their instances generated
       await this.ensureRecurringTaskInstances();
     } else {
@@ -172,6 +175,46 @@ export class MemStorage implements IStorage {
     if (this.growingSystems.size === 0) {
       console.log('Initializing growing systems...');
       this.initializeGrowingSystems();
+    }
+  }
+
+  // Migration function to convert "weekly" frequency to "daily" for UI compatibility
+  private async migrateWeeklyFrequencies() {
+    console.log('=== MIGRATING WEEKLY FREQUENCIES ===');
+    let migratedCount = 0;
+    
+    // Migrate recurring tasks
+    for (const [id, recurringTask] of this.recurringTasks) {
+      if (recurringTask.frequency === 'weekly') {
+        recurringTask.frequency = 'daily';
+        migratedCount++;
+        console.log(`Migrated recurring task ${id} (${recurringTask.title}) from weekly to daily`);
+      }
+    }
+    
+    // Migrate regular task instances
+    for (const [id, task] of this.tasks) {
+      if (task.frequency === 'weekly') {
+        task.frequency = 'daily';
+        console.log(`Migrated task ${id} (${task.title}) from weekly to daily`);
+      }
+    }
+    
+    if (migratedCount > 0) {
+      console.log(`Migration complete: ${migratedCount} recurring tasks migrated`);
+      // Save the migrated data
+      await this.persistence.saveData({
+        tasks: Array.from(this.tasks.values()),
+        recurringTasks: Array.from(this.recurringTasks.values()),
+        inventoryItems: Array.from(this.inventoryItems.values()),
+        counters: {
+          currentTaskId: this.currentTaskId,
+          currentRecurringTaskId: this.currentRecurringTaskId,
+          currentInventoryId: this.currentInventoryId
+        }
+      });
+    } else {
+      console.log('No weekly frequencies found to migrate');
     }
   }
 
