@@ -249,14 +249,21 @@ Please process this reorder request at your earliest convenience.`;
   };
 
   const handleAddInventory = async (data: AddInventoryData) => {
-    // Transform the data to match API expectations
-    const apiData = {
-      itemId: data.itemId,
-      quantity: data.quantity,
-      unitCost: data.costPerUnit, // API expects unitCost, not costPerUnit
-      notes: data.notes
+    // Create a new inventory item with the form data
+    const newItem = {
+      name: data.name,
+      sku: data.sku,
+      category: data.category,
+      currentStock: data.quantity,
+      unit: data.unit,
+      minimumStock: data.minimumStock,
+      supplier: data.supplier,
+      avgCostPerUnit: data.costPerUnit,
+      totalValue: data.totalCost
     };
-    await addInventoryMutation.mutateAsync(apiData);
+    
+    // Use the create item mutation instead
+    await createItemMutation.mutateAsync(newItem);
   };
 
   if (isLoading) {
@@ -570,7 +577,6 @@ Please process this reorder request at your earliest convenience.`;
       <AddInventoryModal
         isOpen={showAddInventoryModal}
         onClose={() => setShowAddInventoryModal(false)}
-        items={inventory}
         onSave={handleAddInventory}
       />
     </div>

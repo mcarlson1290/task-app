@@ -5,34 +5,42 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { InventoryItem } from "@shared/schema";
+
 
 interface AddInventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  items: InventoryItem[];
   onSave: (data: AddInventoryData) => Promise<void>;
 }
 
 export interface AddInventoryData {
-  itemId: number;
+  name: string;
+  sku: string;
+  category: string;
   quantity: number;
+  unit: string;
   totalCost: number;
   costPerUnit: number;
+  supplier: string;
+  minimumStock: number;
   notes: string;
 }
 
 const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
   isOpen,
   onClose,
-  items,
   onSave
 }) => {
   const [inventoryData, setInventoryData] = useState<AddInventoryData>({
-    itemId: 0,
+    name: '',
+    sku: '',
+    category: 'seeds',
     quantity: 0,
+    unit: 'oz',
     totalCost: 0,
     costPerUnit: 0,
+    supplier: '',
+    minimumStock: 0,
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,7 +65,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inventoryData.itemId || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0) {
+    if (!inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0) {
       return;
     }
 
@@ -66,10 +74,15 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
       await onSave(inventoryData);
       // Reset form
       setInventoryData({
-        itemId: 0,
+        name: '',
+        sku: '',
+        category: 'seeds',
         quantity: 0,
+        unit: 'oz',
         totalCost: 0,
         costPerUnit: 0,
+        supplier: '',
+        minimumStock: 0,
         notes: ''
       });
       onClose();
@@ -80,74 +93,113 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
     }
   };
 
-  const selectedItem = items.find(item => item.id === inventoryData.itemId);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            📥 Add to Inventory
+            🌱 Add New Item to Inventory
           </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Item Selection */}
+          {/* Item Name */}
           <div className="space-y-2">
-            <Label htmlFor="item-select">Select Item *</Label>
+            <Label htmlFor="name">Item Name *</Label>
+            <Input
+              id="name"
+              type="text"
+              value={inventoryData.name}
+              onChange={(e) => setInventoryData({...inventoryData, name: e.target.value})}
+              placeholder="e.g., Spinach Seeds - Bloomsdale"
+              required
+            />
+          </div>
+
+          {/* SKU */}
+          <div className="space-y-2">
+            <Label htmlFor="sku">SKU (4 characters max) *</Label>
+            <Input
+              id="sku"
+              type="text"
+              value={inventoryData.sku}
+              onChange={(e) => setInventoryData({...inventoryData, sku: e.target.value.toUpperCase().slice(0, 4)})}
+              placeholder="SPIN"
+              maxLength={4}
+              required
+            />
+            <div className="text-sm text-gray-500">
+              4-character code for tray IDs
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category">Category *</Label>
             <Select
-              value={inventoryData.itemId.toString()}
-              onValueChange={(value) => setInventoryData({...inventoryData, itemId: parseInt(value)})}
+              value={inventoryData.category}
+              onValueChange={(value) => setInventoryData({...inventoryData, category: value})}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose an item..." />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {items.map(item => (
-                  <SelectItem key={item.id} value={item.id.toString()}>
-                    [{item.sku || 'NO-SKU'}] {item.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="seeds">Seeds</SelectItem>
+                <SelectItem value="nutrients">Nutrients</SelectItem>
+                <SelectItem value="farm-supplies">Farm Supplies</SelectItem>
+                <SelectItem value="other-supplies">Other Supplies</SelectItem>
+                <SelectItem value="equipment">Equipment</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Current Stock Display */}
-          {selectedItem && (
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <div className="text-sm text-gray-600">
-                <strong>SKU:</strong> {selectedItem.sku || 'No SKU'}
-              </div>
-              <div className="text-sm text-gray-600">Current Stock</div>
-              <div className="text-lg font-semibold text-[#203B17]">
-                {selectedItem.currentStock} {selectedItem.unit}
-              </div>
-              {(selectedItem.avgCostPerUnit && selectedItem.avgCostPerUnit > 0) && (
-                <div className="text-sm text-gray-600">
-                  Current avg. cost: ${selectedItem.avgCostPerUnit.toFixed(2)}/{selectedItem.unit}
-                </div>
-              )}
+          {/* Quantity and Unit Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity to Add *</Label>
+              <Input
+                id="quantity"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={inventoryData.quantity || ''}
+                onChange={(e) => handleCostChange('quantity', e.target.value)}
+                placeholder="50"
+                required
+              />
             </div>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit *</Label>
+              <Select
+                value={inventoryData.unit}
+                onValueChange={(value) => setInventoryData({...inventoryData, unit: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oz">oz</SelectItem>
+                  <SelectItem value="lbs">lbs</SelectItem>
+                  <SelectItem value="grams">grams</SelectItem>
+                  <SelectItem value="kg">kg</SelectItem>
+                  <SelectItem value="pieces">pieces</SelectItem>
+                  <SelectItem value="liters">liters</SelectItem>
+                  <SelectItem value="gallons">gallons</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-          {/* Quantity */}
+          {/* Supplier */}
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity to Add *</Label>
+            <Label htmlFor="supplier">Supplier</Label>
             <Input
-              id="quantity"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={inventoryData.quantity || ''}
-              onChange={(e) => handleCostChange('quantity', e.target.value)}
-              placeholder="e.g., 50"
-              required
+              id="supplier"
+              type="text"
+              value={inventoryData.supplier}
+              onChange={(e) => setInventoryData({...inventoryData, supplier: e.target.value})}
+              placeholder="e.g., Johnny Seeds"
             />
-            {selectedItem && (
-              <div className="text-sm text-gray-500">
-                Unit: {selectedItem.unit}
-              </div>
-            )}
           </div>
 
           {/* Total Cost */}
@@ -168,12 +220,28 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
             </div>
           </div>
 
+          {/* Minimum Stock Level */}
+          <div className="space-y-2">
+            <Label htmlFor="minimum-stock">Minimum Stock Level</Label>
+            <Input
+              id="minimum-stock"
+              type="number"
+              min="0"
+              step="0.1"
+              value={inventoryData.minimumStock || ''}
+              onChange={(e) => setInventoryData({...inventoryData, minimumStock: parseFloat(e.target.value) || 0})}
+              placeholder="0"
+            />
+            <div className="text-sm text-gray-500">
+              Alert when stock falls below this level
+            </div>
+          </div>
+
           {/* Calculated Cost Per Unit */}
           <div className="bg-blue-50 p-3 rounded-lg">
             <Label className="text-sm font-medium text-blue-900">Cost Per Unit (Calculated)</Label>
             <div className="text-xl font-bold text-blue-900">
-              ${inventoryData.costPerUnit.toFixed(2)}
-              {selectedItem && ` / ${selectedItem.unit}`}
+              ${inventoryData.costPerUnit.toFixed(2)} / {inventoryData.unit}
             </div>
           </div>
 
@@ -194,9 +262,9 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
             <Button 
               type="submit" 
               className="flex-1 bg-[#2D8028] hover:bg-[#203B17]"
-              disabled={isSubmitting || !inventoryData.itemId || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0}
+              disabled={isSubmitting || !inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0}
             >
-              {isSubmitting ? "Adding..." : "Add to Inventory"}
+              {isSubmitting ? "Adding..." : "Add New Item"}
             </Button>
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
