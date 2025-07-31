@@ -1,0 +1,147 @@
+# Replit Instructions: Verify and Actually Fix Edit Form Values
+
+**ISSUE: Previous fix claims to work but edit form still shows 0 values**
+
+## Step 1: Verify What Replit Changed
+
+Find the edit form and check if these changes were actually made:
+
+```javascript
+// Check if the form inputs now have .toString() conversion
+// Look for code like:
+value={formData.currentStock?.toString() || ''}
+value={formData.minimumStock?.toString() || ''}
+```
+
+## Step 2: Check the Actual Data Structure
+
+In the handleEdit function, add a TEMPORARY console.log to see the real data:
+
+```javascript
+const handleEdit = (item) => {
+  // Add this temporarily to see what's really in the item
+  console.log('EDIT ITEM DATA CHECK:', {
+    item: item,
+    currentStock: item.currentStock,
+    quantity: item.quantity,
+    stock: item.stock,
+    minimumStock: item.minimumStock,
+    minStock: item.minStock,
+    reorderLevel: item.reorderLevel,
+    sku: item.sku,
+    SKU: item.SKU,
+    productCode: item.productCode
+  });
+  
+  // Continue with normal edit logic
+  setEditItem(item);
+  setShowEditModal(true);
+};
+```
+
+## Step 3: Find Where the Display Gets Its Data
+
+Find the code that displays "450 grams" in the inventory list:
+
+```javascript
+// It might look like one of these:
+<td>{item.quantity} {item.unit}</td>
+<td>{item.stock} grams</td>
+<td>{item.currentStock} {item.unit}</td>
+
+// Or in a card view:
+<p>Current Stock: {item.quantity} {item.unit}</p>
+```
+
+**Whatever field name is used here is the REAL field name you need in the edit form.**
+
+## Step 4: Fix the Form Initialization
+
+Based on what you find, update the edit form initialization:
+
+```javascript
+useEffect(() => {
+  if (item && isOpen) {
+    // If display uses item.quantity but form expects currentStock:
+    setFormData({
+      name: item.name || '',
+      sku: item.productCode || item.sku || item.SKU || '', // Replit found it's productCode
+      currentStock: item.quantity || item.stock || item.currentStock || 0, // Use the SAME field as display
+      minimumStock: item.reorderLevel || item.minStock || item.minimumStock || 0,
+      unit: item.unit || '',
+      category: item.category || '',
+      supplier: item.supplier || ''
+    });
+  }
+}, [item, isOpen]);
+```
+
+## Step 5: The Real Fix
+
+If Replit's fix didn't work, the issue is likely one of these:
+
+### Option A: Wrong Field Names
+```javascript
+// The display might use different fields than what Replit thinks
+// Instead of:
+currentStock: item.currentStock
+
+// It might actually be:
+currentStock: item.quantity  // or item.stock or item.onHand
+```
+
+### Option B: Data Not Passed to Modal
+```javascript
+// Check how item is passed to the modal
+// Instead of:
+<EditModal item={editItem} />
+
+// Make sure it's:
+<EditModal item={editItem} isOpen={showEditModal} />
+
+// And that editItem is actually set:
+const handleEdit = (item) => {
+  console.log('Setting edit item:', item); // Verify item has data
+  setEditItem(item); // Make sure this actually sets the item
+  setShowEditModal(true);
+};
+```
+
+### Option C: Form Not Re-initializing
+```javascript
+// The form might not be resetting when a new item is edited
+// Add key to force re-render:
+<EditModal 
+  key={editItem?.id} // Forces new instance when item changes
+  item={editItem} 
+  isOpen={showEditModal} 
+/>
+```
+
+## Step 6: Direct Fix Without Guessing
+
+Look for these exact patterns in your code:
+
+```bash
+# Find what displays "450 grams"
+Search for: "450"
+# Look at the code around it - what variable/field is it using?
+
+# Find what displays "100 grams"  
+Search for: "100"
+# Same thing - what field name?
+
+# Find the edit form current stock input
+Search for: "Current Stock *"
+Search for: "formData.currentStock"
+# See what it's bound to
+```
+
+## The Bottom Line:
+
+1. The display works (shows 450, 100, etc.)
+2. The edit form doesn't (shows 0)
+3. Therefore: The display and edit form are using DIFFERENT field names
+4. Solution: Make the edit form use the SAME field names as the display
+
+Don't trust what field names "should" be - look at what field names actually work in the display!

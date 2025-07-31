@@ -565,6 +565,7 @@ Please process this reorder request at your earliest convenience.`;
 
       {/* Add/Edit Item Modal */}
       <InventoryModal
+        key={editingItem?.id}
         item={editingItem}
         mode={modalMode}
         isOpen={showModal}
