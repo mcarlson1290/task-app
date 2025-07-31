@@ -136,11 +136,11 @@ export const inventoryItems = pgTable("inventory_items", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   category: text("category").notNull(), // 'seeds', 'nutrients', 'supplies', 'equipment'
+  sku: text("sku").notNull().default('TEMP'), // 4-character SKU for tray ID generation (was productCode)
   currentStock: integer("current_stock").default(0),
   minimumStock: integer("minimum_stock").default(0),
   unit: text("unit").notNull(), // 'kg', 'lbs', 'pieces', 'liters', 'grams'
   supplier: text("supplier"),
-  productCode: text("product_code"), // Used for tray ID generation
   ozPerTray: real("oz_per_tray"), // Amount needed per tray for seeds
   cropId: integer("crop_id"), // Links to crop configuration
   
@@ -217,6 +217,7 @@ export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
 export type GrowingSystem = typeof growingSystems.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
+export type InventoryItem = typeof inventoryItems.$inferSelect;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);

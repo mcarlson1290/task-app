@@ -28,6 +28,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     if (mode === 'edit' && item) {
       return {
         name: item.name,
+        sku: item.sku || '',
         currentStock: item.currentStock,
         unit: item.unit,
         minimumStock: item.minimumStock,
@@ -38,6 +39,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     }
     return {
       name: '',
+      sku: '',
       currentStock: 0,
       unit: 'units',
       minimumStock: 0,
@@ -52,6 +54,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     if (mode === 'edit' && item) {
       setFormData({
         name: item.name,
+        sku: item.sku || '',
         currentStock: item.currentStock,
         unit: item.unit,
         minimumStock: item.minimumStock,
@@ -62,6 +65,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     } else if (mode === 'add') {
       setFormData({
         name: '',
+        sku: '',
         currentStock: 0,
         unit: 'units',
         minimumStock: 0,
@@ -77,6 +81,16 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
     
     if (!formData.name.trim()) {
       alert('Please enter an item name');
+      return;
+    }
+    
+    if (!formData.sku.trim()) {
+      alert('Please enter a SKU');
+      return;
+    }
+    
+    if (formData.sku.length > 4) {
+      alert('SKU must be 4 characters or less');
       return;
     }
     
@@ -183,6 +197,20 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               placeholder="e.g., Arugula Seeds"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sku">SKU (4 characters max) *</Label>
+            <Input
+              id="sku"
+              type="text"
+              value={formData.sku}
+              onChange={(e) => setFormData({...formData, sku: e.target.value.toUpperCase().slice(0, 4)})}
+              placeholder="ARUG"
+              maxLength={4}
+              required
+            />
+            <p className="text-sm text-gray-600">4-character code for tray IDs (e.g., ARUG, ROM2, BASL)</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

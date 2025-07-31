@@ -465,6 +465,9 @@ Please process this reorder request at your earliest convenience.`;
                       <div>
                         <h3 className="font-semibold text-[#203B17]">{item.name}</h3>
                         <p className="text-sm text-gray-600 capitalize">{item.category}</p>
+                        <p className="text-xs text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded inline-block mt-1">
+                          SKU: {item.sku}
+                        </p>
                       </div>
                     </div>
                     <Badge className={`${stockStatus.color} border-none`}>

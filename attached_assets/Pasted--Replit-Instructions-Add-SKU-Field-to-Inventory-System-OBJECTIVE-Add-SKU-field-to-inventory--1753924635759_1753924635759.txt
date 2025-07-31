@@ -1,0 +1,233 @@
+# Replit Instructions: Add SKU Field to Inventory System
+
+**OBJECTIVE: Add SKU field to inventory items so Create Tray can use them for tray IDs**
+
+## Step 1: Update Inventory Item Structure
+
+Find where inventory items are created/edited and add SKU field:
+
+```tsx
+// In the Add/Edit Inventory Item form
+<div className="form-group">
+  <label>SKU (4 characters max)*</label>
+  <input
+    type="text"
+    value={item.sku || ''}
+    onChange={(e) => setItem({...item, sku: e.target.value.toUpperCase().slice(0, 4)})}
+    placeholder="ARUG"
+    maxLength={4}
+    required
+    className="form-control"
+  />
+  <small className="text-muted">4-character code for tray IDs (e.g., ARUG, ROM2, BASL)</small>
+</div>
+```
+
+## Step 2: Update Inventory Display
+
+In the inventory list/table, add SKU column:
+
+```tsx
+// In inventory table headers
+<th>SKU</th>
+<th>Name</th>
+<th>Category</th>
+<th>Quantity</th>
+// ... other columns
+
+// In inventory table rows
+<td>{item.sku || 'N/A'}</td>
+<td>{item.name}</td>
+<td>{item.category}</td>
+<td>{item.quantity} {item.unit}</td>
+// ... other data
+```
+
+## Step 3: Add Migration for Existing Inventory
+
+Create a one-time migration to add SKUs to existing items:
+
+```tsx
+const migrateInventoryAddSKUs = () => {
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  
+  const updatedInventory = inventory.map((item, index) => {
+    // Only update items without SKUs
+    if (!item.sku) {
+      // Generate a simple SKU based on name or use a generic pattern
+      let generatedSku = '';
+      
+      if (item.category === 'Seeds') {
+        // Try to create SKU from name
+        const nameParts = item.name.toUpperCase().split(' ');
+        if (nameParts[0]) {
+          generatedSku = nameParts[0].slice(0, 4);
+        }
+        
+        // Handle duplicates by adding numbers
+        const skuCount = inventory.filter(i => i.sku?.startsWith(generatedSku.slice(0, 3))).length;
+        if (skuCount > 0) {
+          generatedSku = generatedSku.slice(0, 3) + (skuCount + 1);
+        }
+      } else {
+        // For non-seeds, use category prefix + number
+        const categoryPrefix = item.category?.slice(0, 2).toUpperCase() || 'IT';
+        generatedSku = categoryPrefix + String(index + 1).padStart(2, '0');
+      }
+      
+      return {
+        ...item,
+        sku: generatedSku.slice(0, 4) // Ensure 4 chars max
+      };
+    }
+    return item;
+  });
+  
+  localStorage.setItem('inventory', JSON.stringify(updatedInventory));
+  
+  // Log what was migrated
+  console.log('Inventory SKU migration complete');
+  console.log('Updated items:', updatedInventory.filter(item => !inventory.find(i => i.id === item.id)?.sku));
+};
+
+// Run migration on app startup if needed
+if (localStorage.getItem('inventory')) {
+  const inventory = JSON.parse(localStorage.getItem('inventory'));
+  const needsMigration = inventory.some(item => !item.sku);
+  if (needsMigration) {
+    migrateInventoryAddSKUs();
+  }
+}
+```
+
+## Step 4: Add SKU Validation
+
+Add validation to ensure SKUs are unique:
+
+```tsx
+const validateSKU = (sku: string, currentItemId?: string) => {
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  
+  // Check if SKU already exists (excluding current item if editing)
+  const duplicate = inventory.find(item => 
+    item.sku === sku && item.id !== currentItemId
+  );
+  
+  if (duplicate) {
+    return `SKU "${sku}" is already used by ${duplicate.name}`;
+  }
+  
+  if (sku.length === 0) {
+    return 'SKU is required';
+  }
+  
+  if (sku.length > 4) {
+    return 'SKU must be 4 characters or less';
+  }
+  
+  return null; // Valid
+};
+
+// Use in save function
+const handleSaveItem = () => {
+  const skuError = validateSKU(item.sku, item.id);
+  if (skuError) {
+    alert(skuError);
+    return;
+  }
+  
+  // ... save logic
+};
+```
+
+## Step 5: Update Create Tray to Show SKU
+
+In the Create Tray seed dropdown, show the SKU:
+
+```tsx
+<select 
+  value={selectedSeed?.id || ''} 
+  onChange={(e) => {
+    const seed = availableSeeds.find(s => s.id === e.target.value);
+    setSelectedSeed(seed || null);
+  }}
+  className="form-control"
+>
+  <option value="">Select seed...</option>
+  {availableSeeds.map(seed => (
+    <option key={seed.id} value={seed.id}>
+      {seed.sku ? `[${seed.sku}] ` : ''}{seed.name} ({seed.quantity || 0} {seed.unit || 'units'} available)
+    </option>
+  ))}
+</select>
+```
+
+## Step 6: Initialize Test Data with SKUs
+
+If initializing test inventory data:
+
+```tsx
+const initializeInventoryWithSKUs = () => {
+  const testInventory = [
+    {
+      id: 'seed-001',
+      name: 'Arugula - Astro Microgreens',
+      sku: 'ARUG',
+      category: 'Seeds',
+      quantity: 25,
+      unit: 'oz',
+      reorderPoint: 5
+    },
+    {
+      id: 'seed-002',
+      name: 'Arugula - Roquette Leafy',
+      sku: 'ARG2',
+      category: 'Seeds',
+      quantity: 30,
+      unit: 'oz',
+      reorderPoint: 5
+    },
+    {
+      id: 'seed-003',
+      name: 'Romaine - Parris Island',
+      sku: 'ROMN',
+      category: 'Seeds',
+      quantity: 20,
+      unit: 'oz',
+      reorderPoint: 4
+    },
+    {
+      id: 'seed-004',
+      name: 'Basil - Genovese',
+      sku: 'BASL',
+      category: 'Seeds',
+      quantity: 18,
+      unit: 'oz',
+      reorderPoint: 4
+    },
+    // Non-seed items
+    {
+      id: 'supp-001',
+      name: 'Rockwool Cubes',
+      sku: 'RW01',
+      category: 'Growing Media',
+      quantity: 500,
+      unit: 'cubes',
+      reorderPoint: 100
+    }
+  ];
+  
+  localStorage.setItem('inventory', JSON.stringify(testInventory));
+};
+```
+
+## Summary
+
+This implementation:
+1. **Adds SKU field** to all inventory items (4 characters max)
+2. **Validates uniqueness** - No duplicate SKUs allowed
+3. **Auto-migrates** existing inventory with generated SKUs
+4. **Shows SKUs** in the inventory list and Create Tray dropdown
+5. **Enforces format** - Automatically converts to uppercase, limits to 4 chars
+
+After this, every inventory item will have a SKU that can be used in tray IDs!
