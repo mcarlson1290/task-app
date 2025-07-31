@@ -72,12 +72,12 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
       case 'create-tray':
         return { 
           numberOfTrays: 1, 
-          defaultTrayType: 'LG', 
+          defaultTrayType: 'LG',
           defaultInstance: 1,
-          defaultSeedsOz: '0.5',
-          defaultGrowingMedium: 'user-selects',
-          preferredSeed: '',
-          allowCustomization: true 
+          defaultGrowingMedium: '',
+          defaultTotalSlots: 0,
+          defaultVarieties: [],
+          instructions: ''
         };
       default:
         return {};
@@ -606,20 +606,6 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Default Seeds (oz)</Label>
-                    <Input
-                      type="number"
-                      value={step.config.defaultSeedsOz || ''}
-                      onChange={(e) => onUpdate({
-                        ...step,
-                        config: { ...step.config, defaultSeedsOz: e.target.value }
-                      })}
-                      placeholder="0.5"
-                      step="0.1"
-                    />
-                    <small className="text-xs text-gray-500">Suggested amount for this task</small>
-                  </div>
-                  <div>
                     <Label>Default Growing Medium</Label>
                     <Select
                       value={step.config.defaultGrowingMedium || ''}
@@ -632,7 +618,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                         <SelectValue placeholder="User selects..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user-selects">User selects</SelectItem>
+                        <SelectItem value="">User selects...</SelectItem>
                         <SelectItem value="Oasis Cubes">Oasis Cubes</SelectItem>
                         <SelectItem value="Rockwool">Rockwool</SelectItem>
                         <SelectItem value="Hemp Mat">Hemp Mat</SelectItem>
@@ -640,6 +626,158 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                       </SelectContent>
                     </Select>
                   </div>
+                  <div>
+                    <Label>Default Total Slots</Label>
+                    <Input
+                      type="number"
+                      value={step.config.defaultTotalSlots || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, defaultTotalSlots: parseInt(e.target.value) || 0 }
+                      })}
+                      placeholder="e.g., 200"
+                      min="1"
+                    />
+                    <small className="text-xs text-gray-500">Typical: Rockwool 200, Oasis varies</small>
+                  </div>
+                </div>
+
+                {/* Default Crop Varieties Section */}
+                <div className="default-varieties-section p-4 bg-gray-50 rounded-lg border">
+                  <Label className="text-sm font-medium mb-2 block">Default Crop Varieties</Label>
+                  <p className="text-xs text-gray-600 mb-3">Set default quantities for each crop type</p>
+                  
+                  {(!step.config.defaultVarieties || step.config.defaultVarieties.length === 0) ? (
+                    <div className="no-varieties-message p-3 text-center text-gray-500 italic">
+                      No default varieties set. Click below to add.
+                    </div>
+                  ) : (
+                    <div className="varieties-list space-y-2">
+                      {step.config.defaultVarieties.map((variety: any, index: number) => (
+                        <div key={index} className="default-variety-row grid grid-cols-6 gap-2 items-center p-2 bg-white rounded border">
+                          <Select
+                            value={variety.seedId || ''}
+                            onValueChange={(value) => {
+                              const newVarieties = [...(step.config.defaultVarieties || [])];
+                              const inventoryItems = [
+                                { id: '1', name: 'Arugula Seeds', sku: 'ARU' },
+                                { id: '2', name: 'Basil Seeds', sku: 'BAS' },
+                                { id: '3', name: 'Broccoli Seeds', sku: 'BROC' },
+                                { id: '4', name: 'Kale Seeds', sku: 'KALE' },
+                                { id: '5', name: 'Lettuce Seeds', sku: 'LET' },
+                                { id: '6', name: 'Radish Seeds', sku: 'RAD' },
+                                { id: '7', name: 'Spinach Seeds', sku: 'SPN' }
+                              ];
+                              const seed = inventoryItems.find(s => s.id === value);
+                              newVarieties[index] = { 
+                                ...variety, 
+                                seedId: value,
+                                seedName: seed?.name || '',
+                                sku: seed?.sku || ''
+                              };
+                              onUpdate({
+                                ...step,
+                                config: { ...step.config, defaultVarieties: newVarieties }
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="text-xs">
+                              <SelectValue placeholder="Select seed..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">[ARU] Arugula Seeds</SelectItem>
+                              <SelectItem value="2">[BAS] Basil Seeds</SelectItem>
+                              <SelectItem value="3">[BROC] Broccoli Seeds</SelectItem>
+                              <SelectItem value="4">[KALE] Kale Seeds</SelectItem>
+                              <SelectItem value="5">[LET] Lettuce Seeds</SelectItem>
+                              <SelectItem value="6">[RAD] Radish Seeds</SelectItem>
+                              <SelectItem value="7">[SPN] Spinach Seeds</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          <Input
+                            type="number"
+                            value={variety.quantity || ''}
+                            onChange={(e) => {
+                              const newVarieties = [...(step.config.defaultVarieties || [])];
+                              newVarieties[index] = { ...variety, quantity: parseInt(e.target.value) || 0 };
+                              onUpdate({
+                                ...step,
+                                config: { ...step.config, defaultVarieties: newVarieties }
+                              });
+                            }}
+                            placeholder="Qty"
+                            min="0"
+                            className="text-xs"
+                          />
+                          
+                          <Input
+                            type="number"
+                            value={variety.seedsOz || ''}
+                            onChange={(e) => {
+                              const newVarieties = [...(step.config.defaultVarieties || [])];
+                              newVarieties[index] = { ...variety, seedsOz: parseFloat(e.target.value) || 0 };
+                              onUpdate({
+                                ...step,
+                                config: { ...step.config, defaultVarieties: newVarieties }
+                              });
+                            }}
+                            placeholder="Seeds (oz)"
+                            step="0.1"
+                            min="0"
+                            className="text-xs"
+                          />
+                          
+                          <Button 
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newVarieties = (step.config.defaultVarieties || []).filter((_: any, i: number) => i !== index);
+                              onUpdate({
+                                ...step,
+                                config: { ...step.config, defaultVarieties: newVarieties }
+                              });
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            ×
+                          </Button>
+                        </div>
+                      ))}
+                      
+                      {/* Show total plants count */}
+                      <div className="variety-total text-right p-2 bg-green-50 rounded font-medium text-sm">
+                        Total Plants: {(step.config.defaultVarieties || []).reduce((sum: number, v: any) => sum + (v.quantity || 0), 0)}
+                        {step.config.defaultTotalSlots && (
+                          <span> / {step.config.defaultTotalSlots} slots</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newVarieties = [...(step.config.defaultVarieties || []), {
+                        seedId: '',
+                        seedName: '',
+                        sku: '',
+                        quantity: 0,
+                        seedsOz: 0
+                      }];
+                      onUpdate({
+                        ...step,
+                        config: { ...step.config, defaultVarieties: newVarieties }
+                      });
+                    }}
+                    className="mt-3"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Default Variety
+                  </Button>
                 </div>
 
                 <div>

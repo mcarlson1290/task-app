@@ -10,6 +10,8 @@ interface CreateTrayStepProps {
   defaultTrayType?: 'MG' | 'LG' | 'HB';
   defaultSeedsOz?: string;
   defaultGrowingMedium?: string;
+  defaultTotalSlots?: number;
+  defaultVarieties?: any[];
   instructions?: string;
 }
 
@@ -38,6 +40,8 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   defaultTrayType = 'LG',
   defaultSeedsOz = '',
   defaultGrowingMedium = '',
+  defaultTotalSlots = 0,
+  defaultVarieties = [],
   instructions = ''
 }) => {
   const [selectedSeed, setSelectedSeed] = useState<InventoryItem | null>(null);
@@ -57,7 +61,9 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   const [varieties, setVarieties] = useState<Variety[]>([
     { id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }
   ]);
-  const [totalSlots, setTotalSlots] = useState(0);
+  const [totalSlots, setTotalSlots] = useState(
+    stepData?.config?.defaultTotalSlots || defaultTotalSlots || 0
+  );
   const [notes, setNotes] = useState('');
   const [generatedId, setGeneratedId] = useState('');
   const [availableSeeds, setAvailableSeeds] = useState<InventoryItem[]>([]);
@@ -72,7 +78,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
                       currentUser.location === 'racine' ? 'R' : 
                       currentUser.location === 'milwaukee' ? 'MKE' : 'K';
 
-  // Load seed inventory on mount
+  // Load seed inventory on mount and initialize default varieties
   useEffect(() => {
     // Load from the same source as the Inventory page
     fetch('/api/inventory')
@@ -93,7 +99,21 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         );
         setAvailableSeeds(seeds);
       });
-  }, []);
+
+    // Initialize varieties with default values if configured
+    const configuredDefaults = stepData?.config?.defaultVarieties || defaultVarieties;
+    if (configuredDefaults && configuredDefaults.length > 0) {
+      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
+        id: (index + 1).toString(),
+        seedId: defaultVar.seedId || '',
+        seedName: defaultVar.seedName || '',
+        sku: defaultVar.sku || '',
+        quantity: defaultVar.quantity || 0,
+        seedsOz: defaultVar.seedsOz || 0
+      }));
+      setVarieties(initialVarieties);
+    }
+  }, [stepData, defaultVarieties]);
 
   // Update available varieties when seed type changes
   useEffect(() => {

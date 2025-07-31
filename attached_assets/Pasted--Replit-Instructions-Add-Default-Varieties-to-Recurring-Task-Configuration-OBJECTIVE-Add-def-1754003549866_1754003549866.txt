@@ -1,0 +1,328 @@
+# Replit Instructions: Add Default Varieties to Recurring Task Configuration
+
+**OBJECTIVE: Add default variety configuration to the Create Tray step in recurring task editor**
+
+## Step 1: Update the Create Tray Configuration Section
+
+In the recurring task editor, find where "Create Tray Configuration" is rendered and expand it:
+
+```tsx
+{selectedStepType === 'Create Tray' && (
+  <div className="create-tray-configuration">
+    <h4>Create Tray Configuration</h4>
+    
+    {/* Existing fields - keep these */}
+    <div className="form-row">
+      <div className="form-group">
+        <label>Default Tray Type</label>
+        <select 
+          value={stepConfig.defaultTrayType || 'LG'} 
+          onChange={(e) => updateStepConfig('defaultTrayType', e.target.value)}
+        >
+          <option value="LG">LG - Leafy Greens</option>
+          <option value="MG">MG - Microgreens</option>
+          <option value="HB">HB - Herbs</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Default Instance #</label>
+        <input
+          type="number"
+          value={stepConfig.defaultInstance || 1}
+          onChange={(e) => updateStepConfig('defaultInstance', parseInt(e.target.value) || 1)}
+          min={1}
+          max={99}
+        />
+      </div>
+    </div>
+
+    {/* Remove or update the Default Seeds (oz) field */}
+    <div className="form-row">
+      <div className="form-group">
+        <label>Default Growing Medium</label>
+        <select 
+          value={stepConfig.defaultGrowingMedium || ''} 
+          onChange={(e) => updateStepConfig('defaultGrowingMedium', e.target.value)}
+        >
+          <option value="">User selects...</option>
+          <option value="Oasis Cubes">Oasis Cubes</option>
+          <option value="Rockwool">Rockwool</option>
+          <option value="Hemp Mat">Hemp Mat</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Default Total Slots</label>
+        <input
+          type="number"
+          value={stepConfig.defaultTotalSlots || ''}
+          onChange={(e) => updateStepConfig('defaultTotalSlots', e.target.value)}
+          placeholder="e.g., 200"
+        />
+        <small>Typical: Rockwool 200, Oasis varies</small>
+      </div>
+    </div>
+
+    {/* ADD THIS: Default Varieties Section */}
+    <div className="default-varieties-section">
+      <h5>Default Crop Varieties</h5>
+      <p className="help-text">Set default quantities for each crop type</p>
+      
+      {(!stepConfig.defaultVarieties || stepConfig.defaultVarieties.length === 0) ? (
+        <div className="no-varieties-message">
+          No default varieties set. Click below to add.
+        </div>
+      ) : (
+        <div className="varieties-list">
+          {stepConfig.defaultVarieties.map((variety, index) => (
+            <div key={index} className="default-variety-row">
+              <select
+                value={variety.seedId || ''}
+                onChange={(e) => {
+                  const newVarieties = [...stepConfig.defaultVarieties];
+                  newVarieties[index] = { ...variety, seedId: e.target.value };
+                  updateStepConfig('defaultVarieties', newVarieties);
+                }}
+                className="seed-select"
+              >
+                <option value="">Select seed...</option>
+                {availableSeeds.map(seed => (
+                  <option key={seed.id} value={seed.id}>
+                    [{seed.sku || seed.productCode}] {seed.name}
+                  </option>
+                ))}
+              </select>
+              
+              <input
+                type="number"
+                value={variety.quantity || ''}
+                onChange={(e) => {
+                  const newVarieties = [...stepConfig.defaultVarieties];
+                  newVarieties[index] = { ...variety, quantity: parseInt(e.target.value) || 0 };
+                  updateStepConfig('defaultVarieties', newVarieties);
+                }}
+                placeholder="Qty"
+                min={0}
+                className="quantity-input"
+              />
+              
+              <input
+                type="number"
+                value={variety.seedsOz || ''}
+                onChange={(e) => {
+                  const newVarieties = [...stepConfig.defaultVarieties];
+                  newVarieties[index] = { ...variety, seedsOz: parseFloat(e.target.value) || 0 };
+                  updateStepConfig('defaultVarieties', newVarieties);
+                }}
+                placeholder="Seeds (oz)"
+                step="0.1"
+                min={0}
+                className="seeds-oz-input"
+              />
+              
+              <button 
+                type="button"
+                onClick={() => {
+                  const newVarieties = stepConfig.defaultVarieties.filter((_, i) => i !== index);
+                  updateStepConfig('defaultVarieties', newVarieties);
+                }}
+                className="remove-variety-btn"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          
+          {/* Show total plants count */}
+          <div className="variety-total">
+            Total Plants: {stepConfig.defaultVarieties.reduce((sum, v) => sum + (v.quantity || 0), 0)}
+            {stepConfig.defaultTotalSlots && (
+              <span> / {stepConfig.defaultTotalSlots} slots</span>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <button 
+        type="button"
+        onClick={() => {
+          const newVarieties = [...(stepConfig.defaultVarieties || []), {
+            seedId: '',
+            quantity: 0,
+            seedsOz: 0
+          }];
+          updateStepConfig('defaultVarieties', newVarieties);
+        }}
+        className="add-default-variety-btn"
+      >
+        + Add Default Variety
+      </button>
+    </div>
+
+    <div className="form-group">
+      <label>Step Instructions</label>
+      <textarea
+        value={stepConfig.instructions || ''}
+        onChange={(e) => updateStepConfig('instructions', e.target.value)}
+        placeholder="Additional instructions for this create tray step..."
+        rows={3}
+      />
+    </div>
+  </div>
+)}
+```
+
+## Step 2: Load Available Seeds
+
+Make sure seeds are loaded when the recurring task form opens:
+
+```tsx
+// In the recurring task component
+const [availableSeeds, setAvailableSeeds] = useState([]);
+
+useEffect(() => {
+  // Load seeds from inventory
+  const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+  const seeds = inventory.filter(item => 
+    item.category === 'Seeds' || 
+    item.category?.toLowerCase() === 'seeds'
+  );
+  setAvailableSeeds(seeds);
+}, []);
+```
+
+## Step 3: Update Step Save Logic
+
+When saving the step, ensure default varieties are included:
+
+```tsx
+const addStep = () => {
+  const newStep = {
+    id: Date.now(),
+    type: selectedStepType,
+    label: stepLabel,
+    required: isRequired,
+    
+    // Include all Create Tray configs
+    ...(selectedStepType === 'Create Tray' && {
+      defaultTrayType: stepConfig.defaultTrayType || 'LG',
+      defaultInstance: stepConfig.defaultInstance || 1,
+      defaultGrowingMedium: stepConfig.defaultGrowingMedium || '',
+      defaultTotalSlots: stepConfig.defaultTotalSlots || 0,
+      defaultVarieties: stepConfig.defaultVarieties || [],
+      instructions: stepConfig.instructions || ''
+    })
+  };
+  
+  // Add to steps
+  setSteps([...steps, newStep]);
+  
+  // Reset form
+  setStepConfig({});
+  setSelectedStepType('');
+  setStepLabel('');
+};
+```
+
+## Step 4: Pass Defaults to Create Tray Component
+
+When the Create Tray step is executed during a task:
+
+```tsx
+{step.type === 'Create Tray' && !step.completed && currentStepIndex === index && (
+  <CreateTrayStep
+    stepData={step}
+    onComplete={(data) => handleStepComplete(index, data)}
+    defaultTrayType={step.defaultTrayType || 'LG'}
+    defaultInstance={step.defaultInstance || 1}
+    defaultGrowingMedium={step.defaultGrowingMedium || ''}
+    defaultTotalSlots={step.defaultTotalSlots || 0}
+    defaultVarieties={step.defaultVarieties || []}
+    instructions={step.instructions || ''}
+  />
+)}
+```
+
+## Step 5: Add Styles
+
+```css
+.default-varieties-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.default-varieties-section h5 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.default-variety-row {
+  display: grid;
+  grid-template-columns: 2fr 80px 100px 40px;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.seed-select {
+  min-width: 200px;
+}
+
+.quantity-input,
+.seeds-oz-input {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+}
+
+.remove-variety-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 30px;
+  height: 30px;
+}
+
+.add-default-variety-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.variety-total {
+  text-align: right;
+  font-weight: 600;
+  padding: 0.5rem;
+  background: #e8f5e9;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.no-varieties-message {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+```
+
+## Summary
+
+This adds a "Default Crop Varieties" section to the Create Tray configuration where you can:
+1. Add multiple default varieties (e.g., 40 Romaine, 30 Arugula, 20 Basil)
+2. Set quantities for each variety
+3. Set seed amounts in oz for each
+4. See total plants vs available slots
+5. These defaults pre-populate when operators execute the task
+
+The operators can still modify these values during execution, but it saves time and ensures consistency across batches.
