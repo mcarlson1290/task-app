@@ -1169,7 +1169,7 @@ export class MemStorage implements IStorage {
     if (updates.frequency || updates.daysOfWeek) {
       console.log('Frequency or days changed, regenerating task instances...');
       
-      // Delete all future task instances for this recurring task
+      // Delete ONLY future pending task instances (preserve completed/in-progress tasks)
       const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
         const task = this.tasks.get(taskId);
         return task?.recurringTaskId === id && 
@@ -1178,9 +1178,9 @@ export class MemStorage implements IStorage {
       });
       
       taskIds.forEach(taskId => this.tasks.delete(taskId));
-      console.log(`Deleted ${taskIds.length} future task instances`);
+      console.log(`Deleted ${taskIds.length} future pending task instances`);
       
-      // Generate new task instances with updated schedule
+      // Generate new task instances with updated schedule (with duplicate prevention)
       await this.generateTaskInstances(updatedTask);
     } else {
       // Just update existing pending instances
@@ -1261,8 +1261,26 @@ export class MemStorage implements IStorage {
     return true;
   }
 
+  // Utility method to check if a task already exists for a specific date
+  private taskExistsForDate(recurringTaskId: number, targetDate: Date): boolean {
+    const existingTasks = Array.from(this.tasks.values()).filter(t => t.recurringTaskId === recurringTaskId);
+    
+    return existingTasks.some(task => {
+      if (!task.dueDate) return false;
+      
+      const taskDate = new Date(task.dueDate);
+      const checkDate = new Date(targetDate);
+      
+      // Compare dates ignoring time
+      return taskDate.getFullYear() === checkDate.getFullYear() &&
+             taskDate.getMonth() === checkDate.getMonth() &&
+             taskDate.getDate() === checkDate.getDate();
+    });
+  }
+
   // Generate task instances from recurring task pattern with proper visibility ranges
   private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
+    console.log(`=== GENERATING TASK INSTANCES FOR: ${recurringTask.title} ===`);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const instances: Task[] = [];
@@ -1287,14 +1305,19 @@ export class MemStorage implements IStorage {
             const visibleDate = new Date(year, month, 1, 12, 0, 0); // Visible from 1st at noon
             const dueDate = new Date(year, month + 1, 0, 12, 0, 0); // Last day of month at noon
             
-            console.log(`Generating monthly task for ${year}-${month+1}: visible ${visibleDate.toLocaleDateString()}, due ${dueDate.toLocaleDateString()}`);
+            console.log(`Checking monthly task for ${year}-${month+1}: visible ${visibleDate.toLocaleDateString()}, due ${dueDate.toLocaleDateString()}`);
             
-            // Only create if not already past due date
-            if (today <= dueDate) {
+            // CRITICAL: Check if ANY task already exists for this date
+            if (this.taskExistsForDate(recurringTask.id, dueDate)) {
+              console.log(`❌ SKIPPING - Task already exists for ${dueDate.toLocaleDateString()}`);
+            } else if (today <= dueDate) {
+              console.log(`✅ CREATING - No task exists for ${dueDate.toLocaleDateString()}`);
               const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
               instances.push(instance);
               this.tasks.set(instance.id, instance); // Save to storage
               generatedTaskIds.add(taskId);
+            } else {
+              console.log(`❌ SKIPPING - Task is past due (${dueDate.toLocaleDateString()})`);
             }
           }
         } else if (recurringTask.frequency === 'bi-weekly') {
@@ -1307,13 +1330,19 @@ export class MemStorage implements IStorage {
             const visibleDate1 = new Date(year, month, 1, 12, 0, 0);  // Visible from 1st at noon
             const dueDate1 = new Date(year, month, 14, 12, 0, 0);  // Due on the 14th at noon
             
-            console.log(`Generating bi-weekly first half for ${year}-${month+1}: visible ${visibleDate1.toLocaleDateString()}, due ${dueDate1.toLocaleDateString()}`);
+            console.log(`Checking bi-weekly first half for ${year}-${month+1}: visible ${visibleDate1.toLocaleDateString()}, due ${dueDate1.toLocaleDateString()}`);
             
-            if (today <= dueDate1) {
+            // CRITICAL: Check if ANY task already exists for this date
+            if (this.taskExistsForDate(recurringTask.id, dueDate1)) {
+              console.log(`❌ SKIPPING - Task already exists for ${dueDate1.toLocaleDateString()}`);
+            } else if (today <= dueDate1) {
+              console.log(`✅ CREATING - No task exists for ${dueDate1.toLocaleDateString()}`);
               const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);
               instances.push(instance1);
               this.tasks.set(instance1.id, instance1); // Save to storage
               generatedTaskIds.add(firstHalfId);
+            } else {
+              console.log(`❌ SKIPPING - Task is past due (${dueDate1.toLocaleDateString()})`);
             }
           }
           
@@ -1324,13 +1353,19 @@ export class MemStorage implements IStorage {
             const visibleDate2 = new Date(year, month, 15, 12, 0, 0); // Visible from 15th at noon
             const dueDate2 = new Date(year, month + 1, 0, 12, 0, 0); // Last day of current month at noon
             
-            console.log(`Generating bi-weekly second half for ${year}-${month+1}: visible ${visibleDate2.toLocaleDateString()}, due ${dueDate2.toLocaleDateString()}`);
+            console.log(`Checking bi-weekly second half for ${year}-${month+1}: visible ${visibleDate2.toLocaleDateString()}, due ${dueDate2.toLocaleDateString()}`);
             
-            if (today <= dueDate2) {
+            // CRITICAL: Check if ANY task already exists for this date
+            if (this.taskExistsForDate(recurringTask.id, dueDate2)) {
+              console.log(`❌ SKIPPING - Task already exists for ${dueDate2.toLocaleDateString()}`);
+            } else if (today <= dueDate2) {
+              console.log(`✅ CREATING - No task exists for ${dueDate2.toLocaleDateString()}`);
               const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
               instances.push(instance2);
               this.tasks.set(instance2.id, instance2); // Save to storage
               generatedTaskIds.add(secondHalfId);
+            } else {
+              console.log(`❌ SKIPPING - Task is past due (${dueDate2.toLocaleDateString()})`);
             }
           }
         }
@@ -1369,9 +1404,15 @@ export class MemStorage implements IStorage {
         }
         
         if (shouldCreate && currentDate >= today) {
-          const instance = await this.createTaskInstanceWithDates(recurringTask, new Date(currentDate), new Date(currentDate));
-          instances.push(instance);
-          this.tasks.set(instance.id, instance); // Save to storage
+          // CRITICAL: Check if ANY task already exists for this date
+          if (this.taskExistsForDate(recurringTask.id, currentDate)) {
+            console.log(`❌ SKIPPING - Task already exists for ${currentDate.toLocaleDateString()}`);
+          } else {
+            console.log(`✅ CREATING - No task exists for ${currentDate.toLocaleDateString()}`);
+            const instance = await this.createTaskInstanceWithDates(recurringTask, new Date(currentDate), new Date(currentDate));
+            instances.push(instance);
+            this.tasks.set(instance.id, instance); // Save to storage
+          }
         }
         
         // Move to next day

@@ -3,8 +3,14 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "frequency": "bi-weekly",
-    "daysOfWeek": [],
+    "frequency": "daily",
+    "daysOfWeek": [
+      "monday",
+      "friday",
+      "tuesday",
+      "wednesday",
+      "thursday"
+    ],
     "isActive": true,
     "automation": {
       "enabled": false,
@@ -18,34 +24,6 @@
     },
     "checklistTemplate": {
       "steps": [
-        {
-          "id": "1753902010337",
-          "type": "instruction",
-          "label": "Grab Supplies",
-          "required": true,
-          "config": {
-            "text": "You will need a broom..."
-          }
-        },
-        {
-          "id": "1753910733125",
-          "type": "checkbox",
-          "label": "Check for weird smudges",
-          "required": true,
-          "config": {}
-        },
-        {
-          "id": "1753910746955",
-          "type": "number-input",
-          "label": "How much windex did you use?",
-          "required": true,
-          "config": {
-            "min": 0,
-            "max": 100,
-            "unit": "windexes",
-            "default": 0
-          }
-        },
         {
           "id": "1753910787899",
           "type": "data-capture",
