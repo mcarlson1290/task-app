@@ -26,12 +26,16 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
 }) => {
   const [formData, setFormData] = useState(() => {
     if (mode === 'edit' && item) {
+      // Handle multiple possible field names for current stock
+      const currentStock = item.currentStock ?? item.current_stock ?? item.quantity ?? 0;
+      const minimumStock = item.minimumStock ?? item.minimum_stock ?? item.minStock ?? item.reorderLevel ?? 0;
+      
       return {
         name: item.name,
         sku: item.sku || '',
-        currentStock: item.currentStock || 0,
+        currentStock: currentStock,
         unit: item.unit,
-        minimumStock: item.minimumStock || 0,
+        minimumStock: minimumStock,
         category: item.category,
         supplier: item.supplier || '',
         estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
@@ -52,12 +56,21 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
   // Update form data when item changes OR when modal opens
   useEffect(() => {
     if (mode === 'edit' && item) {
+      console.log('Edit form - item data:', item); // Debug log
+      console.log('Available fields:', Object.keys(item)); // Debug log
+      
+      // Handle multiple possible field names for current stock
+      const currentStock = item.currentStock ?? item.current_stock ?? item.quantity ?? 0;
+      const minimumStock = item.minimumStock ?? item.minimum_stock ?? item.minStock ?? item.reorderLevel ?? 0;
+      
+      console.log('Current stock value:', currentStock, 'Minimum stock value:', minimumStock); // Debug log
+      
       setFormData({
         name: item.name,
         sku: item.sku || '',
-        currentStock: item.currentStock || 0,
+        currentStock: currentStock,
         unit: item.unit,
-        minimumStock: item.minimumStock || 0,
+        minimumStock: minimumStock,
         category: item.category,
         supplier: item.supplier || '',
         estimatedTotalValue: '' // Not used in edit mode
