@@ -50,6 +50,21 @@
             "systemType": "",
             "autoSuggest": true
           }
+        },
+        {
+          "id": "1753922698847",
+          "type": "create-tray",
+          "label": "",
+          "required": true,
+          "config": {
+            "numberOfTrays": 1,
+            "trayType": "",
+            "crop": "",
+            "seedsPerCell": 1,
+            "growingMedium": "",
+            "location": "",
+            "defaultTrayType": "microgreen"
+          }
         }
       ]
     },

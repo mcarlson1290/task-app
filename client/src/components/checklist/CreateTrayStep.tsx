@@ -7,6 +7,9 @@ interface CreateTrayStepProps {
   stepData: any;
   onComplete: (data: any) => void;
   defaultInstance?: number;
+  defaultTrayType?: 'MG' | 'LG' | 'HB';
+  defaultSeedsOz?: string;
+  defaultGrowingMedium?: string;
 }
 
 interface Variety {
@@ -27,19 +30,31 @@ interface InventoryItem {
 const CreateTrayStep: React.FC<CreateTrayStepProps> = ({ 
   stepData, 
   onComplete,
-  defaultInstance = 1 
+  defaultInstance = 1,
+  defaultTrayType = 'LG',
+  defaultSeedsOz = '',
+  defaultGrowingMedium = ''
 }) => {
   const [selectedSeed, setSelectedSeed] = useState<InventoryItem | null>(null);
-  const [trayType, setTrayType] = useState<'MG' | 'LG' | 'HB'>('LG');
-  const [instanceNumber, setInstanceNumber] = useState(defaultInstance);
-  const [seedsOz, setSeedsOz] = useState('');
-  const [growingMedium, setGrowingMedium] = useState('');
+  const [trayType, setTrayType] = useState<'MG' | 'LG' | 'HB'>(
+    stepData?.config?.defaultTrayType || defaultTrayType
+  );
+  const [instanceNumber, setInstanceNumber] = useState(
+    stepData?.config?.defaultInstance || defaultInstance
+  );
+  const [seedsOz, setSeedsOz] = useState(
+    stepData?.config?.defaultSeedsOz || defaultSeedsOz
+  );
+  const [growingMedium, setGrowingMedium] = useState(
+    stepData?.config?.defaultGrowingMedium || defaultGrowingMedium
+  );
   const [varieties, setVarieties] = useState<Variety[]>([
     { id: '1', name: '', percentage: 100 }
   ]);
   const [notes, setNotes] = useState('');
   const [generatedId, setGeneratedId] = useState('');
   const [availableSeeds, setAvailableSeeds] = useState<InventoryItem[]>([]);
+  const [availableVarieties, setAvailableVarieties] = useState<string[]>(['Standard']);
 
   // Get current user and location
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -69,6 +84,31 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         setAvailableSeeds(seeds);
       });
   }, []);
+
+  // Update available varieties when seed type changes
+  useEffect(() => {
+    if (selectedSeed && selectedSeed.sku) {
+      const varietiesBySeed: Record<string, string[]> = {
+        'BROC': ['Calabrese', 'De Cicco', 'Waltham 29', 'Standard'],
+        'ARU': ['Astro', 'Roquette', 'Wild Rocket', 'Standard'],
+        'ROM': ['Parris Island', 'Little Gem', 'Vivian', 'Cos', 'Standard'],
+        'BASIL': ['Genovese', 'Sweet', 'Purple Ruffles', 'Lemon', 'Thai', 'Standard'],
+        'SPI': ['Space', 'Bloomsdale', 'Giant Winter', 'Standard'],
+        'KALE': ['Dwarf Blue Curled', 'Winterbor', 'Red Russian', 'Lacinato', 'Standard'],
+        'RADI': ['China Rose', 'Daikon', 'Red Arrow', 'Standard'],
+        'SUNF': ['Black Oil', 'Mammoth', 'Standard'],
+        'PEAS': ['Dwarf Grey Sugar', 'Oregon Sugar Pod', 'Standard']
+      };
+      
+      const seedVarieties = varietiesBySeed[selectedSeed.sku] || ['Standard'];
+      setAvailableVarieties(seedVarieties);
+      
+      // Reset varieties when seed changes
+      setVarieties([{ id: '1', name: '', percentage: 100 }]);
+    } else {
+      setAvailableVarieties(['Standard']);
+    }
+  }, [selectedSeed]);
 
   // Generate tray ID whenever inputs change
   useEffect(() => {
@@ -284,13 +324,16 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           <label className="block text-sm font-medium mb-2">Varieties</label>
           {varieties.map((variety) => (
             <div key={variety.id} className="grid grid-cols-3 gap-2 mb-2">
-              <input
+              <select
                 className="col-span-2 p-2 border border-gray-300 rounded-md"
-                type="text"
                 value={variety.name}
                 onChange={(e) => updateVariety(variety.id, 'name', e.target.value)}
-                placeholder="Variety name"
-              />
+              >
+                <option value="">Select variety...</option>
+                {availableVarieties.map(v => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
               <div className="flex items-center gap-2">
                 <input
                   className="w-full p-2 border border-gray-300 rounded-md"

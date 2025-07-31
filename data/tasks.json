@@ -872,11 +872,11 @@
     "createdAt": "2025-07-31T00:14:46.188Z"
   },
   {
-    "id": 125,
+    "id": 146,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -913,12 +913,28 @@
           "systemType": "",
           "autoSuggest": true
         }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
+        }
       }
     ],
     "data": {},
     "dueDate": "2025-08-01T00:00:00.000Z",
     "visibleFromDate": "2025-08-01T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-07-31T00:45:11.028Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -926,10 +942,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.268Z"
   },
   {
-    "id": 126,
+    "id": 147,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -969,6 +985,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -983,10 +1015,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 127,
+    "id": 148,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1026,6 +1058,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1040,10 +1088,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 128,
+    "id": 149,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1083,6 +1131,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1097,10 +1161,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 129,
+    "id": 150,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1140,6 +1204,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1154,10 +1234,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 130,
+    "id": 151,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1197,6 +1277,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1211,10 +1307,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 131,
+    "id": 152,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1254,6 +1350,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1268,10 +1380,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 132,
+    "id": 153,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1311,6 +1423,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1325,10 +1453,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.519Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 133,
+    "id": 154,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1368,6 +1496,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1382,10 +1526,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 134,
+    "id": 155,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1425,6 +1569,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1439,10 +1599,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 135,
+    "id": 156,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1482,6 +1642,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1496,10 +1672,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.269Z"
   },
   {
-    "id": 136,
+    "id": 157,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1539,6 +1715,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1553,10 +1745,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 137,
+    "id": 158,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1596,6 +1788,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1610,10 +1818,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 138,
+    "id": 159,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1653,6 +1861,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1667,10 +1891,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 139,
+    "id": 160,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1710,6 +1934,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1724,10 +1964,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 140,
+    "id": 161,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1767,6 +2007,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1781,10 +2037,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 141,
+    "id": 162,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1824,6 +2080,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1838,10 +2110,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 142,
+    "id": 163,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1881,6 +2153,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1895,10 +2183,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 143,
+    "id": 164,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1938,6 +2226,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -1952,10 +2256,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 144,
+    "id": 165,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1995,6 +2299,22 @@
         "config": {
           "systemType": "",
           "autoSuggest": true
+        }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
         }
       }
     ],
@@ -2009,10 +2329,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   },
   {
-    "id": 145,
+    "id": 166,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -2053,6 +2373,22 @@
           "systemType": "",
           "autoSuggest": true
         }
+      },
+      {
+        "id": "1753922698847",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "trayType": "",
+          "crop": "",
+          "seedsPerCell": 1,
+          "growingMedium": "",
+          "location": "",
+          "defaultTrayType": "microgreen"
+        }
       }
     ],
     "data": {},
@@ -2066,6 +2402,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T00:22:06.520Z"
+    "createdAt": "2025-07-31T00:45:06.270Z"
   }
 ]

@@ -70,7 +70,15 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
       case 'edit-tray':
         return { trayId: '', location: '', crop: '', seedDate: '', expectedHarvest: '', notes: '' };
       case 'create-tray':
-        return { numberOfTrays: 1, trayType: '', crop: '', seedsPerCell: 1, growingMedium: '', location: '' };
+        return { 
+          numberOfTrays: 1, 
+          defaultTrayType: 'LG', 
+          defaultInstance: 1,
+          defaultSeedsOz: '0.5',
+          defaultGrowingMedium: '',
+          preferredSeed: '',
+          allowCustomization: true 
+        };
       default:
         return {};
     }
