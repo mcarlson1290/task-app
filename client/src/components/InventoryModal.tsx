@@ -32,7 +32,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       
       return {
         name: item.name,
-        sku: item.sku || item.productCode || '',
+        sku: item.sku || (item as any).productCode || '',
         currentStock: currentStock,
         unit: item.unit,
         minimumStock: minimumStock,
@@ -67,7 +67,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       
       const newFormData = {
         name: item.name,
-        sku: item.sku || item.productCode || '',
+        sku: item.sku || (item as any).productCode || '',
         currentStock: currentStock,
         unit: item.unit,
         minimumStock: minimumStock,
