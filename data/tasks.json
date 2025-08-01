@@ -876,13 +876,13 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "status": "in_progress",
+    "status": "completed",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
     "estimatedTime": null,
     "actualTime": null,
-    "progress": 0,
+    "progress": 100,
     "checklist": [
       {
         "id": "1753910801234",
@@ -935,7 +935,7 @@
     "dueDate": "2025-08-01T00:00:00.000Z",
     "visibleFromDate": "2025-08-01T00:00:00.000Z",
     "startedAt": "2025-07-31T00:45:11.028Z",
-    "completedAt": null,
+    "completedAt": "2025-08-01T14:17:51.444Z",
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
@@ -945,7 +945,7 @@
     "createdAt": "2025-07-31T00:45:06.268Z"
   },
   {
-    "id": 187,
+    "id": 207,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1005,8 +1005,8 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-04T00:00:00.000Z",
-    "visibleFromDate": "2025-08-04T00:00:00.000Z",
+    "dueDate": "2025-08-14T12:00:00.000Z",
+    "visibleFromDate": "2025-08-01T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -1015,10 +1015,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
+    "createdAt": "2025-08-01T14:16:44.119Z"
   },
   {
-    "id": 188,
+    "id": 208,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1078,8 +1078,8 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-05T00:00:00.000Z",
-    "visibleFromDate": "2025-08-05T00:00:00.000Z",
+    "dueDate": "2025-09-14T12:00:00.000Z",
+    "visibleFromDate": "2025-09-01T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -1088,10 +1088,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
+    "createdAt": "2025-08-01T14:16:44.119Z"
   },
   {
-    "id": 189,
+    "id": 209,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1151,8 +1151,8 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-06T00:00:00.000Z",
-    "visibleFromDate": "2025-08-06T00:00:00.000Z",
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-15T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -1161,10 +1161,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
+    "createdAt": "2025-08-01T14:16:44.119Z"
   },
   {
-    "id": 190,
+    "id": 210,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1224,8 +1224,8 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-07T00:00:00.000Z",
-    "visibleFromDate": "2025-08-07T00:00:00.000Z",
+    "dueDate": "2025-10-14T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -1234,10 +1234,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
+    "createdAt": "2025-08-01T14:16:44.119Z"
   },
   {
-    "id": 191,
+    "id": 211,
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
@@ -1297,8 +1297,8 @@
       }
     ],
     "data": {},
-    "dueDate": "2025-08-08T00:00:00.000Z",
-    "visibleFromDate": "2025-08-08T00:00:00.000Z",
+    "dueDate": "2025-10-31T12:00:00.000Z",
+    "visibleFromDate": "2025-10-15T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -1307,1101 +1307,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
-  },
-  {
-    "id": 192,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-11T00:00:00.000Z",
-    "visibleFromDate": "2025-08-11T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.018Z"
-  },
-  {
-    "id": 193,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-12T00:00:00.000Z",
-    "visibleFromDate": "2025-08-12T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 194,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-13T00:00:00.000Z",
-    "visibleFromDate": "2025-08-13T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 195,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-14T00:00:00.000Z",
-    "visibleFromDate": "2025-08-14T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 196,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-15T00:00:00.000Z",
-    "visibleFromDate": "2025-08-15T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 197,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-18T00:00:00.000Z",
-    "visibleFromDate": "2025-08-18T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 198,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-19T00:00:00.000Z",
-    "visibleFromDate": "2025-08-19T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 199,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-20T00:00:00.000Z",
-    "visibleFromDate": "2025-08-20T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 200,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-21T00:00:00.000Z",
-    "visibleFromDate": "2025-08-21T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 201,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-22T00:00:00.000Z",
-    "visibleFromDate": "2025-08-22T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 202,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-25T00:00:00.000Z",
-    "visibleFromDate": "2025-08-25T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 203,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-26T00:00:00.000Z",
-    "visibleFromDate": "2025-08-26T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 204,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-27T00:00:00.000Z",
-    "visibleFromDate": "2025-08-27T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 205,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-28T00:00:00.000Z",
-    "visibleFromDate": "2025-08-28T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
-  },
-  {
-    "id": 206,
-    "title": "Clean the Bathroom",
-    "description": "Clean the bathroom for cleansliness",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1753910801234",
-        "text": "Take a photo of the glass",
-        "completed": false,
-        "required": true,
-        "type": "photo",
-        "config": {}
-      },
-      {
-        "id": "1753915279825",
-        "text": "Split the Trays like Tower 1 bla bla bla",
-        "completed": false,
-        "required": true,
-        "type": "tray-split",
-        "config": {
-          "allowCustomSplit": true,
-          "defaultSplits": 2
-        }
-      },
-      {
-        "id": "1753914909834",
-        "text": "Move the Plants to Available towers.",
-        "completed": false,
-        "required": true,
-        "type": "system-assignment",
-        "config": {
-          "systemType": "",
-          "autoSuggest": true
-        }
-      },
-      {
-        "id": "1753922698847",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "trayType": "",
-          "crop": "",
-          "seedsPerCell": 1,
-          "growingMedium": "",
-          "location": "",
-          "defaultTrayType": "microgreen"
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-29T00:00:00.000Z",
-    "visibleFromDate": "2025-08-29T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-07-31T22:47:14.019Z"
+    "createdAt": "2025-08-01T14:16:44.119Z"
   }
 ]

@@ -1,0 +1,278 @@
+# Replit Instructions: Diagnose and Fix Fundamental Date Issues
+
+**CRITICAL ISSUES OBSERVED:**
+1. Due dates are changing based on completion status (they should be immutable)
+2. Completed tasks appear on wrong dates (task completed Aug 1 shows on Aug 2)
+3. Bi-weekly tasks missing on the 1st
+4. Bi-weekly task visible on 15th but says due on 14th
+5. Tasks marked overdue are shifting dates
+
+## Step 1: Search for Date Mutation Issues
+
+Search the codebase for places where due dates might be getting changed:
+
+```bash
+# Search for due date modifications
+Search for: "dueDate ="
+Search for: "dueDate:"
+Search for: "setDueDate"
+Search for: "updateDueDate"
+Search for: "task.dueDate ="
+
+# Search for date calculations that might be wrong
+Search for: "new Date()"
+Search for: "setDate"
+Search for: "getDate()"
+Search for: "Date.now()"
+```
+
+## Step 2: Add Comprehensive Date Logging
+
+Create a debug function to trace all date operations:
+
+```tsx
+// Add this temporarily to see what's happening with dates
+const debugTaskDates = (task, operation) => {
+  console.group(`🕐 DATE DEBUG: ${operation}`);
+  console.log('Task ID:', task.id);
+  console.log('Task Name:', task.name);
+  console.log('Raw Dates:', {
+    dueDate: task.dueDate,
+    dueDateType: typeof task.dueDate,
+    createdAt: task.createdAt,
+    completedAt: task.completedAt,
+    lastModified: task.lastModified
+  });
+  console.log('Parsed Dates:', {
+    dueDate: task.dueDate ? new Date(task.dueDate).toLocaleString() : 'none',
+    createdAt: task.createdAt ? new Date(task.createdAt).toLocaleString() : 'none',
+    completedAt: task.completedAt ? new Date(task.completedAt).toLocaleString() : 'none'
+  });
+  console.log('Current Time:', new Date().toLocaleString());
+  console.groupEnd();
+};
+
+// Use it wherever tasks are created, modified, or displayed
+debugTaskDates(task, 'Creating Task');
+debugTaskDates(task, 'Displaying Task');
+debugTaskDates(task, 'Completing Task');
+```
+
+## Step 3: Fix Due Date Immutability
+
+Due dates should NEVER change once set:
+
+```tsx
+// WRONG - This might be happening somewhere
+if (task.status !== 'completed' && isPastDue(task)) {
+  task.dueDate = new Date(); // NEVER DO THIS
+}
+
+// RIGHT - Due date stays constant
+const createTask = (taskData) => {
+  const task = {
+    ...taskData,
+    dueDate: taskData.dueDate, // Set once
+    originalDueDate: taskData.dueDate, // Backup for safety
+    createdAt: new Date().toISOString()
+  };
+  
+  // Prevent accidental mutations
+  Object.defineProperty(task, 'dueDate', {
+    writable: false,
+    configurable: false
+  });
+  
+  return task;
+};
+```
+
+## Step 4: Fix Task Display Date Logic
+
+Tasks should appear based on their status and relevant dates:
+
+```tsx
+const getDateForTaskDisplay = (task) => {
+  // Completed tasks ALWAYS show on their completion date
+  if (task.status === 'completed' && task.completedAt) {
+    return new Date(task.completedAt);
+  }
+  
+  // Pending/overdue tasks show on their due date
+  if (task.dueDate) {
+    return new Date(task.dueDate);
+  }
+  
+  // Fallback to created date
+  return new Date(task.createdAt);
+};
+
+// Filter tasks for a specific date
+const getTasksForDate = (tasks, targetDate) => {
+  // Normalize target date to midnight
+  const normalizedTarget = new Date(targetDate);
+  normalizedTarget.setHours(0, 0, 0, 0);
+  
+  return tasks.filter(task => {
+    const taskDisplayDate = getDateForTaskDisplay(task);
+    
+    // Normalize task date to midnight
+    const normalizedTaskDate = new Date(taskDisplayDate);
+    normalizedTaskDate.setHours(0, 0, 0, 0);
+    
+    // Compare dates without time
+    return normalizedTarget.getTime() === normalizedTaskDate.getTime();
+  });
+};
+```
+
+## Step 5: Fix Bi-Weekly Task Generation
+
+Bi-weekly tasks have specific rules that need fixing:
+
+```tsx
+const generateBiWeeklyTasks = (recurringTask, targetDate) => {
+  const date = new Date(targetDate);
+  const dayOfMonth = date.getDate();
+  
+  // Bi-weekly tasks should generate on 1st and 15th
+  // First half: visible 1st-14th, due on 14th
+  // Second half: visible 15th-last day, due on last day
+  
+  if (dayOfMonth === 1) {
+    // Generate first half task
+    const task = {
+      ...recurringTask,
+      id: generateTaskId(),
+      visibleFromDate: new Date(date.getFullYear(), date.getMonth(), 1).toISOString(),
+      dueDate: new Date(date.getFullYear(), date.getMonth(), 14).toISOString(),
+      period: 'first-half',
+      createdAt: new Date().toISOString()
+    };
+    console.log('Generating bi-weekly first half:', task);
+    return task;
+  }
+  
+  if (dayOfMonth === 15) {
+    // Generate second half task
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const task = {
+      ...recurringTask,
+      id: generateTaskId(),
+      visibleFromDate: new Date(date.getFullYear(), date.getMonth(), 15).toISOString(),
+      dueDate: new Date(date.getFullYear(), date.getMonth(), lastDay).toISOString(),
+      period: 'second-half',
+      createdAt: new Date().toISOString()
+    };
+    console.log('Generating bi-weekly second half:', task);
+    return task;
+  }
+  
+  return null;
+};
+```
+
+## Step 6: Search for Timezone Issues
+
+```bash
+# Search for potential timezone problems
+Search for: "toISOString()"
+Search for: "toLocaleDateString"
+Search for: "getTimezoneOffset"
+Search for: "UTC"
+```
+
+Check if dates are being stored/compared inconsistently:
+
+```tsx
+// PROBLEM: Mixing timezone representations
+const date1 = new Date().toISOString(); // UTC
+const date2 = new Date().toLocaleDateString(); // Local
+const date3 = new Date().getTime(); // Milliseconds
+
+// SOLUTION: Use consistent format (ISO strings recommended)
+const saveTask = (task) => {
+  const normalizedTask = {
+    ...task,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null,
+    createdAt: new Date().toISOString(),
+    completedAt: task.completedAt ? new Date(task.completedAt).toISOString() : null
+  };
+  
+  // Save normalized task
+  localStorage.setItem(`task_${task.id}`, JSON.stringify(normalizedTask));
+};
+```
+
+## Step 7: Add Date Validation
+
+Add validation to catch date issues:
+
+```tsx
+const validateTaskDates = (task) => {
+  const issues = [];
+  
+  // Check if due date is being modified
+  if (task.originalDueDate && task.dueDate !== task.originalDueDate) {
+    issues.push(`Due date changed from ${task.originalDueDate} to ${task.dueDate}`);
+  }
+  
+  // Check if completed task has future completion date
+  if (task.completedAt) {
+    const completedDate = new Date(task.completedAt);
+    const now = new Date();
+    if (completedDate > now) {
+      issues.push(`Completion date is in the future: ${task.completedAt}`);
+    }
+  }
+  
+  // Check if task appears on wrong date
+  const displayDate = getDateForTaskDisplay(task);
+  console.log(`Task ${task.id} should display on:`, displayDate.toLocaleDateString());
+  
+  if (issues.length > 0) {
+    console.error('Task date validation failed:', issues);
+  }
+  
+  return issues;
+};
+```
+
+## Step 8: Quick Fix Test
+
+Add this temporary fix to see if it helps:
+
+```tsx
+// When loading tasks for display
+const loadTasksForDate = (selectedDate) => {
+  console.log('Loading tasks for date:', selectedDate);
+  
+  const allTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  
+  // Log all tasks with their dates
+  allTasks.forEach(task => {
+    console.log(`Task: ${task.name}`, {
+      due: task.dueDate,
+      completed: task.completedAt,
+      status: task.status,
+      shouldShowOn: getDateForTaskDisplay(task).toLocaleDateString()
+    });
+  });
+  
+  // Filter for selected date
+  const tasksForDate = getTasksForDate(allTasks, selectedDate);
+  console.log(`Found ${tasksForDate.length} tasks for ${selectedDate}`);
+  
+  return tasksForDate;
+};
+```
+
+## Summary of Root Causes to Look For:
+
+1. **Due dates being mutated** - Search for any code that modifies task.dueDate after creation
+2. **Wrong date for display** - Tasks showing based on "today" instead of their actual dates
+3. **Timezone mismatches** - Mixing UTC and local times
+4. **Off-by-one errors** - Common with date calculations
+5. **State not updating** - UI not refreshing when dates change
+
+The fundamental issue appears to be that the system is treating dates as mutable and displaying tasks based on current date rather than their fixed due/completion dates.

@@ -426,12 +426,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
         {/* Task Details */}
         <div className="mb-4">
-          {/* Debug Date Info - Temporary */}
-          <div className="task-debug" style={{ fontSize: '10px', color: '#666', backgroundColor: '#f0f0f0', padding: '4px', borderRadius: '4px', marginBottom: '8px' }}>
-            Created: {new Date(task.createdAt).toLocaleDateString()}
-            {task.dueDate && ` | Due: ${new Date(task.dueDate).toLocaleDateString()}`}
-            {task.completedAt && ` | Completed: ${new Date(task.completedAt).toLocaleDateString()}`}
-          </div>
+
           
           {task.description && (
             <div className="flex items-center text-sm text-gray-600 mb-2">

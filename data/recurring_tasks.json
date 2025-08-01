@@ -3,7 +3,7 @@
     "title": "Clean the Bathroom",
     "description": "Clean the bathroom for cleansliness",
     "type": "cleaning",
-    "frequency": "daily",
+    "frequency": "bi-weekly",
     "daysOfWeek": [
       "monday",
       "friday",

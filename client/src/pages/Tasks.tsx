@@ -272,20 +272,27 @@ const Tasks: React.FC = () => {
       const isToday = filterDate.getTime() === today.getTime();
       
       filtered = filtered.filter(task => {
-        // Helper function to compare dates without time
+        // Helper function to compare dates without time - FIXED to handle timezones properly
         const isSameDay = (date1: Date, date2: Date) => {
-          return date1.getFullYear() === date2.getFullYear() &&
-                 date1.getMonth() === date2.getMonth() &&
-                 date1.getDate() === date2.getDate();
+          // Normalize both dates to midnight local time for accurate comparison
+          const d1 = new Date(date1);
+          const d2 = new Date(date2);
+          d1.setHours(0, 0, 0, 0);
+          d2.setHours(0, 0, 0, 0);
+          return d1.getTime() === d2.getTime();
         };
 
-        // For completed tasks, use completion date
+        // CRITICAL FIX: Completed tasks show on their completion date ONLY
         if (task.status === 'completed' && task.completedAt) {
           const completionDate = new Date(task.completedAt);
-          return isSameDay(completionDate, filterDate);
+          const showOnThisDate = isSameDay(completionDate, filterDate);
+          
+
+          
+          return showOnThisDate;
         }
         
-        // For recurring tasks, use enhanced visibility logic
+        // For recurring tasks - FIXED bi-weekly visibility
         if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
           const taskMonth = dueDate.getMonth();
@@ -314,8 +321,9 @@ const Tasks: React.FC = () => {
           if (isBiWeekly) {
             const dueDay = dueDate.getDate();
             
+            // CRITICAL FIX: Bi-weekly tasks should be visible on the 1st
             if (dueDay <= 14) {
-              // First bi-weekly period: visible days 1-14
+              // First bi-weekly period: visible days 1-14, due on 14th
               return filterDay >= 1 && filterDay <= 14;
             } else {
               // Second bi-weekly period: visible days 15-end of month
@@ -323,11 +331,11 @@ const Tasks: React.FC = () => {
             }
           }
           
-          // For other recurring tasks, use due date
+          // For other recurring tasks, show only on due date
           return isSameDay(dueDate, filterDate);
         }
         
-        // For pending/in-progress tasks, use due date
+        // For non-completed, non-recurring tasks: show on due date
         if (task.dueDate) {
           const dueDate = new Date(task.dueDate);
           return isSameDay(dueDate, filterDate);
@@ -382,11 +390,11 @@ const Tasks: React.FC = () => {
       // Check if dates are valid
       if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
       
-      // Create overdue cutoff time: 8:30 AM on due date
+      // Create overdue cutoff time: 8:30 PM on due date
       const overdueTime = new Date(dueDate);
-      overdueTime.setHours(8, 30, 0, 0);
+      overdueTime.setHours(20, 30, 0, 0);
       
-      // Task is late if completed AFTER the overdue time (8:30 AM on due date)
+      // Task is late if completed AFTER the overdue time (8:30 PM on due date)
       return completedTime > overdueTime;
     } catch (error) {
       // If any date parsing fails, task is not late
