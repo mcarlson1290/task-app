@@ -276,6 +276,7 @@ const Tasks: React.FC = () => {
       const filterDate = new Date(year, month - 1, day); // month is 0-indexed
       filterDate.setHours(0, 0, 0, 0);
       
+
       filtered = filtered.filter(task => {
         // Helper function to compare dates - FIXED for UTC stored dates  
         const isSameDay = (taskDate: string | Date, filterDate: Date) => {
@@ -313,8 +314,9 @@ const Tasks: React.FC = () => {
         // For recurring tasks - handle different visibility patterns
         if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
-          const taskMonth = dueDate.getMonth();
-          const taskYear = dueDate.getFullYear();
+          // Use UTC methods to avoid timezone conversion issues  
+          const taskMonth = dueDate.getUTCMonth();
+          const taskYear = dueDate.getUTCFullYear();
           const filterMonth = filterDate.getMonth();
           const filterYear = filterDate.getFullYear();
           const filterDay = filterDate.getDate();
@@ -325,11 +327,12 @@ const Tasks: React.FC = () => {
           }
           
           // Get recurring task to check frequency
-          const recurringTask = recurringTasks?.find(rt => rt.id === task.recurringTaskId);
+          const recurringTask = recurringTasks?.find((rt: any) => rt.id === task.recurringTaskId);
           
-          // Check based on task patterns in title or recurring task frequency
-          const isMonthly = task.title?.includes('Monthly') || recurringTask?.frequency === 'monthly';
-          const isBiWeekly = task.title?.includes('Bi-Weekly') || recurringTask?.frequency === 'bi-weekly';
+          // Check based on recurring task frequency
+          const isMonthly = recurringTask?.frequency === 'monthly';
+          const isBiWeekly = recurringTask?.frequency === 'bi-weekly';
+          const isDaily = recurringTask?.frequency === 'daily';
           
           if (isMonthly) {
             // Monthly tasks: visible from 1st through due date
@@ -348,7 +351,7 @@ const Tasks: React.FC = () => {
             }
           }
           
-          // For other recurring tasks, show only on due date
+          // For daily and other recurring tasks, show only on due date
           return isSameDay(dueDate, filterDate);
         }
         
