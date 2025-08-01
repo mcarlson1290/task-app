@@ -419,11 +419,11 @@ const Tasks: React.FC = () => {
     const [year, month, day] = dateString.split('-');
     const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     
-    // Set time to 8:30 AM Chicago time for due date
+    // Set time to 8:30 PM Chicago time for due date
     const chicagoTime = new Date(dueDate);
-    chicagoTime.setHours(8, 30, 0, 0); // 8:30 AM cutoff
+    chicagoTime.setHours(20, 30, 0, 0); // 8:30 PM cutoff
     
-    // Task is overdue if current time is past 8:30 AM on due date
+    // Task is overdue if current time is past 8:30 PM on due date
     return now > chicagoTime;
   };
 
