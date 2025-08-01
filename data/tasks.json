@@ -1,1 +1,977 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-01T00:00:00.000Z",
+    "visibleFromDate": "2025-08-01T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.337Z"
+  },
+  {
+    "id": 2,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "completed",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 100,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {
+      "checklistData": [
+        {
+          "id": "1754058911364",
+          "text": "Water each tray of Microgreens",
+          "completed": false,
+          "required": false,
+          "type": "instruction",
+          "config": {
+            "text": "bla bla bla"
+          }
+        }
+      ]
+    },
+    "dueDate": "2025-08-02T00:00:00.000Z",
+    "visibleFromDate": "2025-08-02T00:00:00.000Z",
+    "startedAt": "2025-08-01T14:56:39.822Z",
+    "completedAt": "2025-08-01T14:56:56.083Z",
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.337Z"
+  },
+  {
+    "id": 3,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-04T00:00:00.000Z",
+    "visibleFromDate": "2025-08-04T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 4,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-05T00:00:00.000Z",
+    "visibleFromDate": "2025-08-05T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 5,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-06T00:00:00.000Z",
+    "visibleFromDate": "2025-08-06T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 6,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-07T00:00:00.000Z",
+    "visibleFromDate": "2025-08-07T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 7,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-08T00:00:00.000Z",
+    "visibleFromDate": "2025-08-08T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 8,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-09T00:00:00.000Z",
+    "visibleFromDate": "2025-08-09T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 9,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-11T00:00:00.000Z",
+    "visibleFromDate": "2025-08-11T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 10,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-12T00:00:00.000Z",
+    "visibleFromDate": "2025-08-12T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 11,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-13T00:00:00.000Z",
+    "visibleFromDate": "2025-08-13T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 12,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-14T00:00:00.000Z",
+    "visibleFromDate": "2025-08-14T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 13,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-15T00:00:00.000Z",
+    "visibleFromDate": "2025-08-15T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 14,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-16T00:00:00.000Z",
+    "visibleFromDate": "2025-08-16T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 15,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-18T00:00:00.000Z",
+    "visibleFromDate": "2025-08-18T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 16,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-19T00:00:00.000Z",
+    "visibleFromDate": "2025-08-19T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.338Z"
+  },
+  {
+    "id": 17,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-20T00:00:00.000Z",
+    "visibleFromDate": "2025-08-20T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 18,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-21T00:00:00.000Z",
+    "visibleFromDate": "2025-08-21T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 19,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-22T00:00:00.000Z",
+    "visibleFromDate": "2025-08-22T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 20,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-23T00:00:00.000Z",
+    "visibleFromDate": "2025-08-23T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 21,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-25T00:00:00.000Z",
+    "visibleFromDate": "2025-08-25T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 22,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-26T00:00:00.000Z",
+    "visibleFromDate": "2025-08-26T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 23,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-27T00:00:00.000Z",
+    "visibleFromDate": "2025-08-27T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 24,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-28T00:00:00.000Z",
+    "visibleFromDate": "2025-08-28T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 25,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-29T00:00:00.000Z",
+    "visibleFromDate": "2025-08-29T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  },
+  {
+    "id": 26,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-30T00:00:00.000Z",
+    "visibleFromDate": "2025-08-30T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:51:41.339Z"
+  }
+]

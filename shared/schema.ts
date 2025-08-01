@@ -38,6 +38,11 @@ export const tasks = pgTable("tasks", {
   skipReason: text("skip_reason"),
   isRecurring: boolean("is_recurring").default(false),
   recurringTaskId: integer("recurring_task_id").references(() => recurringTasks.id),
+  
+  // Fields for orphaned tasks from deleted recurring tasks
+  isFromDeletedRecurring: boolean("is_from_deleted_recurring").default(false),
+  deletedRecurringTaskTitle: text("deleted_recurring_task_title"),
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 

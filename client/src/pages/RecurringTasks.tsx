@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { RecurringTask } from '@shared/schema';
 import RecurringTaskModal from '@/components/RecurringTaskModal';
+import DeleteRecurringTaskModal from '@/components/DeleteRecurringTaskModal';
 import { useLocation } from '@/contexts/LocationContext';
 
 const RecurringTasks: React.FC = () => {
@@ -19,6 +20,8 @@ const RecurringTasks: React.FC = () => {
   const { currentLocation, isViewingAllLocations } = useLocation();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<RecurringTask | null>(null);
 
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.code],
@@ -69,9 +72,12 @@ const RecurringTasks: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] }); // Also refresh tasks
+      setShowDeleteModal(false);
+      setDeletingTask(null);
       toast({
         title: 'Task Deleted',
-        description: 'Recurring task has been deleted successfully.',
+        description: 'Recurring task deleted. Future tasks removed, historical data preserved.',
       });
     },
   });
@@ -141,6 +147,17 @@ const RecurringTasks: React.FC = () => {
       'other': '📝'
     };
     return emojis[type] || '📋';
+  };
+
+  const handleDeleteClick = (task: RecurringTask) => {
+    setDeletingTask(task);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletingTask) {
+      deleteTaskMutation.mutate(deletingTask.id);
+    }
   };
 
   if (isLoading) return <div className="p-6">Loading recurring tasks...</div>;
@@ -236,7 +253,7 @@ const RecurringTasks: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => deleteTaskMutation.mutate(task.id)}
+                    onClick={() => handleDeleteClick(task)}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
@@ -275,6 +292,17 @@ const RecurringTasks: React.FC = () => {
           setEditingTask(null);
         }}
         onSave={(taskData) => saveTaskMutation.mutateAsync(taskData)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteRecurringTaskModal
+        recurringTask={deletingTask}
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeletingTask(null);
+        }}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

@@ -1387,15 +1387,68 @@ export class MemStorage implements IStorage {
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
-    // Also delete all associated task instances
+    console.log('Deleting recurring task with ghost task preservation:', id);
+    
+    const recurringTask = this.recurringTasks.get(id);
+    if (!recurringTask) {
+      console.log('Recurring task not found:', id);
+      return false;
+    }
+    
+    // Delete only future pending tasks (preserve completed and in-progress tasks)
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
     const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      if (!task || task.recurringTaskId !== id) return false;
+      
+      // Keep completed tasks
+      if (task.status === 'completed') return false;
+      
+      // Keep in-progress tasks
+      if (task.status === 'in_progress' || task.startedAt) return false;
+      
+      // Delete future pending tasks
+      if (task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate >= now; // Delete if due today or in the future
+      }
+      
+      return false;
+    });
+    
+    // Delete the future tasks
+    const deletedCount = taskIds.length;
+    taskIds.forEach(taskId => this.tasks.delete(taskId));
+    console.log(`Deleted ${deletedCount} future tasks for recurring task: ${recurringTask.title}`);
+    
+    // Update remaining tasks to mark them as orphaned (for historical reference)
+    const remainingTaskIds = Array.from(this.tasks.keys()).filter(taskId => {
       const task = this.tasks.get(taskId);
       return task?.recurringTaskId === id;
     });
     
-    taskIds.forEach(taskId => this.tasks.delete(taskId));
+    remainingTaskIds.forEach(taskId => {
+      const task = this.tasks.get(taskId);
+      if (task) {
+        task.recurringTaskId = null; // Orphan the task but keep it for history
+        task.isFromDeletedRecurring = true;
+        task.deletedRecurringTaskTitle = recurringTask.title;
+        this.tasks.set(taskId, task);
+      }
+    });
     
-    return this.recurringTasks.delete(id);
+    console.log(`Orphaned ${remainingTaskIds.length} historical tasks from recurring task: ${recurringTask.title}`);
+    
+    // Delete the recurring task
+    const deleted = this.recurringTasks.delete(id);
+    
+    // Persist the changes
+    await this.persistData();
+    
+    return deleted;
   }
 
   // Method to regenerate task instances (useful for fixing scheduling bugs)
