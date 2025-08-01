@@ -230,8 +230,8 @@ const Tasks: React.FC = () => {
 
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
-
-    // Location filter - only show tasks for current location unless viewing all locations
+    
+    // Location filter
     if (!isViewingAllLocations) {
       filtered = filtered.filter(task => task.location === currentLocation.code);
     }
@@ -269,33 +269,12 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - FIXED with comprehensive debugging
+    // Date filter - FIXED: UTC-aware date parsing and comparison
     if (dateFilter) {
-      console.group('🔍 DATE FILTER DEBUG');
-      console.log('Filter date selected:', dateFilter);
-      
-      // CRITICAL FIX: Parse date without timezone shift
+      // Parse date without timezone shift
       const [year, month, day] = dateFilter.split('-').map(Number);
       const filterDate = new Date(year, month - 1, day); // month is 0-indexed
       filterDate.setHours(0, 0, 0, 0);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const isToday = filterDate.getTime() === today.getTime();
-      
-      console.log('Filter date parsed:', filterDate.toLocaleDateString());
-      console.log('Is today?', isToday);
-      console.log('All tasks before filtering:', tasks.length);
-      
-      // Show all task due dates for debugging
-      console.log('Task due dates:');
-      tasks.forEach(task => {
-        if (task.dueDate) {
-          const taskDueDate = new Date(task.dueDate);
-          console.log(`  "${task.title}": ${taskDueDate.toLocaleDateString()} (Raw: ${task.dueDate})`);
-        } else {
-          console.log(`  "${task.title}": No due date`);
-        }
-      });
       
       filtered = filtered.filter(task => {
         // Helper function to compare dates - FIXED for UTC stored dates  
@@ -323,19 +302,15 @@ const Tasks: React.FC = () => {
           const filterDay = String(filterDate.getDate()).padStart(2, '0'); // zero-pad day too
           const filterDateFormatted = `${filterYear}-${filterMonth}-${filterDay}`;
           
-          const matches = utcDatePart === filterDateFormatted;
-          console.log(`    Comparing task date ${utcDatePart} with filter ${filterDateFormatted}: ${matches ? 'MATCH ✅' : 'no match ❌'}`);
-          return matches;
+          return utcDatePart === filterDateFormatted;
         };
 
-        // CRITICAL FIX: Completed tasks show on their completion date ONLY
+        // Completed tasks show on their completion date only
         if (task.status === 'completed' && task.completedAt) {
-          const matches = isSameDay(task.completedAt, filterDate);
-          console.log(`Completed task "${task.title}": CompletedAt=${task.completedAt}, Matches filter? ${matches}`);
-          return matches;
+          return isSameDay(task.completedAt, filterDate);
         }
         
-        // For recurring tasks - FIXED bi-weekly visibility
+        // For recurring tasks - handle different visibility patterns
         if (task.isRecurring && task.dueDate) {
           const dueDate = new Date(task.dueDate);
           const taskMonth = dueDate.getMonth();
@@ -364,7 +339,6 @@ const Tasks: React.FC = () => {
           if (isBiWeekly) {
             const dueDay = dueDate.getDate();
             
-            // CRITICAL FIX: Bi-weekly tasks should be visible on the 1st
             if (dueDay <= 14) {
               // First bi-weekly period: visible days 1-14, due on 14th
               return filterDay >= 1 && filterDay <= 14;
@@ -381,7 +355,7 @@ const Tasks: React.FC = () => {
         // For all tasks with due dates: show on due date (UTC-aware)
         if (task.dueDate) {
           const matches = isSameDay(task.dueDate, filterDate);
-          console.log(`Task "${task.title}": Raw=${task.dueDate}, Matches filter? ${matches}`);
+          console.log(`✅ FINAL CHECK - Task "${task.title}": Raw=${task.dueDate}, Matches filter? ${matches}`);
           return matches;
         }
         

@@ -1078,7 +1078,10 @@ export class MemStorage implements IStorage {
   }
 
   async getTasksByUser(userId: number): Promise<Task[]> {
-    return Array.from(this.tasks.values()).filter(task => task.assignedTo === userId);
+    // Return tasks assigned to the user OR unassigned tasks (assignedTo is null)
+    return Array.from(this.tasks.values()).filter(task => 
+      task.assignedTo === userId || task.assignedTo === null
+    );
   }
 
   async getTask(id: number): Promise<Task | null> {
