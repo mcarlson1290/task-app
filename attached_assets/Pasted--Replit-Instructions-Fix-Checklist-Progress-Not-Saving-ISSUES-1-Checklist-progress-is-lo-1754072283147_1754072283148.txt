@@ -1,0 +1,278 @@
+# Replit Instructions: Fix Checklist Progress Not Saving
+
+**ISSUES:**
+1. Checklist progress is lost when clicking off or pausing
+2. Progress bar not working
+3. "View Details" doesn't show checklist completion data
+
+## Step 1: Find How Checklist Progress is Currently Saved
+
+Search for checklist-related save operations:
+
+```bash
+# Search for checklist save logic
+Search for: "checklist"
+Search for: "checklistProgress"
+Search for: "completedSteps"
+Search for: "stepCompleted"
+Search for: "updateTask"
+Search for: "saveProgress"
+```
+
+## Step 2: Implement Proper Checklist Progress Saving
+
+The checklist progress should be saved to the task immediately when any step is completed:
+
+```tsx
+const updateChecklistProgress = (taskId, stepIndex, completed, stepData = null) => {
+  console.log('Updating checklist progress:', { taskId, stepIndex, completed, stepData });
+  
+  // Get current tasks
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) {
+    console.error('Task not found:', taskId);
+    return;
+  }
+  
+  const task = tasks[taskIndex];
+  
+  // Initialize checklist progress if it doesn't exist
+  if (!task.checklistProgress) {
+    task.checklistProgress = {};
+  }
+  
+  // Save step completion status and any data
+  task.checklistProgress[stepIndex] = {
+    completed,
+    completedAt: completed ? new Date().toISOString() : null,
+    data: stepData,
+    completedBy: completed ? getCurrentUser().username : null
+  };
+  
+  // Update task
+  tasks[taskIndex] = task;
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  
+  // Trigger UI update
+  window.dispatchEvent(new CustomEvent('taskUpdated', { detail: { taskId, task } }));
+  
+  console.log('Checklist progress saved:', task.checklistProgress);
+};
+```
+
+## Step 3: Fix Progress Bar Calculation
+
+```tsx
+const calculateChecklistProgress = (task) => {
+  if (!task.checklist || task.checklist.length === 0) {
+    return 0;
+  }
+  
+  const totalSteps = task.checklist.length;
+  const completedSteps = Object.keys(task.checklistProgress || {})
+    .filter(stepIndex => task.checklistProgress[stepIndex]?.completed)
+    .length;
+  
+  return Math.round((completedSteps / totalSteps) * 100);
+};
+
+// In the task display component
+const TaskProgressBar = ({ task }) => {
+  const progress = calculateChecklistProgress(task);
+  
+  return (
+    <div className="progress-bar-container">
+      <div className="progress-bar" style={{ width: `${progress}%` }}>
+        <span className="progress-text">{progress}%</span>
+      </div>
+      <span className="progress-label">
+        {Object.keys(task.checklistProgress || {}).filter(k => task.checklistProgress[k]?.completed).length} / {task.checklist?.length || 0} steps
+      </span>
+    </div>
+  );
+};
+```
+
+## Step 4: Save Progress on Every Interaction
+
+Update the checklist component to save on every change:
+
+```tsx
+const ChecklistStep = ({ task, step, stepIndex, onComplete }) => {
+  const [isCompleted, setIsCompleted] = useState(
+    task.checklistProgress?.[stepIndex]?.completed || false
+  );
+  const [stepData, setStepData] = useState(
+    task.checklistProgress?.[stepIndex]?.data || {}
+  );
+
+  const handleStepComplete = (data = null) => {
+    const newCompleted = !isCompleted;
+    setIsCompleted(newCompleted);
+    
+    // Save immediately
+    updateChecklistProgress(task.id, stepIndex, newCompleted, data);
+    
+    if (onComplete) {
+      onComplete(stepIndex, newCompleted, data);
+    }
+  };
+
+  // Auto-save when step data changes
+  useEffect(() => {
+    if (Object.keys(stepData).length > 0) {
+      const saveTimeout = setTimeout(() => {
+        updateChecklistProgress(task.id, stepIndex, isCompleted, stepData);
+      }, 500); // Debounce saves
+      
+      return () => clearTimeout(saveTimeout);
+    }
+  }, [stepData, task.id, stepIndex, isCompleted]);
+
+  // ... rest of component
+};
+```
+
+## Step 5: Fix View Details to Show Checklist Data
+
+```tsx
+const TaskDetailsModal = ({ task, isOpen, onClose }) => {
+  const checklistProgress = task.checklistProgress || {};
+  
+  return (
+    <div className="modal">
+      <h2>{task.name} - Details</h2>
+      
+      {/* Task info */}
+      <div className="task-info">
+        <p>Status: {task.status}</p>
+        <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+        <p>Progress: {calculateChecklistProgress(task)}%</p>
+      </div>
+      
+      {/* Checklist details */}
+      <div className="checklist-details">
+        <h3>Checklist Progress</h3>
+        {task.checklist?.map((step, index) => {
+          const progress = checklistProgress[index];
+          return (
+            <div key={index} className={`checklist-item ${progress?.completed ? 'completed' : ''}`}>
+              <div className="step-header">
+                <span className="step-number">{index + 1}.</span>
+                <span className="step-label">{step.label}</span>
+                <span className="step-status">
+                  {progress?.completed ? '✓ Completed' : '○ Pending'}
+                </span>
+              </div>
+              
+              {progress?.completed && (
+                <div className="step-details">
+                  <p>Completed by: {progress.completedBy}</p>
+                  <p>Completed at: {new Date(progress.completedAt).toLocaleString()}</p>
+                  
+                  {/* Show step-specific data */}
+                  {progress.data && (
+                    <div className="step-data">
+                      <h4>Data Collected:</h4>
+                      <pre>{JSON.stringify(progress.data, null, 2)}</pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+```
+
+## Step 6: Restore Progress When Resuming Task
+
+```tsx
+const resumeTask = (taskId) => {
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  const task = tasks.find(t => t.id === taskId);
+  
+  if (!task) {
+    console.error('Task not found');
+    return;
+  }
+  
+  // The checklist progress should already be in the task
+  console.log('Resuming task with progress:', task.checklistProgress);
+  
+  // Open task with existing progress
+  openTaskModal(task);
+};
+
+// In the checklist component initialization
+const initializeChecklist = (task) => {
+  const checklist = task.checklist || [];
+  const progress = task.checklistProgress || {};
+  
+  // Set initial state from saved progress
+  const initialStates = checklist.map((step, index) => ({
+    completed: progress[index]?.completed || false,
+    data: progress[index]?.data || null
+  }));
+  
+  return initialStates;
+};
+```
+
+## Step 7: Add Debug Logging
+
+Add logging to trace where data is lost:
+
+```tsx
+// Add to task pause/close handlers
+const handlePauseTask = (task) => {
+  console.log('Pausing task, current progress:', task.checklistProgress);
+  
+  // Ensure progress is saved
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  const savedTask = tasks.find(t => t.id === task.id);
+  console.log('Saved task progress:', savedTask?.checklistProgress);
+  
+  if (!savedTask?.checklistProgress) {
+    console.error('WARNING: Checklist progress not saved!');
+  }
+};
+
+// Add to window/modal close handlers
+window.addEventListener('beforeunload', () => {
+  console.log('Page unloading, checking unsaved progress...');
+  // Force save any pending changes
+});
+```
+
+## Step 8: Search for Issues
+
+Look for these common problems:
+
+```bash
+# Search for places where tasks are saved without checklist progress
+Search for: "localStorage.setItem.*task" 
+Search for: "updateTask"
+Search for: "saveTask"
+
+# Search for places where checklist state might be lost
+Search for: "useState.*checklist"
+Search for: "setChecklist"
+Search for: "resetChecklist"
+```
+
+## Summary
+
+The key fixes:
+1. **Save on every step completion** - Don't wait until task completion
+2. **Store progress in task object** - Use `task.checklistProgress` to store step data
+3. **Restore progress on resume** - Load saved progress when reopening task
+4. **Show all data in View Details** - Display completion times, who completed, and step data
+5. **Fix progress calculation** - Count completed steps correctly
+
+This ensures checklist progress is never lost and can be viewed in detail later.

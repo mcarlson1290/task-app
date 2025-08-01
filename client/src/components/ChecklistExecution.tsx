@@ -62,8 +62,110 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     currentTrayId: task.id?.toString() || 'TRAY-001',
     splitTrays: null as any
   });
+
+  // Initialize checklist progress from saved task data
+  useEffect(() => {
+    if (task.data?.checklistProgress) {
+      console.log('🔄 Restoring checklist progress:', task.data.checklistProgress);
+      
+      // Restore step completion states
+      const updatedSteps = steps.map((step, index) => {
+        const savedProgress = task.data.checklistProgress[index];
+        if (savedProgress) {
+          return {
+            ...step,
+            completed: savedProgress.completed || false
+          };
+        }
+        return step;
+      });
+      
+      setSteps(updatedSteps);
+      
+      // Restore step data
+      if (task.data.checklistStepData) {
+        setStepData(task.data.checklistStepData);
+      }
+      
+      // Find the current step (first incomplete step)
+      const firstIncompleteStep = updatedSteps.findIndex(step => !step.completed);
+      if (firstIncompleteStep !== -1) {
+        setCurrentStep(firstIncompleteStep);
+      } else {
+        // All steps completed
+        setCurrentStep(updatedSteps.length);
+      }
+    }
+  }, [task.data?.checklistProgress, task.data?.checklistStepData]);
   const isLastStep = currentStep === steps.length - 1;
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
+
+  // Auto-save checklist progress to prevent data loss
+  const saveChecklistProgress = async (updatedSteps?: ChecklistStep[], updatedStepData?: Record<string, any>) => {
+    const stepsToSave = updatedSteps || steps;
+    const dataToSave = updatedStepData || stepData;
+    
+    console.log('💾 Auto-saving checklist progress:', { 
+      stepCount: stepsToSave.length, 
+      completedSteps: stepsToSave.filter(s => s.completed).length,
+      currentStep,
+      stepDataKeys: Object.keys(dataToSave)
+    });
+
+    // Create progress object with completion status and timestamps
+    const checklistProgress: Record<string, any> = {};
+    stepsToSave.forEach((step, index) => {
+      if (step.completed) {
+        checklistProgress[index] = {
+          completed: true,
+          completedAt: new Date().toISOString(),
+          stepData: dataToSave[index] || null
+        };
+      }
+    });
+
+    // Save via the onProgress callback which will update the task
+    onProgress({
+      stepIndex: currentStep,
+      stepData: {
+        checklistProgress,
+        checklistStepData: dataToSave,
+        currentStep,
+        completedSteps: stepsToSave.filter(s => s.completed).length,
+        totalSteps: stepsToSave.length
+      }
+    });
+  };
+
+  // Auto-save when stepData changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (Object.keys(stepData).length > 0) {
+        saveChecklistProgress();
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [stepData]);
+
+  // Auto-save when steps completion status changes
+  useEffect(() => {
+    const hasCompletedSteps = steps.some(step => step.completed);
+    if (hasCompletedSteps) {
+      saveChecklistProgress();
+    }
+  }, [steps]);
+
+  // Save progress when component unmounts (user closes modal or navigates away)
+  useEffect(() => {
+    return () => {
+      // Save any unsaved progress on cleanup
+      if (Object.keys(stepData).length > 0 || steps.some(s => s.completed)) {
+        console.log('🚪 Component unmounting, saving final progress');
+        saveChecklistProgress();
+      }
+    };
+  }, []);
 
   // Fetch inventory items for inventory-select steps
   const { data: inventoryItems = [] } = useQuery<InventoryItem[]>({
@@ -141,18 +243,29 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         await handleInventoryDeduction(step, stepData[step.id]);
       }
 
-      // Save progress
-      onProgress({
-        stepIndex: currentStep,
-        stepData: stepData
+      // Mark current step as completed
+      const updatedSteps = steps.map((s, index) => {
+        if (index === currentStep) {
+          return { ...s, completed: true };
+        }
+        return s;
       });
+      
+      setSteps(updatedSteps);
+      
+      console.log(`✅ Step ${currentStep + 1} completed:`, step.label);
+
+      // Save progress immediately with updated completion status
+      await saveChecklistProgress(updatedSteps, stepData);
 
       if (isLastStep) {
+        console.log('🎉 All checklist steps completed!');
         onComplete(stepData);
       } else {
         setCurrentStep(currentStep + 1);
       }
     } catch (error) {
+      console.error('Error completing step:', error);
       setErrors({ [step.id]: error instanceof Error ? error.message : 'An error occurred' });
     } finally {
       setIsProcessing(false);

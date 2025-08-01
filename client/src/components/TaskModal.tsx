@@ -289,50 +289,98 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
                   });
                 }}
                 onProgress={(progress) => {
-                  // Handle progress updates
-                  const updatedChecklist = checklist.map(item => {
-                    if (item.id === progress.stepIndex.toString()) {
-                      return { ...item, completed: true, data: progress.stepData };
-                    }
-                    return item;
-                  });
-                  setChecklist(updatedChecklist);
+                  console.log('📊 Checklist progress update received:', progress);
                   
-                  // Update task progress
-                  const completedCount = updatedChecklist.filter(item => item.completed).length;
-                  const progressPercent = Math.round((completedCount / updatedChecklist.length) * 100);
+                  // Handle enhanced progress data structure
+                  const progressData = progress.stepData;
+                  
+                  // Update task with comprehensive checklist progress
+                  const completedSteps = progressData.completedSteps || 0;
+                  const totalSteps = progressData.totalSteps || checklist.length;
+                  const progressPercent = Math.round((completedSteps / totalSteps) * 100);
+                  
+                  console.log('💾 Saving enhanced checklist progress:', {
+                    completedSteps,
+                    totalSteps,
+                    progressPercent,
+                    hasProgressData: !!progressData.checklistProgress
+                  });
                   
                   updateTaskMutation.mutate({
-                    checklist: updatedChecklist,
                     progress: progressPercent,
-                    data: { ...task.data, checklistData: updatedChecklist },
+                    data: { 
+                      ...task.data, 
+                      checklistProgress: progressData.checklistProgress,
+                      checklistStepData: progressData.checklistStepData,
+                      currentStep: progressData.currentStep,
+                      lastUpdated: new Date().toISOString()
+                    },
                   });
                 }}
               />
             </div>
           )}
 
-          {/* Simple Checklist View for Completed/Non-Active Tasks */}
+          {/* Enhanced Checklist View for Completed/Non-Active Tasks */}
           {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status !== 'in_progress' && (
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-[#203B17] mb-4">Checklist</h4>
+              <h4 className="font-medium text-[#203B17] mb-4">
+                Checklist Details
+                {task.data?.checklistProgress && (
+                  <span className="ml-2 text-sm font-normal text-gray-600">
+                    ({Object.keys(task.data.checklistProgress).length} completed)
+                  </span>
+                )}
+              </h4>
               <div className="space-y-4">
-                {(checklist.length > 0 ? checklist : task.checklist || []).map((item) => (
-                  <div key={item.id} className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={item.completed}
-                        disabled={true}
-                      />
-                      <span className={`text-sm ${
-                        item.completed ? 'line-through text-gray-500' : 'text-[#203B17]'
-                      }`}>
-                        {item.text}
-                      </span>
+                {(checklist.length > 0 ? checklist : task.checklist || []).map((item, index) => {
+                  const savedProgress = task.data?.checklistProgress?.[index];
+                  const isCompleted = savedProgress?.completed || item.completed;
+                  
+                  return (
+                    <div key={item.id} className="space-y-2">
+                      <div className="flex items-start space-x-2">
+                        <Checkbox
+                          checked={isCompleted}
+                          disabled={true}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <span className={`text-sm ${
+                            isCompleted ? 'line-through text-gray-500' : 'text-[#203B17]'
+                          }`}>
+                            {item.text}
+                          </span>
+                          
+                          {/* Show completion details if available */}
+                          {savedProgress?.completed && (
+                            <div className="mt-1 text-xs text-green-600">
+                              ✓ Completed on {new Date(savedProgress.completedAt).toLocaleString()}
+                            </div>
+                          )}
+                          
+                          {/* Show step data if available */}
+                          {savedProgress?.stepData && (
+                            <div className="mt-1 p-2 bg-gray-100 rounded text-xs">
+                              <strong>Data collected:</strong>
+                              <pre className="mt-1 text-gray-700">
+                                {JSON.stringify(savedProgress.stepData, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              
+              {/* Show last updated timestamp if available */}
+              {task.data?.lastUpdated && (
+                <div className="mt-4 pt-3 border-t text-xs text-gray-500">
+                  Last updated: {new Date(task.data.lastUpdated).toLocaleString()}
+                </div>
+              )}
             </div>
           )}
 

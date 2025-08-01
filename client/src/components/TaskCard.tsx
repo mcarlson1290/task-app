@@ -471,8 +471,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               <div className="flex items-center">
                 <CheckCircle className="h-4 w-4 mr-1" />
                 <span>
-                  {task.checklist.filter(item => item.completed).length}/
-                  {task.checklist.length} checklist items
+                  {(() => {
+                    // Use saved progress data if available, otherwise fall back to checklist items
+                    const completedFromSaved = task.data?.checklistProgress ? 
+                      Object.keys(task.data.checklistProgress).length : 0;
+                    const completedFromItems = task.checklist.filter(item => item.completed).length;
+                    const completedCount = Math.max(completedFromSaved, completedFromItems);
+                    
+                    return `${completedCount}/${task.checklist.length} checklist items`;
+                  })()}
                 </span>
               </div>
             </div>
