@@ -88,17 +88,17 @@
     "createdAt": "2025-08-01T15:32:17.942Z"
   },
   {
-    "id": 3,
+    "id": 22,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
     "estimatedTime": null,
     "actualTime": null,
-    "progress": 0,
+    "progress": 50,
     "checklist": [
       {
         "id": "1754062334271",
@@ -107,12 +107,47 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
-    "data": {},
+    "data": {
+      "checklistProgress": {
+        "0": {
+          "completed": true,
+          "completedAt": "2025-08-01T22:30:51.896Z",
+          "stepData": null
+        }
+      },
+      "checklistStepData": {},
+      "currentStep": 1,
+      "lastUpdated": "2025-08-01T22:30:51.897Z"
+    },
     "dueDate": "2025-08-05T00:00:00.000Z",
     "visibleFromDate": "2025-08-05T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-01T22:30:50.316Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -120,10 +155,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 4,
+    "id": 23,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -142,6 +177,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -155,10 +214,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 5,
+    "id": 24,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -177,6 +236,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -190,10 +273,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 6,
+    "id": 25,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -212,6 +295,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -225,10 +332,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 7,
+    "id": 26,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -247,6 +354,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -260,10 +391,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 8,
+    "id": 27,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -282,6 +413,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -295,10 +450,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 9,
+    "id": 28,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -317,6 +472,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -330,10 +509,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 10,
+    "id": 29,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -352,6 +531,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -365,10 +568,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "createdAt": "2025-08-01T22:30:43.746Z"
   },
   {
-    "id": 11,
+    "id": 30,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -387,6 +590,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -400,10 +627,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 12,
+    "id": 31,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -422,6 +649,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -435,10 +686,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 13,
+    "id": 32,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -457,6 +708,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -470,10 +745,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 14,
+    "id": 33,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -492,6 +767,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -505,10 +804,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 15,
+    "id": 34,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -527,6 +826,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -540,10 +863,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 16,
+    "id": 35,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -562,6 +885,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -575,10 +922,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 17,
+    "id": 36,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -597,6 +944,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -610,10 +981,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 18,
+    "id": 37,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -632,6 +1003,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -645,10 +1040,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.747Z"
   },
   {
-    "id": 19,
+    "id": 38,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -667,6 +1062,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -680,10 +1099,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.748Z"
   },
   {
-    "id": 20,
+    "id": 39,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -702,6 +1121,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -715,10 +1158,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.748Z"
   },
   {
-    "id": 21,
+    "id": 40,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -737,6 +1180,30 @@
         "required": true,
         "type": "checkbox",
         "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "",
+              "seedName": "",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
       }
     ],
     "data": {},
@@ -750,6 +1217,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.943Z"
+    "createdAt": "2025-08-01T22:30:43.748Z"
   }
 ]

@@ -30,6 +30,29 @@
           "label": "TEST",
           "required": true,
           "config": {}
+        },
+        {
+          "id": "1754087379411",
+          "type": "create-tray",
+          "label": "",
+          "required": true,
+          "config": {
+            "numberOfTrays": 1,
+            "defaultTrayType": "LG",
+            "defaultInstance": 1,
+            "defaultGrowingMedium": "Oasis Cubes",
+            "defaultTotalSlots": 126,
+            "defaultVarieties": [
+              {
+                "seedId": "",
+                "seedName": "",
+                "sku": "",
+                "quantity": 5,
+                "seedsOz": 0.2
+              }
+            ],
+            "instructions": ""
+          }
         }
       ]
     },

@@ -161,7 +161,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     let sku = 'MIX';
     if (varieties.length === 1 && varieties[0].seedId) {
       const seed = availableSeeds.find(s => s.id === varieties[0].seedId);
-      if (seed) sku = seed.sku || seed.productCode || 'MIX';
+      if (seed) sku = seed.sku || 'MIX';
     }
     
     const id = `${locationCode}${dateStr}-${trayType}-${sku}-${instanceNumber}`;
