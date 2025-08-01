@@ -265,11 +265,15 @@ const Tasks: React.FC = () => {
 
     // Date filter - enhanced visibility for recurring tasks
     if (dateFilter) {
-      const filterDate = new Date(dateFilter);
+      // CRITICAL FIX: Parse date without timezone shift
+      const [year, month, day] = dateFilter.split('-').map(Number);
+      const filterDate = new Date(year, month - 1, day); // month is 0-indexed
       filterDate.setHours(0, 0, 0, 0);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const isToday = filterDate.getTime() === today.getTime();
+      
+
       
       filtered = filtered.filter(task => {
         // Helper function to compare dates without time - FIXED to handle timezones properly
