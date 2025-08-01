@@ -70,7 +70,11 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   const [availableVarieties, setAvailableVarieties] = useState<string[]>(['Standard']);
   
   // Calculate total plants
-  const totalPlants = varieties.reduce((sum, v) => sum + (parseInt(v.quantity.toString()) || 0), 0);
+  const totalPlants = varieties.reduce((sum, v) => {
+    const quantity = parseInt(v.quantity.toString()) || 0;
+    console.log('CreateTrayStep - Adding quantity:', v.quantity, '-> parsed:', quantity, 'sum:', sum);
+    return sum + quantity;
+  }, 0);
 
   // Get current user and location
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -102,15 +106,20 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
     // Initialize varieties with default values if configured
     const configuredDefaults = stepData?.config?.defaultVarieties || defaultVarieties;
+    console.log('CreateTrayStep - Loading configured defaults:', configuredDefaults);
     if (configuredDefaults && configuredDefaults.length > 0) {
-      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
-        id: (index + 1).toString(),
-        seedId: defaultVar.seedId || '',
-        seedName: defaultVar.seedName || '',
-        sku: defaultVar.sku || '',
-        quantity: defaultVar.quantity || 0,
-        seedsOz: defaultVar.seedsOz || 0
-      }));
+      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => {
+        console.log('CreateTrayStep - Processing default variety:', defaultVar, 'quantity:', defaultVar.quantity);
+        return {
+          id: (index + 1).toString(),
+          seedId: defaultVar.seedId || '',
+          seedName: defaultVar.seedName || '',
+          sku: defaultVar.sku || '',
+          quantity: parseInt(defaultVar.quantity) || 0,
+          seedsOz: parseFloat(defaultVar.seedsOz) || 0
+        };
+      });
+      console.log('CreateTrayStep - Setting initial varieties:', initialVarieties);
       setVarieties(initialVarieties);
     }
   }, [stepData, defaultVarieties]);
@@ -412,6 +421,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
                   value={variety.quantity}
                   onChange={(e) => updateVariety(variety.id, 'quantity', parseInt(e.target.value) || 0)}
                   placeholder="Plants"
+                  step="1"
                   min={0}
                   className="p-2 border border-gray-300 rounded-md"
                 />
