@@ -262,21 +262,36 @@ export class MemStorage implements IStorage {
           needsGeneration = true;
         }
       } else if (recurringTask.frequency === 'daily' && recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
-        // For daily tasks with specific days, check if we have a task for today (if today is a selected day)
-        const dayOfWeek = today.getDay();
-        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const todayDayName = dayNames[dayOfWeek];
+        // For daily tasks with specific days, check if we have enough future tasks (30 days ahead)
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 30);
         
-        if (recurringTask.daysOfWeek.includes(todayDayName)) {
-          const todayInstances = existingInstances.filter(task => {
-            if (!task.dueDate) return false;
-            const dueDate = new Date(task.dueDate);
-            return dueDate.toDateString() === today.toDateString();
-          });
+        let expectedTasks = 0;
+        let currentCheck = new Date(today);
+        
+        // Count how many tasks we should have in the next 30 days
+        while (currentCheck <= endDate) {
+          const dayOfWeek = currentCheck.getDay();
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const currentDayName = dayNames[dayOfWeek];
           
-          if (todayInstances.length === 0) {
-            needsGeneration = true;
+          if (recurringTask.daysOfWeek.includes(currentDayName)) {
+            expectedTasks++;
           }
+          currentCheck.setDate(currentCheck.getDate() + 1);
+        }
+        
+        // Count existing future tasks
+        const futureInstances = existingInstances.filter(task => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate);
+          return dueDate >= today && dueDate <= endDate && task.status === 'pending';
+        });
+        
+        console.log(`  - Expected ${expectedTasks} tasks for next 30 days, found ${futureInstances.length} existing`);
+        
+        if (futureInstances.length < expectedTasks) {
+          needsGeneration = true;
         }
       }
       

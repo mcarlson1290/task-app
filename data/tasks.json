@@ -1,1 +1,39 @@
-[]
+[
+  {
+    "id": null,
+    "title": "Water the Microgreens",
+    "description": "Water them Greens",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1754058911364",
+        "text": "Water each tray of Microgreens",
+        "completed": false,
+        "required": false,
+        "type": "instruction",
+        "config": {
+          "text": "bla bla bla"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-08-30T00:00:00.000Z",
+    "visibleFromDate": "2025-08-30T00:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T14:35:32.383Z"
+  }
+]
