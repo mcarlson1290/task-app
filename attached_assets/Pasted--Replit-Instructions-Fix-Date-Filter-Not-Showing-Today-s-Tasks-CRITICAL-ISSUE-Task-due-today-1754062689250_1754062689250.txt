@@ -1,0 +1,329 @@
+# Replit Instructions: Fix Date Filter Not Showing Today's Tasks
+
+**CRITICAL ISSUE: Task due today (Aug 1) not appearing when filtering by today (08/01/2025)**
+
+## Step 1: Debug the Date Filter Logic
+
+Add comprehensive logging to see what's happening:
+
+```tsx
+const filterTasksByDate = (tasks, filterDate) => {
+  console.group('🔍 DATE FILTER DEBUG');
+  console.log('Filter date selected:', filterDate);
+  console.log('Filter date parsed:', new Date(filterDate));
+  
+  const filteredTasks = tasks.filter(task => {
+    // For completed tasks, use completion date
+    if (task.status === 'completed' && task.completedAt) {
+      const completionDate = new Date(task.completedAt);
+      console.log(`Task "${task.name}" completed on:`, completionDate.toLocaleDateString());
+      return compareDates(completionDate, filterDate);
+    }
+    
+    // For pending/in-progress tasks, use due date
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      console.log(`Task "${task.name}" due on:`, dueDate.toLocaleDateString(), 'Raw:', task.dueDate);
+      const matches = compareDates(dueDate, filterDate);
+      console.log(`  Matches filter? ${matches}`);
+      return matches;
+    }
+    
+    return false;
+  });
+  
+  console.log(`Found ${filteredTasks.length} tasks for ${filterDate}`);
+  console.groupEnd();
+  
+  return filteredTasks;
+};
+```
+
+## Step 2: Fix the Date Comparison Function
+
+The issue is likely in how dates are being compared:
+
+```tsx
+const compareDates = (date1, date2) => {
+  // Convert both to date objects if needed
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  
+  // Reset both to midnight to compare just the date
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  
+  // Compare the timestamps
+  return d1.getTime() === d2.getTime();
+};
+
+// Alternative more robust comparison
+const isSameDay = (date1, date2) => {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate();
+};
+```
+
+## Step 3: Check How the Filter Date is Set
+
+The date picker might be setting the date incorrectly:
+
+```tsx
+const handleDateFilterChange = (selectedDate) => {
+  console.log('Date picker selected:', selectedDate);
+  console.log('Type:', typeof selectedDate);
+  
+  // Ensure we have a proper date
+  let filterDate;
+  if (typeof selectedDate === 'string') {
+    // Parse string date carefully
+    filterDate = new Date(selectedDate + 'T00:00:00'); // Force midnight
+  } else {
+    filterDate = new Date(selectedDate);
+  }
+  
+  console.log('Filter date set to:', filterDate.toISOString());
+  setSelectedDate(filterDate);
+  
+  // Apply filter
+  applyDateFilter(filterDate);
+};
+```
+
+## Step 4: Fix Task Due Date Storage
+
+Check how due dates are being stored:
+
+```tsx
+// When creating a task from recurring
+const createTaskFromRecurring = (recurringTask, dueDate) => {
+  // Ensure due date is set to midnight
+  const normalizedDueDate = new Date(dueDate);
+  normalizedDueDate.setHours(0, 0, 0, 0);
+  
+  return {
+    id: generateTaskId(),
+    recurringTaskId: recurringTask.id,
+    name: recurringTask.name,
+    // Store as ISO string at midnight
+    dueDate: normalizedDueDate.toISOString(),
+    createdAt: new Date().toISOString(),
+    status: 'pending',
+    // ... rest of task
+  };
+};
+```
+
+## Step 5: Add a "Today" Button Fix
+
+Since "Today" filter has issues, add explicit handling:
+
+```tsx
+const handleTodayFilter = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  console.log('Today filter clicked, date:', today.toLocaleDateString());
+  
+  // Set the date picker
+  setDatePickerValue(today.toISOString().split('T')[0]); // YYYY-MM-DD format
+  
+  // Filter tasks
+  const allTasks = getAllTasks();
+  const todaysTasks = allTasks.filter(task => {
+    if (task.status === 'completed' && task.completedAt) {
+      return isSameDay(task.completedAt, today);
+    }
+    if (task.dueDate) {
+      return isSameDay(task.dueDate, today);
+    }
+    return false;
+  });
+  
+  console.log(`Found ${todaysTasks.length} tasks for today`);
+  setFilteredTasks(todaysTasks);
+};
+```
+
+## Step 6: Quick Fix - Force Reload with Logging
+
+Add a temporary diagnostic function:
+
+```tsx
+const diagnoseDateIssue = () => {
+  const allTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  console.group('📅 DATE DIAGNOSTIC');
+  console.log('Today is:', today.toLocaleDateString(), today.toISOString());
+  
+  // Find tasks that should show today
+  const shouldShowToday = allTasks.filter(task => {
+    if (!task.dueDate) return false;
+    const dueDate = new Date(task.dueDate);
+    const isToday = isSameDay(dueDate, today);
+    
+    if (isToday) {
+      console.log('Task should show today:', {
+        name: task.name,
+        dueDate: task.dueDate,
+        dueDateParsed: dueDate.toLocaleDateString(),
+        status: task.status
+      });
+    }
+    
+    return isToday;
+  });
+  
+  console.log(`${shouldShowToday.length} tasks should appear today`);
+  console.groupEnd();
+  
+  return shouldShowToday;
+};
+
+// Add button to trigger diagnostic
+<button onClick={diagnoseDateIssue}>Diagnose Date Filter</button>
+```
+
+## Step 7: Common Date Issues to Check
+
+```tsx
+// 1. Timezone issues
+console.log('Browser timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+
+// 2. Date string format issues
+const testDates = [
+  '2025-08-01',
+  '2025-08-01T00:00:00',
+  '2025-08-01T00:00:00.000Z',
+  '08/01/2025',
+  new Date(2025, 7, 1) // Month is 0-indexed!
+];
+
+testDates.forEach(date => {
+  console.log('Original:', date);
+  console.log('Parsed:', new Date(date));
+  console.log('ISO:', new Date(date).toISOString());
+  console.log('---');
+});
+
+// 3. Check stored task format
+const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+console.log('Sample task due dates:', tasks.slice(0, 3).map(t => ({
+  name: t.name,
+  dueDate: t.dueDate,
+  type: typeof t.dueDate
+})));
+```
+
+## Step 8: Fix Off-By-One Date Issues
+
+If tasks are appearing one day early (July 31 instead of Aug 1), it's likely timezone-related:
+
+```tsx
+// PROBLEM: Creating date without considering timezone
+const dueDate = new Date('2025-08-01'); // This might create July 31 at 7pm depending on timezone!
+
+// SOLUTION 1: Create date at noon to avoid timezone shifts
+const createDateAtNoon = (dateString) => {
+  const date = new Date(dateString + 'T12:00:00');
+  return date;
+};
+
+// SOLUTION 2: Use local date creation
+const createLocalDate = (year, month, day) => {
+  // Month is 0-indexed, so August = 7
+  return new Date(year, month - 1, day, 0, 0, 0);
+};
+
+// Fix recurring task generation
+const generateTasksFromRecurringTask = (recurringTask) => {
+  const today = new Date();
+  today.setHours(12, 0, 0, 0); // Set to noon to avoid date shifts
+  
+  for (let i = 0; i <= 30; i++) {
+    const dueDate = new Date(today);
+    dueDate.setDate(today.getDate() + i);
+    dueDate.setHours(0, 0, 0, 0); // Reset to midnight
+    
+    // Store in a timezone-safe way
+    const task = {
+      ...recurringTask,
+      dueDate: dueDate.toISOString().split('T')[0] + 'T00:00:00', // Force midnight
+      // ... rest of task
+    };
+  }
+};
+```
+
+## Step 9: Find and Fix Hardcoded Dates
+
+Search for any hardcoded dates from yesterday's work:
+
+```bash
+# Search for potential hardcoded dates
+Search for: "2025-07-31"
+Search for: "07/31"
+Search for: "July 31"
+Search for: "2025-08-01"
+Search for: "08/01"
+Search for: "August 1"
+```
+
+## Step 10: Add Migration to Fix Existing Wrong Dates
+
+If tasks were created with wrong dates, fix them:
+
+```tsx
+const fixOffByOneDates = () => {
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  let fixedCount = 0;
+  
+  const fixedTasks = tasks.map(task => {
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      const localDateString = dueDate.toLocaleDateString();
+      
+      // Check if this looks like an off-by-one error
+      // If the task says "Due today (Aug 1)" but appears on July 31
+      if (task.displayText?.includes('Aug 1') && localDateString.includes('7/31')) {
+        console.log(`Fixing task "${task.name}" from ${localDateString} to Aug 1`);
+        
+        // Add one day to fix it
+        dueDate.setDate(dueDate.getDate() + 1);
+        fixedCount++;
+        
+        return {
+          ...task,
+          dueDate: dueDate.toISOString().split('T')[0] + 'T00:00:00',
+          fixedDate: true
+        };
+      }
+    }
+    return task;
+  });
+  
+  if (fixedCount > 0) {
+    localStorage.setItem('tasks', JSON.stringify(fixedTasks));
+    console.log(`Fixed ${fixedCount} tasks with off-by-one date issues`);
+    window.location.reload();
+  }
+};
+
+// Add button to run fix
+<button onClick={fixOffByOneDates}>Fix Off-By-One Dates</button>
+```
+
+## Summary
+
+The core issue is likely:
+1. **Timezone offset** - Dates created in UTC showing up a day early in local time
+2. **Off-by-one error** - Date math calculating wrong day
+3. **Hardcoded dates** - Dates hardcoded during testing yesterday
+
+The main fix is to ensure all dates are created and compared in local time, avoiding timezone shifts that cause tasks to appear on the wrong day.

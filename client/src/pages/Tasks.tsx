@@ -33,8 +33,14 @@ const Tasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
   const [dateFilter, setDateFilter] = React.useState<string>(() => {
+    // CRITICAL FIX: Create date without timezone shift
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayString = `${year}-${month}-${day}`;
+    console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
+    return todayString;
   });
 
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
@@ -263,8 +269,11 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - enhanced visibility for recurring tasks
+    // Date filter - FIXED with comprehensive debugging
     if (dateFilter) {
+      console.group('🔍 DATE FILTER DEBUG');
+      console.log('Filter date selected:', dateFilter);
+      
       // CRITICAL FIX: Parse date without timezone shift
       const [year, month, day] = dateFilter.split('-').map(Number);
       const filterDate = new Date(year, month - 1, day); // month is 0-indexed
@@ -273,27 +282,57 @@ const Tasks: React.FC = () => {
       today.setHours(0, 0, 0, 0);
       const isToday = filterDate.getTime() === today.getTime();
       
-
+      console.log('Filter date parsed:', filterDate.toLocaleDateString());
+      console.log('Is today?', isToday);
+      console.log('All tasks before filtering:', tasks.length);
+      
+      // Show all task due dates for debugging
+      console.log('Task due dates:');
+      tasks.forEach(task => {
+        if (task.dueDate) {
+          const taskDueDate = new Date(task.dueDate);
+          console.log(`  "${task.title}": ${taskDueDate.toLocaleDateString()} (Raw: ${task.dueDate})`);
+        } else {
+          console.log(`  "${task.title}": No due date`);
+        }
+      });
       
       filtered = filtered.filter(task => {
-        // Helper function to compare dates without time - FIXED to handle timezones properly
-        const isSameDay = (date1: Date, date2: Date) => {
-          // Normalize both dates to midnight local time for accurate comparison
-          const d1 = new Date(date1);
-          const d2 = new Date(date2);
-          d1.setHours(0, 0, 0, 0);
-          d2.setHours(0, 0, 0, 0);
-          return d1.getTime() === d2.getTime();
+        // Helper function to compare dates - FIXED for UTC stored dates  
+        const isSameDay = (taskDate: string | Date, filterDate: Date) => {
+          // Handle both string and Date objects
+          let utcDatePart: string;
+          
+          if (typeof taskDate === 'string') {
+            // "2025-08-01T00:00:00.000Z" should be treated as August 1st, not July 31st
+            utcDatePart = taskDate.split('T')[0]; // Get "2025-08-01" part
+          } else {
+            // Date object - convert to YYYY-MM-DD format without timezone conversion
+            const dateObj = new Date(taskDate);
+            const year = dateObj.getUTCFullYear();
+            const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getUTCDate()).padStart(2, '0');
+            utcDatePart = `${year}-${month}-${day}`;
+          }
+          
+          const [year, month, day] = utcDatePart.split('-').map(Number);
+          
+          // Compare with filter date parts - ENSURE CONSISTENT FORMATTING
+          const filterYear = filterDate.getFullYear();
+          const filterMonth = String(filterDate.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed, so add 1 and zero-pad
+          const filterDay = String(filterDate.getDate()).padStart(2, '0'); // zero-pad day too
+          const filterDateFormatted = `${filterYear}-${filterMonth}-${filterDay}`;
+          
+          const matches = utcDatePart === filterDateFormatted;
+          console.log(`    Comparing task date ${utcDatePart} with filter ${filterDateFormatted}: ${matches ? 'MATCH ✅' : 'no match ❌'}`);
+          return matches;
         };
 
         // CRITICAL FIX: Completed tasks show on their completion date ONLY
         if (task.status === 'completed' && task.completedAt) {
-          const completionDate = new Date(task.completedAt);
-          const showOnThisDate = isSameDay(completionDate, filterDate);
-          
-
-          
-          return showOnThisDate;
+          const matches = isSameDay(task.completedAt, filterDate);
+          console.log(`Completed task "${task.title}": CompletedAt=${task.completedAt}, Matches filter? ${matches}`);
+          return matches;
         }
         
         // For recurring tasks - FIXED bi-weekly visibility
@@ -339,10 +378,11 @@ const Tasks: React.FC = () => {
           return isSameDay(dueDate, filterDate);
         }
         
-        // For non-completed, non-recurring tasks: show on due date
+        // For all tasks with due dates: show on due date (UTC-aware)
         if (task.dueDate) {
-          const dueDate = new Date(task.dueDate);
-          return isSameDay(dueDate, filterDate);
+          const matches = isSameDay(task.dueDate, filterDate);
+          console.log(`Task "${task.title}": Raw=${task.dueDate}, Matches filter? ${matches}`);
+          return matches;
         }
         
         // For tasks without due date, show on created date
@@ -361,6 +401,9 @@ const Tasks: React.FC = () => {
       taskIds.add(task.id);
       return true;
     });
+    
+    console.log(`Found ${uniqueFiltered.length} tasks for ${dateFilter || 'no date filter'}`);
+    console.groupEnd();
     
     console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
@@ -810,7 +853,15 @@ const Tasks: React.FC = () => {
               className="date-input"
             />
             <button
-              onClick={() => setDateFilter(new Date().toISOString().split('T')[0])}
+              onClick={() => {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayString = `${year}-${month}-${day}`;
+                console.log('🗓️ Today button clicked, setting date to:', todayString);
+                setDateFilter(todayString);
+              }}
               className="btn-today"
               title="Go to today"
             >

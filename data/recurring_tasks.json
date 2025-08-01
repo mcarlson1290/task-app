@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "title": "Water the Microgreens",
+    "description": "test",
+    "type": "other",
+    "frequency": "daily",
+    "daysOfWeek": [
+      "monday",
+      "friday",
+      "tuesday",
+      "wednesday",
+      "thursday"
+    ],
+    "isActive": true,
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "1754062334271",
+          "type": "checkbox",
+          "label": "TEST",
+          "required": true,
+          "config": {}
+        }
+      ]
+    },
+    "location": "K",
+    "id": 1,
+    "createdAt": "2025-08-01T15:32:17.941Z"
+  }
+]
