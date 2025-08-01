@@ -752,6 +752,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                               });
                             }}
                             placeholder="Qty"
+                            step="1"
                             min="0"
                             className="text-xs"
                           />
