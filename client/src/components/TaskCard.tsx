@@ -158,20 +158,49 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   };
 
   // Late task detection functions
-  // Check if task was overdue at a specific time (8:30 AM Chicago time on due date)
+  // Check if task is currently overdue (8:30 PM deadline on due date)
   const isTaskOverdue = (task: Task, checkTime: Date = new Date()): boolean => {
     if (!task.dueDate || task.status === 'completed') return false;
     
     try {
-      const dueDate = new Date(task.dueDate);
+      // Parse the due date safely
+      let dateString: string;
+      if (task.dueDate instanceof Date) {
+        const year = task.dueDate.getFullYear();
+        const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
+        const day = String(task.dueDate.getDate()).padStart(2, '0');
+        dateString = `${year}-${month}-${day}`;
+      } else {
+        dateString = task.dueDate.split('T')[0];
+      }
+      
+      const [year, month, day] = dateString.split('-');
+      const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      
       if (isNaN(dueDate.getTime())) return false;
       
-      // Create overdue cutoff time: 8:30 AM Chicago time on due date
-      // For simplicity, using 8:30 AM local time as the overdue cutoff
-      const overdueTime = new Date(dueDate);
-      overdueTime.setHours(8, 30, 0, 0);
+      // Get current date (today)
+      const today = new Date(checkTime);
+      today.setHours(0, 0, 0, 0);
       
-      return checkTime > overdueTime;
+      const dueDateStart = new Date(dueDate);
+      dueDateStart.setHours(0, 0, 0, 0);
+      
+      // If due date is in the future, NOT overdue
+      if (dueDateStart > today) {
+        return false;
+      }
+      
+      // If due date is in the past, IS overdue
+      if (dueDateStart < today) {
+        return true;
+      }
+      
+      // Due date is today - check if past 8:30 PM
+      const deadline = new Date(today);
+      deadline.setHours(20, 30, 0, 0); // 8:30 PM
+      
+      return checkTime > deadline;
     } catch (error) {
       return false;
     }
@@ -190,11 +219,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       
       if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
       
-      // Create overdue cutoff time: 8:30 AM on due date
+      // Create overdue cutoff time: 8:30 PM on due date
       const overdueTime = new Date(dueDate);
-      overdueTime.setHours(8, 30, 0, 0);
+      overdueTime.setHours(20, 30, 0, 0);
       
-      // Task is late if completed AFTER the overdue time (8:30 AM on due date)
+      // Task is late if completed AFTER the overdue time (8:30 PM on due date)
       return completedTime > overdueTime;
     } catch (error) {
       return false;

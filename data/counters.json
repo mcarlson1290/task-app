@@ -1,4 +1,5 @@
 {
-  "currentTaskId": null,
-  "currentRecurringTaskId": null
+  "currentTaskId": 1,
+  "currentRecurringTaskId": 1,
+  "currentInventoryId": 10
 }
