@@ -127,20 +127,35 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     });
     
     if (configuredDefaults && configuredDefaults.length > 0) {
-      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
-        id: (index + 1).toString(),
-        seedId: defaultVar.seedId || '',
-        seedName: defaultVar.seedName || '',
-        sku: defaultVar.sku || '',
-        quantity: parseInt(defaultVar.quantity) || 0,
-        seedsOz: parseFloat(defaultVar.seedsOz) || 0
-      }));
+      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => {
+        // If seedName/sku is missing but seedId exists, try to look it up from available seeds
+        let seedName = defaultVar.seedName || '';
+        let sku = defaultVar.sku || '';
+        
+        if (defaultVar.seedId && !seedName && availableSeeds.length > 0) {
+          const foundSeed = availableSeeds.find(seed => seed.id.toString() === defaultVar.seedId.toString());
+          if (foundSeed) {
+            seedName = foundSeed.name;
+            sku = foundSeed.sku || foundSeed.SKU || foundSeed.productCode || '';
+            console.log('🔍 Found seed details for ID', defaultVar.seedId, ':', { seedName, sku });
+          }
+        }
+        
+        return {
+          id: (index + 1).toString(),
+          seedId: defaultVar.seedId || '',
+          seedName,
+          sku,
+          quantity: parseInt(defaultVar.quantity) || 0,
+          seedsOz: parseFloat(defaultVar.seedsOz) || 0
+        };
+      });
       console.log('✅ Setting initial varieties:', initialVarieties);
       setVarieties(initialVarieties);
     } else {
       console.log('❌ No configured defaults found, using empty variety');
     }
-  }, []); // Run only once on mount
+  }, [availableSeeds]); // Depend on availableSeeds so it re-runs when seeds are loaded
 
   // Update available varieties when seed type changes
   useEffect(() => {
