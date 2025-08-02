@@ -189,6 +189,26 @@ class TrayDataService {
     const filteredTrays = allTrays.filter(t => t.id !== trayId);
     this.saveTrays(filteredTrays);
   }
+  
+  // Clear all tray data (for testing)
+  static clearAllTrays(): void {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+      console.log('All tray data cleared from storage');
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+        detail: { trays: [] } 
+      }));
+    } catch (error) {
+      console.error('Error clearing tray data:', error);
+    }
+  }
+}
+
+// Make clear function available globally for testing
+if (typeof window !== 'undefined') {
+  (window as any).clearAllTrays = () => TrayDataService.clearAllTrays();
 }
 
 export default TrayDataService;

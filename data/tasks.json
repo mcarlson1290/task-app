@@ -217,7 +217,7 @@
     "createdAt": "2025-08-02T00:49:37.143Z"
   },
   {
-    "id": 43,
+    "id": 61,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -255,7 +255,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -273,10 +273,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.143Z"
+    "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 44,
+    "id": 62,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -314,7 +314,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -332,10 +332,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 45,
+    "id": 63,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -373,7 +373,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -391,10 +391,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 46,
+    "id": 64,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -432,7 +432,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -450,10 +450,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 47,
+    "id": 65,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -491,7 +491,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -509,10 +509,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 48,
+    "id": 66,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -550,7 +550,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -568,10 +568,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 49,
+    "id": 67,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -609,7 +609,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -627,10 +627,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 50,
+    "id": 68,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -668,7 +668,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -686,10 +686,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 51,
+    "id": 69,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -727,7 +727,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -745,10 +745,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 52,
+    "id": 70,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -786,7 +786,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -804,10 +804,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 53,
+    "id": 71,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -845,7 +845,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -863,10 +863,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 54,
+    "id": 72,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -904,7 +904,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -922,10 +922,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 55,
+    "id": 73,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -963,7 +963,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -981,10 +981,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 56,
+    "id": 74,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1022,7 +1022,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -1040,10 +1040,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 57,
+    "id": 75,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1081,7 +1081,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -1099,10 +1099,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.880Z"
   },
   {
-    "id": 58,
+    "id": 76,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1140,7 +1140,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -1158,10 +1158,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.144Z"
+    "createdAt": "2025-08-02T01:07:12.881Z"
   },
   {
-    "id": 59,
+    "id": 77,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1199,7 +1199,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -1217,10 +1217,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.145Z"
+    "createdAt": "2025-08-02T01:07:12.881Z"
   },
   {
-    "id": 60,
+    "id": 78,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1258,7 +1258,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -1276,6 +1276,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.145Z"
+    "createdAt": "2025-08-02T01:07:12.881Z"
   }
 ]
