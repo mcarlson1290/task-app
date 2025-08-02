@@ -794,11 +794,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                       
                       {/* Show total plants count */}
                       <div className="variety-total text-right p-2 bg-green-50 rounded font-medium text-sm">
-                        Total Plants: {(step.config.defaultVarieties || []).reduce((sum: number, v: any) => {
-                          const quantity = parseInt(v.quantity) || 0;
-                          console.log('Adding quantity:', v.quantity, '-> parsed:', quantity, 'sum:', sum);
-                          return sum + quantity;
-                        }, 0)}
+                        Total Plants: {(step.config.defaultVarieties || []).reduce((sum: number, v: any) => sum + (parseInt(v.quantity) || 0), 0)}
                         {step.config.defaultTotalSlots && (
                           <span> / {step.config.defaultTotalSlots} slots</span>
                         )}
