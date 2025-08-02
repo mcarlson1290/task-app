@@ -46,21 +46,21 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 }) => {
   const [selectedSeed, setSelectedSeed] = useState<InventoryItem | null>(null);
   const [trayType, setTrayType] = useState<'MG' | 'LG' | 'HB'>(
-    stepData?.config?.defaultTrayType || defaultTrayType
+    stepData?.defaultTrayType || defaultTrayType
   );
   const [instanceNumber, setInstanceNumber] = useState(
-    stepData?.config?.defaultInstance || defaultInstance
+    stepData?.defaultInstance || defaultInstance
   );
   const [seedsOz, setSeedsOz] = useState(
-    stepData?.config?.defaultSeedsOz || defaultSeedsOz
+    stepData?.defaultSeedsOz || defaultSeedsOz
   );
   const [growingMedium, setGrowingMedium] = useState(
-    stepData?.config?.defaultGrowingMedium === 'user-selects' ? '' : 
-    stepData?.config?.defaultGrowingMedium || defaultGrowingMedium
+    stepData?.defaultGrowingMedium === 'user-selects' ? '' : 
+    stepData?.defaultGrowingMedium || defaultGrowingMedium
   );
   const [varieties, setVarieties] = useState<Variety[]>(() => {
     // Initialize with ALL default varieties from config if available
-    const configuredDefaults = stepData?.config?.defaultVarieties || [];
+    const configuredDefaults = stepData?.defaultVarieties || [];
     console.log('🔧 Initializing varieties with defaults:', configuredDefaults);
     
     if (configuredDefaults && configuredDefaults.length > 0) {
@@ -78,7 +78,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     return [{ id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }];
   });
   const [totalSlots, setTotalSlots] = useState(
-    stepData?.config?.defaultTotalSlots || defaultTotalSlots || 0
+    stepData?.defaultTotalSlots || defaultTotalSlots || 0
   );
   const [notes, setNotes] = useState('');
   const [generatedId, setGeneratedId] = useState('');
