@@ -188,11 +188,18 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       date.getDate().toString().padStart(2, '0') +
       date.getFullYear().toString().slice(2);
     
-    // If multiple varieties, use MIX, otherwise use first seed's SKU
-    let sku = 'MIX';
-    if (varieties.length === 1 && varieties[0].seedId) {
-      const seed = availableSeeds.find(s => s.id === varieties[0].seedId);
-      if (seed) sku = seed.sku || 'MIX';
+    // Determine SKU based on varieties
+    let sku = 'MIX'; // Default for multiple varieties
+    
+    if (varieties.length === 1 && varieties[0].sku) {
+      // Single variety - use its SKU directly
+      sku = varieties[0].sku.toUpperCase();
+    } else if (varieties.length === 1 && varieties[0].seedId) {
+      // Fallback: find seed by ID and use its SKU
+      const seed = availableSeeds.find(s => s.id.toString() === varieties[0].seedId.toString());
+      if (seed) {
+        sku = (seed.sku || seed.SKU || seed.productCode || 'UNK').toUpperCase();
+      }
     }
     
     const id = `${locationCode}${dateStr}-${trayType}-${sku}-${instanceNumber}`;
@@ -418,7 +425,12 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
         <div className="varieties-section">
           <div className="flex justify-between items-center mb-3">
-            <h4 className="text-sm font-medium">Crop Varieties</h4>
+            <h4 className="text-sm font-medium">
+              {trayType === 'MG' ? 
+                (varieties.length === 1 ? 'Microgreen Variety' : 'Microgreen Varieties') :
+                (varieties.length === 1 ? 'Crop Variety' : 'Crop Varieties')
+              }
+            </h4>
             <div className="text-sm text-gray-600">
               Total Plants: <span className="font-medium">{totalPlants}</span> / <span className="font-medium">{totalSlots || '?'}</span>
               {totalSlots > 0 && totalPlants > totalSlots && (
@@ -514,7 +526,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400"
           disabled={!growingMedium || totalSlots === 0 || totalPlants === 0}
         >
-          Create Multi-Variety Tray
+          {varieties.length === 1 ? 'Create Tray' : 'Create Multi-Variety Tray'}
         </button>
       </div>
     </div>

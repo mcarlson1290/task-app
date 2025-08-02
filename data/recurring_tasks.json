@@ -38,10 +38,10 @@
           "required": true,
           "config": {
             "numberOfTrays": 1,
-            "defaultTrayType": "LG",
+            "defaultTrayType": "MG",
             "defaultInstance": 1,
-            "defaultGrowingMedium": "Oasis Cubes",
-            "defaultTotalSlots": 126,
+            "defaultGrowingMedium": "Hemp Mat",
+            "defaultTotalSlots": 1,
             "defaultVarieties": [
               {
                 "seedId": "1",
@@ -49,20 +49,6 @@
                 "sku": "ARU",
                 "quantity": 5,
                 "seedsOz": 0.001
-              },
-              {
-                "seedId": "2",
-                "seedName": "Broccoli Microgreen Seeds",
-                "sku": "BROC",
-                "quantity": 20,
-                "seedsOz": 0.03
-              },
-              {
-                "seedId": "4",
-                "seedName": "Romaine Seeds",
-                "sku": "ROM",
-                "quantity": 52,
-                "seedsOz": 0.016
               }
             ],
             "instructions": ""
