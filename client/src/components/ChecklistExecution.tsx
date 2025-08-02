@@ -855,7 +855,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         return (
           <div className="space-y-4">
             <CreateTrayStep
-              stepData={step}
+              stepData={step.config}
               onComplete={(data) => {
                 // Update step data with tray creation results
                 setStepData({ ...stepData, [step.id]: data });
