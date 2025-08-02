@@ -49,6 +49,20 @@
                 "sku": "ARU",
                 "quantity": 5,
                 "seedsOz": 0.001
+              },
+              {
+                "seedId": "2",
+                "seedName": "Broccoli Microgreen Seeds",
+                "sku": "BROC",
+                "quantity": 20,
+                "seedsOz": 0.03
+              },
+              {
+                "seedId": "4",
+                "seedName": "Romaine Seeds",
+                "sku": "ROM",
+                "quantity": 52,
+                "seedsOz": 0.016
               }
             ],
             "instructions": ""
