@@ -137,13 +137,13 @@
       "checklistProgress": {
         "0": {
           "completed": true,
-          "completedAt": "2025-08-02T00:49:50.515Z",
+          "completedAt": "2025-08-02T00:56:13.393Z",
           "stepData": null
         }
       },
       "checklistStepData": {},
       "currentStep": 1,
-      "lastUpdated": "2025-08-02T00:49:50.515Z"
+      "lastUpdated": "2025-08-02T00:56:13.393Z"
     },
     "dueDate": "2025-08-05T00:00:00.000Z",
     "visibleFromDate": "2025-08-05T00:00:00.000Z",
@@ -162,7 +162,7 @@
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -206,7 +206,7 @@
     "data": {},
     "dueDate": "2025-08-06T00:00:00.000Z",
     "visibleFromDate": "2025-08-06T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-02T00:55:04.497Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,

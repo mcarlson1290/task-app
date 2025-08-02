@@ -78,7 +78,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
                       currentUser.location === 'racine' ? 'R' : 
                       currentUser.location === 'milwaukee' ? 'MKE' : 'K';
 
-  // Load seed inventory on mount and initialize default varieties
+  // Load seed inventory on mount (once)
   useEffect(() => {
     let isMounted = true;
     
@@ -115,9 +115,17 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     return () => {
       isMounted = false;
     };
+  }, []); // Empty dependency array - run only once
 
-    // Initialize varieties with default values if configured
+  // Initialize varieties with default values (separate effect)
+  useEffect(() => {
     const configuredDefaults = stepData?.config?.defaultVarieties || [];
+    console.log('🌱 CreateTrayStep initializing with:', {
+      hasStepData: !!stepData,
+      hasConfig: !!stepData?.config,
+      defaultVarieties: configuredDefaults
+    });
+    
     if (configuredDefaults && configuredDefaults.length > 0) {
       const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
         id: (index + 1).toString(),
@@ -127,19 +135,12 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         quantity: parseInt(defaultVar.quantity) || 0,
         seedsOz: parseFloat(defaultVar.seedsOz) || 0
       }));
+      console.log('✅ Setting initial varieties:', initialVarieties);
       setVarieties(initialVarieties);
     } else {
-      // No configured defaults, start with empty variety
-      setVarieties([{
-        id: '1',
-        seedId: '',
-        seedName: '',
-        sku: '',
-        quantity: 0,
-        seedsOz: 0
-      }]);
+      console.log('❌ No configured defaults found, using empty variety');
     }
-  }, [stepData, defaultVarieties]);
+  }, []); // Run only once on mount
 
   // Update available varieties when seed type changes
   useEffect(() => {
