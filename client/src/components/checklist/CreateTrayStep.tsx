@@ -453,10 +453,16 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
                 <input
                   type="number"
                   value={variety.seedsOz}
-                  onChange={(e) => updateVariety(variety.id, 'seedsOz', parseFloat(e.target.value) || 0)}
-                  placeholder="Seeds (oz)"
-                  step="0.1"
-                  min={0}
+                  onChange={(e) => {
+                    // Round to 3 decimal places to avoid floating point precision issues
+                    const seedsOz = parseFloat(e.target.value) || 0;
+                    const rounded = Math.round(seedsOz * 1000) / 1000;
+                    updateVariety(variety.id, 'seedsOz', rounded);
+                  }}
+                  placeholder="0.000"
+                  step="0.001"
+                  min="0.001"
+                  max="10"
                   className="p-2 border border-gray-300 rounded-md"
                 />
               </div>

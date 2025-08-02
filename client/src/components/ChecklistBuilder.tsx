@@ -762,15 +762,19 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                             value={variety.seedsOz || ''}
                             onChange={(e) => {
                               const newVarieties = [...(step.config.defaultVarieties || [])];
-                              newVarieties[index] = { ...variety, seedsOz: parseFloat(e.target.value) || 0 };
+                              // Round to 3 decimal places to avoid floating point precision issues
+                              const seedsOz = parseFloat(e.target.value) || 0;
+                              const rounded = Math.round(seedsOz * 1000) / 1000;
+                              newVarieties[index] = { ...variety, seedsOz: rounded };
                               onUpdate({
                                 ...step,
                                 config: { ...step.config, defaultVarieties: newVarieties }
                               });
                             }}
-                            placeholder="Seeds (oz)"
-                            step="0.1"
-                            min="0"
+                            placeholder="0.000"
+                            step="0.001"
+                            min="0.001"
+                            max="10"
                             className="text-xs"
                           />
                           
