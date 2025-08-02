@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, X, Play, ArrowRight } from "lucide-react";
+import { courseService } from "@/services/courseService";
+import { getStoredAuth } from "@/lib/auth";
 
 interface Course {
   id: number;
@@ -29,14 +31,18 @@ interface CourseModalProps {
 const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onComplete }) => {
   const [currentSection, setCurrentSection] = useState(0);
   const [sectionCompleted, setSectionCompleted] = useState(false);
+  const auth = getStoredAuth();
+  const currentUser = auth.user;
   
   // Update current section when course changes
   useEffect(() => {
-    if (course) {
-      setCurrentSection(course.progress || 0);
+    if (course && currentUser) {
+      const userProgress = courseService.getUserProgress(currentUser.id, course.id);
+      const completedSections = userProgress?.completedSections || [];
+      setCurrentSection(completedSections.length);
       setSectionCompleted(false);
     }
-  }, [course]);
+  }, [course, currentUser]);
 
   // Helper functions for video URLs
   const isYouTubeUrl = (url: string) => {
@@ -125,24 +131,42 @@ const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onCo
   const totalSections = course.sections;
   const isLastSection = currentSection === totalSections - 1;
 
-  const handleNext = () => {
-    if (isLastSection && sectionCompleted) {
-      onComplete(course.id);
-    } else if (sectionCompleted) {
-      setCurrentSection(currentSection + 1);
-      setSectionCompleted(false);
+  const handleNext = async () => {
+    if (!currentUser) return;
+    
+    if (sectionCompleted) {
+      // Update progress in central service
+      try {
+        await courseService.updateProgress(currentUser.id, course.id, currentSection);
+        
+        if (isLastSection) {
+          // Course will be completed by the service, which calls onComplete
+          onComplete(course.id);
+        } else {
+          setCurrentSection(currentSection + 1);
+          setSectionCompleted(false);
+        }
+      } catch (error) {
+        console.error('Failed to update course progress:', error);
+        alert('Failed to save progress. Please try again.');
+      }
     }
   };
 
   const getSectionTitle = (courseId: number, sectionIndex: number) => {
-    const titles: Record<number, string[]> = {
-      1: ['Safety First', 'Seed Types', 'Tray Preparation', 'Seeding Technique', 'Record Keeping'],
-      2: ['Timing Recognition', 'Cutting Tools', 'Harvest Methods', 'Quality Control', 'Packaging', 'Storage'],
-      3: ['Sanitization Basics', 'Equipment Cleaning', 'Personal Hygiene', 'Safety Protocols'],
-      4: ['Equipment Overview', 'Operation Procedures', 'Maintenance Schedule', 'Troubleshooting', 'Safety Systems', 'Documentation', 'Emergency Procedures', 'Quality Checks'],
-      5: ['Leadership Fundamentals', 'Team Management', 'Scheduling Systems', 'Performance Metrics', 'Communication', 'Problem Solving', 'Resource Planning', 'Quality Assurance', 'Training Others', 'Operational Excellence']
-    };
-    return titles[courseId]?.[sectionIndex] || `Section ${sectionIndex + 1}`;
+    // Get section details from course data if available
+    if (course.sectionDetails && course.sectionDetails[sectionIndex]) {
+      return course.sectionDetails[sectionIndex].title;
+    }
+    return `Section ${sectionIndex + 1}`;
+  };
+  
+  const getSectionContent = (courseId: number, sectionIndex: number) => {
+    // Get section content from course data if available
+    if (course.sectionDetails && course.sectionDetails[sectionIndex]) {
+      return course.sectionDetails[sectionIndex].content;
+    }
+    return 'Course content will be available here.';
   };
 
   const renderSectionForViewing = (section: any) => {
@@ -299,43 +323,20 @@ const CourseModal: React.FC<CourseModalProps> = ({ course, isOpen, onClose, onCo
                 </div>
                 
                 <div className="space-y-6">
-                  {/* Course content for demo - in real app this would come from course sections */}
+                  {/* Actual course section content */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-600 mb-4">
-                      This section covers essential knowledge and skills for the {course.roleAwarded} role.
-                    </p>
-                    
-                    {/* Demo content with rich text example */}
                     <div className="bg-white p-4 rounded-lg mb-4">
                       <h4 className="font-semibold mb-3">Section Content:</h4>
-                      {renderSectionForViewing({
-                        type: 'rich-text',
-                        content: `Welcome to this training section! 
-
-Here are the key learning points:
-• Understanding safety protocols
-• Following proper procedures
-• Quality control measures
-
-[[IMAGE:https://via.placeholder.com/600x300/4CAF50/FFFFFF?text=Training+Diagram]]
-
-Watch this instructional video to learn more:
-
-[[VIDEO:https://www.youtube.com/watch?v=dQw4w9WgXcQ]]
-
-Complete the checklist below to track your progress.`
-                      })}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-800">Learning objectives:</p>
-                      <ul className="space-y-1 text-sm text-gray-600">
-                        <li>• 📹 Watch instructional videos</li>
-                        <li>• 📄 Review detailed procedures</li>
-                        <li>• 🖼️ Study visual guides and diagrams</li>
-                        <li>• ✅ Complete interactive exercises</li>
-                        <li>• ❓ Pass section quiz</li>
-                      </ul>
+                      {course.sectionDetails && course.sectionDetails[currentSection] ? (
+                        renderSectionForViewing(course.sectionDetails[currentSection])
+                      ) : (
+                        <div className="text-gray-600">
+                          <p className="mb-4">
+                            This section covers essential knowledge and skills for the {course.roleAwarded} role.
+                          </p>
+                          <p>{getSectionContent(course.id, currentSection)}</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">

@@ -1,0 +1,305 @@
+# Replit Instructions: Fix Course Storage and Role Assignment
+
+**ISSUES: 
+1. Courses are stored in localStorage (device-specific)
+2. Completed courses don't properly assign roles to users**
+
+## Step 1: Create Central Course Storage
+
+Create a new file `/services/courseService.ts`:
+
+```tsx
+// Central course storage that would eventually be a database
+let coursesDatabase = [
+  {
+    id: 'course-1',
+    title: 'Seeding Technician Certification',
+    description: 'Learn proper seeding techniques',
+    roleAwarded: 'Seeding Tech', // Must match role names in Staff Data
+    sections: [...],
+    assignedTo: ['all'], // or specific user IDs
+    isActive: true
+  },
+  // ... more courses
+];
+
+let courseProgress = {}; // userId -> courseId -> progress data
+
+export const courseService = {
+  // Get all courses
+  getAllCourses: () => {
+    return coursesDatabase;
+  },
+  
+  // Get courses for specific user
+  getUserCourses: (userId) => {
+    return coursesDatabase.filter(course => 
+      course.assignedTo.includes('all') || 
+      course.assignedTo.includes(userId)
+    );
+  },
+  
+  // Get user's progress
+  getUserProgress: (userId) => {
+    return courseProgress[userId] || {};
+  },
+  
+  // Update progress
+  updateProgress: (userId, courseId, sectionIndex) => {
+    if (!courseProgress[userId]) {
+      courseProgress[userId] = {};
+    }
+    if (!courseProgress[userId][courseId]) {
+      courseProgress[userId][courseId] = {
+        completedSections: [],
+        startedAt: new Date(),
+        status: 'in-progress'
+      };
+    }
+    
+    const progress = courseProgress[userId][courseId];
+    if (!progress.completedSections.includes(sectionIndex)) {
+      progress.completedSections.push(sectionIndex);
+    }
+    
+    // Check if course is complete
+    const course = coursesDatabase.find(c => c.id === courseId);
+    if (progress.completedSections.length === course.sections.length) {
+      progress.status = 'completed';
+      progress.completedAt = new Date();
+      
+      // ASSIGN THE ROLE
+      assignRoleToUser(userId, course.roleAwarded);
+    }
+    
+    return progress;
+  },
+  
+  // Create/update course (Corporate Manager only)
+  saveCourse: (course) => {
+    const index = coursesDatabase.findIndex(c => c.id === course.id);
+    if (index >= 0) {
+      coursesDatabase[index] = course;
+    } else {
+      course.id = `course-${Date.now()}`;
+      coursesDatabase.push(course);
+    }
+    return course;
+  }
+};
+```
+
+## Step 2: Create Role Assignment Function
+
+Update `/services/userService.ts`:
+
+```tsx
+import { mockStaff } from './mockData';
+
+// Function to assign role when course is completed
+export const assignRoleToUser = (userId, roleName) => {
+  // Find user in staff data
+  const userIndex = mockStaff.findIndex(staff => staff.userId === userId);
+  
+  if (userIndex >= 0) {
+    const user = mockStaff[userIndex];
+    
+    // Add role if not already present
+    if (!user.roles.includes(roleName)) {
+      user.roles.push(roleName);
+      
+      // Update training status
+      if (!user.trainingCompleted.includes(roleName)) {
+        user.trainingCompleted.push(roleName);
+      }
+      
+      // Log the role assignment
+      console.log(`Role "${roleName}" assigned to ${user.name}`);
+      
+      // In real app, this would update the database
+      // For now, update the mock data
+      mockStaff[userIndex] = user;
+      
+      // Also update the current user context if it's the same user
+      const currentUser = getCurrentUser();
+      if (currentUser.id === userId) {
+        updateCurrentUserRoles(user.roles);
+      }
+    }
+  }
+};
+```
+
+## Step 3: Update Education Page to Use Central Storage
+
+Replace localStorage usage in Education component:
+
+```tsx
+import { courseService } from '../services/courseService';
+
+const Education = () => {
+  const currentUser = getCurrentUser();
+  const [courses, setCourses] = useState([]);
+  const [userProgress, setUserProgress] = useState({});
+  
+  useEffect(() => {
+    // Load courses from central storage
+    const userCourses = courseService.getUserCourses(currentUser.id);
+    const progress = courseService.getUserProgress(currentUser.id);
+    
+    // Merge course data with user progress
+    const coursesWithProgress = userCourses.map(course => {
+      const courseProgress = progress[course.id];
+      return {
+        ...course,
+        status: courseProgress?.status || 'not-started',
+        progress: courseProgress?.completedSections?.length || 0,
+        completedDate: courseProgress?.completedAt
+      };
+    });
+    
+    setCourses(coursesWithProgress);
+    setUserProgress(progress);
+  }, [currentUser.id]);
+  
+  // Update section completion
+  const completeSection = (courseId, sectionIndex) => {
+    const progress = courseService.updateProgress(
+      currentUser.id, 
+      courseId, 
+      sectionIndex
+    );
+    
+    // Refresh the courses list
+    const updatedCourses = courses.map(course => {
+      if (course.id === courseId) {
+        return {
+          ...course,
+          status: progress.status,
+          progress: progress.completedSections.length,
+          completedDate: progress.completedAt
+        };
+      }
+      return course;
+    });
+    
+    setCourses(updatedCourses);
+    
+    // Show completion message if course finished
+    if (progress.status === 'completed') {
+      const course = courses.find(c => c.id === courseId);
+      alert(`🎉 Congratulations! You've completed "${course.title}" and earned the "${course.roleAwarded}" role!`);
+      
+      // Refresh user context to show new role
+      window.location.reload(); // Simple refresh for now
+    }
+  };
+};
+```
+
+## Step 4: Update Course Creation to Set roleAwarded
+
+In the course builder modal:
+
+```tsx
+const CourseBuilderModal = ({ course, onSave, onClose }) => {
+  const [formData, setFormData] = useState({
+    title: course?.title || '',
+    description: course?.description || '',
+    roleAwarded: course?.roleAwarded || '', // IMPORTANT: Must be set
+    sections: course?.sections || [],
+    assignedTo: course?.assignedTo || ['all']
+  });
+  
+  // Get available roles from your role list
+  const availableRoles = [
+    'Seeding Tech',
+    'Harvest Tech',
+    'Cleaning Crew',
+    'Equipment Tech',
+    'Tower Tech',
+    'Packaging Tech'
+    // ... other roles
+  ];
+  
+  return (
+    <div className="modal">
+      {/* ... other fields ... */}
+      
+      <div className="form-group">
+        <label>Role Awarded Upon Completion*</label>
+        <select 
+          value={formData.roleAwarded}
+          onChange={(e) => setFormData({...formData, roleAwarded: e.target.value})}
+          required
+        >
+          <option value="">Select a role...</option>
+          {availableRoles.map(role => (
+            <option key={role} value={role}>{role}</option>
+          ))}
+        </select>
+      </div>
+      
+      {/* Validation - require role */}
+      <button 
+        onClick={() => {
+          if (!formData.roleAwarded) {
+            alert('Please select a role to award');
+            return;
+          }
+          courseService.saveCourse(formData);
+          onSave(formData);
+        }}
+        disabled={!formData.title || !formData.roleAwarded}
+      >
+        Save Course
+      </button>
+    </div>
+  );
+};
+```
+
+## Step 5: Show Role Status in UI
+
+Update the course cards to clearly show the role that will be awarded:
+
+```tsx
+<div className="course-card">
+  <h3>{course.title}</h3>
+  <p>{course.description}</p>
+  
+  {/* Clearly show what role this awards */}
+  <div className="role-award">
+    🎯 Awards: <strong>{course.roleAwarded}</strong> role
+  </div>
+  
+  {/* Show if user already has this role */}
+  {currentUser.roles.includes(course.roleAwarded) && (
+    <div className="already-earned">
+      ✅ You already have this role
+    </div>
+  )}
+  
+  {/* Progress and status */}
+  <div className="progress">
+    {course.status === 'completed' ? (
+      <span>✅ Completed on {formatDate(course.completedDate)}</span>
+    ) : (
+      <span>{course.progress}/{course.sections.length} sections</span>
+    )}
+  </div>
+</div>
+```
+
+## Key Changes:
+1. **Central Storage** - Courses and progress stored centrally, not in localStorage
+2. **Role Assignment** - When course completes, role is automatically added to user's profile
+3. **Role Validation** - Courses must have a roleAwarded field
+4. **Progress Tracking** - User progress is tracked per user, not per device
+5. **Immediate Updates** - Completing a course immediately updates user's roles
+
+This ensures that:
+- Course progress is the same on all devices
+- Roles are properly assigned upon completion
+- Managers can see training status in Staff Data
+- The system has a single source of truth for courses and roles

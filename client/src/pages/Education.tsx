@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,33 +12,10 @@ import CourseCard from "@/components/CourseCard";
 import CourseModal from "@/components/CourseModal";
 import CourseCreationModal from "@/components/CourseCreationModal";
 import CourseAssignmentModal from "@/components/CourseAssignmentModal";
+import { courseService, Course } from "@/services/courseService";
 import confetti from "canvas-confetti";
 
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  roleAwarded: string;
-  sections: number;
-  estimatedTime: string;
-  status: 'not-started' | 'in-progress' | 'completed';
-  progress: number;
-  completedDate?: string;
-  icon: string;
-  requiresApproval?: boolean;
-  prerequisites?: {
-    courses: number[];
-    requirements: {
-      type: 'age' | 'tenure' | 'license' | 'certification';
-      value: number | string;
-      label: string;
-    }[];
-  };
-  assignedBy?: string;
-  assignedDate?: string;
-  dueDate?: string;
-  priority?: 'low' | 'normal' | 'high';
-}
+// Course interface moved to courseService
 
 const Education: React.FC = () => {
   const auth = getStoredAuth();
@@ -64,124 +41,18 @@ const Education: React.FC = () => {
     queryKey: ['/api/users']
   });
 
-  const [courses, setCourses] = useState<Course[]>([
-    {
-      id: 1,
-      title: 'Basic Safety & Orientation',
-      description: 'Introduction to farm safety procedures and basic orientation',
-      roleAwarded: 'General Staff',
-      sections: 3,
-      estimatedTime: '20 minutes',
-      status: 'completed',
-      progress: 3,
-      completedDate: new Date().toISOString(),
-      icon: '🦺',
-      prerequisites: {
-        courses: [],
-        requirements: []
-      }
-    },
-    {
-      id: 2,
-      title: 'Seeding Technician Certification',
-      description: 'Learn proper seeding techniques for microgreens and leafy greens production',
-      roleAwarded: 'Seeding Technician',
-      sections: 5,
-      estimatedTime: '45 minutes',
-      status: 'not-started',
-      progress: 0,
-      icon: '🌱',
-      prerequisites: {
-        courses: [1],
-        requirements: []
-      }
-    },
-    {
-      id: 3,
-      title: 'Harvest Operations Training',
-      description: 'Master harvesting techniques, timing, and quality control procedures',
-      roleAwarded: 'Harvest Technician',
-      sections: 6,
-      estimatedTime: '1 hour',
-      status: 'in-progress',
-      progress: 3,
-      icon: '🌾',
-      prerequisites: {
-        courses: [1],
-        requirements: []
-      }
-    },
-    {
-      id: 4,
-      title: 'Forklift Operation Certificate',
-      description: 'Learn to safely operate warehouse equipment and material handling',
-      roleAwarded: 'Equipment Operator',
-      sections: 8,
-      estimatedTime: '3 hours',
-      status: 'not-started',
-      progress: 0,
-      icon: '🚜',
-      prerequisites: {
-        courses: [1],
-        requirements: [
-          { type: 'age', value: 18, label: 'Must be 18 or older' },
-          { type: 'license', value: 'drivers', label: 'Valid driver\'s license required' },
-          { type: 'tenure', value: 30, label: 'Employed for at least 30 days' }
-        ]
-      }
-    },
-    {
-      id: 5,
-      title: 'Chemical Handling Certification',
-      description: 'Safe handling of nutrients, pH solutions, and cleaning chemicals',
-      roleAwarded: 'Chemical Handler',
-      sections: 6,
-      estimatedTime: '2 hours',
-      status: 'not-started',
-      progress: 0,
-      icon: '⚗️',
-      prerequisites: {
-        courses: [1],
-        requirements: [
-          { type: 'age', value: 21, label: 'Must be 21 or older' },
-          { type: 'certification', value: 'hazmat', label: 'HAZMAT certification preferred' }
-        ]
-      }
-    },
-    {
-      id: 6,
-      title: 'Advanced Growing Systems',
-      description: 'Deep dive into hydroponic systems and optimization techniques',
-      roleAwarded: 'Senior Grower',
-      sections: 8,
-      estimatedTime: '2 hours',
-      status: 'not-started',
-      progress: 0,
-      icon: '🌿',
-      prerequisites: {
-        courses: [2, 3],
-        requirements: []
-      }
-    },
-    {
-      id: 7,
-      title: 'Farm Manager Fundamentals',
-      description: 'Leadership, scheduling, and operations management for farm supervisors',
-      roleAwarded: 'Farm Manager',
-      sections: 10,
-      estimatedTime: '3 hours',
-      status: 'not-started',
-      progress: 0,
-      requiresApproval: true,
-      icon: '👔',
-      prerequisites: {
-        courses: [2, 3, 6],
-        requirements: [
-          { type: 'tenure', value: 180, label: 'Employed for at least 6 months' }
-        ]
-      }
+  // Load courses from central service instead of local state
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoaded, setCoursesLoaded] = useState(false);
+  
+  // Load courses on component mount (one-time load)
+  useEffect(() => {
+    if (currentUser && !coursesLoaded) {
+      const userCourses = courseService.getUserCourses(currentUser.id);
+      setCourses(userCourses);
+      setCoursesLoaded(true);
     }
-  ]);
+  }, [currentUser, coursesLoaded]);
 
   // Calculate completed courses from assignments (for progress bar)
   const assignedCompletedCourses = courseAssignments.filter(assignment => {
@@ -250,34 +121,52 @@ const Education: React.FC = () => {
     setShowCourseModal(true);
   };
 
-  const handleCourseComplete = (courseId: number) => {
+  const handleCourseComplete = async (courseId: number) => {
     const completedCourse = courses.find(c => c.id === courseId);
+    if (!completedCourse || !currentUser) return;
     
-    setCourses(prevCourses =>
-      prevCourses.map(course =>
-        course.id === courseId
-          ? {
-              ...course,
-              status: 'completed' as const,
-              progress: course.sections,
-              completedDate: new Date().toISOString()
-            }
-          : course
-      )
-    );
-    
-    // Trigger confetti animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    
-    // Show success message
-    if (completedCourse) {
+    try {
+      // Complete course via central service with role assignment
+      const response = await courseService.completeCourse(
+        currentUser.id, 
+        courseId, 
+        completedCourse.roleAwarded
+      );
+      
+      // Update local course state
+      setCourses(prevCourses =>
+        prevCourses.map(course =>
+          course.id === courseId
+            ? {
+                ...course,
+                status: 'completed' as const,
+                progress: course.sections,
+                completedDate: new Date().toISOString()
+              }
+            : course
+        )
+      );
+      
+      // Trigger confetti animation
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Show success message with role assignment confirmation
       setTimeout(() => {
-        alert(`🎉 Congratulations! You've completed "${completedCourse.title}" and earned the ${completedCourse.roleAwarded} role!`);
+        alert(`🎉 Congratulations! You've completed "${completedCourse.title}" and earned the ${completedCourse.roleAwarded} role!\n\n${response.message}`);
       }, 500);
+      
+      // Refresh user authentication to show updated role
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Failed to complete course:', error);
+      alert('Course completed locally, but there was an issue assigning the role. Please contact your manager.');
     }
   };
 
@@ -287,13 +176,8 @@ const Education: React.FC = () => {
   };
 
   const handleCreateCourse = (newCourse: Omit<Course, 'id' | 'status' | 'progress'>) => {
-    const courseWithId = {
-      ...newCourse,
-      id: Date.now(),
-      status: 'not-started' as const,
-      progress: 0
-    };
-    setCourses(prevCourses => [...prevCourses, courseWithId]);
+    const savedCourse = courseService.saveCourse(newCourse);
+    setCourses(prevCourses => [...prevCourses, savedCourse]);
     setShowCreateModal(false);
   };
 
@@ -304,16 +188,14 @@ const Education: React.FC = () => {
 
   const handleUpdateCourse = (updatedCourse: Omit<Course, 'id' | 'status' | 'progress'>) => {
     if (editingCourse) {
+      const savedCourse = courseService.saveCourse({
+        ...updatedCourse,
+        id: editingCourse.id
+      });
+      
       setCourses(prevCourses => 
         prevCourses.map(course => 
-          course.id === editingCourse.id 
-            ? { 
-                ...updatedCourse, 
-                id: editingCourse.id,
-                status: course.status,
-                progress: course.progress
-              }
-            : course
+          course.id === editingCourse.id ? savedCourse : course
         )
       );
       setEditingCourse(null);
@@ -338,20 +220,23 @@ const Education: React.FC = () => {
     
     // Final confirmation
     if (confirm(`Delete "${courseToDelete.title}"?\n\nThis action cannot be undone.`)) {
-      setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
+      const deleted = courseService.deleteCourse(courseId);
       
-      // Log the deletion
-      console.log(`Course deleted:`, {
-        courseId,
-        title: courseToDelete.title,
-        deletedBy: currentUser.name,
-        deletedAt: new Date().toISOString()
-      });
-      
-      // If in edit modal, close it
-      if (showCreateModal && editingCourse?.id === courseId) {
-        setShowCreateModal(false);
-        setEditingCourse(null);
+      if (deleted) {
+        setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
+        
+        console.log(`Course deleted:`, {
+          courseId,
+          title: courseToDelete.title,
+          deletedBy: currentUser.name,
+          deletedAt: new Date().toISOString()
+        });
+        
+        // If in edit modal, close it
+        if (showCreateModal && editingCourse?.id === courseId) {
+          setShowCreateModal(false);
+          setEditingCourse(null);
+        }
       }
     }
   };

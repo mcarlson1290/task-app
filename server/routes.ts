@@ -334,6 +334,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Course completion and role assignment
+  app.post("/api/courses/:courseId/complete", async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const { userId, roleAwarded } = req.body;
+      
+      if (!userId || !roleAwarded) {
+        return res.status(400).json({ message: "Missing userId or roleAwarded" });
+      }
+
+      // Get the user first
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Parse existing roles (assuming it's stored as a comma-separated string)
+      const currentRoles = user.role ? user.role.split(',').map(r => r.trim()) : ['technician'];
+      
+      // Add the new role if not already present
+      if (!currentRoles.includes(roleAwarded)) {
+        currentRoles.push(roleAwarded);
+        
+        // Update user with new role
+        const updatedUser = await storage.updateUser(userId, {
+          role: currentRoles.join(', ')
+        });
+        
+        console.log(`Role "${roleAwarded}" assigned to user ${user.name} upon course completion`);
+        
+        res.json({
+          message: `Course completed! Role "${roleAwarded}" assigned to ${user.name}`,
+          user: updatedUser,
+          newRole: roleAwarded
+        });
+      } else {
+        res.json({
+          message: `Course completed! User already has the "${roleAwarded}" role`,
+          user: user,
+          newRole: roleAwarded
+        });
+      }
+    } catch (error) {
+      console.error("Course completion error:", error);
+      res.status(500).json({ message: "Failed to complete course and assign role" });
+    }
+  });
+
   // Task logs
   app.post("/api/tasks/:id/logs", async (req, res) => {
     try {
