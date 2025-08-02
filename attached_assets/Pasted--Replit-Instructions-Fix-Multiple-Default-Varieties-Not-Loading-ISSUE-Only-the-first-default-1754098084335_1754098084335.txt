@@ -1,0 +1,154 @@
+# Replit Instructions: Fix Multiple Default Varieties Not Loading
+
+**ISSUE: Only the first default variety loads when executing a recurring task with multiple varieties**
+
+## Step 1: Debug the Data Transfer
+
+Add logging to see what's being passed:
+
+```tsx
+// In the recurring task execution
+const executeRecurringTask = (task) => {
+  console.log('Recurring task data:', task);
+  console.log('Create tray step:', task.steps.find(s => s.type === 'create-tray'));
+  console.log('Default varieties:', task.steps.find(s => s.type === 'create-tray')?.defaultVarieties);
+};
+```
+
+## Step 2: Fix the Create Tray Component Initialization
+
+The issue is likely in how varieties are initialized. Update the Create Tray component:
+
+```tsx
+const CreateTrayStep = ({ stepData, onComplete }) => {
+  // Fix: Initialize ALL varieties from defaults, not just the first one
+  const [varieties, setVarieties] = useState(() => {
+    if (stepData?.defaultVarieties && Array.isArray(stepData.defaultVarieties)) {
+      // Map ALL default varieties
+      return stepData.defaultVarieties.map((variety, index) => ({
+        id: Date.now() + index, // Unique ID for each
+        seedId: variety.seedId || '',
+        seedName: variety.seedName || '',
+        quantity: variety.quantity || 0,
+        seedsOz: variety.seedsOz || 0
+      }));
+    }
+    // If no defaults, start with one empty variety
+    return [{
+      id: Date.now(),
+      seedId: '',
+      seedName: '',
+      quantity: 0,
+      seedsOz: 0
+    }];
+  });
+
+  console.log('Initialized varieties:', varieties);
+```
+
+## Step 3: Check the Data Structure
+
+Make sure the defaultVarieties array is properly structured:
+
+```tsx
+// Expected structure from recurring task
+defaultVarieties: [
+  {
+    seedId: 'ARU',
+    seedName: 'Arugula Seeds',
+    quantity: 5,
+    seedsOz: 0.001
+  },
+  {
+    seedId: 'BROC',
+    seedName: 'Broccoli Seeds',
+    quantity: 20,
+    seedsOz: 0.03
+  },
+  {
+    seedId: 'ROM',
+    seedName: 'Romaine Seeds',
+    quantity: 52,
+    seedsOz: 0.016
+  }
+]
+```
+
+## Step 4: Fix Array Processing
+
+Common issues that cause only first item to load:
+
+```tsx
+// WRONG - Only takes first item
+const varieties = stepData.defaultVarieties ? [stepData.defaultVarieties[0]] : [];
+
+// WRONG - Not spreading array properly
+const varieties = [stepData.defaultVarieties] || [];  // Creates array of array
+
+// CORRECT - Process all items
+const varieties = stepData.defaultVarieties ? [...stepData.defaultVarieties] : [];
+```
+
+## Step 5: Update the Render Logic
+
+Make sure the form renders all varieties:
+
+```tsx
+// In the render
+<div className="varieties-section">
+  <h4>Crop Varieties</h4>
+  {varieties.map((variety, index) => (
+    <div key={variety.id} className="variety-row">
+      <select 
+        value={variety.seedId}
+        onChange={(e) => updateVariety(variety.id, 'seedId', e.target.value)}
+      >
+        <option value="">Select seed...</option>
+        {/* Seed options */}
+      </select>
+      
+      <input
+        type="number"
+        value={variety.quantity}
+        onChange={(e) => updateVariety(variety.id, 'quantity', e.target.value)}
+        step="1"
+        min="0"
+      />
+      
+      <input
+        type="number"
+        value={variety.seedsOz}
+        onChange={(e) => updateVariety(variety.id, 'seedsOz', e.target.value)}
+        step="0.001"
+        min="0"
+      />
+      
+      {/* Remove button if more than one variety */}
+      {varieties.length > 1 && (
+        <button onClick={() => removeVariety(variety.id)}>×</button>
+      )}
+    </div>
+  ))}
+  
+  <button onClick={addVariety}>+ Add Another Variety</button>
+</div>
+```
+
+## Step 6: Verify Data Persistence
+
+Check that all varieties are saved when updating:
+
+```tsx
+// When saving/updating
+const handleSave = () => {
+  const dataToSave = {
+    ...otherData,
+    varieties: varieties // Make sure ALL varieties are included
+  };
+  
+  console.log('Saving varieties:', dataToSave.varieties);
+  console.log('Number of varieties:', dataToSave.varieties.length);
+};
+```
+
+The core issue is that the initialization code is only processing the first variety instead of mapping over all default varieties from the recurring task configuration.

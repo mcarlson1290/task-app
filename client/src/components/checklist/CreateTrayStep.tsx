@@ -58,9 +58,25 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     stepData?.config?.defaultGrowingMedium === 'user-selects' ? '' : 
     stepData?.config?.defaultGrowingMedium || defaultGrowingMedium
   );
-  const [varieties, setVarieties] = useState<Variety[]>([
-    { id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }
-  ]);
+  const [varieties, setVarieties] = useState<Variety[]>(() => {
+    // Initialize with ALL default varieties from config if available
+    const configuredDefaults = stepData?.config?.defaultVarieties || [];
+    console.log('🔧 Initializing varieties with defaults:', configuredDefaults);
+    
+    if (configuredDefaults && configuredDefaults.length > 0) {
+      return configuredDefaults.map((defaultVar: any, index: number) => ({
+        id: (index + 1).toString(),
+        seedId: defaultVar.seedId || '',
+        seedName: defaultVar.seedName || '',
+        sku: defaultVar.sku || '',
+        quantity: parseInt(defaultVar.quantity) || 0,
+        seedsOz: parseFloat(defaultVar.seedsOz) || 0
+      }));
+    }
+    
+    // Fallback to single empty variety
+    return [{ id: '1', seedId: '', seedName: '', sku: '', quantity: 0, seedsOz: 0 }];
+  });
   const [totalSlots, setTotalSlots] = useState(
     stepData?.config?.defaultTotalSlots || defaultTotalSlots || 0
   );
@@ -117,37 +133,27 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     };
   }, []); // Empty dependency array - run only once
 
-  // Initialize varieties with default values (separate effect)
+  // Update seed names for varieties when available seeds are loaded
   useEffect(() => {
-    const configuredDefaults = stepData?.config?.defaultVarieties || [];
-    
-    if (configuredDefaults && configuredDefaults.length > 0) {
-      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => {
-        // If seedName/sku is missing but seedId exists, try to look it up from available seeds
-        let seedName = defaultVar.seedName || '';
-        let sku = defaultVar.sku || '';
-        
-        if (defaultVar.seedId && availableSeeds.length > 0) {
-          const foundSeed = availableSeeds.find(seed => seed.id.toString() === defaultVar.seedId.toString());
-          console.log('🔍 Default variety seed lookup:', { seedId: defaultVar.seedId, foundSeed, availableSeeds: availableSeeds.map(s => ({id: s.id, name: s.name})) });
-          if (foundSeed) {
-            seedName = foundSeed.name;
-            sku = foundSeed.sku || foundSeed.SKU || foundSeed.productCode || '';
+    if (availableSeeds.length > 0) {
+      setVarieties(currentVarieties => 
+        currentVarieties.map(variety => {
+          if (variety.seedId && !variety.seedName) {
+            const foundSeed = availableSeeds.find(seed => seed.id.toString() === variety.seedId.toString());
+            console.log('🔍 Updating variety seed name:', { seedId: variety.seedId, foundSeed });
+            if (foundSeed) {
+              return {
+                ...variety,
+                seedName: foundSeed.name,
+                sku: foundSeed.sku || foundSeed.SKU || foundSeed.productCode || ''
+              };
+            }
           }
-        }
-        
-        return {
-          id: (index + 1).toString(),
-          seedId: defaultVar.seedId || '',
-          seedName,
-          sku,
-          quantity: parseInt(defaultVar.quantity) || 0,
-          seedsOz: parseFloat(defaultVar.seedsOz) || 0
-        };
-      });
-      setVarieties(initialVarieties);
+          return variety;
+        })
+      );
     }
-  }, [availableSeeds]); // Depend on availableSeeds so it re-runs when seeds are loaded
+  }, [availableSeeds]); // Update seed names when seeds are loaded
 
   // Update available varieties when seed type changes
   useEffect(() => {

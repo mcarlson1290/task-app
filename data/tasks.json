@@ -92,7 +92,7 @@
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "in_progress",
+    "status": "completed",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -137,12 +137,12 @@
       "checklistProgress": {
         "0": {
           "completed": true,
-          "completedAt": "2025-08-02T01:17:03.078Z",
+          "completedAt": "2025-08-02T01:22:58.097Z",
           "stepData": null
         },
         "1": {
           "completed": true,
-          "completedAt": "2025-08-02T01:17:03.078Z",
+          "completedAt": "2025-08-02T01:22:58.097Z",
           "stepData": null
         }
       },
@@ -201,12 +201,12 @@
         }
       },
       "currentStep": 2,
-      "lastUpdated": "2025-08-02T01:17:03.078Z"
+      "lastUpdated": "2025-08-02T01:22:58.097Z"
     },
     "dueDate": "2025-08-05T00:00:00.000Z",
     "visibleFromDate": "2025-08-05T00:00:00.000Z",
     "startedAt": "2025-08-01T22:30:50.316Z",
-    "completedAt": null,
+    "completedAt": "2025-08-02T01:22:59.197Z",
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
@@ -217,6 +217,130 @@
   },
   {
     "id": 42,
+    "title": "Water the Microgreens",
+    "description": "test",
+    "type": "other",
+    "status": "completed",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "K",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 100,
+    "checklist": [
+      {
+        "id": "1754062334271",
+        "text": "TEST",
+        "completed": false,
+        "required": true,
+        "type": "checkbox",
+        "config": {}
+      },
+      {
+        "id": "1754087379411",
+        "text": "",
+        "completed": false,
+        "required": true,
+        "type": "create-tray",
+        "config": {
+          "numberOfTrays": 1,
+          "defaultTrayType": "LG",
+          "defaultInstance": 1,
+          "defaultGrowingMedium": "Oasis Cubes",
+          "defaultTotalSlots": 126,
+          "defaultVarieties": [
+            {
+              "seedId": "1",
+              "seedName": "Arugula Seeds",
+              "sku": "ARU",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "instructions": ""
+        }
+      }
+    ],
+    "data": {
+      "checklistProgress": {
+        "1": {
+          "completed": true,
+          "completedAt": "2025-08-02T01:22:41.994Z",
+          "stepData": null
+        }
+      },
+      "checklistStepData": {
+        "1754087379411": {
+          "trayId": "K080125-LG-MIX-1",
+          "varietiesUsed": [
+            {
+              "seedId": "1",
+              "seedName": "Arugula Seeds",
+              "sku": "ARU",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "trayCreated": true,
+          "id": "K080125-LG-MIX-1",
+          "cropType": "Arugula Seeds",
+          "cropCategory": "leafyGreens",
+          "datePlanted": "2025-08-02T01:22:36.458Z",
+          "expectedHarvest": "2025-09-01T01:22:36.458Z",
+          "status": "seeded",
+          "currentLocation": {
+            "systemId": "staging-B1",
+            "systemType": "Staging",
+            "spotIds": [
+              "1"
+            ],
+            "movedDate": "2025-08-02T01:22:36.458Z"
+          },
+          "locationHistory": [
+            {
+              "systemId": "staging-B1",
+              "systemType": "Staging",
+              "spotIds": [
+                "1"
+              ],
+              "movedDate": "2025-08-02T01:22:36.458Z",
+              "movedBy": "Unknown",
+              "reason": "Initial seeding"
+            }
+          ],
+          "plantCount": 5,
+          "varieties": [
+            {
+              "seedId": "1",
+              "seedName": "Arugula Seeds",
+              "sku": "ARU",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "notes": "Varieties: 5 Arugula Seeds (0.2oz), Medium: Oasis Cubes",
+          "createdBy": "Unknown",
+          "createdDate": "2025-08-02T01:22:36.458Z"
+        },
+        "1754062334271": true
+      },
+      "currentStep": 0,
+      "lastUpdated": "2025-08-02T01:22:41.994Z"
+    },
+    "dueDate": "2025-08-06T00:00:00.000Z",
+    "visibleFromDate": "2025-08-06T00:00:00.000Z",
+    "startedAt": "2025-08-02T00:55:04.497Z",
+    "completedAt": "2025-08-02T01:22:55.502Z",
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 1,
+    "createdAt": "2025-08-02T00:49:37.143Z"
+  },
+  {
+    "id": 61,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -254,7 +378,7 @@
               "seedName": "Arugula Seeds",
               "sku": "ARU",
               "quantity": 5,
-              "seedsOz": 0.2
+              "seedsOz": 0.001
             }
           ],
           "instructions": ""
@@ -264,124 +388,14 @@
     "data": {
       "checklistProgress": {},
       "checklistStepData": {
-        "1754087379411": {
-          "trayId": "K080125-LG-MIX-1",
-          "varietiesUsed": [
-            {
-              "seedId": "1",
-              "seedName": "Unknown",
-              "sku": "",
-              "quantity": 5,
-              "seedsOz": 0.2
-            }
-          ],
-          "trayCreated": true,
-          "id": "K080125-LG-MIX-1",
-          "cropType": "Unknown",
-          "cropCategory": "leafyGreens",
-          "datePlanted": "2025-08-02T01:17:09.941Z",
-          "expectedHarvest": "2025-09-01T01:17:09.941Z",
-          "status": "seeded",
-          "currentLocation": {
-            "systemId": "staging-B1",
-            "systemType": "Staging",
-            "spotIds": [
-              "1"
-            ],
-            "movedDate": "2025-08-02T01:17:09.941Z"
-          },
-          "locationHistory": [
-            {
-              "systemId": "staging-B1",
-              "systemType": "Staging",
-              "spotIds": [
-                "1"
-              ],
-              "movedDate": "2025-08-02T01:17:09.941Z",
-              "movedBy": "Unknown",
-              "reason": "Initial seeding"
-            }
-          ],
-          "plantCount": 5,
-          "varieties": [
-            {
-              "seedId": "1",
-              "seedName": "Unknown",
-              "sku": "",
-              "quantity": 5,
-              "seedsOz": 0.2
-            }
-          ],
-          "notes": "Varieties: 5 Unknown (0.2oz), Medium: Oasis Cubes",
-          "createdBy": "Unknown",
-          "createdDate": "2025-08-02T01:17:09.941Z"
-        }
+        "1754062334271": true
       },
-      "currentStep": 1,
-      "lastUpdated": "2025-08-02T01:21:02.266Z"
+      "currentStep": 0,
+      "lastUpdated": "2025-08-02T01:25:46.268Z"
     },
-    "dueDate": "2025-08-06T00:00:00.000Z",
-    "visibleFromDate": "2025-08-06T00:00:00.000Z",
-    "startedAt": "2025-08-02T00:55:04.497Z",
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.143Z"
-  },
-  {
-    "id": 61,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "LG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Oasis Cubes",
-          "defaultTotalSlots": 126,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
     "dueDate": "2025-08-07T00:00:00.000Z",
     "visibleFromDate": "2025-08-07T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-02T01:24:10.943Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -392,11 +406,11 @@
     "createdAt": "2025-08-02T01:07:12.879Z"
   },
   {
-    "id": 62,
+    "id": 79,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -431,6 +445,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -440,7 +468,7 @@
     "data": {},
     "dueDate": "2025-08-08T00:00:00.000Z",
     "visibleFromDate": "2025-08-08T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-02T01:25:29.492Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -448,14 +476,14 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.879Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 63,
+    "id": 80,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -490,6 +518,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -499,7 +541,7 @@
     "data": {},
     "dueDate": "2025-08-11T00:00:00.000Z",
     "visibleFromDate": "2025-08-11T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-02T01:25:47.162Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -507,10 +549,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.879Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 64,
+    "id": 81,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -549,6 +591,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -566,10 +622,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.879Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 65,
+    "id": 82,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -608,6 +664,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -625,10 +695,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.879Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 66,
+    "id": 83,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -667,6 +737,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -684,10 +768,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 67,
+    "id": 84,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -726,6 +810,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -743,10 +841,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 68,
+    "id": 85,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -785,6 +883,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -802,10 +914,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 69,
+    "id": 86,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -844,6 +956,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -861,10 +987,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.160Z"
   },
   {
-    "id": 70,
+    "id": 87,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -903,6 +1029,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -920,10 +1060,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 71,
+    "id": 88,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -962,6 +1102,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -979,10 +1133,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 72,
+    "id": 89,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1021,6 +1175,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1038,10 +1206,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 73,
+    "id": 90,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1080,6 +1248,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1097,10 +1279,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 74,
+    "id": 91,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1139,6 +1321,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1156,10 +1352,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 75,
+    "id": 92,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1198,6 +1394,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1215,10 +1425,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.880Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 76,
+    "id": 93,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1257,6 +1467,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1274,10 +1498,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.881Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 77,
+    "id": 94,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1316,6 +1540,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1333,10 +1571,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.881Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   },
   {
-    "id": 78,
+    "id": 95,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1375,6 +1613,20 @@
               "sku": "ARU",
               "quantity": 5,
               "seedsOz": 0.001
+            },
+            {
+              "seedId": "2",
+              "seedName": "Broccoli Microgreen Seeds",
+              "sku": "BROC",
+              "quantity": 20,
+              "seedsOz": 0.03
+            },
+            {
+              "seedId": "4",
+              "seedName": "Romaine Seeds",
+              "sku": "ROM",
+              "quantity": 52,
+              "seedsOz": 0.016
             }
           ],
           "instructions": ""
@@ -1392,6 +1644,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.881Z"
+    "createdAt": "2025-08-02T01:24:54.161Z"
   }
 ]
