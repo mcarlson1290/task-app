@@ -120,11 +120,6 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   // Initialize varieties with default values (separate effect)
   useEffect(() => {
     const configuredDefaults = stepData?.config?.defaultVarieties || [];
-    console.log('🌱 CreateTrayStep initializing with:', {
-      hasStepData: !!stepData,
-      hasConfig: !!stepData?.config,
-      defaultVarieties: configuredDefaults
-    });
     
     if (configuredDefaults && configuredDefaults.length > 0) {
       const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => {
@@ -137,7 +132,6 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           if (foundSeed) {
             seedName = foundSeed.name;
             sku = foundSeed.sku || foundSeed.SKU || foundSeed.productCode || '';
-            console.log('🔍 Found seed details for ID', defaultVar.seedId, ':', { seedName, sku });
           }
         }
         
@@ -150,10 +144,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
           seedsOz: parseFloat(defaultVar.seedsOz) || 0
         };
       });
-      console.log('✅ Setting initial varieties:', initialVarieties);
       setVarieties(initialVarieties);
-    } else {
-      console.log('❌ No configured defaults found, using empty variety');
     }
   }, [availableSeeds]); // Depend on availableSeeds so it re-runs when seeds are loaded
 
