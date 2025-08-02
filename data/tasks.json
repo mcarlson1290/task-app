@@ -137,13 +137,13 @@
       "checklistProgress": {
         "0": {
           "completed": true,
-          "completedAt": "2025-08-02T00:46:21.986Z",
+          "completedAt": "2025-08-02T00:47:04.620Z",
           "stepData": null
         }
       },
       "checklistStepData": {},
       "currentStep": 1,
-      "lastUpdated": "2025-08-02T00:46:21.987Z"
+      "lastUpdated": "2025-08-02T00:47:04.620Z"
     },
     "dueDate": "2025-08-05T00:00:00.000Z",
     "visibleFromDate": "2025-08-05T00:00:00.000Z",

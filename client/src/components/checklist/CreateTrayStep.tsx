@@ -70,11 +70,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   const [availableVarieties, setAvailableVarieties] = useState<string[]>(['Standard']);
   
   // Calculate total plants
-  const totalPlants = varieties.reduce((sum, v) => {
-    const quantity = parseInt(v.quantity.toString()) || 0;
-    console.log('CreateTrayStep - Adding quantity:', v.quantity, '-> parsed:', quantity, 'sum:', sum);
-    return sum + quantity;
-  }, 0);
+  const totalPlants = varieties.reduce((sum, v) => sum + (parseInt(v.quantity) || 0), 0);
 
   // Get current user and location
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -84,10 +80,16 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
 
   // Load seed inventory on mount and initialize default varieties
   useEffect(() => {
+    let isMounted = true;
+    
     // Load from the same source as the Inventory page
     fetch('/api/inventory')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(inventory => {
+        if (!isMounted) return;
         // Filter to only show seeds
         const seeds = inventory.filter((item: InventoryItem) => 
           item.category.toLowerCase().includes('seed')
@@ -95,31 +97,36 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         setAvailableSeeds(seeds);
       })
       .catch(err => {
-        console.error('Failed to load inventory:', err);
+        if (!isMounted) return;
+        console.warn('API inventory load failed, using localStorage fallback:', err);
         // Fallback: try to load from localStorage if API fails
-        const localInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
-        const seeds = localInventory.filter((item: InventoryItem) => 
-          item.category.toLowerCase().includes('seed')
-        );
-        setAvailableSeeds(seeds);
+        try {
+          const localInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+          const seeds = localInventory.filter((item: InventoryItem) => 
+            item.category.toLowerCase().includes('seed')
+          );
+          setAvailableSeeds(seeds);
+        } catch (parseError) {
+          console.error('Failed to parse localStorage inventory:', parseError);
+          setAvailableSeeds([]);
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
 
     // Initialize varieties with default values if configured
     const configuredDefaults = stepData?.config?.defaultVarieties || defaultVarieties;
-    console.log('CreateTrayStep - Loading configured defaults:', configuredDefaults);
     if (configuredDefaults && configuredDefaults.length > 0) {
-      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => {
-        console.log('CreateTrayStep - Processing default variety:', defaultVar, 'quantity:', defaultVar.quantity);
-        return {
-          id: (index + 1).toString(),
-          seedId: defaultVar.seedId || '',
-          seedName: defaultVar.seedName || '',
-          sku: defaultVar.sku || '',
-          quantity: parseInt(defaultVar.quantity) || 0,
-          seedsOz: parseFloat(defaultVar.seedsOz) || 0
-        };
-      });
-      console.log('CreateTrayStep - Setting initial varieties:', initialVarieties);
+      const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
+        id: (index + 1).toString(),
+        seedId: defaultVar.seedId || '',
+        seedName: defaultVar.seedName || '',
+        sku: defaultVar.sku || '',
+        quantity: parseInt(defaultVar.quantity) || 0,
+        seedsOz: parseFloat(defaultVar.seedsOz) || 0
+      }));
       setVarieties(initialVarieties);
     }
   }, [stepData, defaultVarieties]);
