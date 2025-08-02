@@ -1,0 +1,171 @@
+# Replit Instructions: Fix Recurring Task Updates Not Propagating
+
+**ISSUE: Changes to recurring task configuration don't update existing task instances**
+
+## Understanding the Problem
+
+There are two scenarios to handle:
+1. **Future tasks** - New task instances should use the updated configuration
+2. **Existing incomplete tasks** - Should optionally update to match new configuration
+
+## Step 1: Ensure Future Tasks Use Latest Configuration
+
+When creating a new task instance from a recurring task:
+
+```tsx
+const createTaskFromRecurring = (recurringTaskId) => {
+  // Always fetch the LATEST recurring task configuration
+  const recurringTask = getRecurringTask(recurringTaskId);
+  
+  // Create new task with current configuration
+  const newTask = {
+    id: generateTaskId(),
+    recurringTaskId: recurringTaskId,
+    createdAt: new Date(),
+    steps: recurringTask.steps.map(step => ({
+      ...step,
+      // Copy current defaults, not old ones
+      defaultVarieties: step.defaultVarieties,
+      defaultGrowingMedium: step.defaultGrowingMedium,
+      defaultTotalSlots: step.defaultTotalSlots
+    })),
+    status: 'pending'
+  };
+  
+  saveTask(newTask);
+  return newTask;
+};
+```
+
+## Step 2: Add Version Tracking (Optional)
+
+Track configuration versions to know when updates happen:
+
+```tsx
+// In recurring task
+const recurringTask = {
+  id: 'task-123',
+  version: 2, // Increment when configuration changes
+  lastUpdated: new Date(),
+  steps: [...]
+};
+
+// In task instance
+const taskInstance = {
+  id: 'instance-456',
+  recurringTaskId: 'task-123',
+  recurringTaskVersion: 1, // Version when created
+  // ... other fields
+};
+```
+
+## Step 3: Handle In-Progress Tasks
+
+Add option to update existing tasks:
+
+```tsx
+const updateRecurringTask = (taskId, updates) => {
+  // Update the recurring task template
+  const recurringTask = getRecurringTask(taskId);
+  recurringTask.steps = updates.steps;
+  recurringTask.version += 1;
+  recurringTask.lastUpdated = new Date();
+  saveRecurringTask(recurringTask);
+  
+  // Ask user about existing tasks
+  const incompleteTasks = getIncompleteTasksForRecurring(taskId);
+  
+  if (incompleteTasks.length > 0) {
+    // Show dialog
+    showDialog({
+      title: 'Update Existing Tasks?',
+      message: `There are ${incompleteTasks.length} incomplete tasks. Update them with new configuration?`,
+      buttons: [
+        {
+          text: 'Update All',
+          onClick: () => updateExistingTasks(incompleteTasks, recurringTask)
+        },
+        {
+          text: 'Keep Existing',
+          onClick: () => {} // Do nothing
+        }
+      ]
+    });
+  }
+};
+```
+
+## Step 4: Update Existing Tasks Function
+
+```tsx
+const updateExistingTasks = (tasks, recurringTask) => {
+  tasks.forEach(task => {
+    // Only update steps that haven't been completed
+    task.steps = task.steps.map((step, index) => {
+      if (step.completed) {
+        return step; // Don't change completed steps
+      }
+      
+      // Update with new defaults from recurring task
+      const recurringStep = recurringTask.steps[index];
+      return {
+        ...step,
+        defaultVarieties: recurringStep.defaultVarieties,
+        defaultGrowingMedium: recurringStep.defaultGrowingMedium,
+        defaultTotalSlots: recurringStep.defaultTotalSlots
+      };
+    });
+    
+    task.recurringTaskVersion = recurringTask.version;
+    saveTask(task);
+  });
+};
+```
+
+## Step 5: Show Configuration Status
+
+Display when task configuration is outdated:
+
+```tsx
+const TaskHeader = ({ task }) => {
+  const recurringTask = getRecurringTask(task.recurringTaskId);
+  const isOutdated = task.recurringTaskVersion < recurringTask.version;
+  
+  return (
+    <div>
+      <h3>{task.name}</h3>
+      {isOutdated && (
+        <div className="warning">
+          ⚠️ Task configuration has been updated. 
+          <button onClick={() => syncWithLatest(task.id)}>
+            Sync with Latest
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+## Step 6: Manual Sync Option
+
+Allow users to manually sync a task:
+
+```tsx
+const syncWithLatest = (taskId) => {
+  const task = getTask(taskId);
+  const recurringTask = getRecurringTask(task.recurringTaskId);
+  
+  // Update only incomplete steps
+  updateExistingTasks([task], recurringTask);
+  
+  // Refresh UI
+  reloadTask(taskId);
+};
+```
+
+## Key Points:
+- New tasks always use the latest configuration
+- Existing tasks can optionally be updated
+- Completed steps are never changed
+- Users have control over when to update

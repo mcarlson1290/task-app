@@ -1350,32 +1350,40 @@ export class MemStorage implements IStorage {
       // Generate new task instances with updated schedule (with duplicate prevention)
       await this.generateTaskInstances(updatedTask);
     } else {
-      // Just update existing pending instances
+      // Update existing pending and in-progress instances (not completed ones)
       const taskInstances = Array.from(this.tasks.values()).filter(t => 
         t.recurringTaskId === id && 
-        t.status === 'pending' && 
+        (t.status === 'pending' || t.status === 'in_progress') && 
         t.dueDate && new Date(t.dueDate) >= new Date()
       );
       
       taskInstances.forEach(instance => {
+        // Update checklist while preserving completed steps
+        let updatedChecklist = instance.checklist;
+        if (updatedTask.checklistTemplate?.steps) {
+          updatedChecklist = updatedTask.checklistTemplate.steps.map((step: any, index: number) => {
+            const existingStep = instance.checklist?.[index];
+            return {
+              id: step.id || `${index + 1}`,
+              text: step.label || '',
+              completed: existingStep?.completed || false, // Preserve completion status
+              required: step.required || false,
+              type: step.type,
+              config: step.config, // Always use latest config
+              dataCollection: step.type === 'data-capture' ? { 
+                type: step.config?.dataType || 'text', 
+                label: step.label || '' 
+              } : undefined
+            };
+          });
+        }
+
         const updatedInstance = {
           ...instance,
           title: updatedTask.title || instance.title,
           description: updatedTask.description || instance.description,
           type: updatedTask.type || instance.type,
-          // Convert checklist template to checklist format if updated
-          checklist: updatedTask.checklistTemplate?.steps?.map((step: any, index: number) => ({
-            id: step.id || `${index + 1}`,
-            text: step.label || '',
-            completed: false,
-            required: step.required || false,
-            type: step.type,
-            config: step.config,
-            dataCollection: step.type === 'data-capture' ? { 
-              type: step.config?.dataType || 'text', 
-              label: step.label || '' 
-            } : undefined
-          })) || instance.checklist
+          checklist: updatedChecklist
         };
         this.tasks.set(instance.id, updatedInstance);
       });
