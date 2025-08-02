@@ -44,9 +44,9 @@
             "defaultTotalSlots": 126,
             "defaultVarieties": [
               {
-                "seedId": "",
-                "seedName": "",
-                "sku": "",
+                "seedId": "1",
+                "seedName": "Arugula Seeds",
+                "sku": "ARU",
                 "quantity": 5,
                 "seedsOz": 0.2
               }

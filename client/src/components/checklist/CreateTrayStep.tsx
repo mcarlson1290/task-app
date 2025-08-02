@@ -70,7 +70,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   const [availableVarieties, setAvailableVarieties] = useState<string[]>(['Standard']);
   
   // Calculate total plants
-  const totalPlants = varieties.reduce((sum, v) => sum + (parseInt(v.quantity) || 0), 0);
+  const totalPlants = varieties.reduce((sum, v) => sum + (parseInt(v.quantity.toString()) || 0), 0);
 
   // Get current user and location
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -117,7 +117,7 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
     };
 
     // Initialize varieties with default values if configured
-    const configuredDefaults = stepData?.config?.defaultVarieties || defaultVarieties;
+    const configuredDefaults = stepData?.config?.defaultVarieties || [];
     if (configuredDefaults && configuredDefaults.length > 0) {
       const initialVarieties = configuredDefaults.map((defaultVar: any, index: number) => ({
         id: (index + 1).toString(),
@@ -128,6 +128,16 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         seedsOz: parseFloat(defaultVar.seedsOz) || 0
       }));
       setVarieties(initialVarieties);
+    } else {
+      // No configured defaults, start with empty variety
+      setVarieties([{
+        id: '1',
+        seedId: '',
+        seedName: '',
+        sku: '',
+        quantity: 0,
+        seedsOz: 0
+      }]);
     }
   }, [stepData, defaultVarieties]);
 
