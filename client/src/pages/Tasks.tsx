@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Filter, Search, ChevronDown, X, Calendar } from "lucide-react";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
+import { isSameDay, formatDateForComparison, shouldTaskAppearOnDate, getTodayString, debugDateComparison } from "@/utils/dateUtils";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import { AddTaskModal } from "@/components/AddTaskModal";
@@ -33,12 +34,7 @@ const Tasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
   const [dateFilter, setDateFilter] = React.useState<string>(() => {
-    // CRITICAL FIX: Create date without timezone shift
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const todayString = `${year}-${month}-${day}`;
+    const todayString = getTodayString();
     console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
     return todayString;
   });
@@ -269,102 +265,15 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - FIXED: UTC-aware date parsing and comparison
+    // Date filter - FIXED: Tasks appear only on their due date
     if (dateFilter) {
-      // Parse date without timezone shift
-      const [year, month, day] = dateFilter.split('-').map(Number);
-      const filterDate = new Date(year, month - 1, day); // month is 0-indexed
-      filterDate.setHours(0, 0, 0, 0);
-      
-
       filtered = filtered.filter(task => {
-        // Helper function to compare dates - FIXED for UTC stored dates  
-        const isSameDay = (taskDate: string | Date, filterDate: Date) => {
-          // Handle both string and Date objects
-          let utcDatePart: string;
-          
-          if (typeof taskDate === 'string') {
-            // "2025-08-01T00:00:00.000Z" should be treated as August 1st, not July 31st
-            utcDatePart = taskDate.split('T')[0]; // Get "2025-08-01" part
-          } else {
-            // Date object - convert to YYYY-MM-DD format without timezone conversion
-            const dateObj = new Date(taskDate);
-            const year = dateObj.getUTCFullYear();
-            const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(dateObj.getUTCDate()).padStart(2, '0');
-            utcDatePart = `${year}-${month}-${day}`;
-          }
-          
-          const [year, month, day] = utcDatePart.split('-').map(Number);
-          
-          // Compare with filter date parts - ENSURE CONSISTENT FORMATTING
-          const filterYear = filterDate.getFullYear();
-          const filterMonth = String(filterDate.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed, so add 1 and zero-pad
-          const filterDay = String(filterDate.getDate()).padStart(2, '0'); // zero-pad day too
-          const filterDateFormatted = `${filterYear}-${filterMonth}-${filterDay}`;
-          
-          return utcDatePart === filterDateFormatted;
-        };
-
-        // Completed tasks show on their completion date only
-        if (task.status === 'completed' && task.completedAt) {
-          return isSameDay(task.completedAt, filterDate);
-        }
-        
-        // For recurring tasks - handle different visibility patterns
-        if (task.isRecurring && task.dueDate) {
-          const dueDate = new Date(task.dueDate);
-          // Use UTC methods to avoid timezone conversion issues  
-          const taskMonth = dueDate.getUTCMonth();
-          const taskYear = dueDate.getUTCFullYear();
-          const filterMonth = filterDate.getMonth();
-          const filterYear = filterDate.getFullYear();
-          const filterDay = filterDate.getDate();
-          
-          // Must be same month and year
-          if (taskMonth !== filterMonth || taskYear !== filterYear) {
-            return false;
-          }
-          
-          // Get recurring task to check frequency
-          const recurringTask = recurringTasks?.find((rt: any) => rt.id === task.recurringTaskId);
-          
-          // Check based on recurring task frequency
-          const isMonthly = recurringTask?.frequency === 'monthly';
-          const isBiWeekly = recurringTask?.frequency === 'bi-weekly';
-          const isDaily = recurringTask?.frequency === 'daily';
-          
-          if (isMonthly) {
-            // Monthly tasks: visible from 1st through due date
-            return filterDay >= 1 && filterDate <= dueDate;
-          }
-          
-          if (isBiWeekly) {
-            const dueDay = dueDate.getDate();
-            
-            if (dueDay <= 14) {
-              // First bi-weekly period: visible days 1-14, due on 14th
-              return filterDay >= 1 && filterDay <= 14;
-            } else {
-              // Second bi-weekly period: visible days 15-end of month
-              return filterDay >= 15;
-            }
-          }
-          
-          // For daily and other recurring tasks, show only on due date
-          return isSameDay(dueDate, filterDate);
-        }
-        
-        // For all tasks with due dates: show on due date (UTC-aware)
         if (task.dueDate) {
-          const matches = isSameDay(task.dueDate, filterDate);
-          console.log(`✅ FINAL CHECK - Task "${task.title}": Raw=${task.dueDate}, Matches filter? ${matches}`);
-          return matches;
+          const taskDateStr = formatDateForComparison(task.dueDate);
+          const filterDateStr = formatDateForComparison(dateFilter);
+          return taskDateStr === filterDateStr;
         }
-        
-        // For tasks without due date, show on created date
-        const createdDate = new Date(task.createdAt);
-        return isSameDay(createdDate, filterDate);
+        return false; // Tasks without due dates don't appear in date-filtered views
       });
     }
 
@@ -378,6 +287,11 @@ const Tasks: React.FC = () => {
       taskIds.add(task.id);
       return true;
     });
+    
+    // Log summary for debugging
+    if (dateFilter) {
+      console.log(`Found ${uniqueFiltered.length} tasks for ${dateFilter}`);
+    }
     
     console.log(`Found ${uniqueFiltered.length} tasks for ${dateFilter || 'no date filter'}`);
     console.groupEnd();
