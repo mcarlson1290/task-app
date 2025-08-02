@@ -137,12 +137,12 @@
       "checklistProgress": {
         "0": {
           "completed": true,
-          "completedAt": "2025-08-02T01:11:55.135Z",
+          "completedAt": "2025-08-02T01:17:03.078Z",
           "stepData": null
         },
         "1": {
           "completed": true,
-          "completedAt": "2025-08-02T01:11:55.135Z",
+          "completedAt": "2025-08-02T01:17:03.078Z",
           "stepData": null
         }
       },
@@ -201,7 +201,7 @@
         }
       },
       "currentStep": 2,
-      "lastUpdated": "2025-08-02T01:11:55.135Z"
+      "lastUpdated": "2025-08-02T01:17:03.078Z"
     },
     "dueDate": "2025-08-05T00:00:00.000Z",
     "visibleFromDate": "2025-08-05T00:00:00.000Z",
@@ -261,7 +261,65 @@
         }
       }
     ],
-    "data": {},
+    "data": {
+      "checklistProgress": {},
+      "checklistStepData": {
+        "1754087379411": {
+          "trayId": "K080125-LG-MIX-1",
+          "varietiesUsed": [
+            {
+              "seedId": "1",
+              "seedName": "Unknown",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "trayCreated": true,
+          "id": "K080125-LG-MIX-1",
+          "cropType": "Unknown",
+          "cropCategory": "leafyGreens",
+          "datePlanted": "2025-08-02T01:17:09.941Z",
+          "expectedHarvest": "2025-09-01T01:17:09.941Z",
+          "status": "seeded",
+          "currentLocation": {
+            "systemId": "staging-B1",
+            "systemType": "Staging",
+            "spotIds": [
+              "1"
+            ],
+            "movedDate": "2025-08-02T01:17:09.941Z"
+          },
+          "locationHistory": [
+            {
+              "systemId": "staging-B1",
+              "systemType": "Staging",
+              "spotIds": [
+                "1"
+              ],
+              "movedDate": "2025-08-02T01:17:09.941Z",
+              "movedBy": "Unknown",
+              "reason": "Initial seeding"
+            }
+          ],
+          "plantCount": 5,
+          "varieties": [
+            {
+              "seedId": "1",
+              "seedName": "Unknown",
+              "sku": "",
+              "quantity": 5,
+              "seedsOz": 0.2
+            }
+          ],
+          "notes": "Varieties: 5 Unknown (0.2oz), Medium: Oasis Cubes",
+          "createdBy": "Unknown",
+          "createdDate": "2025-08-02T01:17:09.941Z"
+        }
+      },
+      "currentStep": 1,
+      "lastUpdated": "2025-08-02T01:21:02.266Z"
+    },
     "dueDate": "2025-08-06T00:00:00.000Z",
     "visibleFromDate": "2025-08-06T00:00:00.000Z",
     "startedAt": "2025-08-02T00:55:04.497Z",

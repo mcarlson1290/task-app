@@ -222,8 +222,8 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
   const handleStepComplete = async () => {
     const step = steps[currentStep];
     
-    // Validate required fields
-    if (step.required && !stepData[step.id]) {
+    // Validate required fields - skip validation for create-tray steps as they handle their own validation
+    if (step.required && step.type !== 'create-tray' && !stepData[step.id]) {
       setErrors({ [step.id]: 'This field is required' });
       return;
     }

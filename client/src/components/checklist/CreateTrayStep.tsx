@@ -127,8 +127,9 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
         let seedName = defaultVar.seedName || '';
         let sku = defaultVar.sku || '';
         
-        if (defaultVar.seedId && !seedName && availableSeeds.length > 0) {
+        if (defaultVar.seedId && availableSeeds.length > 0) {
           const foundSeed = availableSeeds.find(seed => seed.id.toString() === defaultVar.seedId.toString());
+          console.log('🔍 Default variety seed lookup:', { seedId: defaultVar.seedId, foundSeed, availableSeeds: availableSeeds.map(s => ({id: s.id, name: s.name})) });
           if (foundSeed) {
             seedName = foundSeed.name;
             sku = foundSeed.sku || foundSeed.SKU || foundSeed.productCode || '';
@@ -232,10 +233,11 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
       .filter(v => v.seedId && v.quantity > 0)
       .map(v => {
         const seed = availableSeeds.find(s => s.id === v.seedId);
+        console.log('🔍 Seed lookup:', { seedId: v.seedId, availableSeeds: availableSeeds.length, foundSeed: seed });
         return {
           seedId: v.seedId,
-          seedName: seed?.name || 'Unknown',
-          sku: seed?.sku || '',
+          seedName: seed?.name || v.seedName || 'Unknown',
+          sku: seed?.sku || v.sku || '',
           quantity: parseInt(v.quantity.toString()),
           seedsOz: parseFloat(v.seedsOz.toString()) || 0
         };
