@@ -493,7 +493,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
                   <div className="flex items-center text-sm">
                     <Calendar className="h-4 w-4 mr-1" />
                     <span className={dueDateDisplay.className}>
-                      📅 {dueDateDisplay.text}
+                      {dueDateDisplay.text}
                     </span>
                   </div>
                 ) : (

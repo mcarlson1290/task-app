@@ -917,11 +917,11 @@
     "createdAt": "2025-08-02T01:37:19.825Z"
   },
   {
-    "id": 98,
+    "id": 108,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "K",
@@ -979,7 +979,7 @@
     "data": {},
     "dueDate": "2025-08-19T00:00:00.000Z",
     "visibleFromDate": "2025-08-19T00:00:00.000Z",
-    "startedAt": null,
+    "startedAt": "2025-08-02T01:48:05.791Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
@@ -987,10 +987,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 99,
+    "id": 109,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1060,10 +1060,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 100,
+    "id": 110,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1133,10 +1133,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 101,
+    "id": 111,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1206,10 +1206,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 102,
+    "id": 112,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1279,10 +1279,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 103,
+    "id": 113,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1352,10 +1352,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.855Z"
   },
   {
-    "id": 104,
+    "id": 114,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1425,10 +1425,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.856Z"
   },
   {
-    "id": 105,
+    "id": 115,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1498,10 +1498,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.856Z"
   },
   {
-    "id": 106,
+    "id": 116,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1571,10 +1571,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.856Z"
   },
   {
-    "id": 107,
+    "id": 117,
     "title": "Water the Microgreens",
     "description": "test",
     "type": "other",
@@ -1644,6 +1644,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.826Z"
+    "createdAt": "2025-08-02T01:47:52.856Z"
   }
 ]
