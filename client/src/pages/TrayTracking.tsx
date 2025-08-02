@@ -143,6 +143,24 @@ const TrayTracking: React.FC = () => {
     return daysUntilHarvest;
   };
 
+  // Helper function to render plant information with variety names
+  const renderPlantInfo = (tray: Tray): string => {
+    if (!tray.varieties || tray.varieties.length === 0) {
+      return `${tray.plantCount || 0} ${tray.cropType || 'Unknown'}`;
+    }
+    
+    if (tray.varieties.length === 1) {
+      // Single variety: "5 Arugula"
+      return `${tray.varieties[0].quantity} ${tray.varieties[0].seedName}`;
+    }
+    
+    // Multiple varieties: "Mixed: 3 Arugula, 2 Basil"
+    const varietyList = tray.varieties
+      .map(v => `${v.quantity} ${v.seedName}`)
+      .join(', ');
+    return `Mixed: ${varietyList}`;
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -258,7 +276,7 @@ const TrayTracking: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <p className="text-gray-500">Plants</p>
-                      <p className="font-medium">{tray.plantCount}</p>
+                      <p className="font-medium">{renderPlantInfo(tray)}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Days in System</p>
