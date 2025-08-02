@@ -2,19 +2,19 @@
   {
     "name": "Arugula Seeds",
     "category": "seeds",
-    "currentStock": 450,
+    "currentStock": 455.5,
     "minimumStock": 100,
     "unit": "grams",
-    "supplier": "Green Thumb Seeds",
+    "supplier": "Johnny Seeds",
     "productCode": "ARU",
     "ozPerTray": 0.5,
     "cropId": 1,
     "location": "K",
     "id": 1,
-    "lastRestocked": "2025-07-24T00:43:49.311Z",
+    "lastRestocked": "2025-08-02T01:57:24.901Z",
     "createdAt": "2025-07-31T00:43:49.311Z",
-    "totalValue": null,
-    "avgCostPerUnit": null
+    "totalValue": 13.475000000000001,
+    "avgCostPerUnit": 0.02958287596048299
   },
   {
     "name": "Broccoli Microgreen Seeds",

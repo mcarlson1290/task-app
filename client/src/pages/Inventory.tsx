@@ -11,6 +11,7 @@ import { getStoredAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
 import AddInventoryModal, { AddInventoryData } from "@/components/AddInventoryModal";
+import AddStockModal from "@/components/AddStockModal";
 
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -19,6 +20,7 @@ const Inventory: React.FC = () => {
   const [sortBy, setSortBy] = React.useState<string>("name");
   const [showModal, setShowModal] = React.useState(false);
   const [showAddInventoryModal, setShowAddInventoryModal] = React.useState(false);
+  const [showAddStockModal, setShowAddStockModal] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<InventoryItem | null>(null);
   const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = React.useState(true);
@@ -61,16 +63,16 @@ const Inventory: React.FC = () => {
     },
   });
 
-  const addInventoryMutation = useMutation({
-    mutationFn: (data: { itemId: number; quantity: number; unitCost: number; notes: string }) => 
+  const addStockMutation = useMutation({
+    mutationFn: (data: { itemId: number; quantity: number; unitCost: number; supplier: string; notes: string }) => 
       apiRequest("POST", "/api/inventory/add-stock", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
       queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
-      setShowAddInventoryModal(false);
+      setShowAddStockModal(false);
     },
     onError: (error) => {
-      console.error("Failed to add inventory:", error);
+      console.error("Failed to add stock:", error);
     },
   });
 
@@ -393,10 +395,10 @@ Please process this reorder request at your earliest convenience.`;
         
         {/* Action buttons */}
         <button 
-          onClick={() => setShowAddInventoryModal(true)}
+          onClick={() => setShowAddStockModal(true)}
           className="bg-[#2D8028] hover:bg-[#236622] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap"
         >
-          📥 Add to Inventory
+          📦 Add Stock
         </button>
         
         {isManager && (
@@ -579,6 +581,13 @@ Please process this reorder request at your earliest convenience.`;
         isOpen={showAddInventoryModal}
         onClose={() => setShowAddInventoryModal(false)}
         onSave={handleAddInventory}
+      />
+
+      {/* Add Stock Modal */}
+      <AddStockModal
+        isOpen={showAddStockModal}
+        onClose={() => setShowAddStockModal(false)}
+        onSave={addStockMutation.mutateAsync}
       />
 
 
