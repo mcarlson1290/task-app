@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
-import { getStoredAuth, clearStoredAuth, setStoredAuth } from "@/lib/auth";
+import { LogoutButton } from "@/components/auth/LogoutButton";
+import { useUser } from "@/contexts/UserContext";
 import { DashboardAnalytics } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -23,30 +24,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [selectedLocation, setSelectedLocation] = React.useState("grow-space");
   const [showNotifications, setShowNotifications] = useState(false);
-  const auth = getStoredAuth();
+  const { currentUser } = useUser();
   const isMobile = useIsMobile();
   const { currentLocation } = useLocationContext();
 
   const { data: analytics } = useQuery<DashboardAnalytics>({
     queryKey: ["/api/analytics/dashboard"],
-    enabled: auth.isAuthenticated,
+    enabled: !!currentUser,
   });
 
   // Query for user notifications
   const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ['/api/notifications', auth.user?.id],
-    enabled: auth.isAuthenticated && !!auth.user?.id,
+    queryKey: ['/api/notifications', currentUser?.id],
+    enabled: !!currentUser?.id,
   });
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
-  };
-
-  const handleLogout = () => {
-    clearStoredAuth();
-    setLocation("/login");
   };
 
   // Production: Single authenticated user, no test users
@@ -65,15 +61,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager", enabled: false, comingSoon: true },
   ];
 
-  // Production: Use actual authenticated user
-  const currentUser = auth.user || { 
-    id: 1, 
-    name: "User", 
-    role: "staff", 
-    username: "user" 
-  };
+  // Use Microsoft authenticated user
   
-  const isManager = currentUser.role === "manager" || currentUser.role === "corporate";
+  const isManager = currentUser?.role === "Manager" || currentUser?.role === "Corporate";
 
   const isActive = (href: string) => {
     if (href === "/" && location === "/") return true;
@@ -81,7 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return false;
   };
 
-  if (!auth.isAuthenticated) {
+  if (!currentUser) {
     return <>{children}</>;
   }
 
@@ -183,14 +173,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           {/* Logout Button */}
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="w-full justify-start text-gray-300 hover:text-white hover:bg-[#2D8028]/50"
-          >
-            <User className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          <div className="w-full">
+            <LogoutButton />
+          </div>
         </div>
       </aside>
 
@@ -202,7 +187,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* Left side - Just the page title with emoji */}
             <div className="header-left">
               {(() => {
-                const pageTitle = {
+                const pageTitle: { [key: string]: string } = {
                   '/': '📋 Tasks',
                   '/account': '👤 Account',
                   '/inventory': '📦 Inventory',
@@ -258,7 +243,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               
               <div className="user-info">
                 <User size={14} />
-                <span className="user-name">Welcome, {currentUser.name}</span>
+                <span className="user-name">Welcome, {currentUser?.name}</span>
               </div>
             </div>
           </header>
