@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +6,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/Layout";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { MsalProvider, useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { msalConfig, isAuthorizedEmail } from './config/authConfig';
+import { MicrosoftLogin } from './components/auth/MicrosoftLogin';
+import { UserProvider } from './contexts/UserContext';
 import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
 import Education from "@/pages/Education";
@@ -16,21 +21,22 @@ import TaskData from "@/pages/TaskData";
 import StaffData from "@/pages/StaffData";
 import ProductionData from "@/pages/ProductionData";
 import TrayTracking from "@/pages/TrayTracking";
-import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
-import { getStoredAuth } from "@/lib/auth";
 import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { initializeProductionData } from "@/data/initialData";
 import { initializeCleanState } from "@/utils/dataCleanup";
 
+const msalInstance = new PublicClientApplication(msalConfig);
+
+// Helper function to check existing users
+async function checkExistingUser(email: string) {
+  // Get from your staff data/localStorage
+  const staffData = JSON.parse(localStorage.getItem('staffData') || '[]');
+  return staffData.find((staff: any) => staff.email === email);
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const auth = getStoredAuth();
-  
-  if (!auth.isAuthenticated) {
-    return <Login />;
-  }
-  
   return (
     <LocationProvider>
       <Layout>{children}</Layout>
@@ -38,10 +44,80 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppContent() {
+  const isAuthenticated = useIsAuthenticated();
+  const { accounts, instance } = useMsal();
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      if (isAuthenticated && accounts[0]) {
+        const account = accounts[0];
+        
+        // Verify email domain
+        if (!isAuthorizedEmail(account.username)) {
+          alert('Access denied. Only @growspace.farm emails are allowed.');
+          await instance.logoutPopup();
+          setIsLoading(false);
+          return;
+        }
+
+        // Create user object
+        const user = {
+          id: account.localAccountId || account.homeAccountId,
+          name: account.name || 'User',
+          email: account.username,
+          role: 'Staff' as const, // Default role for new users
+          isManager: false,
+          isCorporateManager: false,
+          location: 'Kenosha'
+        };
+
+        // Check if user exists in your staff data
+        // If they're a manager or corporate, update their role
+        const existingUser = await checkExistingUser(account.username);
+        if (existingUser) {
+          user.role = existingUser.role;
+          user.isManager = existingUser.role === 'Manager' || existingUser.role === 'Corporate';
+          user.isCorporateManager = existingUser.role === 'Corporate';
+        }
+
+        setCurrentUser(user);
+      }
+      setIsLoading(false);
+    };
+
+    initializeUser();
+  }, [isAuthenticated, accounts, instance]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <h2>🌱 Loading Grow Space...</h2>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <MicrosoftLogin />;
+  }
+
+  if (!currentUser) {
+    return <div className="loading-screen">Setting up your account...</div>;
+  }
+
+  // Your existing app with UserProvider
+  return (
+    <UserProvider value={{ currentUser, setCurrentUser }}>
+      <Router />
+    </UserProvider>
+  );
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
       <Route path="/">
         <ProtectedRoute>
           <Tasks />
@@ -116,9 +192,11 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <MsalProvider instance={msalInstance}>
+            <AppContent />
+          </MsalProvider>
           <Toaster />
           <Confetti />
-          <Router />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

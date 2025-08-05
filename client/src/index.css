@@ -2,6 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Login Page Styles */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.login-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 48px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo-section h1 {
+  color: #203B17;
+  font-size: 36px;
+  margin: 0;
+}
+
+.logo-section h2 {
+  color: #666;
+  font-size: 18px;
+  font-weight: normal;
+  margin: 8px 0 32px;
+}
+
+.login-section p {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.microsoft-signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 1px solid #8c8c8c;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 2px;
+}
+
+.microsoft-signin-btn:hover {
+  border-color: #666;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.microsoft-signin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.security-note {
+  color: #666;
+  font-size: 14px;
+  margin-top: 32px;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #203B17;
+}
+
 :root {
   --background: hsl(0, 0%, 96%);
   --foreground: hsl(20, 14.3%, 4.1%);
