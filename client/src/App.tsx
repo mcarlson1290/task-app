@@ -31,9 +31,35 @@ const msalInstance = new PublicClientApplication(msalConfig);
 
 // Helper function to check existing users
 async function checkExistingUser(email: string) {
-  // Get from your staff data/localStorage
+  // Check for specific corporate users first
+  const corporateEmails = [
+    'robert@growspace.farm',
+    'matt@growspace.farm',
+    'matt.carlson@growspace.farm'
+  ];
+  
+  if (corporateEmails.includes(email.toLowerCase())) {
+    return {
+      role: 'Corporate' as const,
+      isManager: true,
+      isCorporateManager: true
+    };
+  }
+  
+  // Check staff data for other users
   const staffData = JSON.parse(localStorage.getItem('staffData') || '[]');
-  return staffData.find((staff: any) => staff.email === email);
+  const existingUser = staffData.find((staff: any) => staff.email === email);
+  
+  if (existingUser) {
+    return existingUser;
+  }
+  
+  // Default for new users
+  return {
+    role: 'Staff' as const,
+    isManager: false,
+    isCorporateManager: false
+  };
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -48,7 +74,7 @@ function AppContent() {
   const isAuthenticated = useIsAuthenticated();
   const { accounts, instance } = useMsal();
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -74,13 +100,12 @@ function AppContent() {
           location: 'Kenosha'
         };
 
-        // Check if user exists in your staff data
-        // If they're a manager or corporate, update their role
+        // Apply role from existing user check
         const existingUser = await checkExistingUser(account.username);
         if (existingUser) {
           user.role = existingUser.role;
-          user.isManager = existingUser.role === 'Manager' || existingUser.role === 'Corporate';
-          user.isCorporateManager = existingUser.role === 'Corporate';
+          user.isManager = existingUser.isManager;
+          user.isCorporateManager = existingUser.isCorporateManager;
         }
 
         setCurrentUser(user);
