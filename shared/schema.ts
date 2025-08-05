@@ -124,9 +124,46 @@ export const growingSystems = pgTable("growing_systems", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const trays = pgTable("trays", {
+  id: text("id").primaryKey(), // e.g., "K071725-MG-BROC-1A"
+  barcode: text("barcode"),
+  cropType: text("crop_type").notNull(),
+  cropCategory: text("crop_category").notNull(), // 'microgreens' | 'leafyGreens'
+  datePlanted: timestamp("date_planted").notNull(),
+  expectedHarvest: timestamp("expected_harvest").notNull(),
+  status: text("status").notNull().default('seeded'), // 'seeded' | 'germinating' | 'growing' | 'ready' | 'harvested' | 'split' | 'discarded'
+  currentLocation: json("current_location").$type<{
+    systemId: string;
+    systemType: string;
+    spotIds: string[];
+    movedDate: string;
+  }>().notNull(),
+  locationHistory: json("location_history").$type<Array<{
+    systemId: string;
+    systemType: string;
+    spotIds: string[];
+    movedDate: string;
+    movedBy: string;
+    reason?: string;
+  }>>().notNull(),
+  parentTrayId: text("parent_tray_id"), // For split trays
+  childTrayIds: json("child_tray_ids").$type<string[]>(), // For parent trays that were split
+  plantCount: integer("plant_count").notNull(),
+  varieties: json("varieties").$type<Array<{
+    seedId: string;
+    seedName: string;
+    sku: string;
+    quantity: number;
+    seedsOz: number;
+  }>>(), // Multiple crop varieties in one tray
+  notes: text("notes").default(''),
+  createdBy: text("created_by").notNull(),
+  createdDate: timestamp("created_date").defaultNow(),
+});
+
 export const trayMovements = pgTable("tray_movements", {
   id: serial("id").primaryKey(),
-  trayId: text("tray_id").notNull(),
+  trayId: text("tray_id").notNull().references(() => trays.id),
   fromSystem: text("from_system"),
   toSystem: text("to_system").notNull(),
   fromLocation: text("from_location"),
@@ -221,16 +258,19 @@ export const notifications = pgTable("notifications", {
 export type Task = typeof tasks.$inferSelect;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
 export type GrowingSystem = typeof growingSystems.$inferSelect;
+export type Tray = typeof trays.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 
 export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
 export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
+export const insertTraySchema = createInsertSchema(trays);
 export const insertTrayMovementSchema = createInsertSchema(trayMovements);
 export const insertInventoryTransactionSchema = createInsertSchema(inventoryTransactions);
 
 export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
 export type InsertGrowingSystem = z.infer<typeof insertGrowingSystemSchema>;
+export type InsertTray = z.infer<typeof insertTraySchema>;
 export type InsertTrayMovement = z.infer<typeof insertTrayMovementSchema>;
 export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransactionSchema>;
 

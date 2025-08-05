@@ -1,12 +1,12 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
-  recurringTasks, growingSystems, trayMovements, inventoryTransactions, courseAssignments, notifications,
+  recurringTasks, growingSystems, trays, trayMovements, inventoryTransactions, courseAssignments, notifications,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
   type TaskLog, type InsertTaskLog, type ChecklistItem, type RecurringTask,
   type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
-  type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
+  type Tray, type InsertTray, type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
   type InsertInventoryTransaction, type CourseAssignment, type InsertCourseAssignment,
   type Notification, type InsertNotification
 } from "@shared/schema";
@@ -69,6 +69,15 @@ export interface IStorage {
   createGrowingSystem(system: InsertGrowingSystem): Promise<GrowingSystem>;
   updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined>;
   deleteGrowingSystem(id: number): Promise<boolean>;
+
+  // Trays
+  getTray(id: string): Promise<Tray | undefined>;
+  getAllTrays(): Promise<Tray[]>;
+  getTraysByLocation(locationId: string): Promise<Tray[]>;
+  createTray(tray: InsertTray): Promise<Tray>;
+  updateTray(id: string, updates: Partial<Tray>): Promise<Tray | undefined>;
+  deleteTray(id: string): Promise<boolean>;
+  splitTray(originalTrayId: string, splitData: { splitCount: number; newTrayIds: string[] }): Promise<Tray[]>;
 
   // Tray movements
   createTrayMovement(movement: InsertTrayMovement): Promise<TrayMovement>;

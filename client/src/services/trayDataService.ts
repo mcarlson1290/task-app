@@ -1,214 +1,146 @@
 import { Tray, sampleTrays } from '../data/trayTracking';
+import { TrayDataApiService } from './trayApiService';
 
-// Shared service for managing tray data with persistence
+// Shared service for managing tray data with API persistence
 class TrayDataService {
-  private static STORAGE_KEY = 'trayTrackingData';
   
-  // Load trays from localStorage or use sample data as fallback
-  static loadTrays(): Tray[] {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Convert date strings back to Date objects
-        return parsed.map((tray: any) => ({
-          ...tray,
-          datePlanted: new Date(tray.datePlanted),
-          expectedHarvest: new Date(tray.expectedHarvest),
-          createdDate: new Date(tray.createdDate),
-          currentLocation: {
-            ...tray.currentLocation,
-            movedDate: new Date(tray.currentLocation.movedDate)
-          },
-          locationHistory: tray.locationHistory.map((history: any) => ({
-            ...history,
-            movedDate: new Date(history.movedDate)
-          }))
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading tray data from storage:', error);
-    }
+  // Load trays from API
+  static async loadTrays(): Promise<Tray[]> {
+    return await TrayDataApiService.loadTrays();
+  }
+
+  // Save trays to API
+  static async saveTrays(trays: Tray[]): Promise<void> {
+    await TrayDataApiService.saveTrays(trays);
     
-    // Initialize with sample data if no stored data or error
-    console.log('Initializing with sample tray data');
-    this.saveTrays(sampleTrays);
-    return [...sampleTrays];
+    // Dispatch event to notify other components
+    window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+      detail: { trays } 
+    }));
   }
-  
-  // Save trays to localStorage
-  static saveTrays(trays: Tray[]): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trays));
-      console.log('Saved', trays.length, 'trays to storage');
-      
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
-        detail: { trays } 
-      }));
-    } catch (error) {
-      console.error('Error saving tray data to storage:', error);
-    }
+
+  // Get filtered trays by query (location, system, etc.)
+  static async getTraysFiltered(filterFn: (tray: Tray) => boolean): Promise<Tray[]> {
+    const allTrays = await this.loadTrays();
+    return allTrays.filter(filterFn);
   }
-  
-  // Get active trays (for split operations)
-  static getActiveTrays(): Tray[] {
-    const allTrays = this.loadTrays();
-    return allTrays.filter(tray => 
+
+  // Get trays by status
+  static async getTraysByStatus(status: Tray['status']): Promise<Tray[]> {
+    return this.getTraysFiltered(tray => tray.status === status);
+  }
+
+  // Get trays by location
+  static async getTraysByLocation(systemId: string): Promise<Tray[]> {
+    return this.getTraysFiltered(tray => tray.currentLocation.systemId === systemId);
+  }
+
+  // Get trays by crop type
+  static async getTraysByCropType(cropType: string): Promise<Tray[]> {
+    return this.getTraysFiltered(tray => tray.cropType.toLowerCase() === cropType.toLowerCase());
+  }
+
+  // Get trays ready for harvest (based on expected harvest date)
+  static async getTraysReadyForHarvest(): Promise<Tray[]> {
+    const today = new Date();
+    return this.getTraysFiltered(tray => {
+      return tray.status === 'growing' && tray.expectedHarvest <= today;
+    });
+  }
+
+  // Get trays by date range
+  static async getTraysByDateRange(startDate: Date, endDate: Date): Promise<Tray[]> {
+    return this.getTraysFiltered(tray => {
+      return tray.datePlanted >= startDate && tray.datePlanted <= endDate;
+    });
+  }
+
+  // Search trays by ID or crop type
+  static async searchTrays(searchTerm: string): Promise<Tray[]> {
+    const term = searchTerm.toLowerCase();
+    return this.getTraysFiltered(tray => 
+      tray.id.toLowerCase().includes(term) ||
+      tray.cropType.toLowerCase().includes(term) ||
+      tray.notes.toLowerCase().includes(term) ||
+      tray.createdBy.toLowerCase().includes(term)
+    );
+  }
+
+  // Get all active growing trays (not harvested, discarded, or split)
+  static async getActiveTrays(): Promise<Tray[]> {
+    return this.getTraysFiltered(tray => 
+      tray.status === 'seeded' || 
+      tray.status === 'germinating' || 
       tray.status === 'growing' || 
-      tray.status === 'germinating' ||
       tray.status === 'ready'
     );
   }
-  
-  // Split tray implementation with multi-variety support
-  static splitTray(originalTrayId: string, splitCount: number): { 
-    originalTray: Tray | null, 
-    splitTrays: Tray[] 
-  } {
-    console.log('=== TRAY SPLIT DEBUG ===');
-    console.log('Splitting tray:', originalTrayId, 'into', splitCount, 'parts');
+
+  // Get tray summary statistics
+  static async getTrayStats(): Promise<{
+    total: number;
+    byStatus: Record<string, number>;
+    byCropType: Record<string, number>;
+    readyForHarvest: number;
+  }> {
+    const allTrays = await this.loadTrays();
+    const readyTrays = await this.getTraysReadyForHarvest();
     
-    // Load current data
-    const allTrays = this.loadTrays();
-    console.log('Current tray data before split:', allTrays.length, 'trays');
+    const byStatus: Record<string, number> = {};
+    const byCropType: Record<string, number> = {};
     
-    // Find original tray
-    const originalIndex = allTrays.findIndex(t => t.id === originalTrayId);
-    if (originalIndex === -1) {
-      console.error('Original tray not found:', originalTrayId);
-      return { originalTray: null, splitTrays: [] };
-    }
+    allTrays.forEach(tray => {
+      byStatus[tray.status] = (byStatus[tray.status] || 0) + 1;
+      byCropType[tray.cropType] = (byCropType[tray.cropType] || 0) + 1;
+    });
     
-    const originalTray = allTrays[originalIndex];
-    console.log('Found original tray:', originalTray);
-    
-    // Create split trays with variety distribution
-    const splitTrays: Tray[] = [];
-    
-    // Calculate variety distribution if original tray has varieties
-    let varietyDistribution: any[] = [];
-    if (originalTray.varieties && originalTray.varieties.length > 0) {
-      varietyDistribution = originalTray.varieties.map(variety => {
-        const baseQuantityPerTray = Math.floor(variety.quantity / splitCount);
-        const remainder = variety.quantity % splitCount;
-        
-        const splits = [];
-        for (let i = 0; i < splitCount; i++) {
-          const quantity = baseQuantityPerTray + (i < remainder ? 1 : 0);
-          splits.push({ trayIndex: i, quantity });
-        }
-        
-        return {
-          varietyId: variety.seedId,
-          varietyName: variety.seedName,
-          sku: variety.sku,
-          originalQuantity: variety.quantity,
-          splits
-        };
-      });
-    }
-    
-    for (let i = 1; i <= splitCount; i++) {
-      // Calculate varieties for this specific tray
-      let trayVarieties: any[] = [];
-      let totalPlantsForTray = Math.floor(originalTray.plantCount / splitCount);
-      
-      if (varietyDistribution.length > 0) {
-        trayVarieties = varietyDistribution.map(vd => ({
-          seedId: vd.varietyId,
-          seedName: vd.varietyName,
-          sku: vd.sku,
-          quantity: vd.splits[i - 1].quantity,
-          seedsOz: 0 // Will be calculated if needed
-        })).filter(v => v.quantity > 0);
-        
-        totalPlantsForTray = trayVarieties.reduce((sum, v) => sum + v.quantity, 0);
-      }
-      
-      const splitTray: Tray = {
-        ...originalTray,
-        id: `${originalTrayId}-${i}`,
-        parentTrayId: originalTrayId,
-        status: 'growing',
-        plantCount: totalPlantsForTray,
-        varieties: trayVarieties.length > 0 ? trayVarieties : undefined,
-        cropType: trayVarieties.length > 1 ? 'Mixed Varieties' : (trayVarieties[0]?.seedName || originalTray.cropType),
-        notes: `Split ${i} of ${splitCount} from ${originalTrayId}${trayVarieties.length > 0 ? ` - Varieties: ${trayVarieties.map(v => `${v.quantity} ${v.seedName}`).join(', ')}` : ''}`,
-        createdDate: new Date(),
-        createdBy: 'System (Split Operation)'
-      };
-      
-      splitTrays.push(splitTray);
-      console.log('Created split tray with varieties:', splitTray);
-    }
-    
-    // Update original tray - mark as split
-    const updatedOriginal: Tray = {
-      ...originalTray,
-      status: 'split', // Original has been split into multiple trays
-      childTrayIds: splitTrays.map(t => t.id),
-      notes: `${originalTray.notes} - Split into ${splitCount} trays: ${splitTrays.map(t => t.id).join(', ')}`
+    return {
+      total: allTrays.length,
+      byStatus,
+      byCropType,
+      readyForHarvest: readyTrays.length
     };
-    
-    // Update the array
-    allTrays[originalIndex] = updatedOriginal;
-    allTrays.push(...splitTrays);
-    
-    console.log('Updated original tray:', updatedOriginal);
-    console.log('Total trays after split:', allTrays.length);
-    
-    // Save to storage
-    this.saveTrays(allTrays);
-    console.log('Split operation completed and saved');
-    console.log('=== END TRAY SPLIT DEBUG ===');
-    
-    return { originalTray: updatedOriginal, splitTrays };
   }
   
   // Add new tray
-  static addTray(tray: Tray): void {
-    const allTrays = this.loadTrays();
-    allTrays.push(tray);
-    this.saveTrays(allTrays);
+  static async addTray(tray: Tray): Promise<void> {
+    await TrayDataApiService.addTray(tray);
+    
+    // Dispatch update event
+    window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+      detail: { trays: await this.loadTrays() } 
+    }));
   }
   
   // Update existing tray
-  static updateTray(updatedTray: Tray): void {
-    const allTrays = this.loadTrays();
-    const index = allTrays.findIndex(t => t.id === updatedTray.id);
-    if (index !== -1) {
-      allTrays[index] = updatedTray;
-      this.saveTrays(allTrays);
-    }
+  static async updateTray(updatedTray: Tray): Promise<void> {
+    await TrayDataApiService.updateTray(updatedTray);
+    
+    // Dispatch update event
+    window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+      detail: { trays: await this.loadTrays() } 
+    }));
   }
   
   // Delete tray
-  static deleteTray(trayId: string): void {
-    const allTrays = this.loadTrays();
-    const filteredTrays = allTrays.filter(t => t.id !== trayId);
-    this.saveTrays(filteredTrays);
+  static async deleteTray(trayId: string): Promise<void> {
+    await TrayDataApiService.deleteTray(trayId);
+    
+    // Dispatch update event
+    window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+      detail: { trays: await this.loadTrays() } 
+    }));
   }
-  
-  // Clear all tray data (for testing)
-  static clearAllTrays(): void {
-    try {
-      localStorage.removeItem(this.STORAGE_KEY);
-      console.log('All tray data cleared from storage');
-      
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
-        detail: { trays: [] } 
-      }));
-    } catch (error) {
-      console.error('Error clearing tray data:', error);
-    }
-  }
-}
 
-// Make clear function available globally for testing
-if (typeof window !== 'undefined') {
-  (window as any).clearAllTrays = () => TrayDataService.clearAllTrays();
+  // Clear all trays
+  static async clearAllTrays(): Promise<void> {
+    await TrayDataApiService.clearAllTrays();
+    
+    // Dispatch update event
+    window.dispatchEvent(new CustomEvent('trayDataUpdated', { 
+      detail: { trays: [] } 
+    }));
+  }
 }
 
 export default TrayDataService;

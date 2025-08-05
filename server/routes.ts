@@ -865,6 +865,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tray API endpoints (temporary localStorage bridge until database migration)
+  app.get("/api/trays", async (req, res) => {
+    try {
+      // For now, return empty array - will be replaced with database implementation
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch trays" });
+    }
+  });
+
+  app.post("/api/trays", async (req, res) => {
+    try {
+      // For now, just return the created tray data
+      const trayData = req.body;
+      res.json(trayData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create tray" });
+    }
+  });
+
+  app.put("/api/trays/:id", async (req, res) => {
+    try {
+      const trayId = req.params.id;
+      const updates = req.body;
+      // For now, just return the updated data
+      res.json({ id: trayId, ...updates });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update tray" });
+    }
+  });
+
+  app.delete("/api/trays/:id", async (req, res) => {
+    try {
+      const trayId = req.params.id;
+      res.json({ message: "Tray deleted successfully", id: trayId });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete tray" });
+    }
+  });
+
+  app.post("/api/trays/:id/split", async (req, res) => {
+    try {
+      const trayId = req.params.id;
+      const { splitCount } = req.body;
+      // For now, return mock split data
+      const splitTrays = Array.from({ length: splitCount }, (_, i) => ({
+        id: `${trayId}-${i + 1}`,
+        splitFrom: trayId,
+        splitNumber: i + 1,
+        splitTotal: splitCount
+      }));
+      res.json(splitTrays);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to split tray" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
