@@ -12,6 +12,7 @@ import { LocationSelector } from "@/components/LocationSelector";
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 import { Notification } from "@shared/schema";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { AdminResetButton } from "@/utils/dataCleanup";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -106,11 +107,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="app-container bg-[#F5F5F5]">
-      {/* Beta Banner */}
-      <div className="beta-banner bg-yellow-50 border-b border-yellow-200 text-yellow-800 px-4 py-2 text-center text-sm font-medium sticky top-0 z-50">
-        🚧 Beta Version - We're testing and improving! Please report any issues to Matt.
-      </div>
-      
       {/* Mobile Header */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">

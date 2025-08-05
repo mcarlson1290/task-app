@@ -38,8 +38,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T15:32:17.942Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 2,
@@ -84,8 +86,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-01T15:32:17.942Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T15:32:17.942Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 22,
@@ -212,8 +216,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-01T22:30:43.746Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-01T22:30:43.746Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 42,
@@ -336,8 +342,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T00:49:37.143Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T00:49:37.143Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 61,
@@ -402,8 +410,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:07:12.879Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:07:12.879Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 79,
@@ -475,8 +485,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:24:54.160Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:24:54.160Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 80,
@@ -548,8 +560,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:24:54.160Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:24:54.160Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 81,
@@ -621,8 +635,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:24:54.160Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:24:54.160Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 82,
@@ -694,8 +710,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:24:54.160Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:24:54.160Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 83,
@@ -767,8 +785,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:24:54.160Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:24:54.160Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 96,
@@ -840,8 +860,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.825Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:37:19.825Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 97,
@@ -913,8 +935,10 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:37:19.825Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:37:19.825Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   },
   {
     "id": 108,
@@ -986,664 +1010,9 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 109,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-20T00:00:00.000Z",
-    "visibleFromDate": "2025-08-20T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 110,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-21T00:00:00.000Z",
-    "visibleFromDate": "2025-08-21T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 111,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-22T00:00:00.000Z",
-    "visibleFromDate": "2025-08-22T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 112,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-25T00:00:00.000Z",
-    "visibleFromDate": "2025-08-25T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 113,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-26T00:00:00.000Z",
-    "visibleFromDate": "2025-08-26T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.855Z"
-  },
-  {
-    "id": 114,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-27T00:00:00.000Z",
-    "visibleFromDate": "2025-08-27T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.856Z"
-  },
-  {
-    "id": 115,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-28T00:00:00.000Z",
-    "visibleFromDate": "2025-08-28T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.856Z"
-  },
-  {
-    "id": 116,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-08-29T00:00:00.000Z",
-    "visibleFromDate": "2025-08-29T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.856Z"
-  },
-  {
-    "id": 117,
-    "title": "Water the Microgreens",
-    "description": "test",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "K",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1754062334271",
-        "text": "TEST",
-        "completed": false,
-        "required": true,
-        "type": "checkbox",
-        "config": {}
-      },
-      {
-        "id": "1754087379411",
-        "text": "",
-        "completed": false,
-        "required": true,
-        "type": "create-tray",
-        "config": {
-          "numberOfTrays": 1,
-          "defaultTrayType": "MG",
-          "defaultInstance": 1,
-          "defaultGrowingMedium": "Hemp Mat",
-          "defaultTotalSlots": 1,
-          "defaultVarieties": [
-            {
-              "seedId": "1",
-              "seedName": "Arugula Seeds",
-              "sku": "ARU",
-              "quantity": 5,
-              "seedsOz": 0.001
-            },
-            {
-              "seedId": "2",
-              "seedName": "Broccoli Microgreen Seeds",
-              "sku": "BROC",
-              "quantity": 20,
-              "seedsOz": 0.03
-            },
-            {
-              "seedId": "4",
-              "seedName": "Romaine Seeds",
-              "sku": "ROM",
-              "quantity": 52,
-              "seedsOz": 0.016
-            }
-          ],
-          "instructions": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-01T00:00:00.000Z",
-    "visibleFromDate": "2025-09-01T00:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-02T01:47:52.856Z"
+    "recurringTaskId": null,
+    "createdAt": "2025-08-02T01:47:52.855Z",
+    "isFromDeletedRecurring": true,
+    "deletedRecurringTaskTitle": "Water the Microgreens"
   }
 ]

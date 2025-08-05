@@ -1,0 +1,199 @@
+# Replit Instructions: Clean Up for Soft Launch
+
+## Step 1: Remove Beta Banner
+
+Find and remove the beta banner from your App.tsx or Layout component:
+
+```tsx
+// REMOVE this entire section:
+<div className="beta-banner">
+  🚧 Beta Version - We're testing and improving! Please report any issues to Matt.
+</div>
+
+// Also remove the CSS:
+.beta-banner {
+  background: #fff3cd;
+  color: #856404;
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ffeeba;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+```
+
+## Step 2: Clear All Tasks
+
+In your task service or wherever tasks are stored:
+
+```tsx
+// Clear all existing tasks
+const clearAllTasks = () => {
+  // If using localStorage
+  localStorage.removeItem('tasks');
+  localStorage.removeItem('taskHistory');
+  localStorage.removeItem('completedTasks');
+  
+  // If using a service
+  taskService.clearAll();
+  
+  // Reset to empty array
+  setTasks([]);
+};
+
+// Add a temporary button or run this once
+clearAllTasks();
+```
+
+## Step 3: Clear Staff/User Data
+
+Update your mock users to only include real people:
+
+```tsx
+// In mockData.ts or userService.ts
+export const mockStaff = [
+  // Keep only real staff members
+  // Remove Alex Martinez and Sarah Johnson test accounts
+];
+
+// Or if you want to start completely fresh:
+export const mockStaff = [];
+```
+
+## Step 4: Clear Education Courses
+
+Remove all test courses:
+
+```tsx
+// In your education/course service
+const clearAllCourses = () => {
+  // Clear course data
+  localStorage.removeItem('courses');
+  localStorage.removeItem('courseProgress');
+  localStorage.removeItem('userCourses');
+  
+  // Reset to empty
+  coursesDatabase = [];
+  courseProgress = {};
+};
+
+// Run this once
+clearAllCourses();
+```
+
+## Step 5: Clear Inventory
+
+Remove all test inventory items:
+
+```tsx
+// In your inventory service
+const clearAllInventory = () => {
+  // Clear inventory data
+  localStorage.removeItem('inventory');
+  localStorage.removeItem('inventoryItems');
+  
+  // Reset to empty
+  inventoryItems = [];
+};
+
+// Run this once
+clearAllInventory();
+```
+
+## Step 6: Create a Reset Function (Optional)
+
+Add a hidden admin function to reset all data:
+
+```tsx
+// Add to a admin/debug component
+const AdminReset = () => {
+  const resetAllData = () => {
+    if (confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
+      // Clear tasks
+      localStorage.removeItem('tasks');
+      localStorage.removeItem('recurringTasks');
+      
+      // Clear education
+      localStorage.removeItem('courses');
+      localStorage.removeItem('courseProgress');
+      
+      // Clear inventory
+      localStorage.removeItem('inventory');
+      
+      // Clear staff (but keep current user)
+      const currentUser = getCurrentUser();
+      localStorage.clear();
+      setCurrentUser(currentUser);
+      
+      alert('All data cleared. Please refresh the page.');
+      window.location.reload();
+    }
+  };
+  
+  // Only show for Corporate Manager
+  const user = getCurrentUser();
+  if (user.role !== 'Corporate') return null;
+  
+  return (
+    <button onClick={resetAllData} style={{
+      position: 'fixed',
+      bottom: 20,
+      right: 20,
+      opacity: 0.3
+    }}>
+      Reset All Data
+    </button>
+  );
+};
+```
+
+## Step 7: Initialize with Clean State
+
+Update your initialization code to start fresh:
+
+```tsx
+// In your main App or service initialization
+const initializeApp = () => {
+  // Check if this is first run after cleanup
+  const isCleanInstall = !localStorage.getItem('appInitialized');
+  
+  if (isCleanInstall) {
+    // Set up clean initial state
+    localStorage.setItem('appInitialized', 'true');
+    localStorage.setItem('tasks', JSON.stringify([]));
+    localStorage.setItem('inventory', JSON.stringify([]));
+    localStorage.setItem('courses', JSON.stringify([]));
+    localStorage.setItem('recurringTasks', JSON.stringify([]));
+  }
+};
+```
+
+## Step 8: Remove Welcome/First Visit Messages
+
+Remove any first-time user popups:
+
+```tsx
+// REMOVE this:
+useEffect(() => {
+  const hasVisited = localStorage.getItem('hasVisitedBeta');
+  if (!hasVisited) {
+    alert('Welcome to Grow Space Task App Beta!...');
+    localStorage.setItem('hasVisitedBeta', 'true');
+  }
+}, []);
+```
+
+## Quick One-Time Cleanup Script
+
+Run this ONCE in your browser console while on the app:
+
+```javascript
+// Clear all localStorage data
+localStorage.clear();
+
+// Refresh the page
+location.reload();
+```
+
+This will wipe everything clean for a fresh start.

@@ -22,6 +22,7 @@ import { getStoredAuth } from "@/lib/auth";
 import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { initializeProductionData } from "@/data/initialData";
+import { initializeCleanState } from "@/utils/dataCleanup";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = getStoredAuth();
@@ -108,20 +109,7 @@ function App() {
   // Initialize production data on app startup
   useEffect(() => {
     initializeProductionData();
-    
-    // First-time user welcome
-    const hasVisited = localStorage.getItem('hasVisitedBeta');
-    if (!hasVisited) {
-      setTimeout(() => {
-        alert(
-          'Welcome to Grow Space Task App Beta! 🌱\n\n' +
-          'This is a test version of our new task management system. ' +
-          'Please explore the features and report any issues to Matt.\n\n' +
-          'Thank you for helping us test and improve!'
-        );
-        localStorage.setItem('hasVisitedBeta', 'true');
-      }, 1000); // Small delay to ensure app is fully loaded
-    }
+    initializeCleanState();
   }, []);
 
   return (
