@@ -41,8 +41,10 @@ export const getAllStaff = async (): Promise<StaffMember[]> => {
 // Save staff member to API
 const saveStaffToAPI = async (staffMember: StaffMember): Promise<StaffMember> => {
   try {
-    const url = staffMember.id ? `${API_BASE}/staff/${staffMember.id}` : `${API_BASE}/staff`;
-    const method = staffMember.id ? 'PUT' : 'POST';
+    // Always use POST for new staff members (let backend handle ID creation)
+    // For updates, find existing by email since Microsoft ID may not match backend ID
+    const url = `${API_BASE}/staff`;
+    const method = 'POST';
     
     const response = await fetch(url, {
       method,
@@ -51,7 +53,9 @@ const saveStaffToAPI = async (staffMember: StaffMember): Promise<StaffMember> =>
     });
     
     if (!response.ok) {
-      throw new Error('Failed to save staff member');
+      const errorText = await response.text();
+      console.error('API Error:', response.status, errorText);
+      throw new Error(`Failed to save staff member: ${response.status}`);
     }
     
     return await response.json();
@@ -100,7 +104,7 @@ export const createStaffFromMicrosoftLogin = async (
   }
 
   const newStaff: StaffMember = {
-    id: microsoftId,
+    id: '', // Will be set by the backend when user is created
     fullName: name,
     email: email,
     phone: '', // To be filled by manager
@@ -111,7 +115,7 @@ export const createStaffFromMicrosoftLogin = async (
     trainingCompleted: [],
     trainingInProgress: [],
     preferredHours: 'Flexible',
-    activeStatus: 'active',
+    activeStatus: 'Active',
     lastTaskCompleted: null,
     managerNotes: 'Auto-created from Microsoft login',
     tasksCompleted: 0,

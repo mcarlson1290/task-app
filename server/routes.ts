@@ -94,20 +94,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/staff/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const staffData = req.body;
-      // Convert staff format to user format for updates
+      
+      // Check if user exists first by string ID (Microsoft ID format)
+      const existingUser = await storage.getUserByUsername(staffData.email);
+      
+      if (!existingUser) {
+        // If user doesn't exist, create them instead
+        const userData = {
+          username: staffData.email,
+          password: 'temp-password', // Will be set via Microsoft auth
+          name: staffData.fullName,
+          role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : 'technician',
+          approved: staffData.activeStatus === 'Active'
+        };
+        const newUser = await storage.createUser(userData);
+        return res.json({ ...staffData, id: newUser.id.toString() });
+      }
+      
+      // Update existing user
       const updates = {
         name: staffData.fullName,
         role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : staffData.rolesAssigned,
         approved: staffData.activeStatus === 'Active'
       };
-      const user = await storage.updateUser(id, updates);
+      const user = await storage.updateUser(existingUser.id, updates);
       if (!user) {
         return res.status(404).json({ message: "Staff member not found" });
       }
       res.json(staffData);
     } catch (error) {
+      console.error('Staff update error:', error);
       res.status(500).json({ message: "Failed to update staff member" });
     }
   });
