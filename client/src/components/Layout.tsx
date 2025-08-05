@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStoredAuth, clearStoredAuth, setStoredAuth } from "@/lib/auth";
 import { DashboardAnalytics } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LocationSelector } from "@/components/LocationSelector";
+
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 import { Notification } from "@shared/schema";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -49,29 +49,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setLocation("/login");
   };
 
-  const testUsers = [
-    { id: 1, name: "Alex Martinez", role: "Staff", username: "alex" },
-    { id: 2, name: "Dan Wilson", role: "Manager", username: "sarah" },
-    { id: 3, name: "Matt Carlson", role: "Corporate", username: "mike" },
-  ];
-
-  const handleUserSwitch = (username: string) => {
-    const user = testUsers.find(u => u.username === username);
-    if (user) {
-      const mockUser = {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        role: user.role.toLowerCase(),
-        approved: true,
-        password: "password",
-        createdAt: new Date(),
-        location: null
-      };
-      setStoredAuth(mockUser);
-      window.location.reload(); // Refresh to update the UI
-    }
-  };
+  // Production: Single authenticated user, no test users
 
   const navigationItems = [
     { href: "/", label: "Tasks", icon: "📋", lucideIcon: Home, requiresRole: null },
@@ -87,13 +65,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager", enabled: false, comingSoon: true },
   ];
 
-  const currentUser = testUsers.find(u => u.username === auth.user?.username) || testUsers[0];
+  // Production: Use actual authenticated user
+  const currentUser = auth.user || { 
+    id: 1, 
+    name: "User", 
+    role: "staff", 
+    username: "user" 
+  };
   
-  // Ensure currentUser has a valid username
-  if (!currentUser.username) {
-    currentUser.username = "alex";
-  }
-  const isManager = currentUser.role === "Manager" || currentUser.role === "Corporate";
+  const isManager = currentUser.role === "manager" || currentUser.role === "corporate";
 
   const isActive = (href: string) => {
     if (href === "/" && location === "/") return true;
@@ -119,18 +99,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {testUsers.map((user) => (
-                <DropdownMenuItem
-                  key={user.username}
-                  onClick={() => handleUserSwitch(user.username)}
-                  className={currentUser.username === user.username ? "bg-green-50" : ""}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{user.name}</span>
-                    <span className="text-xs text-gray-500">{user.role}</span>
-                  </div>
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem disabled>
+                <div className="flex flex-col">
+                  <span className="font-medium">{currentUser.name}</span>
+                  <span className="text-xs text-gray-500">{currentUser.role}</span>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -201,47 +175,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </nav>
 
         {/* Bottom Section */}
-        <div className="p-4 border-t border-[#2D8028] space-y-4">
-          {/* Location Display */}
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-300">
-              <MapPin className="h-4 w-4 mr-2" />
-              <span className="text-sm">Location:</span>
-            </div>
-            <div className="bg-[#2D8028] px-3 py-2 rounded-md text-white text-sm">
-              {currentLocation.name}
-            </div>
-          </div>
-
-          {/* User Selector */}
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-300">
-              <User className="h-4 w-4 mr-2" />
-              <span className="text-sm">Current User:</span>
-            </div>
-            <div className="space-y-1">
-              <Button
-                variant={currentUser.username === "alex" ? "default" : "ghost"}
-                onClick={() => handleUserSwitch("alex")}
-                className="w-full justify-start text-sm py-2 h-auto"
-              >
-                Alex Martinez (Staff)
-              </Button>
-              <Button
-                variant={currentUser.username === "sarah" ? "default" : "ghost"}
-                onClick={() => handleUserSwitch("sarah")}
-                className="w-full justify-start text-sm py-2 h-auto"
-              >
-                Dan Wilson (Manager)
-              </Button>
-              <Button
-                variant={currentUser.username === "mike" ? "default" : "ghost"}
-                onClick={() => handleUserSwitch("mike")}
-                className="w-full justify-start text-sm py-2 h-auto"
-              >
-                Matt Carlson (Corporate)
-              </Button>
-            </div>
+        <div className="p-4 border-t border-[#2D8028]">
+          {/* Simple Location Display */}
+          <div className="flex items-center text-gray-300 mb-4">
+            <MapPin className="h-4 w-4 mr-2" />
+            <span className="text-sm">{currentLocation.name}</span>
           </div>
 
           {/* Logout Button */}
@@ -285,7 +223,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             
             {/* Right side - Location dropdown, notifications, and user info */}
             <div className="header-right">
-              <LocationSelector />
+              {/* Simple Location Display */}
+              <div className="flex items-center text-gray-600 mr-4">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span className="text-sm">{currentLocation.name}</span>
+              </div>
               
               {/* Notification Bell */}
               <div className="relative">
