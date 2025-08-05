@@ -41,7 +41,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User routes
+  // Staff routes (dedicated endpoints for staff management)
+  app.get("/api/staff", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Transform users to staff format for frontend compatibility
+      const staff = users.map(user => ({
+        id: user.id.toString(),
+        fullName: user.name,
+        email: user.username,
+        phone: '',
+        location: 'Kenosha', // Default location
+        rolesAssigned: user.role ? user.role.split(',').map(r => r.trim()) : ['General Staff'],
+        dateHired: new Date().toISOString().split('T')[0],
+        payRate: 0,
+        trainingCompleted: [],
+        trainingInProgress: [],
+        preferredHours: '',
+        activeStatus: user.approved ? 'Active' : 'Pending',
+        lastTaskCompleted: '',
+        managerNotes: '',
+        tasksCompleted: 0,
+        avgTaskDuration: '0m',
+        onTimeRate: 100,
+        microsoftId: user.id.toString(),
+        lastActive: new Date().toISOString(),
+        password: undefined
+      }));
+      res.json(staff);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch staff" });
+    }
+  });
+
+  app.post("/api/staff", async (req, res) => {
+    try {
+      const staffData = req.body;
+      // Convert staff format to user format
+      const userData = {
+        username: staffData.email,
+        password: 'temp-password', // Will be set via Microsoft auth
+        name: staffData.fullName,
+        role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : 'technician',
+        approved: staffData.activeStatus === 'Active'
+      };
+      const user = await storage.createUser(userData);
+      res.json({ ...staffData, id: user.id.toString() });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create staff member" });
+    }
+  });
+
+  app.put("/api/staff/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const staffData = req.body;
+      // Convert staff format to user format for updates
+      const updates = {
+        name: staffData.fullName,
+        role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : staffData.rolesAssigned,
+        approved: staffData.activeStatus === 'Active'
+      };
+      const user = await storage.updateUser(id, updates);
+      if (!user) {
+        return res.status(404).json({ message: "Staff member not found" });
+      }
+      res.json(staffData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update staff member" });
+    }
+  });
+
+  app.delete("/api/staff/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      // In a real system, you might want to soft delete instead
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "Staff member not found" });
+      }
+      // For now, just mark as inactive
+      await storage.updateUser(id, { approved: false });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete staff member" });
+    }
+  });
+
+  // User routes (keeping existing functionality)
   app.get("/api/users", async (req, res) => {
     try {
       const users = await storage.getAllUsers();

@@ -269,46 +269,55 @@ const StaffEditView: React.FC<{
     setShowEditModal(true);
   };
 
-  const handleSaveStaff = (staffData: StaffMember) => {
-    if (editingStaff) {
-      // Update existing staff member
-      updateStaffMember(staffData);
-      const updatedStaff = staff.map(person => 
-        person.id === staffData.id ? staffData : person
-      );
-      onUpdateStaff(updatedStaff);
-    } else {
-      // Add new staff member
-      const newStaff = addStaffMember({
-        fullName: staffData.fullName,
-        email: staffData.email,
-        phone: staffData.phone,
-        location: staffData.location,
-        rolesAssigned: staffData.rolesAssigned,
-        dateHired: staffData.dateHired,
-        payRate: staffData.payRate,
-        trainingCompleted: staffData.trainingCompleted || [],
-        trainingInProgress: staffData.trainingInProgress || [],
-        preferredHours: staffData.preferredHours,
-        activeStatus: staffData.activeStatus,
-        lastTaskCompleted: staffData.lastTaskCompleted,
-        managerNotes: staffData.managerNotes,
-        tasksCompleted: staffData.tasksCompleted || 0,
-        avgTaskDuration: staffData.avgTaskDuration || '0m',
-        onTimeRate: staffData.onTimeRate || 100,
-        microsoftId: staffData.microsoftId || '',
-        lastActive: new Date().toISOString()
+  const handleSaveStaff = async (staffData: StaffMember) => {
+    try {
+      if (editingStaff) {
+        // Update existing staff member
+        await updateStaffMember(staffData);
+        const updatedStaff = staff.map(person => 
+          person.id === staffData.id ? staffData : person
+        );
+        onUpdateStaff(updatedStaff);
+      } else {
+        // Add new staff member
+        const newStaff = await addStaffMember({
+          fullName: staffData.fullName,
+          email: staffData.email,
+          phone: staffData.phone,
+          location: staffData.location,
+          rolesAssigned: staffData.rolesAssigned,
+          dateHired: staffData.dateHired,
+          payRate: staffData.payRate,
+          trainingCompleted: staffData.trainingCompleted || [],
+          trainingInProgress: staffData.trainingInProgress || [],
+          preferredHours: staffData.preferredHours,
+          activeStatus: staffData.activeStatus,
+          lastTaskCompleted: staffData.lastTaskCompleted,
+          managerNotes: staffData.managerNotes,
+          tasksCompleted: staffData.tasksCompleted || 0,
+          avgTaskDuration: staffData.avgTaskDuration || '0m',
+          onTimeRate: staffData.onTimeRate || 100,
+          microsoftId: staffData.microsoftId || '',
+          lastActive: new Date().toISOString()
+        });
+        const updatedStaff = [...staff, newStaff];
+        onUpdateStaff(updatedStaff);
+      }
+      
+      setShowEditModal(false);
+      setEditingStaff(null);
+      toast({
+        title: "Staff Member Saved",
+        description: `${staffData.fullName} has been ${editingStaff ? 'updated' : 'added'} successfully.`,
       });
-      const updatedStaff = [...staff, newStaff];
-      onUpdateStaff(updatedStaff);
+    } catch (error) {
+      console.error('Error saving staff member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save staff member. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    setShowEditModal(false);
-    setEditingStaff(null);
-    toast({
-      title: "Staff Member Saved",
-      description: `${staffData.fullName} has been ${editingStaff ? 'updated' : 'added'} successfully.`,
-    });
   };
   
   return (
@@ -580,7 +589,7 @@ const StaffEditModal: React.FC<{
                         } else {
                           setFormData({
                             ...formData,
-                            rolesAssigned: formData.rolesAssigned.filter(r => r !== role)
+                            rolesAssigned: formData.rolesAssigned.filter((r: string) => r !== role)
                           });
                         }
                       }}
@@ -1033,10 +1042,15 @@ const StaffData: React.FC = () => {
 
   // Load staff data from service on component mount
   useEffect(() => {
-    const loadStaff = () => {
-      const allStaff = getAllStaff();
-      setStaff(allStaff);
-      console.log('Loaded staff data:', allStaff.length, 'members');
+    const loadStaff = async () => {
+      try {
+        const allStaff = await getAllStaff();
+        setStaff(allStaff);
+        console.log('Loaded staff data:', allStaff.length, 'members');
+      } catch (error) {
+        console.error('Error loading staff data:', error);
+        setStaff([]); // Fallback to empty array
+      }
     };
     
     loadStaff();

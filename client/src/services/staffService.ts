@@ -21,57 +21,72 @@ export interface StaffMember {
   lastActive: string;
 }
 
-const STAFF_STORAGE_KEY = 'growspace_staff_data';
+const API_BASE = '/api';
 
-// Initialize staff data storage
-const initializeStaffStorage = (): StaffMember[] => {
-  const stored = localStorage.getItem(STAFF_STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (error) {
-      console.error('Error parsing staff data:', error);
+// Get all staff members from API
+export const getAllStaff = async (): Promise<StaffMember[]> => {
+  try {
+    const response = await fetch(`${API_BASE}/staff`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch staff data');
     }
+    const staff = await response.json();
+    return staff;
+  } catch (error) {
+    console.error('Error loading staff data:', error);
+    return [];
   }
-  return [];
 };
 
-// Save staff data to storage
-const saveStaffData = (staff: StaffMember[]): void => {
-  localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(staff));
-};
-
-// Get all staff members
-export const getAllStaff = (): StaffMember[] => {
-  return initializeStaffStorage();
+// Save staff member to API
+const saveStaffToAPI = async (staffMember: StaffMember): Promise<StaffMember> => {
+  try {
+    const url = staffMember.id ? `${API_BASE}/staff/${staffMember.id}` : `${API_BASE}/staff`;
+    const method = staffMember.id ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(staffMember)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to save staff member');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error saving staff member:', error);
+    throw error;
+  }
 };
 
 // Get staff member by email
-export const getStaffByEmail = (email: string): StaffMember | undefined => {
-  const staff = getAllStaff();
+export const getStaffByEmail = async (email: string): Promise<StaffMember | undefined> => {
+  const staff = await getAllStaff();
   return staff.find(member => member.email === email);
 };
 
 // Get staff member by Microsoft ID
-export const getStaffByMicrosoftId = (microsoftId: string): StaffMember | undefined => {
-  const staff = getAllStaff();
+export const getStaffByMicrosoftId = async (microsoftId: string): Promise<StaffMember | undefined> => {
+  const staff = await getAllStaff();
   return staff.find(member => member.microsoftId === microsoftId);
 };
 
 // Create new staff member from Microsoft login
-export const createStaffFromMicrosoftLogin = (
+export const createStaffFromMicrosoftLogin = async (
   microsoftId: string,
   name: string,
   email: string
-): StaffMember => {
-  const staff = getAllStaff();
+): Promise<StaffMember> => {
+  const staff = await getAllStaff();
   
   // Check if already exists
-  const existing = getStaffByEmail(email) || getStaffByMicrosoftId(microsoftId);
+  const existing = await getStaffByEmail(email) || await getStaffByMicrosoftId(microsoftId);
   if (existing) {
     // Update last active and return existing
     existing.lastActive = new Date().toISOString();
-    updateStaffMember(existing);
+    await updateStaffMember(existing);
     return existing;
   }
 
@@ -107,32 +122,24 @@ export const createStaffFromMicrosoftLogin = (
   };
 
   // Add to staff list
-  staff.push(newStaff);
-  saveStaffData(staff);
+  const savedMember = await saveStaffToAPI(newStaff);
   
-  console.log('Created new staff member:', newStaff.fullName, newStaff.email);
-  return newStaff;
+  console.log('Created new staff member:', savedMember.fullName, savedMember.email);
+  return savedMember;
 };
 
 // Update existing staff member
-export const updateStaffMember = (updatedStaff: StaffMember): void => {
-  const staff = getAllStaff();
-  const index = staff.findIndex(member => member.id === updatedStaff.id);
-  
-  if (index !== -1) {
-    staff[index] = updatedStaff;
-    saveStaffData(staff);
-  }
+export const updateStaffMember = async (updatedStaff: StaffMember): Promise<void> => {
+  await saveStaffToAPI(updatedStaff);
 };
 
 // Update last active time for staff member
-export const updateLastActive = (microsoftId: string): void => {
-  const staff = getAllStaff();
-  const member = staff.find(s => s.microsoftId === microsoftId);
+export const updateLastActive = async (microsoftId: string): Promise<void> => {
+  const member = await getStaffByMicrosoftId(microsoftId);
   
   if (member) {
     member.lastActive = new Date().toISOString();
-    updateStaffMember(member);
+    await updateStaffMember(member);
   }
 };
 
@@ -170,28 +177,33 @@ export const canAssignRole = (currentUserRole: string, roleToAssign: string): bo
   return false;
 };
 
-// Clear all staff data (for testing/reset purposes)
-export const clearAllStaffData = (): void => {
-  localStorage.removeItem(STAFF_STORAGE_KEY);
-  console.log('All staff data cleared');
+// Clear all staff data (for testing/reset purposes) - Now handled by API
+export const clearAllStaffData = async (): Promise<void> => {
+  console.log('Staff data clearing is now handled by the backend API');
+  // This would require a backend endpoint to clear all staff data
 };
 
 // Add new staff member manually
-export const addStaffMember = (staffData: Omit<StaffMember, 'id'>): StaffMember => {
-  const staff = getAllStaff();
+export const addStaffMember = async (staffData: Omit<StaffMember, 'id'>): Promise<StaffMember> => {
   const newStaff: StaffMember = {
     ...staffData,
     id: Date.now().toString(), // Generate simple ID for manual entries
   };
   
-  staff.push(newStaff);
-  saveStaffData(staff);
-  return newStaff;
+  return await saveStaffToAPI(newStaff);
 };
 
 // Delete staff member
-export const deleteStaffMember = (staffId: string): void => {
-  const staff = getAllStaff();
-  const filteredStaff = staff.filter(member => member.id !== staffId);
-  saveStaffData(filteredStaff);
+export const deleteStaffMember = async (staffId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE}/staff/${staffId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete staff member');
+    }
+  } catch (error) {
+    console.error('Error deleting staff member:', error);
+    throw error;
+  }
 };

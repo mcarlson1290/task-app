@@ -60,7 +60,7 @@ function AppContent() {
         }
 
         // Create or update staff entry automatically
-        const staffMember = createStaffFromMicrosoftLogin(
+        const staffMember = await createStaffFromMicrosoftLogin(
           account.localAccountId || account.homeAccountId || '',
           account.name || 'User',
           account.username
