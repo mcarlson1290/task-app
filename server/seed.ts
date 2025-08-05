@@ -13,14 +13,7 @@ async function seedDatabase() {
   await db.delete(users);
 
   // Create test users
-  const testUsers = [
-    { username: "alex", password: "password", name: "Alex Martinez", role: "technician", approved: true },
-    { username: "dan", password: "password", name: "Dan Wilson", role: "manager", approved: true },
-    { username: "matt", password: "password", name: "Matt Carlson", role: "corporate", approved: true }
-  ];
-
-  const createdUsers = await db.insert(users).values(testUsers).returning();
-  console.log(`Created ${createdUsers.length} users`);
+  // Production launch - no test users, using Microsoft authentication
 
   // Create sample tasks
   const sampleTasks = [

@@ -34,29 +34,4 @@ export const locations: Location[] = [
 ];
 
 // Update user mock data with location assignments
-export const mockUsers = [
-  {
-    id: 1,
-    name: 'Alex Martinez',
-    email: 'alex@farm.com',
-    role: 'staff',
-    assignedLocation: 'kenosha',
-    permissions: ['view_tasks', 'complete_tasks']
-  },
-  {
-    id: 2,
-    name: 'Dan Wilson',
-    email: 'dan@farm.com',
-    role: 'manager',
-    assignedLocation: 'kenosha',
-    permissions: ['view_tasks', 'complete_tasks', 'manage_staff', 'view_analytics']
-  },
-  {
-    id: 3,
-    name: 'Matt Carlson',
-    email: 'matt@farm.com',
-    role: 'corporate',
-    assignedLocation: null, // Corporate can access all locations
-    permissions: ['all']
-  }
-];
+// Production launch - mock users removed, using dynamic Microsoft authentication

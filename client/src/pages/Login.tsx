@@ -22,11 +22,7 @@ const Login: React.FC = () => {
   });
   const { toast } = useToast();
 
-  const testUsers = [
-    { username: "alex", name: "Alex Martinez", role: "technician" },
-    { username: "sarah", name: "Sarah Johnson", role: "manager" },
-    { username: "mike", name: "Mike Chen", role: "corporate" },
-  ];
+  // Production launch - test users removed
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Data cleanup utilities for soft launch preparation
+// Production launch - data cleanup utilities retained for maintenance
 
 export const clearAllTestData = () => {
   const confirmClear = confirm(

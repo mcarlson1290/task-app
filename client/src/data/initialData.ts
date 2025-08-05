@@ -9,7 +9,7 @@ export const initializeProductionData = (): void => {
   
   if (!existingTrays) {
     shouldInitialize = true;
-    console.log('No production data found, initializing with authentic data');
+    console.log('No production data found, initializing clean state for production');
   } else {
     try {
       const trays = JSON.parse(existingTrays);
@@ -17,67 +17,17 @@ export const initializeProductionData = (): void => {
       const hasFakeData = trays.some((tray: any) => tray.id && tray.id.startsWith('TRAY-'));
       if (hasFakeData) {
         shouldInitialize = true;
-        console.log('Found fake test data, replacing with authentic production data');
+        console.log('Found test data, clearing for clean production start');
       }
     } catch (error) {
       shouldInitialize = true;
-      console.warn('Error parsing existing tray data, reinitializing with authentic data');
+      console.warn('Error parsing existing tray data, initializing clean production state');
     }
   }
   
   if (shouldInitialize) {
-    const initialTrays: ProductionTray[] = [
-      {
-        id: 'K072924-ROM-A1',
-        cropType: 'leafy-green',
-        cropName: 'Romaine Lettuce',
-        datePlanted: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days ago
-        status: 'growing',
-        location: 'Tower 1',
-        systemId: 'tower-1-section-a',
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'K073024-BAS-B2',
-        cropType: 'leafy-green',
-        cropName: 'Sweet Basil',
-        datePlanted: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days ago
-        status: 'growing',
-        location: 'NFT Channel 3',
-        systemId: 'nft-channel-3',
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'K073124-MIC-C3',
-        cropType: 'microgreen',
-        cropName: 'Broccoli Microgreens',
-        datePlanted: new Date().toISOString().split('T')[0], // Today
-        status: 'active',
-        location: 'Blackout Room',
-        systemId: 'blackout-room-shelf-1',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'K072824-SPI-D4',
-        cropType: 'leafy-green',
-        cropName: 'Baby Spinach',
-        datePlanted: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 21 days ago
-        status: 'growing',
-        location: 'Ebb & Flow Section 1',
-        systemId: 'ebb-flow-1-tray-4',
-        createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'K072924-ARU-E5',
-        cropType: 'leafy-green',
-        cropName: 'Arugula',
-        datePlanted: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 18 days ago
-        status: 'growing',
-        location: 'Tower 2',
-        systemId: 'tower-2-section-b',
-        createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
+    // Production launch - clean start with no initial tray data
+    const initialTrays: ProductionTray[] = [];
     
     localStorage.setItem('productionTrays', JSON.stringify(initialTrays));
     console.log('Initialized production data with realistic starting trays:', initialTrays.length);
