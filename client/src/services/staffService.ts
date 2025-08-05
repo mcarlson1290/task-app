@@ -23,19 +23,16 @@ export interface StaffMember {
 
 const STAFF_STORAGE_KEY = 'growspace_staff_data';
 
-// Initialize staff data storage with debug info
+// Initialize staff data storage
 const initializeStaffStorage = (): StaffMember[] => {
   const stored = localStorage.getItem(STAFF_STORAGE_KEY);
   if (stored) {
     try {
-      const parsed = JSON.parse(stored);
-      console.log('📂 Loaded', parsed.length, 'staff members from localStorage');
-      return parsed;
+      return JSON.parse(stored);
     } catch (error) {
-      console.error('❌ Error parsing staff data:', error);
+      console.error('Error parsing staff data:', error);
     }
   }
-  console.log('📂 No staff data found in localStorage, starting fresh');
   return [];
 };
 
@@ -44,66 +41,8 @@ const saveStaffData = (staff: StaffMember[]): void => {
   localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(staff));
 };
 
-// Seed initial corporate users if staff data is empty
-const seedInitialStaff = (): void => {
-  const existingStaff = initializeStaffStorage();
-  
-  if (existingStaff.length === 0) {
-    console.log('🌱 Seeding initial corporate staff members...');
-    
-    const corporateUsers = [
-      {
-        id: 'robert-carlson-corp',
-        fullName: 'Robert Carlson',
-        email: 'robert@growspace.farm',
-        phone: '',
-        location: 'K',
-        rolesAssigned: ['Corporate Manager'],
-        dateHired: '2023-01-01',
-        payRate: 0,
-        trainingCompleted: [],
-        trainingInProgress: [],
-        preferredHours: 'Full-time',
-        activeStatus: 'active' as const,
-        lastTaskCompleted: null,
-        managerNotes: 'Corporate Manager - Auto-seeded',
-        tasksCompleted: 0,
-        avgTaskDuration: '0m',
-        onTimeRate: 100,
-        microsoftId: 'robert-microsoft-id',
-        lastActive: new Date().toISOString()
-      },
-      {
-        id: 'matt-carlson-corp',
-        fullName: 'Matt Carlson',
-        email: 'matt@growspace.farm',
-        phone: '',
-        location: 'K',
-        rolesAssigned: ['Corporate Manager'],
-        dateHired: '2023-01-01',
-        payRate: 0,
-        trainingCompleted: [],
-        trainingInProgress: [],
-        preferredHours: 'Full-time',
-        activeStatus: 'active' as const,
-        lastTaskCompleted: null,
-        managerNotes: 'Corporate Manager - Auto-seeded',
-        tasksCompleted: 0,
-        avgTaskDuration: '0m',
-        onTimeRate: 100,
-        microsoftId: 'matt-microsoft-id',
-        lastActive: new Date().toISOString()
-      }
-    ];
-    
-    saveStaffData(corporateUsers);
-    console.log('✅ Seeded', corporateUsers.length, 'corporate staff members');
-  }
-};
-
 // Get all staff members
 export const getAllStaff = (): StaffMember[] => {
-  seedInitialStaff(); // Ensure corporate users are present
   return initializeStaffStorage();
 };
 
@@ -140,13 +79,9 @@ export const createStaffFromMicrosoftLogin = (
   let defaultRoles = ['General Staff'];
   let defaultLocation = 'K'; // Default to Kenosha
   
-  // Corporate managers with debug logging
-  console.log('🔍 Staff creation - checking email:', email);
+  // Corporate managers
   if (email === 'robert@growspace.farm' || email === 'matt@growspace.farm' || email === 'matt.carlson@growspace.farm') {
     defaultRoles = ['Corporate Manager'];
-    console.log('✅ Assigned Corporate Manager role to:', email);
-  } else {
-    console.log('📋 Assigned General Staff role to:', email);
   }
 
   const newStaff: StaffMember = {
@@ -175,7 +110,7 @@ export const createStaffFromMicrosoftLogin = (
   staff.push(newStaff);
   saveStaffData(staff);
   
-  console.log('🎉 Created new staff member:', newStaff.fullName, newStaff.email, 'with roles:', newStaff.rolesAssigned);
+  console.log('Created new staff member:', newStaff.fullName, newStaff.email);
   return newStaff;
 };
 
