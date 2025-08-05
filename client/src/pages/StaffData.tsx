@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
 import { SubTabNavigation } from '@/components/SubTabNavigation';
+import { 
+  getAllStaff, 
+  updateStaffMember, 
+  addStaffMember, 
+  getAvailableRoles, 
+  canAssignRole,
+  type StaffMember 
+} from '@/services/staffService';
 
 // Mock staff data with location codes
 const mockStaff = [
@@ -261,20 +269,40 @@ const StaffEditView: React.FC<{
     setShowEditModal(true);
   };
 
-  const handleSaveStaff = (staffData: any) => {
-    let updatedStaff;
-    
+  const handleSaveStaff = (staffData: StaffMember) => {
     if (editingStaff) {
       // Update existing staff member
-      updatedStaff = staff.map(person => 
+      updateStaffMember(staffData);
+      const updatedStaff = staff.map(person => 
         person.id === staffData.id ? staffData : person
       );
+      onUpdateStaff(updatedStaff);
     } else {
       // Add new staff member
-      updatedStaff = [...staff, { ...staffData, id: Date.now() }];
+      const newStaff = addStaffMember({
+        fullName: staffData.fullName,
+        email: staffData.email,
+        phone: staffData.phone,
+        location: staffData.location,
+        rolesAssigned: staffData.rolesAssigned,
+        dateHired: staffData.dateHired,
+        payRate: staffData.payRate,
+        trainingCompleted: staffData.trainingCompleted || [],
+        trainingInProgress: staffData.trainingInProgress || [],
+        preferredHours: staffData.preferredHours,
+        activeStatus: staffData.activeStatus,
+        lastTaskCompleted: staffData.lastTaskCompleted,
+        managerNotes: staffData.managerNotes,
+        tasksCompleted: staffData.tasksCompleted || 0,
+        avgTaskDuration: staffData.avgTaskDuration || '0m',
+        onTimeRate: staffData.onTimeRate || 100,
+        microsoftId: staffData.microsoftId || '',
+        lastActive: new Date().toISOString()
+      });
+      const updatedStaff = [...staff, newStaff];
+      onUpdateStaff(updatedStaff);
     }
     
-    onUpdateStaff(updatedStaff);
     setShowEditModal(false);
     setEditingStaff(null);
     toast({
@@ -1001,15 +1029,32 @@ const StaffData: React.FC = () => {
   const { currentLocation, isViewingAllLocations } = useLocation();
   const isManager = currentUser?.role === 'Manager' || currentUser?.role === 'Corporate';
   const [activeTab, setActiveTab] = useState('edit');
-  const [staff, setStaff] = useState(mockStaff);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+
+  // Load staff data from service on component mount
+  useEffect(() => {
+    const loadStaff = () => {
+      const allStaff = getAllStaff();
+      setStaff(allStaff);
+      console.log('Loaded staff data:', allStaff.length, 'members');
+    };
+    
+    loadStaff();
+  }, []);
   
   // Filter staff by location
   const filteredStaff = React.useMemo(() => {
-    if (isViewingAllLocations) {
+    if (isViewingAllLocations || currentUser?.role === 'Corporate') {
       return staff;
     }
     return staff.filter(person => person.location === currentLocation.code);
-  }, [staff, currentLocation.code, isViewingAllLocations]);
+  }, [staff, currentLocation.code, isViewingAllLocations, currentUser?.role]);
+
+  // Update staff data handler
+  const handleUpdateStaff = (updatedStaff: StaffMember[]) => {
+    setStaff(updatedStaff);
+    // Staff service handles persistence automatically
+  };
 
   const handleExport = () => {
     toast({

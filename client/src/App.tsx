@@ -26,41 +26,11 @@ import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { initializeProductionData } from "@/data/initialData";
 import { initializeCleanState } from "@/utils/dataCleanup";
+import { createStaffFromMicrosoftLogin, updateLastActive } from "@/services/staffService";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
-// Helper function to check existing users
-async function checkExistingUser(email: string) {
-  // Check for specific corporate users first
-  const corporateEmails = [
-    'robert@growspace.farm',
-    'matt@growspace.farm',
-    'matt.carlson@growspace.farm'
-  ];
-  
-  if (corporateEmails.includes(email.toLowerCase())) {
-    return {
-      role: 'Corporate' as const,
-      isManager: true,
-      isCorporateManager: true
-    };
-  }
-  
-  // Check staff data for other users
-  const staffData = JSON.parse(localStorage.getItem('staffData') || '[]');
-  const existingUser = staffData.find((staff: any) => staff.email === email);
-  
-  if (existingUser) {
-    return existingUser;
-  }
-  
-  // Default for new users
-  return {
-    role: 'Staff' as const,
-    isManager: false,
-    isCorporateManager: false
-  };
-}
+// The staff service now handles user creation and role assignment automatically
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
@@ -89,25 +59,39 @@ function AppContent() {
           return;
         }
 
-        // Create user object
-        const user = {
-          id: account.localAccountId || account.homeAccountId,
-          name: account.name || 'User',
-          email: account.username,
-          role: 'Staff' as const, // Default role for new users
-          isManager: false,
-          isCorporateManager: false,
-          location: 'Kenosha'
-        };
+        // Create or update staff entry automatically
+        const staffMember = createStaffFromMicrosoftLogin(
+          account.localAccountId || account.homeAccountId || '',
+          account.name || 'User',
+          account.username
+        );
 
-        // Apply role from existing user check
-        const existingUser = await checkExistingUser(account.username);
-        if (existingUser) {
-          user.role = existingUser.role;
-          user.isManager = existingUser.isManager;
-          user.isCorporateManager = existingUser.isCorporateManager;
+        // Determine role based on staff member
+        let role: 'Staff' | 'Manager' | 'Corporate' = 'Staff';
+        let isManager = false;
+        let isCorporateManager = false;
+
+        if (staffMember.rolesAssigned.includes('Corporate Manager')) {
+          role = 'Corporate';
+          isManager = true;
+          isCorporateManager = true;
+        } else if (staffMember.rolesAssigned.includes('Manager')) {
+          role = 'Manager';
+          isManager = true;
         }
 
+        // Create user object for context
+        const user = {
+          id: staffMember.id,
+          name: staffMember.fullName,
+          email: staffMember.email,
+          role,
+          isManager,
+          isCorporateManager,
+          location: staffMember.location
+        };
+
+        console.log('Initialized user:', user.name, user.email, user.role);
         setCurrentUser(user);
       }
       setIsLoading(false);
