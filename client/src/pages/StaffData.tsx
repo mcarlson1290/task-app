@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getStoredAuth } from '@/lib/auth';
+import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
 import { SubTabNavigation } from '@/components/SubTabNavigation';
@@ -996,10 +996,10 @@ const StaffAnalyticsView: React.FC<{
 };
 
 const StaffData: React.FC = () => {
-  const auth = getStoredAuth();
+  const { currentUser } = useUser();
   const { toast } = useToast();
   const { currentLocation, isViewingAllLocations } = useLocation();
-  const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  const isManager = currentUser?.role === 'Manager' || currentUser?.role === 'Corporate';
   const [activeTab, setActiveTab] = useState('edit');
   const [staff, setStaff] = useState(mockStaff);
   
