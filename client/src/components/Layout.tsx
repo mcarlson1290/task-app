@@ -64,7 +64,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         role: user.role.toLowerCase(),
         approved: true,
         password: "password",
-        createdAt: new Date()
+        createdAt: new Date(),
+        location: null
       };
       setStoredAuth(mockUser);
       window.location.reload(); // Refresh to update the UI
@@ -79,10 +80,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const managerItems = [
-    { href: "/recurring-tasks", label: "Recurring Tasks", icon: "🔄", requiresRole: "manager" },
-    { href: "/task-data", label: "Task Data", icon: "📊", requiresRole: "manager" },
-    { href: "/staff-data", label: "Staff Data", icon: "👥", requiresRole: "manager" },
-    { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager" },
+    { href: "/recurring-tasks", label: "Recurring Tasks", icon: "🔄", requiresRole: "manager", enabled: true },
+    { href: "/task-data", label: "Task Data", icon: "📊", requiresRole: "manager", enabled: false, comingSoon: true },
+    { href: "/staff-data", label: "Staff Data", icon: "👥", requiresRole: "manager", enabled: true },
+    { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager", enabled: false, comingSoon: true },
   ];
 
   const currentUser = testUsers.find(u => u.username === auth.user?.username) || testUsers[0];
@@ -105,6 +106,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="app-container bg-[#F5F5F5]">
+      {/* Beta Banner */}
+      <div className="beta-banner bg-yellow-50 border-b border-yellow-200 text-yellow-800 px-4 py-2 text-center text-sm font-medium sticky top-0 z-50">
+        🚧 Beta Version - We're testing and improving! Please report any issues to Matt.
+      </div>
+      
       {/* Mobile Header */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
@@ -164,18 +170,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <>
                 <div className="border-t border-[#2D8028] my-4"></div>
                 {managerItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center px-4 py-3 rounded-lg font-medium transition-colors ${
-                      isActive(item.href)
-                        ? "bg-[#2D8028] text-white"
-                        : "text-gray-300 hover:text-white hover:bg-[#2D8028]/50"
-                    }`}
-                  >
-                    <span className="mr-3">{item.icon}</span>
-                    {item.label}
-                  </Link>
+                  <div key={item.href} className="relative">
+                    {item.enabled ? (
+                      <Link
+                        href={item.href}
+                        className={`flex items-center px-4 py-3 rounded-lg font-medium transition-colors ${
+                          isActive(item.href)
+                            ? "bg-[#2D8028] text-white"
+                            : "text-gray-300 hover:text-white hover:bg-[#2D8028]/50"
+                        }`}
+                      >
+                        <span className="mr-3">{item.icon}</span>
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <div 
+                        className="flex items-center px-4 py-3 rounded-lg font-medium text-gray-500 cursor-not-allowed opacity-60 relative group"
+                        title="Coming Soon"
+                      >
+                        <span className="mr-3">{item.icon}</span>
+                        {item.label}
+                        <span className="ml-auto text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">Soon</span>
+                        {/* Tooltip */}
+                        <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-sm px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                          Coming Soon
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </>
             )}
