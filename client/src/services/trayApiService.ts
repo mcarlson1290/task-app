@@ -83,14 +83,14 @@ export const trayApiService = {
       ...trayData
     };
     
-    const createdTray = await apiRequest("POST", "/api/trays", newTray);
+    const createdTray = await apiRequest("POST", "/api/trays", newTray) as ProductionTray;
     return createdTray;
   },
 
   // Update tray
   async updateTray(trayId: string, updates: Partial<ProductionTray>): Promise<ProductionTray | null> {
     try {
-      const updatedTray = await apiRequest("PUT", `/api/trays/${trayId}`, updates);
+      const updatedTray = await apiRequest("PUT", `/api/trays/${trayId}`, updates) as ProductionTray;
       return updatedTray;
     } catch (error) {
       console.error('Error updating tray:', error);
@@ -112,7 +112,7 @@ export const trayApiService = {
   // Split tray
   async splitTray(originalTrayId: string, splitCount: number): Promise<ProductionTray[] | null> {
     try {
-      const splitTrays = await apiRequest("POST", `/api/trays/${originalTrayId}/split`, { splitCount });
+      const splitTrays = await apiRequest("POST", `/api/trays/${originalTrayId}/split`, { splitCount }) as ProductionTray[];
       return splitTrays;
     } catch (error) {
       console.error('Error splitting tray:', error);
@@ -165,7 +165,7 @@ export class TrayDataApiService {
   // Load trays from API
   static async loadTrays(): Promise<Tray[]> {
     try {
-      const trays = await apiRequest("GET", "/api/trays");
+      const trays = await apiRequest("GET", "/api/trays") as any[];
       // Convert to proper Tray format with Date objects
       return trays.map((tray: any) => ({
         ...tray,
