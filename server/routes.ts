@@ -1069,29 +1069,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       let imported = 0;
       
-      // Sample of the most important SharePoint tasks to restore functionality
-      const criticalTasks = [
-        { title: "Opening", description: "Open the farm.", type: "general-maintenance", frequency: "daily", daysOfWeek: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+      // Complete SharePoint recurring tasks from CSV data
+      const allSharePointTasks = [
+        // Seeding Tasks
         { title: "Seed Arugula Microgreens", description: "Mucilagenous seeds; do not stack", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Seed Broccoli Microgreens", description: "Seed Broccoli Microgreens", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
-        { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Seed Radish Microgreens", description: "Seed the Radish Microgreens", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["saturday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Seed Mustard Microgreens", description: "Do not stack while germinating.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Soak Pea Microgreens", description: "Soak the Seeds for 12 hours; Drain and rinse occasionally until tomorrow afternoon.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Blackout/Dome Tasks
         { title: "Remove BO and Move Arugula Microgreens to Watering Rack", description: "Move to watering rack", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
-        { title: "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack", description: "Put in D watering rack on shelf with fan", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack", description: "Put in D watering rack on shelf with fan; After move, run water in rack until tray is wet.", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Remove Weight and BO for Pea Microgreens", description: "Remove Weight and dome for Pea Microgreens", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["friday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove Weight/BO and Move Radish Microgreens to Watering Rack", description: "Remove Weight/BO and Move Radish Microgreens", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["tuesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove BO and Move Mustard Microgreens to Watering Rack", description: "Remove Dome and Move Mustard Microgreens to Watering Rack", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Harvesting Tasks
         { title: "Harvest Arugula Microgreens", description: "0.5 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Harvest Broccoli Microgreens", description: "1 oz per 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Harvest Pea Microgreens", description: "Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Harvest Radish Microgreens", description: "1 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Harvest Mustard Microgreens", description: "0.7 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Daily Operations
+        { title: "Opening", description: "Open the farm.", type: "general-maintenance", frequency: "daily", daysOfWeek: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Water Microgreen Germination Trays", description: "Water microgreens daily", type: "general-maintenance", frequency: "daily", daysOfWeek: ["sunday","monday","tuesday","saturday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Weekly Maintenance
+        { title: "Adjust Nutrients in Microgreen Reservoirs", description: "Check the nutrient and pH level and adjust", type: "general-maintenance", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
         { title: "Clean Bathroom", description: "Clean the Bathroom", type: "cleaning", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Clean Tower Clips", description: "Clean tower clips.", type: "cleaning", frequency: "weekly", daysOfWeek: ["tuesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Uncover the Leafy Green and Herb trays", description: "There should be many trays to uncover including Romaine, Swiss Chard, Butter Crunch, Red Oak, Kale, Summer Crisp, Basil, and Collard Greens", type: "general-maintenance", frequency: "weekly", daysOfWeek: ["friday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Washing Farm Towels and Filter Socks", description: "Take farm towels and filter socks home for washing, ensuring they are cleaned and returned in a timely and hygienic manner.", type: "cleaning", frequency: "weekly", daysOfWeek: ["tuesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Clean Farm Floor", description: "Clean the farm's floors thoroughly and sanitized using a power mop.", type: "cleaning", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Check Paper Towel Levels", description: "Check paper towel levels and refill as needed to maintain proper supplies.", type: "general-maintenance", frequency: "weekly", daysOfWeek: ["thursday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove Garbage from Non-Farm areas", description: "Collect and dispose of trash from various locations outside of the main farm area, including the lobby and office.", type: "cleaning", frequency: "weekly", daysOfWeek: ["thursday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Vacuum the Office and Lobby", description: "Vacuum the office and lobby areas thoroughly to maintain cleanliness and a professional appearance.", type: "cleaning", frequency: "weekly", daysOfWeek: ["thursday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Bi-Weekly Tasks
+        { title: "Deep Floor Scrub", description: "Deep clean stained and heavily soiled areas of the facility floor using a baking soda solution and manual scrubbing.", type: "cleaning", frequency: "bi-weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        
+        // Monthly Tasks
         { title: "Check General Inventory Stock", description: "Check the stock of Order Bags, Order Boxes, Labels, and More", type: "inventory", frequency: "monthly", dayOfMonth: 1, location: "Kenosha", isActive: true, createdBy: defaultUserId },
-        { title: "Adjust Nutrients in Microgreen Reservoirs", description: "Check the nutrient and pH level and adjust", type: "general-maintenance", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId }
+        { title: "Check the Inventory of Leafy Green Stock", description: "Check the Rockwool, Oasis Cubes, Seeds, and Leafy Green Bags.", type: "inventory", frequency: "monthly", dayOfMonth: 1, location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Check Nutrient Inventory", description: "Ensure we have enough nutrients to last roughly three months.", type: "inventory", frequency: "monthly", dayOfMonth: 1, location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Change Microgreen Reservoir Water and Clean Shelves", description: "Ensures that the water in the microgreen reservoir is fresh and properly prepared with nutrients and pH adjustments to maintain optimal plant growth.", type: "general-maintenance", frequency: "monthly", dayOfMonth: 15, location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Clean Outside Facing Lobby Window", description: "Clean the lobby's outside-facing windows to maintain a professional and welcoming appearance.", type: "cleaning", frequency: "monthly", dayOfMonth: 15, location: "Kenosha", isActive: true, createdBy: defaultUserId }
       ];
       
-      for (const task of criticalTasks) {
+      for (const task of allSharePointTasks) {
         try {
           await storage.createRecurringTask(task);
           imported++;
