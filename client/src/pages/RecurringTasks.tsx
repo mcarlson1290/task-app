@@ -28,34 +28,24 @@ const RecurringTasks: React.FC = () => {
   const [showImportSection, setShowImportSection] = useState(false);
 
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
-    queryKey: ['/api/recurring-tasks', currentLocation.code],
+    queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations],
     queryFn: async () => {
-      console.log('Fetching recurring tasks...');
-      const response = await fetch('/api/recurring-tasks');
+      console.log('Fetching recurring tasks for location:', currentLocation.code, 'viewing all:', isViewingAllLocations);
+      const url = isViewingAllLocations 
+        ? '/api/recurring-tasks' 
+        : `/api/recurring-tasks?location=${currentLocation.code}`;
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
       const data = await response.json();
-      console.log('Fetched recurring tasks:', data);
+      console.log(`Fetched ${data.length} recurring tasks from API`);
       return data;
     },
     enabled: !!auth.user,
   });
 
-  // Filter recurring tasks by location
-  const filteredRecurringTasks = React.useMemo(() => {
-    console.log('Filtering recurring tasks:', {
-      totalTasks: recurringTasks.length,
-      currentLocation: currentLocation.code,
-      isViewingAllLocations,
-      tasksWithLocation: recurringTasks.map(t => ({ id: t.id, title: t.title, location: t.location }))
-    });
-    
-    if (isViewingAllLocations) {
-      return recurringTasks;
-    }
-    const filtered = recurringTasks.filter(task => task.location === currentLocation.code);
-    console.log('Filtered recurring tasks:', filtered.length);
-    return filtered;
-  }, [recurringTasks, currentLocation.code, isViewingAllLocations]);
+  // Since we're using server-side location filtering, we don't need additional client filtering
+  const filteredRecurringTasks = recurringTasks;
 
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
