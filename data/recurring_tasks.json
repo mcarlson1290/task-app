@@ -22,7 +22,7 @@
     ],
     "id": 1,
     "createdAt": "2025-08-06T16:28:37.382Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Broccoli Microgreens",
@@ -50,7 +50,7 @@
     ],
     "id": 2,
     "createdAt": "2025-08-06T16:28:37.479Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Soak Pea Microgreens",
@@ -78,7 +78,7 @@
     ],
     "id": 3,
     "createdAt": "2025-08-06T16:28:37.576Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
@@ -107,7 +107,7 @@
     ],
     "id": 4,
     "createdAt": "2025-08-06T16:28:37.665Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Adjust Nutrients in Microgreen Reservoirs",
@@ -132,7 +132,7 @@
     ],
     "id": 5,
     "createdAt": "2025-08-06T16:28:37.756Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove 5 Dirty Towers and Clean Basins",
@@ -156,7 +156,7 @@
     "instances": "General Maintenance",
     "id": 6,
     "createdAt": "2025-08-06T16:28:37.845Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Bathroom",
@@ -182,7 +182,7 @@
     "hasSharePointChecklist": true,
     "id": 7,
     "createdAt": "2025-08-06T16:28:37.938Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Deep Floor Scrub",
@@ -206,7 +206,7 @@
     "instances": "General Maintenance",
     "id": 8,
     "createdAt": "2025-08-06T16:28:38.029Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Opening",
@@ -234,7 +234,7 @@
     ],
     "id": 9,
     "createdAt": "2025-08-06T16:28:38.122Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Tower Clips",
@@ -260,7 +260,7 @@
     ],
     "id": 10,
     "createdAt": "2025-08-06T16:28:38.213Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Check the Inventory of Leafy Green Stock",
@@ -284,7 +284,7 @@
     "instances": "[Monthly]",
     "id": 11,
     "createdAt": "2025-08-06T16:28:38.306Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Check General Inventory Stock",
@@ -308,7 +308,7 @@
     "instances": "[Monthly]",
     "id": 12,
     "createdAt": "2025-08-06T16:28:38.395Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Check Nutrient Inventory",
@@ -330,7 +330,7 @@
     "dayOfMonth": 1,
     "id": 13,
     "createdAt": "2025-08-06T16:28:38.487Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Uncover the Leafy Green and Herb trays.",
@@ -354,7 +354,7 @@
     "instances": "Summer Crisp",
     "id": 14,
     "createdAt": "2025-08-06T16:28:38.574Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Pea Microgreens",
@@ -382,7 +382,7 @@
     ],
     "id": 15,
     "createdAt": "2025-08-06T16:28:38.667Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Radish Microgreens",
@@ -410,7 +410,7 @@
     ],
     "id": 16,
     "createdAt": "2025-08-06T16:28:38.759Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Mustard Microgreens",
@@ -438,7 +438,7 @@
     ],
     "id": 17,
     "createdAt": "2025-08-06T16:28:38.852Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack",
@@ -462,7 +462,7 @@
     "instances": "Microgreen General Maintainer",
     "id": 18,
     "createdAt": "2025-08-06T16:28:38.942Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove Weight and BO for Pea Microgreens",
@@ -490,7 +490,7 @@
     ],
     "id": 19,
     "createdAt": "2025-08-06T16:28:39.034Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove BO and Move Mustard Microgreens to Watering Rack",
@@ -518,7 +518,7 @@
     ],
     "id": 20,
     "createdAt": "2025-08-06T16:28:39.123Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Pea Microgreens",
@@ -546,7 +546,7 @@
     ],
     "id": 21,
     "createdAt": "2025-08-06T16:28:39.213Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Broccoli Microgreens",
@@ -574,7 +574,7 @@
     ],
     "id": 22,
     "createdAt": "2025-08-06T16:28:39.302Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Radish Microgreens",
@@ -602,7 +602,7 @@
     ],
     "id": 23,
     "createdAt": "2025-08-06T16:28:39.390Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Mustard Microgreens",
@@ -630,7 +630,7 @@
     ],
     "id": 24,
     "createdAt": "2025-08-06T16:28:39.484Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Arugula Microgreens",
@@ -658,7 +658,7 @@
     ],
     "id": 25,
     "createdAt": "2025-08-06T16:28:39.582Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Arugula Micogreens",
@@ -686,7 +686,7 @@
     ],
     "id": 26,
     "createdAt": "2025-08-06T16:28:39.671Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Water Microgreen Germination Trays",
@@ -714,7 +714,7 @@
     ],
     "id": 27,
     "createdAt": "2025-08-06T16:28:39.763Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Change Microgreen Reservoir Water and Clean Shelves",
@@ -738,7 +738,7 @@
     "instances": "General Maintenance",
     "id": 28,
     "createdAt": "2025-08-06T16:28:39.855Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Check Paper Towel Levels",
@@ -762,7 +762,7 @@
     "instances": "[Thursday]",
     "id": 29,
     "createdAt": "2025-08-06T16:28:39.950Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove Garbage from Non-Farm areas",
@@ -786,7 +786,7 @@
     "instances": "[Thursday]",
     "id": 30,
     "createdAt": "2025-08-06T16:28:40.043Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Vacuum the Office and Lobby",
@@ -810,7 +810,7 @@
     "instances": "[Thursday]",
     "id": 31,
     "createdAt": "2025-08-06T16:28:40.138Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Outside Facing Lobby Window",
@@ -834,7 +834,7 @@
     "instances": "[Monthly]",
     "id": 32,
     "createdAt": "2025-08-06T16:28:40.237Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Washing Farm Towels and Filter Socks",
@@ -855,7 +855,7 @@
     "instances": "",
     "id": 33,
     "createdAt": "2025-08-06T16:28:40.333Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Untitled Task",
@@ -876,7 +876,7 @@
     "instances": "WTFS1",
     "id": 34,
     "createdAt": "2025-08-06T16:28:40.442Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Farm Floor",
@@ -904,7 +904,7 @@
     ],
     "id": 35,
     "createdAt": "2025-08-06T16:28:40.544Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Interior Window Cleaning",
@@ -928,7 +928,7 @@
     "instances": "General Maintenance",
     "id": 36,
     "createdAt": "2025-08-06T16:28:40.641Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Check pH and Water Levels in Towers",
@@ -957,7 +957,7 @@
     ],
     "id": 37,
     "createdAt": "2025-08-06T16:28:40.738Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Leafy Greens",
@@ -986,7 +986,7 @@
     ],
     "id": 38,
     "createdAt": "2025-08-06T16:28:40.833Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean NFT Channels Covers",
@@ -1010,7 +1010,7 @@
     "instances": "Medium Priority",
     "id": 39,
     "createdAt": "2025-08-06T16:28:40.932Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Repair Leaking NFT Channels",
@@ -1034,7 +1034,7 @@
     "instances": "Equipment Maintainer",
     "id": 40,
     "createdAt": "2025-08-06T16:28:41.032Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean NFT Channels",
@@ -1058,7 +1058,7 @@
     "instances": "Medium Priority",
     "id": 41,
     "createdAt": "2025-08-06T16:28:41.128Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Replace NFT Channels and Manifolds",
@@ -1082,7 +1082,7 @@
     "instances": "and finalizing the system to ensure optimal function for planting.",
     "id": 42,
     "createdAt": "2025-08-06T16:28:41.236Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Basil Tower",
@@ -1106,7 +1106,7 @@
     "instances": "Moving",
     "id": 43,
     "createdAt": "2025-08-06T16:28:41.336Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Butter Crunch Tower",
@@ -1130,7 +1130,7 @@
     "instances": "Moving",
     "id": 44,
     "createdAt": "2025-08-06T16:28:41.437Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Kale Tower",
@@ -1154,7 +1154,7 @@
     "instances": "Moving",
     "id": 45,
     "createdAt": "2025-08-06T16:28:41.530Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant General Tower",
@@ -1178,7 +1178,7 @@
     "instances": "Moving",
     "id": 46,
     "createdAt": "2025-08-06T16:28:41.632Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Romaine and Red Oak Tower",
@@ -1202,7 +1202,7 @@
     "instances": "Moving",
     "id": 47,
     "createdAt": "2025-08-06T16:28:41.734Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Chives in Residential Tower",
@@ -1226,7 +1226,7 @@
     "instances": "Moving",
     "id": 48,
     "createdAt": "2025-08-06T16:28:41.832Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Baby Arugula in Baby NFT",
@@ -1250,7 +1250,7 @@
     "instances": "Moving",
     "id": 49,
     "createdAt": "2025-08-06T16:28:41.932Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest the Basil Tower",
@@ -1274,7 +1274,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 50,
     "createdAt": "2025-08-06T16:28:42.033Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Butter Crunch Tower",
@@ -1298,7 +1298,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 51,
     "createdAt": "2025-08-06T16:28:42.139Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Romaine and Red Oak Tower",
@@ -1322,7 +1322,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 52,
     "createdAt": "2025-08-06T16:28:42.239Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Chives Tower",
@@ -1346,7 +1346,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 53,
     "createdAt": "2025-08-06T16:28:42.342Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Baby Arugula in the Baby NFT",
@@ -1370,7 +1370,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 54,
     "createdAt": "2025-08-06T16:28:42.447Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Turnip Microgreens",
@@ -1398,7 +1398,7 @@
     ],
     "id": 55,
     "createdAt": "2025-08-06T16:28:42.549Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Spicy Mix Microgreens",
@@ -1426,7 +1426,7 @@
     ],
     "id": 56,
     "createdAt": "2025-08-06T16:28:42.650Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
@@ -1455,7 +1455,7 @@
     ],
     "id": 57,
     "createdAt": "2025-08-06T16:28:42.755Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Remove BO and Move Spicy Mix Microgreens to Watering Rack",
@@ -1483,7 +1483,7 @@
     ],
     "id": 58,
     "createdAt": "2025-08-06T16:28:42.863Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Turnip Microgreens",
@@ -1511,7 +1511,7 @@
     ],
     "id": 59,
     "createdAt": "2025-08-06T16:28:42.965Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Seed Spicy Mix Microgreens",
@@ -1539,7 +1539,7 @@
     ],
     "id": 60,
     "createdAt": "2025-08-06T16:28:43.074Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Kale Tower",
@@ -1563,7 +1563,7 @@
     "instances": "and maintains system cleanliness.",
     "id": 61,
     "createdAt": "2025-08-06T16:28:43.193Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Move Dirty NFT Channels to Storage Room",
@@ -1587,7 +1587,7 @@
     "instances": "General Maintenance",
     "id": 62,
     "createdAt": "2025-08-06T16:28:43.300Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Set Clean NFT Channels",
@@ -1611,7 +1611,7 @@
     "instances": "and ensures smooth transition back into operation.",
     "id": 63,
     "createdAt": "2025-08-06T16:28:43.406Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Tower Basins",
@@ -1635,7 +1635,7 @@
     "instances": "we ensure that the system remains clean and supports healthy plant growth.",
     "id": 64,
     "createdAt": "2025-08-06T16:28:43.509Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Set Clean Towers",
@@ -1659,7 +1659,7 @@
     "instances": "Equipment Maintainer",
     "id": 65,
     "createdAt": "2025-08-06T16:28:43.622Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Clean Tower Garden Pots",
@@ -1688,7 +1688,7 @@
     ],
     "id": 66,
     "createdAt": "2025-08-06T16:28:43.732Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Assemble Tower Gardens",
@@ -1709,7 +1709,7 @@
     "instances": "",
     "id": 67,
     "createdAt": "2025-08-06T16:28:43.827Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Untitled Task",
@@ -1730,7 +1730,7 @@
     "instances": "ATT1",
     "id": 68,
     "createdAt": "2025-08-06T16:28:43.939Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Disassemble Towers",
@@ -1754,7 +1754,7 @@
     "instances": "Equipment Maintainer",
     "id": 69,
     "createdAt": "2025-08-06T16:28:44.047Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Replace Fan and Furnace Filter",
@@ -1780,7 +1780,7 @@
     "hasSharePointChecklist": true,
     "id": 70,
     "createdAt": "2025-08-06T16:28:44.149Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Plant Towers",
@@ -1809,7 +1809,7 @@
     ],
     "id": 71,
     "createdAt": "2025-08-06T16:28:44.253Z",
-    "location": "K"
+    "location": "Kenosha"
   },
   {
     "title": "Harvest Towers",
@@ -1838,6 +1838,6 @@
     ],
     "id": 72,
     "createdAt": "2025-08-06T16:28:44.366Z",
-    "location": "K"
+    "location": "Kenosha"
   }
 ]

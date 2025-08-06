@@ -189,8 +189,7 @@ const RecurringTasks: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       
       // Force refetch with current location
-      queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
-      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
       
       toast({
         title: 'Import Complete',
