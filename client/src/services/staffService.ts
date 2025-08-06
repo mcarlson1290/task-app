@@ -212,30 +212,6 @@ export const deleteStaffMember = async (staffId: string): Promise<void> => {
 
 // Initialize expected staff members who should have access
 export const initializeExpectedStaff = async (): Promise<void> => {
-  console.log('Checking for expected staff members...');
-  
-  // Define expected team members
-  const expectedStaff = [
-    {
-      microsoftId: 'jane-expected',
-      name: 'Jane Smith',
-      email: 'jane@growspace.farm'
-    },
-    {
-      microsoftId: 'matt-expected', 
-      name: 'Matt Johnson',
-      email: 'matt@growspace.farm'
-    }
-  ];
-
-  // Create staff entries for expected members who haven't logged in yet
-  for (const member of expectedStaff) {
-    const existing = await getStaffByEmail(member.email);
-    if (!existing) {
-      console.log(`Creating expected staff member: ${member.name} (${member.email})`);
-      await createStaffFromMicrosoftLogin(member.microsoftId, member.name, member.email);
-    } else {
-      console.log(`Expected staff member already exists: ${member.name}`);
-    }
-  }
+  console.log('Expected staff will be created when they log in via Microsoft SSO');
+  // Removed pre-creation of Jane and Matt - they will appear when they actually log in
 };
