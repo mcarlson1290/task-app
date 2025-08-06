@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit, DollarSign } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
-import { getStoredAuth } from "@/lib/auth";
+import { useUser } from "@/contexts/UserContext";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
 import AddInventoryModal, { AddInventoryData } from "@/components/AddInventoryModal";
@@ -24,8 +24,8 @@ const Inventory: React.FC = () => {
   const [editingItem, setEditingItem] = React.useState<InventoryItem | null>(null);
   const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = React.useState(true);
-  const auth = getStoredAuth();
-  const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  const { currentUser } = useUser();
+  const isManager = currentUser?.role === 'Manager' || currentUser?.role === 'Corporate';
   const queryClient = useQueryClient();
 
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
@@ -212,7 +212,7 @@ Requested Reorder Amount: ${reorderAmount} ${item.unit}
 Supplier: ${item.supplier || 'TBD'}
 
 Requesting Location: Grow Space Vertical Farm
-Requested By: ${auth.user?.name}
+Requested By: ${currentUser?.name}
 Date: ${new Date().toLocaleDateString()}
 
 Please process this reorder request at your earliest convenience.`;
