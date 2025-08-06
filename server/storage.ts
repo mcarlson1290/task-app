@@ -61,6 +61,7 @@ export interface IStorage {
   createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
   updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
   deleteRecurringTask(id: number): Promise<boolean>;
+  resetRecurringTasks(): Promise<boolean>;
 
   // Growing systems
   getGrowingSystem(id: number): Promise<GrowingSystem | undefined>;
@@ -2121,6 +2122,11 @@ class DatabaseStorage implements IStorage {
   async deleteRecurringTask(id: number): Promise<boolean> {
     const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
     return result.rowCount > 0;
+  }
+
+  async resetRecurringTasks(): Promise<boolean> {
+    await db.delete(recurringTasks);
+    return true;
   }
 
   // Other stub implementations to satisfy interface
