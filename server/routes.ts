@@ -639,6 +639,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk update recurring tasks location (migration fix)
+  app.patch("/api/recurring-tasks/bulk-location", async (req, res) => {
+    try {
+      const { location = 'K' } = req.body;
+      const recurringTasks = await storage.getAllRecurringTasks();
+      
+      let updated = 0;
+      for (const task of recurringTasks) {
+        if (!task.location || task.location === null) {
+          await storage.updateRecurringTask(task.id, { location });
+          updated++;
+        }
+      }
+      
+      console.log(`Updated ${updated} recurring tasks with location: ${location}`);
+      res.json({ message: `Updated ${updated} recurring tasks with location`, updated, location });
+    } catch (error) {
+      console.error('Error bulk updating recurring task locations:', error);
+      res.status(500).json({ message: 'Failed to update recurring task locations' });
+    }
+  });
+
   app.patch("/api/recurring-tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -822,6 +844,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete notification" });
     }
   });
+
+
 
   // Growing systems routes
   app.get("/api/growing-systems", async (req, res) => {

@@ -202,6 +202,9 @@ export const migrateSharePointTasks = async (csvText: string) => {
         // Category - determine from title/description
         category: determineCategory(oldTask.Title, oldTask.Description),
         
+        // Add location field - default to 'K' (Kenosha) for imported SharePoint tasks
+        location: 'K',
+        
         // Map to ROLE not user
         assignedRole: mapToRole(oldTask['Assigned To'], oldTask.Title),
         
