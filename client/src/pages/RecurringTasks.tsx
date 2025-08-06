@@ -46,6 +46,14 @@ const RecurringTasks: React.FC = () => {
 
   // Since we're using server-side location filtering, we don't need additional client filtering
   const filteredRecurringTasks = recurringTasks;
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🔍 DEBUG: filteredRecurringTasks updated:', filteredRecurringTasks.length, 'tasks');
+    if (filteredRecurringTasks.length > 0) {
+      console.log('First 3 tasks:', filteredRecurringTasks.slice(0, 3).map(t => ({ id: t.id, title: t.title, location: t.location })));
+    }
+  }, [filteredRecurringTasks]);
 
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
@@ -168,9 +176,12 @@ const RecurringTasks: React.FC = () => {
       
       setImportReport(migrationReport);
       
-      // Refresh the tasks list
+      // Refresh the tasks list with new query keys
       queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      
+      // Force refetch with current location
+      queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
       
       toast({
         title: 'Import Complete',
@@ -272,8 +283,14 @@ const RecurringTasks: React.FC = () => {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredRecurringTasks.map((task) => (
+      {filteredRecurringTasks.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No recurring tasks found for location: {currentLocation.code}</p>
+          <p className="text-sm mt-2">Try switching locations or importing SharePoint tasks above.</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredRecurringTasks.map((task) => (
           <Card key={task.id} className="relative">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -361,22 +378,6 @@ const RecurringTasks: React.FC = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {filteredRecurringTasks.length === 0 && (
-        <div className="text-center py-12">
-          <RotateCcw className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Recurring Tasks</h3>
-          <p className="text-gray-600 mb-4">
-            Create your first recurring task to automate routine operations.
-          </p>
-          <Button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-[#2D8028] hover:bg-[#203B17]"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Recurring Task
-          </Button>
         </div>
       )}
 
