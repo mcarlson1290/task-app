@@ -30,15 +30,18 @@ const RecurringTasks: React.FC = () => {
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations],
     queryFn: async () => {
-      console.log('Fetching recurring tasks for location:', currentLocation.code, 'viewing all:', isViewingAllLocations);
+      console.log('🔍 currentLocation object:', currentLocation);
+      console.log('🔍 Fetching recurring tasks for location:', currentLocation.code, 'viewing all:', isViewingAllLocations);
       const url = isViewingAllLocations 
         ? '/api/recurring-tasks' 
-        : `/api/recurring-tasks?location=${currentLocation.code}`;
+        : `/api/recurring-tasks?location=${encodeURIComponent(currentLocation.code)}`;
       
+      console.log('🔍 Making API call to:', url);
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
       const data = await response.json();
-      console.log(`Fetched ${data.length} recurring tasks from API`);
+      console.log(`🔍 Fetched ${data.length} recurring tasks from API`);
+      console.log('🔍 First task location field:', data.length > 0 ? data[0].location : 'no tasks');
       return data;
     },
     enabled: !!auth.user,
