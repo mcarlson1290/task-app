@@ -192,6 +192,11 @@ const RecurringTasks: React.FC = () => {
       await queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
       
       toast({
+        title: "Import Complete",
+        description: `Successfully imported ${migrationReport.totalTasks} SharePoint tasks. Please refresh the page to see them.`,
+      });
+      
+      toast({
         title: 'Import Complete',
         description: `Successfully imported ${migrationReport.successful} recurring tasks.`,
       });

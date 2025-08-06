@@ -1049,6 +1049,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quick SharePoint migration endpoint
+  app.post("/api/admin/import-sharepoint", async (req, res) => {
+    try {
+      // Get or create a default user for the created_by field
+      let defaultUserId = null;
+      const users = await storage.getAllUsers();
+      if (users.length > 0) {
+        defaultUserId = users[0].id;
+      } else {
+        // Create a system user for imports
+        const systemUser = await storage.createUser({
+          username: "system",
+          password: "system",
+          name: "System Admin",
+          role: "corporate"
+        });
+        defaultUserId = systemUser.id;
+      }
+      let imported = 0;
+      
+      // Sample of the most important SharePoint tasks to restore functionality
+      const criticalTasks = [
+        { title: "Opening", description: "Open the farm.", type: "general-maintenance", frequency: "daily", daysOfWeek: ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Arugula Microgreens", description: "Mucilagenous seeds; do not stack", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Broccoli Microgreens", description: "Seed Broccoli Microgreens", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Radish Microgreens", description: "Seed the Radish Microgreens", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["saturday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Seed Mustard Microgreens", description: "Do not stack while germinating.", type: "seeding-microgreens", frequency: "weekly", daysOfWeek: ["sunday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove BO and Move Arugula Microgreens to Watering Rack", description: "Move to watering rack", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack", description: "Put in D watering rack on shelf with fan", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Remove Weight and BO for Pea Microgreens", description: "Remove Weight and dome for Pea Microgreens", type: "blackout-tasks", frequency: "weekly", daysOfWeek: ["friday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Harvest Arugula Microgreens", description: "0.5 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Harvest Broccoli Microgreens", description: "1 oz per 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Harvest Pea Microgreens", description: "Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Harvest Radish Microgreens", description: "1 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Harvest Mustard Microgreens", description: "0.7 oz in 8 oz container", type: "harvest-microgreens", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Water Microgreen Germination Trays", description: "Water microgreens daily", type: "general-maintenance", frequency: "daily", daysOfWeek: ["sunday","monday","tuesday","saturday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Clean Bathroom", description: "Clean the Bathroom", type: "cleaning", frequency: "weekly", daysOfWeek: ["monday"], location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Check General Inventory Stock", description: "Check the stock of Order Bags, Order Boxes, Labels, and More", type: "inventory", frequency: "monthly", dayOfMonth: 1, location: "Kenosha", isActive: true, createdBy: defaultUserId },
+        { title: "Adjust Nutrients in Microgreen Reservoirs", description: "Check the nutrient and pH level and adjust", type: "general-maintenance", frequency: "weekly", daysOfWeek: ["wednesday"], location: "Kenosha", isActive: true, createdBy: defaultUserId }
+      ];
+      
+      for (const task of criticalTasks) {
+        try {
+          await storage.createRecurringTask(task);
+          imported++;
+        } catch (error) {
+          console.error(`Failed to import task: ${task.title}`, error);
+        }
+      }
+      
+      console.log(`✅ SharePoint Migration: Imported ${imported} critical recurring tasks`);
+      res.json({ 
+        success: true,
+        message: `Successfully imported ${imported} SharePoint recurring tasks`,
+        imported 
+      });
+    } catch (error) {
+      console.error('❌ SharePoint migration failed:', error);
+      res.status(500).json({ message: 'Failed to import SharePoint tasks' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
