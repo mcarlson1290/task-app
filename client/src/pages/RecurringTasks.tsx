@@ -40,8 +40,13 @@ const RecurringTasks: React.FC = () => {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
       const data = await response.json();
-      console.log(`🔍 Fetched ${data.length} recurring tasks from API`);
-      console.log('🔍 First task location field:', data.length > 0 ? data[0].location : 'no tasks');
+      console.log(`🔍 Fetched ${data.length} recurring tasks from API for location: ${currentLocation.code}`);
+      console.log('🔍 First few tasks:');
+      if (data.length > 0) {
+        data.slice(0, 3).forEach((task: any, index: number) => {
+          console.log(`  ${index + 1}. ${task.title} (location: ${task.location})`);
+        });
+      }
       return data;
     },
     enabled: !!auth.user,
@@ -185,6 +190,7 @@ const RecurringTasks: React.FC = () => {
       
       // Force refetch with current location
       queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
+      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
       
       toast({
         title: 'Import Complete',

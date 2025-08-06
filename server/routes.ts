@@ -661,6 +661,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk update ALL recurring tasks location (for SharePoint migration fix)
+  app.post("/api/recurring-tasks/bulk-update-location", async (req, res) => {
+    try {
+      const { fromLocation, toLocation } = req.body;
+      const recurringTasks = await storage.getAllRecurringTasks();
+      
+      let updated = 0;
+      for (const task of recurringTasks) {
+        // Update all tasks with the specified fromLocation, or update all if no fromLocation specified
+        if (!fromLocation || task.location === fromLocation) {
+          await storage.updateRecurringTask(task.id, { location: toLocation });
+          updated++;
+          console.log(`Updated task "${task.title}" location from "${task.location}" to "${toLocation}"`);
+        }
+      }
+      
+      console.log(`Bulk updated ${updated} recurring tasks to location: ${toLocation}`);
+      res.json({ message: `Updated ${updated} recurring tasks to location: ${toLocation}`, updated, toLocation });
+    } catch (error) {
+      console.error('Error bulk updating recurring task locations:', error);
+      res.status(500).json({ message: 'Failed to bulk update recurring task locations' });
+    }
+  });
+
   app.patch("/api/recurring-tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
