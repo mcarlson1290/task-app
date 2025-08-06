@@ -12,7 +12,7 @@ import { RecurringTask } from '@shared/schema';
 import RecurringTaskModal from '@/components/RecurringTaskModal';
 import DeleteRecurringTaskModal from '@/components/DeleteRecurringTaskModal';
 import { useLocation } from '@/contexts/LocationContext';
-
+import { migrateSharePointTasks, importRecurringTasks } from '@/utils/sharePointMigration';
 
 const RecurringTasks: React.FC = () => {
   const auth = getStoredAuth();
@@ -25,27 +25,22 @@ const RecurringTasks: React.FC = () => {
   const [deletingTask, setDeletingTask] = useState<RecurringTask | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importReport, setImportReport] = useState<any>(null);
-
+  const [showImportSection, setShowImportSection] = useState(false);
 
   const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations],
     queryFn: async () => {
       console.log('🔍 currentLocation object:', currentLocation);
       console.log('🔍 Fetching recurring tasks for location:', currentLocation.code, 'viewing all:', isViewingAllLocations);
-      // Always fetch ALL tasks initially, then filter on frontend for better debugging
-      const url = '/api/recurring-tasks';
+      const url = isViewingAllLocations 
+        ? '/api/recurring-tasks' 
+        : `/api/recurring-tasks?location=${encodeURIComponent(currentLocation.code)}`;
       
       console.log('🔍 Making API call to:', url);
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
-      let data = await response.json();
-      console.log(`🔍 Fetched ${data.length} total recurring tasks from API`);
-      
-      // Filter by location on frontend if not viewing all locations
-      if (!isViewingAllLocations && currentLocation.code !== 'All') {
-        data = data.filter((task: any) => task.location === currentLocation.code || task.location === 'Kenosha');
-        console.log(`🔍 After location filter (${currentLocation.code}): ${data.length} tasks`);
-      }
+      const data = await response.json();
+      console.log(`🔍 Fetched ${data.length} recurring tasks from API for location: ${currentLocation.code}`);
       console.log('🔍 First few tasks:');
       if (data.length > 0) {
         data.slice(0, 3).forEach((task: any, index: number) => {
@@ -236,9 +231,14 @@ const RecurringTasks: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Recurring Tasks</h1>
-          <p className="text-gray-600 mt-1">Manage automated task schedules</p>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowImportSection(!showImportSection)}
+            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+          >
+            📤 SharePoint Import
+          </Button>
         </div>
         <Button 
           onClick={() => setShowAddModal(true)}
@@ -249,10 +249,57 @@ const RecurringTasks: React.FC = () => {
         </Button>
       </div>
 
+      {/* SharePoint Import Section */}
+      {showImportSection && (
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-blue-800">Import SharePoint Recurring Tasks</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-gray-600">
+              <p className="mb-2">Upload your SharePoint "Reoccurring Tasks.csv" file to import existing recurring tasks into the system.</p>
+              <p className="text-xs text-yellow-700 bg-yellow-100 p-2 rounded">
+                ⚠️ Note: Tasks marked as "DISABLED" in SharePoint will be skipped. Tasks with SharePoint checklists will need manual recreation.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                disabled={isImporting}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {isImporting && (
+                <div className="flex items-center text-blue-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  Importing...
+                </div>
+              )}
+            </div>
+            
+            {importReport && (
+              <div className="mt-4 p-3 bg-green-100 border border-green-200 rounded">
+                <h4 className="font-semibold text-green-800">Import Complete!</h4>
+                <div className="text-sm text-green-700 mt-1">
+                  <p>✅ Successfully imported: {importReport.successful} tasks</p>
+                  {importReport.failed > 0 && <p>❌ Failed: {importReport.failed} tasks</p>}
+                  {importReport.warnings.length > 0 && (
+                    <p>⚠️ Tasks with SharePoint checklists: {importReport.warnings.length}</p>
+                  )}
+                  <p className="text-xs mt-1">Check browser console for detailed report</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {filteredRecurringTasks.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <p>No recurring tasks found for location: {currentLocation.code}</p>
-          <p className="text-sm mt-2">Try creating a new recurring task or checking your location settings.</p>
+          <p className="text-sm mt-2">Try switching locations or importing SharePoint tasks above.</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
