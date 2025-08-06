@@ -26,7 +26,7 @@ import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { initializeProductionData } from "@/data/initialData";
 import { initializeCleanState } from "@/utils/dataCleanup";
-import { createStaffFromMicrosoftLogin, updateLastActive } from "@/services/staffService";
+import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaff } from "@/services/staffService";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -93,6 +93,15 @@ function AppContent() {
 
         console.log('Initialized user:', user.name, user.email, user.role);
         setCurrentUser(user);
+
+        // Initialize expected staff members if current user is corporate
+        if (role === 'Corporate') {
+          try {
+            await initializeExpectedStaff();
+          } catch (error) {
+            console.error('Failed to initialize expected staff:', error);
+          }
+        }
       }
       setIsLoading(false);
     };

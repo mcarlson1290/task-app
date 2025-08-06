@@ -83,15 +83,13 @@ export const createStaffFromMicrosoftLogin = async (
   name: string,
   email: string
 ): Promise<StaffMember> => {
-  const staff = await getAllStaff();
-  
-  // Check if already exists
-  const existing = await getStaffByEmail(email) || await getStaffByMicrosoftId(microsoftId);
+  // Check if already exists by email (more reliable than checking staff array)
+  const existing = await getStaffByEmail(email);
   if (existing) {
+    console.log('Found existing staff member:', existing.fullName, existing.email);
     // Update last active and return existing
     existing.lastActive = new Date().toISOString();
-    await updateStaffMember(existing);
-    return existing;
+    return existing; // Don't call update to avoid API call loops
   }
 
   // Determine role based on email
@@ -209,5 +207,35 @@ export const deleteStaffMember = async (staffId: string): Promise<void> => {
   } catch (error) {
     console.error('Error deleting staff member:', error);
     throw error;
+  }
+};
+
+// Initialize expected staff members who should have access
+export const initializeExpectedStaff = async (): Promise<void> => {
+  console.log('Checking for expected staff members...');
+  
+  // Define expected team members
+  const expectedStaff = [
+    {
+      microsoftId: 'jane-expected',
+      name: 'Jane Smith',
+      email: 'jane@growspace.farm'
+    },
+    {
+      microsoftId: 'matt-expected', 
+      name: 'Matt Johnson',
+      email: 'matt@growspace.farm'
+    }
+  ];
+
+  // Create staff entries for expected members who haven't logged in yet
+  for (const member of expectedStaff) {
+    const existing = await getStaffByEmail(member.email);
+    if (!existing) {
+      console.log(`Creating expected staff member: ${member.name} (${member.email})`);
+      await createStaffFromMicrosoftLogin(member.microsoftId, member.name, member.email);
+    } else {
+      console.log(`Expected staff member already exists: ${member.name}`);
+    }
   }
 };

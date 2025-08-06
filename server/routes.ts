@@ -45,22 +45,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/staff", async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      // Transform users to staff format for frontend compatibility
+      // Transform ALL users to staff format for frontend compatibility
       const staff = users.map(user => ({
         id: user.id.toString(),
-        fullName: user.name,
+        fullName: user.name || 'Unknown User',
         email: user.username,
         phone: '',
         location: 'Kenosha', // Default location
         rolesAssigned: user.role ? user.role.split(',').map(r => r.trim()) : ['General Staff'],
-        dateHired: new Date().toISOString().split('T')[0],
+        dateHired: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         payRate: 0,
         trainingCompleted: [],
         trainingInProgress: [],
-        preferredHours: '',
+        preferredHours: 'Flexible',
         activeStatus: user.approved ? 'Active' : 'Pending',
         lastTaskCompleted: '',
-        managerNotes: '',
+        managerNotes: user.role?.includes('Corporate') ? 'Corporate Manager' : 'Staff Member',
         tasksCompleted: 0,
         avgTaskDuration: '0m',
         onTimeRate: 100,
@@ -68,8 +68,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastActive: new Date().toISOString(),
         password: undefined
       }));
+      
+      console.log(`Returning ${staff.length} staff members from ${users.length} users`);
       res.json(staff);
     } catch (error) {
+      console.error('Staff fetch error:', error);
       res.status(500).json({ message: "Failed to fetch staff" });
     }
   });
@@ -77,6 +80,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/staff", async (req, res) => {
     try {
       const staffData = req.body;
+      
+      // Check if user already exists by email to prevent duplicates
+      const existingUser = await storage.getUserByUsername(staffData.email);
+      if (existingUser) {
+        // Return existing user as staff format
+        const existingStaff = {
+          id: existingUser.id.toString(),
+          fullName: existingUser.name,
+          email: existingUser.username,
+          phone: '',
+          location: 'Kenosha', // Default location
+          rolesAssigned: existingUser.role ? existingUser.role.split(',').map(r => r.trim()) : ['General Staff'],
+          dateHired: new Date().toISOString().split('T')[0],
+          payRate: 0,
+          trainingCompleted: [],
+          trainingInProgress: [],
+          preferredHours: 'Flexible',
+          activeStatus: existingUser.approved ? 'Active' : 'Pending',
+          lastTaskCompleted: '',
+          managerNotes: 'Updated from Microsoft login',
+          tasksCompleted: 0,
+          avgTaskDuration: '0m',
+          onTimeRate: 100,
+          microsoftId: existingUser.id.toString(),
+          lastActive: new Date().toISOString()
+        };
+        return res.json(existingStaff);
+      }
+      
       // Convert staff format to user format
       const userData = {
         username: staffData.email,
@@ -88,6 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(userData);
       res.json({ ...staffData, id: user.id.toString() });
     } catch (error) {
+      console.error('Staff creation error:', error);
       res.status(500).json({ message: "Failed to create staff member" });
     }
   });
@@ -153,6 +186,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users.map(user => ({ ...user, password: undefined })));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", async (req, res) => {
+    try {
+      const userData = req.body;
+      const user = await storage.createUser(userData);
+      res.json({ ...user, password: undefined });
+    } catch (error) {
+      console.error('User creation error:', error);
+      res.status(500).json({ message: "Failed to create user" });
     }
   });
 
