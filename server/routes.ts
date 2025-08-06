@@ -65,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         avgTaskDuration: '0m',
         onTimeRate: 100,
         microsoftId: user.id.toString(),
-        lastActive: new Date().toISOString(),
+        lastActive: user.lastActive ? new Date(user.lastActive).toISOString() : null,
         password: undefined
       }));
       
@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           avgTaskDuration: '0m',
           onTimeRate: 100,
           microsoftId: existingUser.id.toString(),
-          lastActive: new Date().toISOString()
+          lastActive: existingUser.lastActive ? new Date(existingUser.lastActive).toISOString() : null
         };
         return res.json(existingStaff);
       }
@@ -115,7 +115,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: 'temp-password', // Will be set via Microsoft auth
         name: staffData.fullName,
         role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : 'technician',
-        approved: staffData.activeStatus === 'Active'
+        approved: staffData.activeStatus === 'Active',
+        lastActive: new Date() // Set last active on first creation
       };
       const user = await storage.createUser(userData);
       res.json({ ...staffData, id: user.id.toString() });
@@ -176,6 +177,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete staff member" });
+    }
+  });
+
+  // Activity tracking endpoint
+  app.post("/api/users/:id/activity", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.updateUser(userId, { lastActive: new Date() });
+      if (user) {
+        res.json({ message: "Activity updated", lastActive: user.lastActive });
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    } catch (error) {
+      console.error('Activity update error:', error);
+      res.status(500).json({ message: "Failed to update activity" });
     }
   });
 

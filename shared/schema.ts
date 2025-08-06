@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   role: text("role").notNull(), // 'technician', 'manager', 'corporate'
   approved: boolean("approved").default(false),
   location: text("location").default('Kenosha'), // User's assigned location
+  lastActive: timestamp("last_active"), // Track when user was last active
   createdAt: timestamp("created_at").defaultNow(),
 });
 

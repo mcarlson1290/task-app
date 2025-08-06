@@ -1,0 +1,141 @@
+// Replit Instructions: Add Last Active Tracking
+
+// Step 1: Update the staff data structure to include lastActive
+// In your staff data model or wherever you store staff info:
+
+const staffSchema = {
+  id: string,
+  name: string,
+  email: string,
+  role: string,
+  hireDate: string,
+  payRate: number,
+  training: number,
+  status: string,
+  lastActive: string, // Add this field - ISO date string or null
+  // ... other fields
+};
+
+// Step 2: Update the Microsoft login handler to track activity
+// In your authentication success handler:
+
+const handleLoginSuccess = async (userData) => {
+  const { email, name } = userData;
+  
+  // Check if staff member exists
+  const existingStaff = staff.find(s => s.email === email);
+  
+  if (existingStaff) {
+    // Update last active time
+    updateStaffMember(existingStaff.id, {
+      ...existingStaff,
+      lastActive: new Date().toISOString()
+    });
+  } else {
+    // Create new staff member with lastActive set
+    const newStaff = {
+      id: generateId(),
+      name: name,
+      email: email,
+      role: 'Staff',
+      hireDate: new Date().toISOString(),
+      payRate: 0,
+      training: 0,
+      status: 'Active',
+      lastActive: new Date().toISOString(), // Set on first login
+    };
+    addStaffMember(newStaff);
+  }
+  
+  // Continue with normal login flow
+  setCurrentUser(userData);
+};
+
+// Step 3: Update activity on any user action
+// Add this helper function to update last active time:
+
+const updateUserActivity = (userEmail) => {
+  const staff = getStaffByEmail(userEmail);
+  if (staff) {
+    updateStaffMember(staff.id, {
+      ...staff,
+      lastActive: new Date().toISOString()
+    });
+  }
+};
+
+// Call this function on key actions:
+// - When user completes a task
+// - When user creates/edits inventory
+// - When user accesses different pages
+// - Every 5 minutes while user is active
+
+// Example in a task completion:
+const completeTask = (taskId) => {
+  // ... existing task completion logic
+  updateUserActivity(currentUser.email);
+};
+
+// Step 4: Format the Last Active display
+// In your Staff Data table component:
+
+const formatLastActive = (lastActive) => {
+  if (!lastActive) return 'Never';
+  
+  const date = new Date(lastActive);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} mins ago`;
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  // For older dates, show the actual date
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
+};
+
+// In your table row:
+<td>{formatLastActive(staff.lastActive)}</td>
+
+// Step 5: Optional - Add activity tracking hook
+// This will update activity every 5 minutes while user is active:
+
+const useActivityTracking = (userEmail) => {
+  useEffect(() => {
+    if (!userEmail) return;
+    
+    // Update immediately on mount
+    updateUserActivity(userEmail);
+    
+    // Update every 5 minutes
+    const interval = setInterval(() => {
+      updateUserActivity(userEmail);
+    }, 5 * 60 * 1000);
+    
+    // Update on user interaction
+    const handleUserActivity = () => {
+      updateUserActivity(userEmail);
+    };
+    
+    // Listen for clicks or key presses
+    document.addEventListener('click', handleUserActivity);
+    document.addEventListener('keypress', handleUserActivity);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('click', handleUserActivity);
+      document.removeEventListener('keypress', handleUserActivity);
+    };
+  }, [userEmail]);
+};
+
+// Use in your main App component:
+useActivityTracking(currentUser?.email);

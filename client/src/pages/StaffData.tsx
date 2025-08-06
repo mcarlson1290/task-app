@@ -11,6 +11,7 @@ import {
   canAssignRole,
   type StaffMember 
 } from '@/services/staffService';
+import { formatLastActive } from '@/hooks/useActivityTracking';
 
 // Mock staff data with location codes
 const mockStaff = [
@@ -209,7 +210,7 @@ const StaffTableRow: React.FC<{
       </td>
       <td>
         <span className="last-active">
-          {formatTimeAgo(person.lastTaskCompleted)}
+          {formatLastActive(person.lastActive)}
         </span>
       </td>
       <td>

@@ -27,6 +27,7 @@ import { LocationProvider } from "@/contexts/LocationContext";
 import { initializeProductionData } from "@/data/initialData";
 import { initializeCleanState } from "@/utils/dataCleanup";
 import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaff } from "@/services/staffService";
+import { useActivityTracking } from "@/hooks/useActivityTracking";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -45,6 +46,9 @@ function AppContent() {
   const { accounts, instance } = useMsal();
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Activity tracking for the current user
+  useActivityTracking(currentUser?.id);
 
   useEffect(() => {
     const initializeUser = async () => {
