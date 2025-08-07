@@ -106,7 +106,21 @@
     ],
     "id": 3,
     "createdAt": "2025-08-06T16:28:37.576Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "other",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
@@ -135,7 +149,21 @@
     ],
     "id": 4,
     "createdAt": "2025-08-06T16:28:37.665Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "blackout-tasks",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Adjust Nutrients in Microgreen Reservoirs",

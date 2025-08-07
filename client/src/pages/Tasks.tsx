@@ -96,14 +96,14 @@ const Tasks: React.FC = () => {
   }, [activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.code }],
+    queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.name }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (auth.user?.role === 'technician') {
         params.append('userId', auth.user.id.toString());
       }
       if (!isViewingAllLocations) {
-        params.append('location', currentLocation.code);
+        params.append('location', currentLocation.name);
       }
       const url = `/api/tasks?${params.toString()}`;
       const response = await fetch(url);
@@ -114,11 +114,11 @@ const Tasks: React.FC = () => {
   });
 
   const { data: recurringTasks = [] } = useQuery({
-    queryKey: ["/api/recurring-tasks", { location: currentLocation.code }],
+    queryKey: ["/api/recurring-tasks", { location: currentLocation.name }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (!isViewingAllLocations) {
-        params.append('location', currentLocation.code);
+        params.append('location', currentLocation.name);
       }
       const url = `/api/recurring-tasks?${params.toString()}`;
       const response = await fetch(url);
@@ -271,8 +271,11 @@ const Tasks: React.FC = () => {
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
           const filterDateStr = formatDateForComparison(dateFilter);
-          return taskDateStr === filterDateStr;
+          const matches = taskDateStr === filterDateStr;
+          console.log(`🔍 Date filter debug: Task "${task.title}" due ${taskDateStr} vs filter ${filterDateStr} = ${matches ? 'MATCH' : 'NO MATCH'}`);
+          return matches;
         }
+        console.log(`🔍 Date filter debug: Task "${task.title}" has no dueDate, skipping`);
         return false; // Tasks without due dates don't appear in date-filtered views
       });
     }
