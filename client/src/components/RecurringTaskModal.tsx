@@ -184,7 +184,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       await onSave({
         ...formData,
         id: task?.id,
-        location: currentLocation.code
+        location: currentLocation.name
       });
       // onClose will be called by the parent component on successful save
     } catch (error) {
