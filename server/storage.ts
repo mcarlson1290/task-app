@@ -1531,7 +1531,56 @@ export class MemStorage implements IStorage {
     return true;
   }
 
-  // Utility method to check if a task already exists for a specific date
+  // Method to regenerate ALL task instances (complete fix)
+  async regenerateAllTaskInstances(): Promise<{ totalRecurringTasks: number, totalGenerated: number, totalDeleted: number }> {
+    console.log(`🔄 REGENERATING ALL TASK INSTANCES WITH CORRECTED LOGIC`);
+    
+    const today = new Date();
+    let totalDeleted = 0;
+    let totalGenerated = 0;
+    
+    // Delete ALL future pending task instances from recurring tasks
+    const taskIdsToDelete = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      return task?.isRecurring === true && 
+             task?.status === 'pending' && 
+             task?.dueDate && new Date(task.dueDate) >= today;
+    });
+    
+    taskIdsToDelete.forEach(taskId => this.tasks.delete(taskId));
+    totalDeleted = taskIdsToDelete.length;
+    console.log(`🗑️ Deleted ${totalDeleted} future pending recurring task instances`);
+    
+    // Regenerate instances for ALL recurring tasks with the corrected logic
+    const recurringTasks = Array.from(this.recurringTasks.values());
+    console.log(`📋 Found ${recurringTasks.length} recurring tasks to regenerate`);
+    
+    for (const recurringTask of recurringTasks) {
+      if (recurringTask.isActive) {
+        const beforeCount = this.tasks.size;
+        await this.generateTaskInstances(recurringTask);
+        const afterCount = this.tasks.size;
+        const generatedForThisTask = afterCount - beforeCount;
+        totalGenerated += generatedForThisTask;
+        console.log(`✅ Generated ${generatedForThisTask} instances for: ${recurringTask.title}`);
+      } else {
+        console.log(`⏸️ Skipped inactive task: ${recurringTask.title}`);
+      }
+    }
+    
+    // Persist all changes
+    await this.persistData();
+    
+    console.log(`🎉 REGENERATION COMPLETE: ${totalDeleted} deleted, ${totalGenerated} generated from ${recurringTasks.length} recurring tasks`);
+    
+    return {
+      totalRecurringTasks: recurringTasks.length,
+      totalGenerated,
+      totalDeleted
+    };
+  }
+
+  // Utility method to check if a task already exists for a specific date (UTC-aware)
   private taskExistsForDate(recurringTaskId: number, targetDate: Date): boolean {
     const existingTasks = Array.from(this.tasks.values()).filter(t => t.recurringTaskId === recurringTaskId);
     
@@ -1541,152 +1590,120 @@ export class MemStorage implements IStorage {
       const taskDate = new Date(task.dueDate);
       const checkDate = new Date(targetDate);
       
-      // Compare dates ignoring time
-      return taskDate.getFullYear() === checkDate.getFullYear() &&
-             taskDate.getMonth() === checkDate.getMonth() &&
-             taskDate.getDate() === checkDate.getDate();
+      // Use UTC comparison to avoid timezone issues
+      return taskDate.getUTCFullYear() === checkDate.getUTCFullYear() &&
+             taskDate.getUTCMonth() === checkDate.getUTCMonth() &&
+             taskDate.getUTCDate() === checkDate.getUTCDate();
     });
   }
 
-  // Generate task instances from recurring task pattern with proper visibility ranges
+  // Generate task instances from recurring task pattern with proper UTC-aware date handling
   private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
     console.log(`=== GENERATING TASK INSTANCES FOR: ${recurringTask.title} ===`);
+    
+    // Use UTC-aware date creation to avoid timezone issues
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
     const instances: Task[] = [];
     
-    // For monthly/bi-weekly, generate tasks for current and next 2 months
-    if (recurringTask.frequency === 'monthly' || recurringTask.frequency === 'bi-weekly') {
-      const generatedTaskIds = new Set<string>(); // Track unique tasks to avoid duplicates
-      
+    if (recurringTask.frequency === 'monthly') {
+      // Monthly tasks: generate for current and next 2 months
       for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
-        const checkMonth = new Date(today);
-        checkMonth.setMonth(today.getMonth() + monthOffset);
+        const targetYear = today.getFullYear();
+        const targetMonth = today.getMonth() + monthOffset;
         
-        const year = checkMonth.getFullYear();
-        const month = checkMonth.getMonth();
-        const lastDay = this.getLastDayOfMonth(checkMonth);
+        // Handle year rollover
+        const actualYear = targetYear + Math.floor(targetMonth / 12);
+        const actualMonth = targetMonth % 12;
         
-        if (recurringTask.frequency === 'monthly') {
-          // Monthly: one task per month, visible from 1st, due on last day
-          const taskId = `${recurringTask.id}-${year}-${month}`;
-          if (!generatedTaskIds.has(taskId)) {
-            // FIXED: Create dates at noon to avoid timezone shifts
-            const visibleDate = new Date(year, month, 1, 12, 0, 0); // Visible from 1st at noon
-            const dueDate = new Date(year, month + 1, 0, 12, 0, 0); // Last day of month at noon
-            
-            console.log(`Checking monthly task for ${year}-${month+1}: visible ${visibleDate.toLocaleDateString()}, due ${dueDate.toLocaleDateString()}`);
-            
-            // CRITICAL: Check if ANY task already exists for this date
-            if (this.taskExistsForDate(recurringTask.id, dueDate)) {
-              console.log(`❌ SKIPPING - Task already exists for ${dueDate.toLocaleDateString()}`);
-            } else if (today <= dueDate) {
-              console.log(`✅ CREATING - No task exists for ${dueDate.toLocaleDateString()}`);
-              const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
-              instances.push(instance);
-              this.tasks.set(instance.id, instance); // Save to storage
-              generatedTaskIds.add(taskId);
-            } else {
-              console.log(`❌ SKIPPING - Task is past due (${dueDate.toLocaleDateString()})`);
-            }
-          }
-        } else if (recurringTask.frequency === 'bi-weekly') {
-          // Bi-weekly: two tasks per month
-          
-          // First half: 1st-14th
-          const firstHalfId = `${recurringTask.id}-${year}-${month}-1`;
-          if (!generatedTaskIds.has(firstHalfId)) {
-            // FIXED: Create dates at noon to avoid timezone shifts
-            const visibleDate1 = new Date(year, month, 1, 12, 0, 0);  // Visible from 1st at noon
-            const dueDate1 = new Date(year, month, 14, 12, 0, 0);  // Due on the 14th at noon
-            
-            console.log(`Checking bi-weekly first half for ${year}-${month+1}: visible ${visibleDate1.toLocaleDateString()}, due ${dueDate1.toLocaleDateString()}`);
-            
-            // CRITICAL: Check if ANY task already exists for this date
-            if (this.taskExistsForDate(recurringTask.id, dueDate1)) {
-              console.log(`❌ SKIPPING - Task already exists for ${dueDate1.toLocaleDateString()}`);
-            } else if (today <= dueDate1) {
-              console.log(`✅ CREATING - No task exists for ${dueDate1.toLocaleDateString()}`);
-              const instance1 = await this.createTaskInstanceWithDates(recurringTask, visibleDate1, dueDate1);
-              instances.push(instance1);
-              this.tasks.set(instance1.id, instance1); // Save to storage
-              generatedTaskIds.add(firstHalfId);
-            } else {
-              console.log(`❌ SKIPPING - Task is past due (${dueDate1.toLocaleDateString()})`);
-            }
-          }
-          
-          // Second half: 15th-last day
-          const secondHalfId = `${recurringTask.id}-${year}-${month}-2`;
-          if (!generatedTaskIds.has(secondHalfId)) {
-            // FIXED: Create dates at noon to avoid timezone shifts
-            const visibleDate2 = new Date(year, month, 15, 12, 0, 0); // Visible from 15th at noon
-            const dueDate2 = new Date(year, month + 1, 0, 12, 0, 0); // Last day of current month at noon
-            
-            console.log(`Checking bi-weekly second half for ${year}-${month+1}: visible ${visibleDate2.toLocaleDateString()}, due ${dueDate2.toLocaleDateString()}`);
-            
-            // CRITICAL: Check if ANY task already exists for this date
-            if (this.taskExistsForDate(recurringTask.id, dueDate2)) {
-              console.log(`❌ SKIPPING - Task already exists for ${dueDate2.toLocaleDateString()}`);
-            } else if (today <= dueDate2) {
-              console.log(`✅ CREATING - No task exists for ${dueDate2.toLocaleDateString()}`);
-              const instance2 = await this.createTaskInstanceWithDates(recurringTask, visibleDate2, dueDate2);
-              instances.push(instance2);
-              this.tasks.set(instance2.id, instance2); // Save to storage
-              generatedTaskIds.add(secondHalfId);
-            } else {
-              console.log(`❌ SKIPPING - Task is past due (${dueDate2.toLocaleDateString()})`);
-            }
-          }
+        // Monthly task due on last day of month
+        const lastDay = new Date(actualYear, actualMonth + 1, 0).getDate();
+        const dueDate = new Date(Date.UTC(actualYear, actualMonth, lastDay, 12, 0, 0));
+        const visibleDate = new Date(Date.UTC(actualYear, actualMonth, 1, 12, 0, 0));
+        
+        console.log(`Checking monthly task for ${actualYear}-${actualMonth + 1}: due ${dueDate.toISOString()}`);
+        
+        if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
+          console.log(`✅ CREATING - Monthly task for ${dueDate.toISOString()}`);
+          const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
+          instances.push(instance);
+          this.tasks.set(instance.id, instance);
+        } else {
+          console.log(`❌ SKIPPING - Task exists or past due`);
+        }
+      }
+    } else if (recurringTask.frequency === 'bi-weekly') {
+      // Bi-weekly tasks: generate for current and next 2 months
+      for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+        const targetYear = today.getFullYear();
+        const targetMonth = today.getMonth() + monthOffset;
+        
+        // Handle year rollover
+        const actualYear = targetYear + Math.floor(targetMonth / 12);
+        const actualMonth = targetMonth % 12;
+        
+        // First bi-weekly task (due 14th of month)
+        const firstDueDate = new Date(Date.UTC(actualYear, actualMonth, 14, 12, 0, 0));
+        const firstVisibleDate = new Date(Date.UTC(actualYear, actualMonth, 1, 12, 0, 0));
+        
+        if (firstDueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, firstDueDate)) {
+          console.log(`✅ CREATING - Bi-weekly first half for ${firstDueDate.toISOString()}`);
+          const instance1 = await this.createTaskInstanceWithDates(recurringTask, firstVisibleDate, firstDueDate);
+          instances.push(instance1);
+          this.tasks.set(instance1.id, instance1);
+        }
+        
+        // Second bi-weekly task (due last day of month)
+        const lastDay = new Date(actualYear, actualMonth + 1, 0).getDate();
+        const secondDueDate = new Date(Date.UTC(actualYear, actualMonth, lastDay, 12, 0, 0));
+        const secondVisibleDate = new Date(Date.UTC(actualYear, actualMonth, 15, 12, 0, 0));
+        
+        if (secondDueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, secondDueDate)) {
+          console.log(`✅ CREATING - Bi-weekly second half for ${secondDueDate.toISOString()}`);
+          const instance2 = await this.createTaskInstanceWithDates(recurringTask, secondVisibleDate, secondDueDate);
+          instances.push(instance2);
+          this.tasks.set(instance2.id, instance2);
         }
       }
     } else {
       // Daily/weekly tasks - generate for next 30 days
-      const endGeneration = new Date();
-      endGeneration.setDate(endGeneration.getDate() + 30);
+      const endDate = new Date(todayUTC);
+      endDate.setDate(endDate.getDate() + 30);
       
-      let currentDate = new Date(today);
+      let currentDate = new Date(todayUTC);
       
-      while (currentDate <= endGeneration) {
+      while (currentDate <= endDate) {
         let shouldCreate = false;
         
-        switch (recurringTask.frequency) {
-          case 'daily':
-            // For daily tasks, check if specific days are selected
-            if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
-              const dayOfWeek = currentDate.getDay();
-              const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-              const currentDayName = dayNames[dayOfWeek];
-              shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
-            } else {
-              shouldCreate = true; // No specific days selected, create every day
-            }
-            break;
-            
-          case 'weekly':
-            // Check if current day matches selected days
-            const dayOfWeek = currentDate.getDay();
+        if (recurringTask.frequency === 'daily') {
+          // For daily tasks, check if specific days are selected
+          if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+            const dayOfWeek = currentDate.getUTCDay();
             const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const currentDayName = dayNames[dayOfWeek];
-            const selectedDays = recurringTask.daysOfWeek || [];
-            shouldCreate = selectedDays.includes(currentDayName);
-            break;
-        }
-        
-        if (shouldCreate && currentDate >= today) {
-          // CRITICAL: Check if ANY task already exists for this date
-          if (this.taskExistsForDate(recurringTask.id, currentDate)) {
-            console.log(`❌ SKIPPING - Task already exists for ${currentDate.toLocaleDateString()}`);
+            shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
           } else {
-            console.log(`✅ CREATING - No task exists for ${currentDate.toLocaleDateString()}`);
-            const instance = await this.createTaskInstanceWithDates(recurringTask, new Date(currentDate), new Date(currentDate));
-            instances.push(instance);
-            this.tasks.set(instance.id, instance); // Save to storage
+            shouldCreate = true; // No specific days selected, create every day
           }
+        } else if (recurringTask.frequency === 'weekly') {
+          // Check if current day matches selected days
+          const dayOfWeek = currentDate.getUTCDay();
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const currentDayName = dayNames[dayOfWeek];
+          const selectedDays = recurringTask.daysOfWeek || [];
+          shouldCreate = selectedDays.includes(currentDayName);
         }
         
-        // Move to next day
-        currentDate.setDate(currentDate.getDate() + 1);
+        if (shouldCreate && currentDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, currentDate)) {
+          console.log(`✅ CREATING - Task for ${currentDate.toISOString()}`);
+          const taskDate = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(), 12, 0, 0));
+          const instance = await this.createTaskInstanceWithDates(recurringTask, taskDate, taskDate);
+          instances.push(instance);
+          this.tasks.set(instance.id, instance);
+        }
+        
+        // Move to next day using UTC
+        currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
       }
     }
     

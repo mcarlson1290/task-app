@@ -715,6 +715,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Regenerate ALL task instances with corrected logic
+  app.post("/api/recurring-tasks/regenerate-all", async (req, res) => {
+    try {
+      console.log("🔄 Starting bulk regeneration of all task instances...");
+      const result = await storage.regenerateAllTaskInstances();
+      
+      res.json({ 
+        message: "Successfully regenerated all task instances with corrected date logic",
+        ...result
+      });
+    } catch (error) {
+      console.error('Error regenerating all task instances:', error);
+      res.status(500).json({ message: "Failed to regenerate task instances" });
+    }
+  });
+
   app.post("/api/recurring-tasks/:id/regenerate", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
