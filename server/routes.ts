@@ -1049,121 +1049,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Complete SharePoint CSV import endpoint
-  app.post("/api/admin/import-sharepoint-csv", async (req, res) => {
+  // Complete SharePoint CSV import endpoint - Import all 50+ transformed tasks
+  app.post("/api/admin/import-complete-csv", async (req, res) => {
     try {
       // Clear existing recurring tasks to avoid duplicates
       await storage.resetRecurringTasks();
       
-      // Get or create a default user for the created_by field
-      let defaultUserId = null;
+      // Get default user (Robert Carlson)
+      let defaultUserId = 4; // Robert Carlson's ID
       const users = await storage.getAllUsers();
       if (users.length > 0) {
         defaultUserId = users[0].id;
-      } else {
-        const systemUser = await storage.createUser({
-          username: "system",
-          password: "system", 
-          name: "System Admin",
-          role: "corporate"
-        });
-        defaultUserId = systemUser.id;
       }
 
-      // Helper function to parse CSV week day field
-      const parseWeekDays = (weekDayStr) => {
-        if (!weekDayStr) return { frequency: 'weekly', daysOfWeek: ['monday'] };
-        
-        try {
-          // Remove quotes and parse the array
-          const cleanStr = weekDayStr.replace(/"/g, '');
-          const days = JSON.parse(cleanStr);
-          
-          if (days.includes('DISABLED')) {
-            return { frequency: 'weekly', isActive: false };
-          }
-          
-          if (days.includes('Monthly')) {
-            return { frequency: 'monthly', dayOfMonth: 1 };
-          }
-          
-          if (days.includes('Bi-Weekly A')) {
-            return { frequency: 'bi-weekly', daysOfWeek: ['monday'] };
-          }
-          
-          if (days.length >= 7) {
-            return { frequency: 'daily' };
-          }
-          
-          const normalizedDays = days.map(d => d.toLowerCase());
-          return { frequency: 'weekly', daysOfWeek: normalizedDays };
-        } catch (e) {
-          return { frequency: 'weekly', daysOfWeek: ['monday'] };
-        }
-      };
-
-      // Helper to map task type
-      const getTaskType = (taskId, title) => {
-        const titleLower = title.toLowerCase();
-        if (titleLower.includes('seed') && titleLower.includes('microgreen')) return 'seeding-microgreens';
-        if (titleLower.includes('harvest') && titleLower.includes('microgreen')) return 'harvest-microgreens';
-        if (titleLower.includes('blackout') || titleLower.includes('bo ')) return 'blackout-tasks';
-        if (titleLower.includes('clean')) return 'cleaning';
-        if (titleLower.includes('water')) return 'general-maintenance';
-        if (titleLower.includes('move') || titleLower.includes('transfer')) return 'moving';
-        if (titleLower.includes('inventory') || titleLower.includes('check')) return 'inventory';
-        if (titleLower.includes('opening') || titleLower.includes('closing')) return 'general-maintenance';
+      // Helper to map category to type
+      const mapCategoryToType = (category) => {
+        const categoryLower = category.toLowerCase();
+        if (categoryLower.includes('seeding')) return 'seeding-microgreens';
+        if (categoryLower.includes('harvest')) return 'harvest-microgreens'; 
+        if (categoryLower.includes('blackout')) return 'blackout-tasks';
+        if (categoryLower.includes('moving')) return 'moving';
+        if (categoryLower.includes('cleaning')) return 'cleaning';
+        if (categoryLower.includes('inventory')) return 'inventory';
+        if (categoryLower.includes('farm')) return 'general-maintenance';
         return 'other';
       };
 
-      // Complete SharePoint tasks from CSV data
-      const sharePointTasks = [
-        { title: "Remove BO and Move Arugula Microgreens to Watering Rack", description: "Move to watering rack", weekDay: '[""Wednesday""]', taskId: "Blackout Task" },
-        { title: "Seed Broccoli Microgreens", description: "Seed Broccoli Microgreens", weekDay: '[""Sunday""]', taskId: "Seeding" },
-        { title: "Soak Pea Microgreens", description: "Soak the Seeds for 12 hours; Drain and rinse occasionaly until tomorrow afternoon.", weekDay: '[""Sunday""]', taskId: "Seeding" },
-        { title: "Remove Weight/BO and Move Radish Microgreens to Watering Rack", description: "Remove Weight/BO and Move Radish Microgreens", weekDay: '[""Tuesday""]', taskId: "Dome Task" },
-        { title: "Adjust Nutrients in Microgreen Reservoirs", description: "Check the nutrient and pH level and adjust", weekDay: '[""Wednesday""]', taskId: "General Maintenance" },
-        { title: "Clean Bathroom", description: "Clean the Bathroom", weekDay: '[""Monday""]', taskId: "General Maintenance" },
-        { title: "Deep Floor Scrub", description: "This task is designed to deep clean stained and heavily soiled areas of the facility floor using a baking soda solution and manual scrubbing.", weekDay: '[""Bi-Weekly A""]', taskId: "General Maintenance" },
-        { title: "Opening", description: "Open the farm.", weekDay: '[""Monday"",""Sunday"",""Tuesday"",""Wednesday"",""Friday"",""Saturday"",""Thursday""]', taskId: "General Maintenance" },
-        { title: "Clean Tower Clips", description: "Clean tower clips.", weekDay: '[""Tuesday""]', taskId: "General Maintenance" },
-        { title: "Check the Inventory of Leafy Green Stock", description: "Check the Rockwool, Oasis Cubes, Seeds, and Leafy Green Bags.", weekDay: '[""Monthly""]', taskId: "General Maintenance" },
-        { title: "Check General Inventory Stock", description: "Check the stock of Order Bags, Order Boxes, Labels, and More", weekDay: '[""Monthly""]', taskId: "General Maintenance" },
-        { title: "Check Nutrient Inventory", description: "Ensure we have enough nutrients to last roughlt three months.", weekDay: '[""Monthly""]', taskId: "General Maintenance" },
-        { title: "Uncover the Leafy Green and Herb trays", description: "There should be many trays to uncover including Romaine, Swiss Chard, Butter Crunch, Red Oak, Kale, Summer Crisp, Basil, and Collard Greens", weekDay: '[""Friday""]', taskId: "General Maintenance" },
-        { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.", weekDay: '[""Monday""]', taskId: "Seeding" },
-        { title: "Seed Radish Microgreens", description: "Seed the Radish Microgreens", weekDay: '[""Saturday""]', taskId: "Seeding" },
-        { title: "Seed Mustard Microgreens", description: "Do not stack while germinating.", weekDay: '[""Sunday""]', taskId: "Seeding" },
-        { title: "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack", description: "Put in D watering rack on shelf with fan; After move, run water in rack until tray is wet.", weekDay: '[""Wednesday""]', taskId: "Blackout Task" },
-        { title: "Remove Weight and BO for Pea Microgreens", description: "Remove Weight and dome for Pea Microgreens", weekDay: '[""Friday""]', taskId: "Blackout Task" },
-        { title: "Remove BO and Move Mustard Microgreens to Watering Rack", description: "Remove Dome and Move Mustard Microgreens to Watering Rack", weekDay: '[""Wednesday""]', taskId: "Dome Task" },
-        { title: "Harvest Pea Microgreens", description: "Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container", weekDay: '[""Wednesday""]', taskId: "Harvesting" },
-        { title: "Harvest Broccoli Microgreens", description: "1 oz per 8 oz container", weekDay: '[""Wednesday""]', taskId: "Harvesting" },
-        { title: "Harvest Radish Microgreens", description: "1 oz in 8 oz container", weekDay: '[""Wednesday""]', taskId: "Harvesting" },
-        { title: "Harvest Mustard Microgreens", description: "0.7 oz in 8 oz container", weekDay: '[""Wednesday""]', taskId: "Harvesting" },
-        { title: "Seed Arugula Microgreens", description: "Mucilagenous seeds; do not stack", weekDay: '[""Monday""]', taskId: "Seeding" },
-        { title: "Harvest Arugula Micogreens", description: "0.5 oz in 8 oz container", weekDay: '[""Wednesday""]', taskId: "Harvesting" },
-        { title: "Water Microgreen Germination Trays", description: "Water microgreens daily", weekDay: '[""Sunday"",""Monday"",""Tuesday"",""Saturday""]', taskId: "Watering" },
-        { title: "Change Microgreen Reservoir Water and Clean Shelves", description: "This process ensures that the water in the microgreen reservoir is fresh and properly prepared with nutrients and pH adjustments.", weekDay: '[""Monthly""]', taskId: "General Maintenance" }
+      // Helper to parse days of week from CSV format
+      const parseDaysOfWeek = (daysStr) => {
+        if (!daysStr || daysStr === '[]') return null;
+        if (daysStr.includes(',')) {
+          return daysStr.split(',').map(d => d.trim().toLowerCase());
+        }
+        return [daysStr.toLowerCase()];
+      };
+
+      // Complete transformed CSV data (all 50+ tasks)
+      const transformedTasks = [
+        { title: "Remove BO and Move Arugula Microgreens to Watering Rack", description: "Move to watering rack", category: "Blackout Tasks", priority: "high", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Seed Broccoli Microgreens", description: "Seed Broccoli Microgreens", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "sunday", assignedRole: "Microgreen Seeder" },
+        { title: "Soak Pea Microgreens", description: "Soak the Seeds for 12 hours; Drain and rinse occasionaly until tomorrow afternoon.", category: "Other", priority: "high", frequency: "weekly", daysOfWeek: "sunday", assignedRole: "Microgreen Seeder" },
+        { title: "Remove Weight/BO and Move Radish Microgreens to Watering Rack", description: "Remove Weight/BO and Move Radish Microgreens", category: "Moving", priority: "high", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "General Staff" },
+        { title: "Adjust Nutrients in Microgreen Reservoirs", description: "Check the nutrient and pH level and adjust", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Clean Bathroom", description: "Clean the Bathroom", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "monday", assignedRole: "Manager" },
+        { title: "Deep Floor Scrub", description: "This task is designed to deep clean stained and heavily soiled areas of the facility floor using a baking soda solution and manual scrubbing.", category: "Other", priority: "medium", frequency: "bi-weekly", daysOfWeek: null, assignedRole: "Manager" },
+        { title: "Opening", description: "Open the farm.", category: "Other", priority: "high", frequency: "daily", daysOfWeek: null, assignedRole: "General Staff" },
+        { title: "Clean Tower Clips", description: "Clean tower clips.", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "General Staff" },
+        { title: "Check the Inventory of Leafy Green Stock", description: "Check the Rockwool, Oasis Cubes, Seeds, and Leafy Green Bags.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Check General Inventory Stock", description: "Check the stock of Order Bags, Order Boxes, Labels, and More", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Check Nutrient Inventory", description: "Ensure we have enough nutrients to last roughly three months.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Uncover the Leafy Green and Herb trays", description: "There should be many trays to uncover including Romaine, Swiss Chard, Butter Crunch, Red Oak, Kale, Summer Crisp, Basil, and Collard Greens", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "friday", assignedRole: "General Staff" },
+        { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "monday", assignedRole: "Microgreen Seeder" },
+        { title: "Seed Radish Microgreens", description: "Seed the Radish Microgreens", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "saturday", assignedRole: "Microgreen Seeder" },
+        { title: "Seed Mustard Microgreens", description: "Do not stack while germinating.", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "sunday", assignedRole: "Microgreen Seeder" },
+        { title: "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack", description: "Put in D watering rack on shelf with fan; After move, run water in rack until tray is wet.", category: "Moving", priority: "high", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Remove Weight and BO for Pea Microgreens", description: "Remove Weight and dome for Pea Microgreens", category: "Blackout Tasks", priority: "high", frequency: "weekly", daysOfWeek: "friday", assignedRole: "General Staff" },
+        { title: "Remove BO and Move Mustard Microgreens to Watering Rack", description: "Remove Dome and Move Mustard Microgreens to Watering Rack", category: "Blackout Tasks", priority: "high", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Harvest Pea Microgreens", description: "Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Harvest Broccoli Microgreens", description: "1 oz per 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Harvest Radish Microgreens", description: "1 oz in 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Harvest Mustard Microgreens", description: "0.7 oz in 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Seed Arugula Microgreens", description: "Mucilagenous seeds; do not stack", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "monday", assignedRole: "Microgreen Seeder" },
+        { title: "Harvest Arugula Microgreens", description: "0.5 oz in 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Water Microgreen Germination Trays", description: "Water microgreens daily", category: "General Farm", priority: "high", frequency: "weekly", daysOfWeek: "sunday,monday,tuesday,saturday", assignedRole: "General Staff" },
+        { title: "Change Microgreen Reservoir Water and Clean Shelves", description: "This process ensures that the water in the microgreen reservoir is fresh and properly prepared with nutrients and pH adjustments.", category: "Cleaning", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Check Paper Towel Levels", description: "Ensure adequate paper towel supplies are maintained.", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Remove Garbage from Non-Farm areas", description: "Collect and dispose of trash from lobby and office areas.", category: "Moving", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Vacuum the Office and Lobby", description: "Maintain cleanliness in office and lobby areas.", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Clean Outside Facing Lobby Window", description: "Keep lobby windows clean and professional.", category: "Cleaning", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Washing Farm Towels and Filter Socks", description: "Ensure farm towels and filter socks are cleaned properly.", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "General Staff" },
+        { title: "Clean Farm Floor", description: "Deep clean and sanitize farm floors.", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "monday", assignedRole: "General Staff" },
+        { title: "Interior Window Cleaning", description: "Clean interior windows throughout the facility.", category: "Cleaning", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Check pH and Water Levels in Towers", description: "Ensure optimal water pH and levels in all towers.", category: "General Farm", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Seed Leafy Greens", description: "Seed leafy greens based on planning spreadsheet.", category: "Seeding - Leafy Greens", priority: "high", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "Microgreen Seeder" },
+        { title: "Harvest Turnip Microgreens", description: "1 oz per 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Harvest Spicy Mix Microgreens", description: "0.7 oz per 8 oz container", category: "Harvest - Microgreens", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "Harvester" },
+        { title: "Remove Weight/BO and Move Turnip Microgreens to Watering Rack", description: "Move turnip microgreens to watering rack", category: "Moving", priority: "high", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Remove BO and Move Spicy Mix Microgreens to Watering Rack", description: "Move spicy mix microgreens to watering rack", category: "Blackout Tasks", priority: "high", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Seed Turnip Microgreens", description: "Seed Turnip Microgreens", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "monday", assignedRole: "Microgreen Seeder" },
+        { title: "Seed Spicy Mix Microgreens", description: "Seed Spicy Mix Microgreens", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "sunday", assignedRole: "Microgreen Seeder" },
+        { title: "Clean Tower Basins", description: "Proper disassembly, cleanup, and preparation of Tower Garden basins", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Set Clean Towers", description: "Install clean, fully assembled towers in fresh basins", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Clean Tower Garden Pots", description: "Clean Tower Garden pots and structural rods thoroughly", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Assemble Tower Gardens", description: "Full assembly of Tower Garden units with proper alignment", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "saturday", assignedRole: "General Staff" },
+        { title: "Disassemble Towers", description: "Disassemble tower units after removal from growing position", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "wednesday", assignedRole: "General Staff" },
+        { title: "Replace Fan and Furnace Filter", description: "Replace filters to prevent mildew", category: "Other", priority: "medium", frequency: "bi-weekly", daysOfWeek: null, assignedRole: "General Staff" },
+        { title: "Plant Towers", description: "Plant needed towers for the week based on checklist", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "thursday", assignedRole: "General Staff" },
+        { title: "Harvest Towers", description: "Harvest towers according to checklist", category: "Other", priority: "high", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "Harvester" }
       ];
 
       let imported = 0;
       
-      for (const csvTask of sharePointTasks) {
+      for (const csvTask of transformedTasks) {
         try {
-          const frequencyData = parseWeekDays(csvTask.weekDay);
-          
-          if (frequencyData.isActive === false) {
-            continue; // Skip disabled tasks
-          }
-
           const task = {
             title: csvTask.title,
             description: csvTask.description,
-            type: getTaskType(csvTask.taskId, csvTask.title),
-            frequency: frequencyData.frequency,
-            daysOfWeek: frequencyData.daysOfWeek || null,
-            dayOfMonth: frequencyData.dayOfMonth || null,
+            type: mapCategoryToType(csvTask.category),
+            frequency: csvTask.frequency,
+            daysOfWeek: csvTask.daysOfWeek ? parseDaysOfWeek(csvTask.daysOfWeek) : null,
+            dayOfMonth: csvTask.dayOfMonth || null,
             location: "Kenosha",
             isActive: true,
             createdBy: defaultUserId
@@ -1176,15 +1161,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      console.log(`✅ SharePoint CSV Migration: Imported ${imported} recurring tasks`);
+      console.log(`✅ Complete CSV Migration: Imported ${imported} recurring tasks`);
       res.json({ 
         success: true,
-        message: `Successfully imported ${imported} SharePoint recurring tasks from CSV`,
+        message: `Successfully imported ${imported} SharePoint recurring tasks from complete CSV dataset`,
         imported 
       });
     } catch (error) {
-      console.error('❌ SharePoint CSV migration failed:', error);
-      res.status(500).json({ message: 'Failed to import SharePoint CSV tasks' });
+      console.error('❌ Complete CSV migration failed:', error);
+      res.status(500).json({ message: 'Failed to import complete CSV tasks' });
     }
   });
 

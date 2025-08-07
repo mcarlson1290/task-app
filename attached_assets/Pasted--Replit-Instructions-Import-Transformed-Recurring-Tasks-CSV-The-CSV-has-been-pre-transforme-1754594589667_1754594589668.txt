@@ -1,0 +1,202 @@
+// Replit Instructions: Import Transformed Recurring Tasks CSV
+
+// The CSV has been pre-transformed with these columns:
+// title, description, category, priority, frequency, daysOfWeek, weekPeriod, dayOfMonth, assignedRole, isActive, estimatedTime, requiresPhotoProof
+
+// Step 1: Create import function in src/utils/importRecurringTasks.js
+
+import Papa from 'papaparse';
+
+export const importTransformedRecurringTasks = async () => {
+  try {
+    // Read the transformed CSV
+    const csvData = await window.fs.readFile('Transformed_Recurring_Tasks.csv', { encoding: 'utf8' });
+    
+    // Parse CSV
+    const parsed = Papa.parse(csvData, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true
+    });
+    
+    console.log(`Importing ${parsed.data.length} recurring tasks...`);
+    
+    const importedTasks = [];
+    const errors = [];
+    
+    // Process each task
+    parsed.data.forEach((row, index) => {
+      try {
+        // Create task object matching your system's structure
+        const task = {
+          id: `imported-${Date.now()}-${index}`,
+          title: row.title || '',
+          description: row.description || '',
+          category: row.category || 'Other',
+          priority: row.priority || 'medium',
+          frequency: row.frequency || 'daily',
+          assignedRole: row.assignedRole || 'General Staff',
+          isActive: row.isActive !== false, // Convert to boolean
+          estimatedTime: row.estimatedTime || 30, // Default 30 minutes
+          requiresPhotoProof: row.requiresPhotoProof === true,
+          
+          // Add frequency-specific fields
+          ...(row.frequency === 'weekly' && row.daysOfWeek && {
+            daysOfWeek: row.daysOfWeek.split(',').map(day => day.trim())
+          }),
+          ...(row.frequency === 'monthly' && row.dayOfMonth && {
+            dayOfMonth: parseInt(row.dayOfMonth)
+          }),
+          ...(row.frequency === 'biweekly' && row.weekPeriod && {
+            weekPeriod: row.weekPeriod
+          }),
+          
+          // Metadata
+          createdAt: new Date().toISOString(),
+          lastModified: new Date().toISOString(),
+          source: 'SharePoint Import'
+        };
+        
+        importedTasks.push(task);
+        
+      } catch (error) {
+        errors.push({
+          row: index + 2,
+          title: row.title,
+          error: error.message
+        });
+      }
+    });
+    
+    // Log results
+    console.log(`✅ Successfully prepared ${importedTasks.length} tasks`);
+    if (errors.length > 0) {
+      console.log(`❌ Errors: ${errors.length}`);
+      errors.forEach(err => console.error(`Row ${err.row}: ${err.error}`));
+    }
+    
+    return { tasks: importedTasks, errors };
+    
+  } catch (error) {
+    console.error('Failed to read CSV:', error);
+    throw error;
+  }
+};
+
+// Step 2: Add one-time import button to Admin section
+// In your Settings or Admin component, add this:
+
+const ImportRecurringTasksButton = () => {
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  
+  const handleImport = async () => {
+    if (!confirm('Import 50 recurring tasks from CSV? This will add to existing tasks.')) {
+      return;
+    }
+    
+    setImporting(true);
+    try {
+      const { tasks, errors } = await importTransformedRecurringTasks();
+      
+      // Save each task using your existing addRecurringTask function
+      let savedCount = 0;
+      for (const task of tasks) {
+        try {
+          addRecurringTask(task); // Your existing function
+          savedCount++;
+        } catch (err) {
+          console.error(`Failed to save task: ${task.title}`, err);
+        }
+      }
+      
+      setImportResult({
+        success: true,
+        message: `Imported ${savedCount} of ${tasks.length} tasks successfully!`,
+        errors: errors.length
+      });
+      
+      // Refresh the page after 2 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
+    } catch (error) {
+      setImportResult({
+        success: false,
+        message: `Import failed: ${error.message}`
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#f0f0f0', 
+      borderRadius: '8px',
+      marginBottom: '20px'
+    }}>
+      <h3>One-Time SharePoint Import</h3>
+      <p>Import 50 recurring tasks from the transformed CSV file.</p>
+      
+      <button
+        onClick={handleImport}
+        disabled={importing}
+        style={{
+          backgroundColor: importing ? '#ccc' : '#2e7d32',
+          color: 'white',
+          padding: '10px 20px',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: importing ? 'not-allowed' : 'pointer',
+          fontSize: '16px'
+        }}
+      >
+        {importing ? 'Importing...' : 'Import Recurring Tasks'}
+      </button>
+      
+      {importResult && (
+        <div style={{
+          marginTop: '10px',
+          padding: '10px',
+          backgroundColor: importResult.success ? '#d4edda' : '#f8d7da',
+          color: importResult.success ? '#155724' : '#721c24',
+          borderRadius: '4px'
+        }}>
+          {importResult.message}
+          {importResult.errors > 0 && (
+            <p>Check console for error details.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Step 3: Add to your Admin/Settings page
+// In your settings or admin component:
+
+const AdminSettings = () => {
+  return (
+    <div>
+      <h2>Admin Settings</h2>
+      
+      {/* Add the import button here */}
+      <ImportRecurringTasksButton />
+      
+      {/* Rest of your settings */}
+    </div>
+  );
+};
+
+// Step 4: Remove any old SharePoint import UI
+// Find and remove any previous import buttons or components related to SharePoint
+
+// IMPORTANT NOTES FOR REPLIT:
+// 1. Make sure 'Transformed_Recurring_Tasks.csv' is uploaded to the project
+// 2. The import is ONE-TIME only - after import, you can remove the button
+// 3. All 50 tasks will be added as recurring tasks
+// 4. Tasks will start generating daily based on their schedules
+// 5. The CSV parsing expects the exact column names from the transformed file

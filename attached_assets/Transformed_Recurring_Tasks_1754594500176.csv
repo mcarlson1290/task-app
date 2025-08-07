@@ -1,0 +1,55 @@
+title,description,category,priority,frequency,daysOfWeek,weekPeriod,dayOfMonth,assignedRole,isActive,estimatedTime,requiresPhotoProof
+Remove BO and Move Arugula Microgreens to Watering Rack,Move to watering rack,Blackout Tasks,high,weekly,wednesday,,,General Staff,true,,false
+Seed Broccoli Microgreens,Seed Broccoli Microgreens,Seeding - Microgreens,high,weekly,sunday,,,Microgreen Seeder,true,,false
+Soak Pea Microgreens,Soak the Seeds for 12 hours; Drain and rinse occasionaly until tomorrow afternoon.,Other,high,weekly,sunday,,,Microgreen Seeder,true,,false
+Remove Weight/BO and Move Radish Microgreens to Watering Rack,Remove Weight/BO and Move Radish Microgreens,Moving,high,weekly,tuesday,,,General Staff,true,,false
+Adjust Nutrients in Microgreen Reservoirs,Check the nutrient and pH level and adjust ,Other,medium,weekly,wednesday,,,General Staff,true,,false
+Clean Bathroom,Clean the Bathroom,Cleaning,medium,weekly,monday,,,Manager,true,,false
+Deep Floor Scrub,"This task is designed to deep clean stained and heavily soiled areas of the facility floor using a baking soda solution and manual scrubbing. It is part of maintaining a professional, clean, and safe work environment.",Other,medium,biweekly,[],first,,Manager,true,,false
+Opening ,Open the farm.,Other,high,daily,[],,,General Staff,true,,false
+Clean Tower Clips,Clean tower clips. ,Cleaning,medium,weekly,tuesday,,,General Staff,true,,false
+Check the Inventory of Leafy Green Stock,"Check the Rockwool, Oasis Cubes, Seeds, and Leafy Green Bags.",Inventory,medium,monthly,[],,1,General Staff,true,,false
+Check General Inventory Stock,"Check the stock of Order Bags, Order Boxes, Labels, and More",Inventory,medium,monthly,[],,1,General Staff,true,,false
+Check Nutrient Inventory,Ensure we have enough nutrients to last roughlt three months.,Inventory,medium,monthly,[],,1,General Staff,true,,false
+Uncover the Leafy Green and Herb trays.,"There should be many trays to uncover including Romaine, Swiss Chard, Butter Crunch, Red Oak, Kale, Summer Crisp, Basil, and Collard Greens",Other,medium,weekly,friday,,,General Staff,true,,false
+Seed Pea Microgreens,Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.,Seeding - Microgreens,high,weekly,monday,,,Microgreen Seeder,true,,false
+Seed Radish Microgreens,Seed the Radish Microgreens,Seeding - Microgreens,high,weekly,saturday,,,Microgreen Seeder,true,,false
+Seed Mustard Microgreens,Do not stack while germinating. ,Seeding - Microgreens,high,weekly,sunday,,,Microgreen Seeder,true,,false
+Remove Weight/BO and Move Broccoli Microgreens to Watering Rack,"Put in D watering rack on shelf with fan; After move, run water in rack until tray is wet.",Moving,high,weekly,wednesday,,,General Staff,true,,false
+Remove Weight and BO for Pea Microgreens,Remove Weight and dome for Pea Microgreens,Blackout Tasks,high,weekly,friday,,,General Staff,true,,false
+Remove BO and Move Mustard Microgreens to Watering Rack,Remove Dome and Move Mustard Microgreens to Watering Rack,Blackout Tasks,high,weekly,wednesday,,,General Staff,true,,false
+Harvest Pea Microgreens,Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Harvest Broccoli Microgreens,1 oz per 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Harvest Radish Microgreens,1 oz in 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Harvest Mustard Microgreens,0.7 oz in 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Seed Arugula Microgreens,Mucilagenous seeds; do not stack,Seeding - Microgreens,high,weekly,monday,,,Microgreen Seeder,true,,false
+Harvest Arugula Micogreens,0.5 oz in 8 oz container,Other,medium,weekly,wednesday,,,Harvester,true,,false
+Water Microgreen Germination Trays,,General Farm,high,weekly,"sunday,monday,tuesday,saturday",,,General Staff,true,,false
+Change Microgreen Reservoir Water and Clean Shelves,"This process ensures that the water in the microgreen reservoir is fresh and properly prepared with nutrients and pH adjustments to maintain optimal plant growth. Regular water changes prevent buildup of debris, pathogens, and nutrient imbalances.",Cleaning,medium,monthly,[],,1,General Staff,true,,false
+Check Paper Towel Levels,"This process ensures that the farm is secured, cleaned, and organized at the end of the day. Proper closing procedures help maintain a safe, efficient workspace and prepare the facility for the next day.",Other,medium,weekly,thursday,,,General Staff,true,,false
+Remove Garbage from Non-Farm areas,"This process outlines the steps for collecting and disposing of trash from various locations outside of the main farm area, including the lobby and office. Proper trash disposal maintains cleanliness, prevents odors, and ensures a professional environment.",Moving,medium,weekly,thursday,,,General Staff,true,,false
+Vacuum the Office and Lobby,"This process ensures that the office and lobby areas are vacuumed thoroughly to maintain cleanliness and a professional appearance. Regular vacuuming removes dirt, debris, and allergens, creating a clean environment for employees and visitors.",Other,medium,weekly,thursday,,,General Staff,true,,false
+Clean Outside Facing Lobby Window,"This process ensures the lobby’s outside-facing windows are cleaned to maintain a professional and welcoming appearance. Regular cleaning removes smudges, dirt, and streaks, leaving the glass spotless and clear.",Cleaning,medium,monthly,[],,1,General Staff,true,,false
+Washing Farm Towels and Filter Socks,"This process outlines the steps for staff to take farm towels and filter socks home for washing, ensuring they are cleaned and returned in a timely and hygienic manner. Regular washing helps maintain cleanliness and prevent cross-contamination.
+
+",Other,medium,weekly,tuesday,,,General Staff,true,,false
+Clean Farm Floor,This process ensures the farm’s floors are cleaned thoroughly and sanitized using a power mop.,Cleaning,medium,weekly,monday,,,General Staff,true,,false
+Interior Window Cleaning,"This process outlines the steps required to open the vertical farm safely and efficiently. The checklist ensures that all systems are operational, environmental conditions are optimal, and any issues are promptly reported.",Cleaning,medium,monthly,[],,1,General Staff,true,,false
+Check pH and Water Levels in Towers,This process ensures the water pH and levels in all towers are within the optimal range for plant health. Adjustments are made as needed to maintain a target pH of 6.0 and adequate water levels using ATOs (Automatic Top Offs).,General Farm,medium,weekly,thursday,,,General Staff,true,,false
+Seed Leafy Greens,Seed the leafy greens needed based off of the leafy green seedling planning spreadsheet.,Seeding - Leafy Greens,high,weekly,tuesday,,,Microgreen Seeder,true,,false
+Harvest Turnip Microgreens,1 oz per 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Harvest Spicy Mix Microgreens,0.7 oz per 8 oz container,Harvest - Microgreens,medium,weekly,wednesday,,,Harvester,true,,false
+Remove Weight/BO and Move Turnip Microgreens to Watering Rack,Remove Weight/BO and Move Turnip Microgreens to Watering Rack,Moving,high,weekly,thursday,,,General Staff,true,,false
+Remove BO and Move Spicy Mix Microgreens to Watering Rack,Remove BO and Move Spicy Mix Microgreens to Watering Rack,Blackout Tasks,high,weekly,wednesday,,,General Staff,true,,false
+Seed Turnip Microgreens,Seed Turnip Microgreens,Seeding - Microgreens,high,weekly,monday,,,Microgreen Seeder,true,,false
+Seed Spicy Mix Microgreens,Seed Spicy Mix Microgreens,Seeding - Microgreens,high,weekly,sunday,,,Microgreen Seeder,true,,false
+Clean Tower Basins,"This task ensures proper disassembly, cleanup, and preparation of Tower Garden basins. By vacuuming out debris and, when necessary, fully emptying the basin, we ensure that the system remains clean and supports healthy plant growth.",Cleaning,medium,weekly,wednesday,,,General Staff,true,,false
+Set Clean Towers,"This task ensures a freshly cleaned basin receives a clean, fully assembled tower. Proper setup guarantees water is circulating correctly and the tower is ready for new planting.",Cleaning,medium,weekly,wednesday,,,General Staff,true,,false
+Clean Tower Garden Pots,This task ensures Tower Garden pots and structural rods are thoroughly cleaned and prepped after soaking. Removing built-up grime supports plant health and extends the life of the towers.,Cleaning,medium,weekly,thursday,,,General Staff,true,,false
+Assemble Tower Gardens,"This task covers the full assembly of Tower Garden units, from securing the base to testing water flow. Proper alignment and tightening are crucial for healthy plant growth and reliable irrigation.
+
+",Other,medium,weekly,saturday,,,General Staff,true,,false
+Disassemble Towers,"This task involves disassembling tower units in the back room after they have been removed from their growing position. By doing this later, staff can prioritize other time-sensitive tasks while still maintaining the cleanliness and readiness of the tower system.",Other,medium,weekly,wednesday,,,General Staff,true,,false
+Replace Fan and Furnace Filter,Replace the filter for the furnace and the fans to make sure that we don't get Mildew,Other,medium,biweekly,[],first,,General Staff,true,,false
+Plant Towers,Plant the needed towers for the week based on the checklist.,Other,medium,weekly,thursday,,,General Staff,true,,false
+Harvest Towers,Harvest the Towers in the checklist.,Other,high,weekly,tuesday,,,Harvester,true,,false
