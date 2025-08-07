@@ -51,7 +51,7 @@ const RecurringTasks: React.FC = () => {
     },
     enabled: !!auth.user,
     staleTime: 0,
-    cacheTime: 0
+    gcTime: 0
   });
 
   // Since we're using server-side location filtering, we don't need additional client filtering
