@@ -17,8 +17,11 @@
     "migrationDate": "2025-08-06T16:28:37.264Z",
     "instances": "5",
     "daysOfWeek": [
+      "monday",
+      "tuesday",
       "wednesday",
-      "wednesday"
+      "thursday",
+      "friday"
     ],
     "id": 1,
     "createdAt": "2025-08-06T16:28:37.382Z",

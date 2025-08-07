@@ -106,9 +106,13 @@ const Tasks: React.FC = () => {
         params.append('location', currentLocation.name);
       }
       const url = `/api/tasks?${params.toString()}`;
+      console.log(`🔍 Fetching tasks from: ${url}`);
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tasks');
-      return response.json();
+      const data = await response.json();
+      console.log(`🔍 Fetched ${data.length} tasks from API`);
+      console.log('🔍 First few tasks with due dates:', data.slice(0, 3).map(t => ({ title: t.title, dueDate: t.dueDate })));
+      return data;
     },
     enabled: !!auth.user,
   });
@@ -271,11 +275,9 @@ const Tasks: React.FC = () => {
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
           const filterDateStr = formatDateForComparison(dateFilter);
-          const matches = taskDateStr === filterDateStr;
-          console.log(`🔍 Date filter debug: Task "${task.title}" due ${taskDateStr} vs filter ${filterDateStr} = ${matches ? 'MATCH' : 'NO MATCH'}`);
-          return matches;
+          return taskDateStr === filterDateStr;
         }
-        console.log(`🔍 Date filter debug: Task "${task.title}" has no dueDate, skipping`);
+
         return false; // Tasks without due dates don't appear in date-filtered views
       });
     }
