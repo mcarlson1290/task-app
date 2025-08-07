@@ -14,6 +14,7 @@ import { UserProvider } from './contexts/UserContext';
 import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
 import Education from "@/pages/Education";
+
 import Account from "@/pages/Account";
 import RecurringTasks from "@/pages/RecurringTasks";
 import TaskData from "@/pages/TaskData";
@@ -30,6 +31,8 @@ import { useActivityTracking } from "@/hooks/useActivityTracking";
 import { teamsAuthService } from "./services/teamsAuthService";
 
 const msalInstance = new PublicClientApplication(msalConfig);
+
+// The staff service now handles user creation and role assignment automatically
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
@@ -49,41 +52,38 @@ function AppContent() {
   // Activity tracking for the current user
   useActivityTracking(currentUser?.id);
 
+  // Try Teams authentication first
   useEffect(() => {
-    const initializeUser = async () => {
-      // If we already have a user, don't re-initialize
-      if (currentUser) return;
-
-      // Try Teams authentication first if not already attempted
-      if (!teamsAuthAttempted) {
-        setTeamsAuthAttempted(true);
-        console.log("Attempting Teams authentication...");
+    const attemptTeamsAuth = async () => {
+      if (teamsAuthAttempted) return;
+      
+      setTeamsAuthAttempted(true);
+      console.log("Attempting Teams authentication...");
+      
+      try {
+        const teamsResult = await teamsAuthService.initialize();
         
-        try {
-          const teamsResult = await teamsAuthService.initialize();
+        if (teamsResult.isInTeams && teamsResult.account) {
+          console.log("Running in Teams, auto-authenticating user:", teamsResult.account.name);
           
-          if (teamsResult.isInTeams && teamsResult.account) {
-            console.log("Running in Teams, auto-authenticating user:", teamsResult.account.name);
-            
-            // Verify email domain
-            if (!isAuthorizedEmail(teamsResult.account.username)) {
-              console.error('Access denied. Only @growspace.farm emails are allowed.');
-              teamsAuthService.notifyFailure('Access denied. Only @growspace.farm emails are allowed.');
-              setIsLoading(false);
-              return;
-            }
-
-            // Process Teams user same as regular MSAL user
-            await processUserLogin(teamsResult.account);
-            teamsAuthService.notifySuccess();
+          // Verify email domain
+          if (!isAuthorizedEmail(teamsResult.account.username)) {
+            console.error('Access denied. Only @growspace.farm emails are allowed.');
+            teamsAuthService.notifyFailure('Access denied. Only @growspace.farm emails are allowed.');
+            setIsLoading(false);
             return;
           }
-        } catch (error) {
-          console.log("Teams authentication failed, falling back to regular MSAL:", error);
-        }
-      }
 
-      // Regular MSAL authentication
+          // Process Teams user same as regular MSAL user
+          await processUserLogin(teamsResult.account);
+          teamsAuthService.notifySuccess();
+          return;
+        }
+      } catch (error) {
+        console.log("Teams authentication failed, falling back to regular MSAL:", error);
+      }
+      
+      // If not in Teams or Teams auth failed, check regular MSAL
       if (isAuthenticated && accounts[0]) {
         await processUserLogin(accounts[0]);
       } else {
@@ -91,78 +91,60 @@ function AppContent() {
       }
     };
 
-    const processUserLogin = async (account: any) => {
-      try {
-        // Verify email domain for regular MSAL (Teams already verified above)
-        if (!isAuthorizedEmail(account.username)) {
-          alert('Access denied. Only @growspace.farm emails are allowed.');
-          if (instance) {
-            await instance.logoutPopup();
-          }
-          setIsLoading(false);
-          return;
-        }
+    attemptTeamsAuth();
+  }, [isAuthenticated, accounts, teamsAuthAttempted]);
 
-        // Create or update staff entry automatically
-        const staffMember = await createStaffFromMicrosoftLogin(
-          account.localAccountId || account.homeAccountId || '',
-          account.name || 'User',
-          account.username
-        );
+  const processUserLogin = async (account: any) => {
+    try {
+      // Create or update staff entry automatically
+      const staffMember = await createStaffFromMicrosoftLogin(
+        account.localAccountId || account.homeAccountId || '',
+        account.name || 'User',
+        account.username
+      );
 
-        // Determine role based on staff member
-        let role: 'Staff' | 'Manager' | 'Corporate' = 'Staff';
-        let isManager = false;
-        let isCorporateManager = false;
+      // Determine role based on staff member
+      let role: 'Staff' | 'Manager' | 'Corporate' = 'Staff';
+      let isManager = false;
+      let isCorporateManager = false;
 
-        if (staffMember.rolesAssigned.includes('Corporate Manager')) {
-          role = 'Corporate';
-          isManager = true;
-          isCorporateManager = true;
-        } else if (staffMember.rolesAssigned.includes('Manager')) {
-          role = 'Manager';
-          isManager = true;
-        }
+      if (staffMember.rolesAssigned.includes('Corporate Manager')) {
+        role = 'Corporate';
+        isManager = true;
+        isCorporateManager = true;
+      } else if (staffMember.rolesAssigned.includes('Manager')) {
+        role = 'Manager';
+        isManager = true;
+      }
 
-        // Create user object for context
-        const user = {
-          id: staffMember.id,
-          name: staffMember.fullName,
-          email: staffMember.email,
-          role,
-          isManager,
-          isCorporateManager,
-          location: staffMember.location
-        };
+      // Create user object for context
+      const user = {
+        id: staffMember.id,
+        name: staffMember.fullName,
+        email: staffMember.email,
+        role,
+        isManager,
+        isCorporateManager,
+        location: staffMember.location
+      };
 
-        console.log('Initialized user:', user.name, user.email, user.role);
-        setCurrentUser(user);
+      console.log('Initialized user:', user.name, user.email, user.role);
+      setCurrentUser(user);
 
-        // Initialize expected staff members if current user is corporate
-        if (role === 'Corporate') {
+      // Initialize expected staff members if current user is corporate
+      if (role === 'Corporate') {
           try {
             await initializeExpectedStaff();
           } catch (error) {
             console.error('Failed to initialize expected staff:', error);
           }
         }
-
-        // Initialize data if needed
-        try {
-          await initializeProductionData();
-          await initializeCleanState();
-        } catch (error) {
-          console.error('Failed to initialize production data:', error);
-        }
-      } catch (error) {
-        console.error('Error processing user login:', error);
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
     initializeUser();
-  }, [isAuthenticated, accounts, instance, currentUser, teamsAuthAttempted]);
+  }, [isAuthenticated, accounts, instance]);
 
   if (isLoading) {
     return (
@@ -172,7 +154,7 @@ function AppContent() {
     );
   }
 
-  if (!isAuthenticated && !currentUser) {
+  if (!isAuthenticated) {
     return <MicrosoftLogin />;
   }
 
@@ -180,6 +162,7 @@ function AppContent() {
     return <div className="loading-screen">Setting up your account...</div>;
   }
 
+  // Your existing app with UserProvider
   return (
     <UserProvider value={{ currentUser, setCurrentUser }}>
       <Router />
@@ -205,6 +188,7 @@ function Router() {
           <Education />
         </ProtectedRoute>
       </Route>
+
       <Route path="/account">
         <ProtectedRoute>
           <Account />
@@ -217,7 +201,13 @@ function Router() {
       </Route>
       <Route path="/task-data">
         <ProtectedRoute>
-          <TaskData />
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center p-8">
+              <div className="text-6xl mb-4">🚧</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h2>
+              <p className="text-gray-600">This feature is being developed and will be available soon.</p>
+            </div>
+          </div>
         </ProtectedRoute>
       </Route>
       <Route path="/staff-data">
@@ -227,7 +217,13 @@ function Router() {
       </Route>
       <Route path="/production-data">
         <ProtectedRoute>
-          <ProductionData />
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center p-8">
+              <div className="text-6xl mb-4">🚧</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h2>
+              <p className="text-gray-600">This feature is being developed and will be available soon.</p>
+            </div>
+          </div>
         </ProtectedRoute>
       </Route>
       <Route path="/tray-tracking">
@@ -235,28 +231,30 @@ function Router() {
           <TrayTracking />
         </ProtectedRoute>
       </Route>
-      <Route>
-        <ProtectedRoute>
-          <NotFound />
-        </ProtectedRoute>
-      </Route>
+      <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  // Initialize production data on app startup
+  useEffect(() => {
+    initializeProductionData();
+    initializeCleanState();
+  }, []);
+
   return (
-    <MsalProvider instance={msalInstance}>
+    <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <ErrorBoundary>
+          <MsalProvider instance={msalInstance}>
             <AppContent />
-            <Toaster />
-            <Confetti />
-          </ErrorBoundary>
+          </MsalProvider>
+          <Toaster />
+          <Confetti />
         </TooltipProvider>
       </QueryClientProvider>
-    </MsalProvider>
+    </ErrorBoundary>
   );
 }
 
