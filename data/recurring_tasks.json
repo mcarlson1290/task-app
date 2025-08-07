@@ -22,7 +22,21 @@
     ],
     "id": 1,
     "createdAt": "2025-08-06T16:28:37.382Z",
-    "location": "Kenosha"
+    "location": "K",
+    "type": "blackout-tasks",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Seed Broccoli Microgreens",
