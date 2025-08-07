@@ -106,19 +106,9 @@ const Tasks: React.FC = () => {
         params.append('location', currentLocation.name);
       }
       const url = `/api/tasks?${params.toString()}`;
-      console.log(`🔍 Fetching tasks from: ${url}`);
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
-      console.log(`🔍 Fetched ${data.length} tasks from API`);
-      console.log('🔍 First few tasks with due dates:', data.slice(0, 3).map(t => ({ title: t.title, dueDate: t.dueDate })));
-      
-      // Debug: Look for tasks due today specifically
-      const todayTasks = data.filter(t => t.dueDate && t.dueDate.startsWith('2025-08-07'));
-      console.log(`🔍 Tasks due today (2025-08-07):`, todayTasks.map(t => ({ title: t.title, dueDate: t.dueDate })));
-      
-      // Debug: Check if any task exists but isn't being picked up
-      console.log(`🔍 All task due dates:`, data.map(t => t.dueDate).slice(0, 10));
       
       return data;
     },
@@ -279,16 +269,12 @@ const Tasks: React.FC = () => {
 
     // Date filter - FIXED: Tasks appear only on their due date
     if (dateFilter) {
-      console.log(`🔍 Applying date filter: ${dateFilter}`);
       filtered = filtered.filter(task => {
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
           const filterDateStr = formatDateForComparison(dateFilter);
-          const matches = taskDateStr === filterDateStr;
-          console.log(`🔍 Task "${task.title}": taskDate="${taskDateStr}" vs filterDate="${filterDateStr}" = ${matches}`);
-          return matches;
+          return taskDateStr === filterDateStr;
         }
-        console.log(`🔍 Task "${task.title}": no dueDate, skipping`);
         return false; // Tasks without due dates don't appear in date-filtered views
       });
     }
@@ -305,13 +291,6 @@ const Tasks: React.FC = () => {
     });
     
     // Log summary for debugging
-    if (dateFilter) {
-      console.log(`Found ${uniqueFiltered.length} tasks for ${dateFilter}`);
-    }
-    
-    console.log(`Found ${uniqueFiltered.length} tasks for ${dateFilter || 'no date filter'}`);
-    console.groupEnd();
-    
     console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
     return uniqueFiltered;
@@ -375,7 +354,7 @@ const Tasks: React.FC = () => {
       const day = String(task.dueDate.getDate()).padStart(2, '0');
       dateString = `${year}-${month}-${day}`;
     } else {
-      dateString = task.dueDate?.split('T')[0] || '';
+      dateString = (task.dueDate as string)?.split('T')[0] || '';
     }
     
     const [year, month, day] = dateString.split('-');
@@ -401,7 +380,7 @@ const Tasks: React.FC = () => {
           taskId,
           updates: { 
             status: 'in_progress', 
-            startedAt: new Date().toISOString() 
+            startedAt: new Date().toISOString() as any 
           }
         });
         setSelectedTask({ ...task, status: 'in_progress' });
@@ -420,20 +399,22 @@ const Tasks: React.FC = () => {
           taskId,
           updates: { 
             status: 'completed', 
-            completedAt: new Date().toISOString(),
+            completedAt: new Date().toISOString() as any,
             progress: 100
           }
         });
         setModalOpen(false);
         
         // Process task completion through TaskCompletionService
-        TaskCompletionService.handleTaskCompletion({
-          taskId: task.id,
-          title: task.title,
-          type: task.type,
-          checklistData: task.checklistData,
-          completedBy: auth.user.id
-        });
+        if (auth.user) {
+          TaskCompletionService.handleTaskCompletion({
+            taskId: task.id,
+            title: task.title,
+            type: task.type,
+            checklistData: task.checklist,
+            completedBy: auth.user.id
+          });
+        }
         
         // Show completion message
         toast({
@@ -461,7 +442,7 @@ const Tasks: React.FC = () => {
           taskId,
           updates: { 
             status: 'paused',
-            pausedAt: new Date().toISOString()
+            pausedAt: new Date().toISOString() as any
           }
         });
         setModalOpen(false);
@@ -478,7 +459,7 @@ const Tasks: React.FC = () => {
           updates: { 
             status: 'skipped',
             skipReason: reason || 'No reason provided',
-            skippedAt: new Date().toISOString()
+            skippedAt: new Date().toISOString() as any
           }
         });
         setModalOpen(false);
@@ -494,7 +475,7 @@ const Tasks: React.FC = () => {
           taskId,
           updates: {
             status: 'in_progress',
-            resumedAt: new Date().toISOString()
+            resumedAt: new Date().toISOString() as any
           }
         });
         setSelectedTask({ ...task, status: 'in_progress' });
