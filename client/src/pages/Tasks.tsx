@@ -271,15 +271,22 @@ const Tasks: React.FC = () => {
 
     // Date filter - FIXED: Tasks appear only on their due date
     if (dateFilter) {
+      console.log(`🔍 Applying date filter for: ${dateFilter}`);
+      const filterDateStr = formatDateForComparison(dateFilter);
+      console.log(`🔍 Filter date formatted as: ${filterDateStr}`);
+      
       filtered = filtered.filter(task => {
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
-          const filterDateStr = formatDateForComparison(dateFilter);
-          return taskDateStr === filterDateStr;
+          const matches = taskDateStr === filterDateStr;
+          console.log(`🔍 Task "${task.title}" due ${task.dueDate} -> formatted: ${taskDateStr} vs filter: ${filterDateStr} = ${matches ? 'MATCH' : 'NO MATCH'}`);
+          return matches;
         }
-
+        console.log(`🔍 Task "${task.title}" has no dueDate, skipping`);
         return false; // Tasks without due dates don't appear in date-filtered views
       });
+      
+      console.log(`🔍 After date filtering: ${filtered.length} tasks remaining`);
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
