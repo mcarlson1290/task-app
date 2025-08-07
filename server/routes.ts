@@ -291,7 +291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create task error:", error);
       console.error("Request body:", req.body);
-      res.status(400).json({ message: "Failed to create task", error: error.message });
+      res.status(400).json({ message: "Failed to create task", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -311,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(task);
     } catch (error) {
       console.error("Error updating task:", error);
-      res.status(500).json({ message: "Failed to update task", error: error.message });
+      res.status(500).json({ message: "Failed to update task", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -441,7 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       console.error("Add inventory error:", error);
-      res.status(500).json({ message: "Failed to add inventory", error: error.message });
+      res.status(500).json({ message: "Failed to add inventory", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -781,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(assignment);
     } catch (error) {
       console.error("Course assignment error:", error);
-      res.status(400).json({ message: "Failed to create course assignment", error: error.message });
+      res.status(400).json({ message: "Failed to create course assignment", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -817,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const notification = await storage.createNotification(notificationData);
       res.json(notification);
     } catch (error) {
-      res.status(400).json({ message: "Failed to create notification", error: error.message });
+      res.status(400).json({ message: "Failed to create notification", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -932,12 +932,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/regenerate-tasks", async (req, res) => {
     try {
       // Delete all recurring task instances (not the recurring tasks themselves)
-      const recurringTasks = await storage.getRecurringTasks();
-      const tasks = await storage.getTasks();
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const tasks = await storage.getAllTasks();
       
       // Remove all task instances that were generated from recurring tasks
-      const recurringTaskIds = new Set(recurringTasks.map(rt => rt.id));
-      const tasksToDelete = tasks.filter(task => task.isRecurring && task.recurringTaskId && recurringTaskIds.has(task.recurringTaskId));
+      const recurringTaskIds = new Set(recurringTasks.map((rt: any) => rt.id));
+      const tasksToDelete = tasks.filter((task: any) => task.isRecurring && task.recurringTaskId && recurringTaskIds.has(task.recurringTaskId));
       
       console.log(`Deleting ${tasksToDelete.length} existing recurring task instances`);
       for (const task of tasksToDelete) {
@@ -950,7 +950,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await (storage as any).generateTaskInstances(recurringTask);
       }
       
-      const newTasks = await storage.getTasks();
+      const newTasks = await storage.getAllTasks();
       const newRecurringInstances = newTasks.filter(task => task.isRecurring);
       
       res.json({ 
@@ -1063,7 +1063,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Helper to map category to type
-      const mapCategoryToType = (category) => {
+      const mapCategoryToType = (category: string) => {
         const categoryLower = category.toLowerCase();
         if (categoryLower.includes('seeding')) return 'seeding-microgreens';
         if (categoryLower.includes('harvest')) return 'harvest-microgreens'; 
@@ -1076,10 +1076,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Helper to parse days of week from CSV format
-      const parseDaysOfWeek = (daysStr) => {
+      const parseDaysOfWeek = (daysStr: string) => {
         if (!daysStr || daysStr === '[]') return null;
         if (daysStr.includes(',')) {
-          return daysStr.split(',').map(d => d.trim().toLowerCase());
+          return daysStr.split(',').map((d: string) => d.trim().toLowerCase());
         }
         return [daysStr.toLowerCase()];
       };

@@ -1285,13 +1285,27 @@ export class MemStorage implements IStorage {
     return newProgress;
   }
 
-  async updateUserProgress(id: number, updates: Partial<UserProgress>): Promise<UserProgress | null> {
-    const progress = this.userProgress.get(id);
-    if (!progress) return null;
+  async updateUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
+    // Find existing progress for this user/module combination
+    const existingKey = `${progressData.userId}-${progressData.moduleId}`;
+    const existingProgress = Array.from(this.userProgress.values()).find(p => 
+      p.userId === progressData.userId && p.moduleId === progressData.moduleId
+    );
 
-    const updatedProgress = { ...progress, ...updates };
-    this.userProgress.set(id, updatedProgress);
-    return updatedProgress;
+    if (existingProgress) {
+      // Update existing progress
+      const updatedProgress = { ...existingProgress, ...progressData };
+      this.userProgress.set(existingProgress.id, updatedProgress);
+      return updatedProgress;
+    } else {
+      // Create new progress
+      const newProgress: UserProgress = {
+        ...progressData,
+        id: this.currentProgressId++
+      };
+      this.userProgress.set(newProgress.id, newProgress);
+      return newProgress;
+    }
   }
 
   // Task logs methods
@@ -1470,6 +1484,24 @@ export class MemStorage implements IStorage {
     await this.persistData();
     
     return deleted;
+  }
+
+  async resetRecurringTasks(): Promise<boolean> {
+    this.recurringTasks.clear();
+    this.currentRecurringTaskId = 1;
+    
+    // Also clear all task instances that were generated from recurring tasks
+    const recurringTaskIds = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      return task?.isRecurring;
+    });
+    
+    recurringTaskIds.forEach(taskId => this.tasks.delete(taskId));
+    
+    // Persist the changes
+    await this.persistData();
+    
+    return true;
   }
 
   // Method to regenerate task instances (useful for fixing scheduling bugs)
@@ -2162,5 +2194,5 @@ class DatabaseStorage implements IStorage {
   async clearAllData(): Promise<boolean> { return false; }
 }
 
-// Switch to database storage
-export const storage = new DatabaseStorage();
+// Use MemStorage for now as it has full implementation
+export const storage = new MemStorage();
