@@ -27,7 +27,7 @@ const RecurringTasks: React.FC = () => {
   const [importReport, setImportReport] = useState<any>(null);
   const [showImportSection, setShowImportSection] = useState(false);
 
-  const { data: recurringTasks = [], isLoading } = useQuery<RecurringTask[]>({
+  const { data: recurringTasks = [], isLoading, refetch } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.name, isViewingAllLocations],
     queryFn: async () => {
       console.log('🔍 currentLocation object:', currentLocation);
@@ -37,7 +37,7 @@ const RecurringTasks: React.FC = () => {
         : `/api/recurring-tasks?location=${encodeURIComponent(currentLocation.name)}`;
       
       console.log('🔍 Making API call to:', url);
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch recurring tasks');
       const data = await response.json();
       console.log(`🔍 Fetched ${data.length} recurring tasks from API for location: ${currentLocation.name}`);
@@ -50,6 +50,8 @@ const RecurringTasks: React.FC = () => {
       return data;
     },
     enabled: !!auth.user,
+    staleTime: 0,
+    cacheTime: 0
   });
 
   // Since we're using server-side location filtering, we don't need additional client filtering
@@ -62,6 +64,12 @@ const RecurringTasks: React.FC = () => {
       console.log('First 3 tasks:', filteredRecurringTasks.slice(0, 3).map(t => ({ id: t.id, title: t.title, location: t.location })));
     }
   }, [filteredRecurringTasks]);
+
+  // Force refetch when location changes
+  React.useEffect(() => {
+    console.log('🔍 Location changed, forcing refetch...');
+    refetch();
+  }, [currentLocation.name, isViewingAllLocations, refetch]);
 
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
@@ -298,7 +306,7 @@ const RecurringTasks: React.FC = () => {
 
       {filteredRecurringTasks.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <p>No recurring tasks found for location: {currentLocation.code}</p>
+          <p>No recurring tasks found for location: {currentLocation.name}</p>
           <p className="text-sm mt-2">Try switching locations or importing SharePoint tasks above.</p>
         </div>
       ) : (
@@ -334,7 +342,7 @@ const RecurringTasks: React.FC = () => {
                 
                 <div className="flex items-center text-sm text-gray-600">
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  <span>Type: {task.type.replace('-', ' ')}</span>
+                  <span>Type: {task.type?.replace('-', ' ') || 'Unknown'}</span>
                 </div>
                 
                 {task.automation?.enabled && (
