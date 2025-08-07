@@ -112,6 +112,14 @@ const Tasks: React.FC = () => {
       const data = await response.json();
       console.log(`🔍 Fetched ${data.length} tasks from API`);
       console.log('🔍 First few tasks with due dates:', data.slice(0, 3).map(t => ({ title: t.title, dueDate: t.dueDate })));
+      
+      // Debug: Look for tasks due today specifically
+      const todayTasks = data.filter(t => t.dueDate && t.dueDate.startsWith('2025-08-07'));
+      console.log(`🔍 Tasks due today (2025-08-07):`, todayTasks.map(t => ({ title: t.title, dueDate: t.dueDate })));
+      
+      // Debug: Check if any task exists but isn't being picked up
+      console.log(`🔍 All task due dates:`, data.map(t => t.dueDate).slice(0, 10));
+      
       return data;
     },
     enabled: !!auth.user,
@@ -233,7 +241,7 @@ const Tasks: React.FC = () => {
     
     // Location filter
     if (!isViewingAllLocations) {
-      filtered = filtered.filter(task => task.location === currentLocation.code);
+      filtered = filtered.filter(task => task.location === currentLocation.name);
     }
 
     // Search filter
@@ -271,13 +279,16 @@ const Tasks: React.FC = () => {
 
     // Date filter - FIXED: Tasks appear only on their due date
     if (dateFilter) {
+      console.log(`🔍 Applying date filter: ${dateFilter}`);
       filtered = filtered.filter(task => {
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
           const filterDateStr = formatDateForComparison(dateFilter);
-          return taskDateStr === filterDateStr;
+          const matches = taskDateStr === filterDateStr;
+          console.log(`🔍 Task "${task.title}": taskDate="${taskDateStr}" vs filterDate="${filterDateStr}" = ${matches}`);
+          return matches;
         }
-
+        console.log(`🔍 Task "${task.title}": no dueDate, skipping`);
         return false; // Tasks without due dates don't appear in date-filtered views
       });
     }
@@ -304,7 +315,7 @@ const Tasks: React.FC = () => {
     console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
     return uniqueFiltered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.code, isViewingAllLocations]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.name, isViewingAllLocations]);
 
   // Clear all filters function
   const clearAllFilters = () => {
