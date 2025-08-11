@@ -153,6 +153,16 @@ const RecurringTasks: React.FC = () => {
     }
   }, [filteredRecurringTasks]);
 
+  // Debug day filter
+  React.useEffect(() => {
+    if (dayFilter !== 'all' && recurringTasks.length > 0) {
+      console.log('🗓️ Day filter active:', dayFilter);
+      const uniqueFreqs = new Set(recurringTasks.map(t => t.frequency));
+      const sampleFrequencies = Array.from(uniqueFreqs).slice(0, 5);
+      console.log('🗓️ Sample frequencies:', sampleFrequencies);
+    }
+  }, [dayFilter, recurringTasks]);
+
 
 
   // Force refetch when location changes
