@@ -2097,7 +2097,9 @@
     "createdAt": "2025-08-06T16:28:43.827Z",
     "location": "Kenosha",
     "type": "equipment-maintenance",
-    "daysOfWeek": [],
+    "daysOfWeek": [
+      "thursday"
+    ],
     "automation": {
       "enabled": false,
       "generateTrays": false,

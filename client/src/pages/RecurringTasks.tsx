@@ -180,8 +180,13 @@ const RecurringTasks: React.FC = () => {
       const uniqueFreqs = new Set(recurringTasks.map(t => t.frequency));
       const sampleFrequencies = Array.from(uniqueFreqs).slice(0, 5);
       console.log('🗓️ Sample frequencies:', sampleFrequencies);
+      
+      // Show filtering summary
+      const totalTasks = recurringTasks.length;
+      const filteredCount = filteredRecurringTasks.length;
+      console.log(`📊 Day filter summary: ${filteredCount}/${totalTasks} tasks shown for ${dayFilter}`);
     }
-  }, [dayFilter, recurringTasks]);
+  }, [dayFilter, recurringTasks, filteredRecurringTasks]);
 
 
 
