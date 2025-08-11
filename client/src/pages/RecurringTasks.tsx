@@ -280,11 +280,15 @@ const RecurringTasks: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="seeding microgreens">Seeding</SelectItem>
+                <SelectItem value="seeding microgreens">Seeding - Microgreens</SelectItem>
+                <SelectItem value="seeding leafy greens">Seeding - Leafy Greens</SelectItem>
+                <SelectItem value="harvest microgreens">Harvest - Microgreens</SelectItem>
+                <SelectItem value="harvest leafy greens">Harvest - Leafy Greens</SelectItem>
                 <SelectItem value="blackout tasks">Blackout Tasks</SelectItem>
                 <SelectItem value="moving">Moving</SelectItem>
                 <SelectItem value="cleaning">Cleaning</SelectItem>
                 <SelectItem value="equipment maintenance">Equipment Maintenance</SelectItem>
+                <SelectItem value="inventory">Inventory</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
