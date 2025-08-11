@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Settings, Calendar, Clock, RotateCcw, Building2, CheckSquare } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Edit, Trash2, Settings, Calendar, Clock, RotateCcw, Building2, CheckSquare, Search, X } from 'lucide-react';
 import { getStoredAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -23,9 +25,12 @@ const RecurringTasks: React.FC = () => {
   const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingTask, setDeletingTask] = useState<RecurringTask | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importReport, setImportReport] = useState<any>(null);
-  const [showImportSection, setShowImportSection] = useState(false);
+
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [frequencyFilter, setFrequencyFilter] = useState('all');
 
   const { data: recurringTasks = [], isLoading, refetch } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.name, isViewingAllLocations],
@@ -54,8 +59,63 @@ const RecurringTasks: React.FC = () => {
     gcTime: 0
   });
 
-  // Since we're using server-side location filtering, we don't need additional client filtering
-  const filteredRecurringTasks = recurringTasks;
+  // Filter recurring tasks based on search term, type, and frequency
+  const filteredRecurringTasks = useMemo(() => {
+    let filtered = [...recurringTasks];
+    
+    // Search filter - searches across title and description
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(task => 
+        task.title.toLowerCase().includes(search) ||
+        (task.description && task.description.toLowerCase().includes(search))
+      );
+    }
+    
+    // Type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(task => 
+        task.type && task.type.toLowerCase() === typeFilter.toLowerCase()
+      );
+    }
+    
+    // Frequency filter
+    if (frequencyFilter !== 'all') {
+      filtered = filtered.filter(task => {
+        const taskFreq = task.frequency.toLowerCase();
+        
+        if (frequencyFilter === 'weekly') {
+          // Weekly means it happens on specific days of the week
+          return taskFreq.includes('monday') || 
+                 taskFreq.includes('tuesday') || 
+                 taskFreq.includes('wednesday') || 
+                 taskFreq.includes('thursday') || 
+                 taskFreq.includes('friday') || 
+                 taskFreq.includes('saturday') || 
+                 taskFreq.includes('sunday');
+        }
+        
+        if (frequencyFilter === 'bi-weekly') {
+          return taskFreq.includes('bi-weekly') || taskFreq.includes('biweekly');
+        }
+        
+        if (frequencyFilter === 'monthly') {
+          return taskFreq.includes('monthly');
+        }
+        
+        return false;
+      });
+    }
+    
+    return filtered;
+  }, [recurringTasks, searchTerm, typeFilter, frequencyFilter]);
+
+  // Clear all filters function
+  const clearFilters = () => {
+    setSearchTerm('');
+    setTypeFilter('all');
+    setFrequencyFilter('all');
+  };
   
   // Debug logging
   React.useEffect(() => {
@@ -151,7 +211,7 @@ const RecurringTasks: React.FC = () => {
   };
 
   const getTaskTypeEmoji = (type: string) => {
-    const emojis = {
+    const emojis: { [key: string]: string } = {
       'seeding-microgreens': '🌱',
       'seeding-leafy-greens': '🌿',
       'harvest-microgreens': '🌾',
@@ -178,136 +238,101 @@ const RecurringTasks: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    setIsImporting(true);
-    try {
-      const csvText = await file.text();
-      const { newTasks, migrationReport } = await migrateSharePointTasks(csvText);
-      
-      // Import the tasks
-      await importRecurringTasks(newTasks);
-      
-      setImportReport(migrationReport);
-      
-      // Refresh the tasks list with new query keys
-      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      
-      // Force refetch with current location
-      await queryClient.refetchQueries({ queryKey: ['/api/recurring-tasks', currentLocation.code, isViewingAllLocations] });
-      
-      toast({
-        title: "Import Complete",
-        description: `Successfully imported ${migrationReport.totalTasks} SharePoint tasks. Please refresh the page to see them.`,
-      });
-      
-      toast({
-        title: 'Import Complete',
-        description: `Successfully imported ${migrationReport.successful} recurring tasks.`,
-      });
-      
-      // Log detailed report to console
-      console.log('=== SHAREPOINT MIGRATION REPORT ===');
-      console.log(`✅ Successful: ${migrationReport.successful} tasks`);
-      console.log(`❌ Failed: ${migrationReport.failed} tasks`);
-      
-      if (migrationReport.warnings.length > 0) {
-        console.log('⚠️ WARNINGS:', migrationReport.warnings);
-      }
-      
-      if (migrationReport.errors.length > 0) {
-        console.log('❌ ERRORS:', migrationReport.errors);
-      }
-      
-    } catch (error: any) {
-      console.error('Import failed:', error);
-      toast({
-        title: 'Import Failed',
-        description: error.message || 'Failed to import SharePoint tasks',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsImporting(false);
-    }
-  };
+
 
   if (isLoading) return <div className="p-6">Loading recurring tasks...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-2">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">📋 Recurring Tasks</h1>
           <Button 
-            variant="outline"
-            onClick={() => setShowImportSection(!showImportSection)}
-            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            onClick={() => setShowAddModal(true)}
+            className="bg-[#2D8028] hover:bg-[#203B17]"
           >
-            📤 SharePoint Import
+            <Plus className="w-4 h-4 mr-2" />
+            Add Recurring Task
           </Button>
         </div>
-        <Button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-[#2D8028] hover:bg-[#203B17]"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Recurring Task
-        </Button>
+
+        {/* Filters Section */}
+        <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-lg border">
+          {/* Search Bar */}
+          <div className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="🔍 Search tasks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          
+          {/* Type Filter */}
+          <div className="min-w-[160px]">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="seeding microgreens">Seeding</SelectItem>
+                <SelectItem value="blackout tasks">Blackout Tasks</SelectItem>
+                <SelectItem value="moving">Moving</SelectItem>
+                <SelectItem value="cleaning">Cleaning</SelectItem>
+                <SelectItem value="equipment maintenance">Equipment Maintenance</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Frequency Filter */}
+          <div className="min-w-[160px]">
+            <Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Frequencies" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Frequencies</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="bi-weekly">Bi-Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Clear Filters Button */}
+          {(searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all') && (
+            <Button
+              variant="outline"
+              onClick={clearFilters}
+              className="text-gray-600 border-gray-300 hover:bg-gray-50"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear Filters
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* SharePoint Import Section */}
-      {showImportSection && (
-        <Card className="mb-6 border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-800">Import SharePoint Recurring Tasks</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-sm text-gray-600">
-              <p className="mb-2">Upload your SharePoint "Reoccurring Tasks.csv" file to import existing recurring tasks into the system.</p>
-              <p className="text-xs text-yellow-700 bg-yellow-100 p-2 rounded">
-                ⚠️ Note: Tasks marked as "DISABLED" in SharePoint will be skipped. Tasks with SharePoint checklists will need manual recreation.
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                disabled={isImporting}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              {isImporting && (
-                <div className="flex items-center text-blue-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                  Importing...
-                </div>
-              )}
-            </div>
-            
-            {importReport && (
-              <div className="mt-4 p-3 bg-green-100 border border-green-200 rounded">
-                <h4 className="font-semibold text-green-800">Import Complete!</h4>
-                <div className="text-sm text-green-700 mt-1">
-                  <p>✅ Successfully imported: {importReport.successful} tasks</p>
-                  {importReport.failed > 0 && <p>❌ Failed: {importReport.failed} tasks</p>}
-                  {importReport.warnings.length > 0 && (
-                    <p>⚠️ Tasks with SharePoint checklists: {importReport.warnings.length}</p>
-                  )}
-                  <p className="text-xs mt-1">Check browser console for detailed report</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {filteredRecurringTasks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <p>No recurring tasks found for location: {currentLocation.name}</p>
-          <p className="text-sm mt-2">Try switching locations or importing SharePoint tasks above.</p>
+        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
+          <div className="text-6xl mb-4">📋</div>
+          {searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all' ? (
+            <div>
+              <p className="text-lg font-medium mb-2">No recurring tasks match your filters</p>
+              <p className="text-sm">Try adjusting your search terms or clearing the filters to see more tasks.</p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-lg font-medium mb-2">No recurring tasks found</p>
+              <p className="text-sm">Create your first recurring task to get started with automated scheduling.</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -324,7 +349,7 @@ const RecurringTasks: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
-                    checked={task.isActive}
+                    checked={task.isActive ?? false}
                     onCheckedChange={(checked) => 
                       toggleTaskMutation.mutate({ id: task.id, isActive: checked })
                     }
@@ -358,7 +383,7 @@ const RecurringTasks: React.FC = () => {
                   </div>
                 )}
                 
-                {task.checklistTemplate?.steps?.length > 0 && (
+                {task.checklistTemplate?.steps && task.checklistTemplate.steps.length > 0 && (
                   <div className="flex items-center gap-2 mb-2">
                     <CheckSquare className="w-4 h-4 text-blue-600" />
                     <span className="text-sm text-blue-600">
@@ -367,7 +392,7 @@ const RecurringTasks: React.FC = () => {
                   </div>
                 )}
 
-                {task.automation?.flow?.stages?.length > 0 && (
+                {task.automation?.flow?.stages && task.automation.flow.stages.length > 0 && (
                   <div className="flex items-center gap-2 mb-2">
                     <Building2 className="w-4 h-4 text-green-600" />
                     <span className="text-sm text-green-600">
