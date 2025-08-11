@@ -31,6 +31,7 @@ const RecurringTasks: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [frequencyFilter, setFrequencyFilter] = useState('all');
+  const [dayFilter, setDayFilter] = useState('all');
 
   const { data: recurringTasks = [], isLoading, refetch } = useQuery<RecurringTask[]>({
     queryKey: ['/api/recurring-tasks', currentLocation.name, isViewingAllLocations],
@@ -107,14 +108,41 @@ const RecurringTasks: React.FC = () => {
       });
     }
     
+    // Day filter
+    if (dayFilter !== 'all') {
+      filtered = filtered.filter(task => {
+        const taskFreq = task.frequency.toLowerCase();
+        
+        // Weekly tasks - check if the selected day is included
+        if (taskFreq.includes(dayFilter)) {
+          return true;
+        }
+        
+        // Bi-weekly tasks (1st & 15th) don't have specific weekdays
+        // They should NOT show up when filtering by specific days
+        if (taskFreq.includes('bi-weekly') || taskFreq.includes('biweekly')) {
+          return false;
+        }
+        
+        // Monthly tasks don't have specific weekdays
+        // They should NOT show up when filtering by specific days
+        if (taskFreq.includes('monthly')) {
+          return false;
+        }
+        
+        return false;
+      });
+    }
+    
     return filtered;
-  }, [recurringTasks, searchTerm, typeFilter, frequencyFilter]);
+  }, [recurringTasks, searchTerm, typeFilter, frequencyFilter, dayFilter]);
 
   // Clear all filters function
   const clearFilters = () => {
     setSearchTerm('');
     setTypeFilter('all');
     setFrequencyFilter('all');
+    setDayFilter('all');
   };
   
   // Debug logging
@@ -307,9 +335,28 @@ const RecurringTasks: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Day Filter */}
+          <div className="min-w-[140px]">
+            <Select value={dayFilter} onValueChange={setDayFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Days" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Days</SelectItem>
+                <SelectItem value="monday">Monday</SelectItem>
+                <SelectItem value="tuesday">Tuesday</SelectItem>
+                <SelectItem value="wednesday">Wednesday</SelectItem>
+                <SelectItem value="thursday">Thursday</SelectItem>
+                <SelectItem value="friday">Friday</SelectItem>
+                <SelectItem value="saturday">Saturday</SelectItem>
+                <SelectItem value="sunday">Sunday</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
           {/* Clear Filters Button */}
-          {(searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all') && (
+          {(searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all' || dayFilter !== 'all') && (
             <Button
               variant="outline"
               onClick={clearFilters}
@@ -325,7 +372,7 @@ const RecurringTasks: React.FC = () => {
       {filteredRecurringTasks.length === 0 ? (
         <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
           <div className="text-6xl mb-4">📋</div>
-          {searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all' ? (
+          {searchTerm || typeFilter !== 'all' || frequencyFilter !== 'all' || dayFilter !== 'all' ? (
             <div>
               <p className="text-lg font-medium mb-2">No recurring tasks match your filters</p>
               <p className="text-sm">Try adjusting your search terms or clearing the filters to see more tasks.</p>

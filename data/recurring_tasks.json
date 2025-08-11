@@ -1001,12 +1001,25 @@
     "migrationDate": "2025-08-06T16:28:37.264Z",
     "instances": "5",
     "daysOfWeek": [
-      "monday",
       "monday"
     ],
     "id": 25,
     "createdAt": "2025-08-06T16:28:39.582Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Harvest Arugula Micogreens",
@@ -1034,7 +1047,21 @@
     ],
     "id": 26,
     "createdAt": "2025-08-06T16:28:39.671Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "harvest-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Water Microgreen Germination Trays",
@@ -1062,7 +1089,21 @@
     ],
     "id": 27,
     "createdAt": "2025-08-06T16:28:39.763Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Change Microgreen Reservoir Water and Clean Shelves",
@@ -1086,7 +1127,22 @@
     "instances": "General Maintenance",
     "id": 28,
     "createdAt": "2025-08-06T16:28:39.855Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Check Paper Towel Levels",
@@ -1110,7 +1166,22 @@
     "instances": "[Thursday]",
     "id": 29,
     "createdAt": "2025-08-06T16:28:39.950Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Remove Garbage from Non-Farm areas",
@@ -1134,13 +1205,28 @@
     "instances": "[Thursday]",
     "id": 30,
     "createdAt": "2025-08-06T16:28:40.043Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Vacuum the Office and Lobby",
     "description": "This process ensures that the office and lobby areas are vacuumed thoroughly to maintain cleanliness and a professional appearance. Regular vacuuming removes dirt",
     "priority": "medium",
-    "frequency": "daily",
+    "frequency": "bi-weekly",
     "category": "Moving",
     "assignedRole": "General Staff",
     "estimatedTime": null,
@@ -1158,13 +1244,28 @@
     "instances": "[Thursday]",
     "id": 31,
     "createdAt": "2025-08-06T16:28:40.138Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Clean Outside Facing Lobby Window",
     "description": "This process ensures the lobby’s outside-facing windows are cleaned to maintain a professional and welcoming appearance. Regular cleaning removes smudges",
     "priority": "medium",
-    "frequency": "daily",
+    "frequency": "bi-weekly",
     "category": "Moving",
     "assignedRole": "General Staff",
     "estimatedTime": null,
@@ -1182,7 +1283,22 @@
     "instances": "[Monthly]",
     "id": 32,
     "createdAt": "2025-08-06T16:28:40.237Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Washing Farm Towels and Filter Socks",
@@ -1203,28 +1319,24 @@
     "instances": "",
     "id": 33,
     "createdAt": "2025-08-06T16:28:40.333Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Untitled Task",
-    "description": "Low Priority",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "False",
-    "microgreensData": null,
-    "isActive": true,
-    "oldTaskId": "General Laborer",
-    "oldUniqueId": "N/A",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.264Z",
-    "instances": "WTFS1",
-    "id": 34,
-    "createdAt": "2025-08-06T16:28:40.442Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "daysOfWeek": [
+      "monday"
+    ],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Clean Farm Floor",
@@ -1252,13 +1364,27 @@
     ],
     "id": 35,
     "createdAt": "2025-08-06T16:28:40.544Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Interior Window Cleaning",
     "description": "This process outlines the steps required to open the vertical farm safely and efficiently. The checklist ensures that all systems are operational",
     "priority": "medium",
-    "frequency": "daily",
+    "frequency": "bi-weekly",
     "category": "Cleaning",
     "assignedRole": "General Staff",
     "estimatedTime": null,
@@ -1276,7 +1402,22 @@
     "instances": "General Maintenance",
     "id": 36,
     "createdAt": "2025-08-06T16:28:40.641Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Check pH and Water Levels in Towers",
@@ -1305,7 +1446,21 @@
     ],
     "id": 37,
     "createdAt": "2025-08-06T16:28:40.738Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Seed Leafy Greens",
@@ -1334,7 +1489,21 @@
     ],
     "id": 38,
     "createdAt": "2025-08-06T16:28:40.833Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-leafy-greens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Clean NFT Channels Covers",
@@ -1358,7 +1527,22 @@
     "instances": "Medium Priority",
     "id": 39,
     "createdAt": "2025-08-06T16:28:40.932Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Repair Leaking NFT Channels",
@@ -1382,31 +1566,22 @@
     "instances": "Equipment Maintainer",
     "id": 40,
     "createdAt": "2025-08-06T16:28:41.032Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Clean NFT Channels",
-    "description": "This process ensures NFT channels are thoroughly cleaned",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Cleaning",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "CTC2",
-    "microgreensData": {
-      "weight": "General Maintenance",
-      "seedAmount": "Equipment Cleaner"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
     },
-    "isActive": true,
-    "oldTaskId": "maintains water quality",
-    "oldUniqueId": "[DISABLED]",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Medium Priority",
-    "id": 41,
-    "createdAt": "2025-08-06T16:28:41.128Z",
-    "location": "Kenosha"
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Replace NFT Channels and Manifolds",
@@ -1430,295 +1605,24 @@
     "instances": "and finalizing the system to ensure optimal function for planting.",
     "id": 42,
     "createdAt": "2025-08-06T16:28:41.236Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Basil Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "44 Basil",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT1"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [
+      "wednesday"
+    ],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
     },
-    "isActive": true,
-    "oldTaskId": "High Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 43,
-    "createdAt": "2025-08-06T16:28:41.336Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Butter Crunch Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "44 Butter",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT2"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 44,
-    "createdAt": "2025-08-06T16:28:41.437Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Kale Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "44 Kale",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT3"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 45,
-    "createdAt": "2025-08-06T16:28:41.530Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant General Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "16 Summer",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT4"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 46,
-    "createdAt": "2025-08-06T16:28:41.632Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Romaine and Red Oak Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "36 Romaine",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT5"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 47,
-    "createdAt": "2025-08-06T16:28:41.734Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Chives in Residential Tower",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "Plant in Residential Tower",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT6"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 48,
-    "createdAt": "2025-08-06T16:28:41.832Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Plant Baby Arugula in Baby NFT",
-    "description": "This process ensures that two-week-old seedlings grown in the ebb and flow system are properly transplanted into towers. Proper handling and planting are essential for plant health",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "Baby NFT is by the Window",
-    "microgreensData": {
-      "weight": "1",
-      "seedAmount": "MTT7"
-    },
-    "isActive": true,
-    "oldTaskId": "Medium Priority",
-    "oldUniqueId": "Leafy Green Mover",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "Moving",
-    "id": 49,
-    "createdAt": "2025-08-06T16:28:41.932Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest the Basil Tower",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
-    },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "High Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 50,
-    "createdAt": "2025-08-06T16:28:42.033Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest Butter Crunch Tower",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
-    },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "High Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 51,
-    "createdAt": "2025-08-06T16:28:42.139Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest Romaine and Red Oak Tower",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
-    },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "High Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 52,
-    "createdAt": "2025-08-06T16:28:42.239Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest Chives Tower",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
-    },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "High Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 53,
-    "createdAt": "2025-08-06T16:28:42.342Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest Baby Arugula in the Baby NFT",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
-    },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "High Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 54,
-    "createdAt": "2025-08-06T16:28:42.447Z",
-    "location": "Kenosha"
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Harvest Turnip Microgreens",
@@ -1746,7 +1650,21 @@
     ],
     "id": 55,
     "createdAt": "2025-08-06T16:28:42.549Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "harvest-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Harvest Spicy Mix Microgreens",
@@ -1774,7 +1692,21 @@
     ],
     "id": 56,
     "createdAt": "2025-08-06T16:28:42.650Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "harvest-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
@@ -1803,7 +1735,21 @@
     ],
     "id": 57,
     "createdAt": "2025-08-06T16:28:42.755Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "blackout-tasks",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Remove BO and Move Spicy Mix Microgreens to Watering Rack",
@@ -1831,7 +1777,21 @@
     ],
     "id": 58,
     "createdAt": "2025-08-06T16:28:42.863Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "blackout-tasks",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Seed Turnip Microgreens",
@@ -1859,7 +1819,21 @@
     ],
     "id": 59,
     "createdAt": "2025-08-06T16:28:42.965Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Seed Spicy Mix Microgreens",
@@ -1887,31 +1861,21 @@
     ],
     "id": 60,
     "createdAt": "2025-08-06T16:28:43.074Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Harvest Kale Tower",
-    "description": "This procedure outlines the steps for harvesting and packaging produce from the towers",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "Harvester",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "1",
-    "microgreensData": {
-      "weight": "[DISABLED]",
-      "seedAmount": "Harvesting"
+    "location": "Kenosha",
+    "type": "seeding-microgreens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
     },
-    "isActive": true,
-    "oldTaskId": "and packaging them correctly. Proper harvesting ensures product quality",
-    "oldUniqueId": "Medium Priority",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "and maintains system cleanliness.",
-    "id": 61,
-    "createdAt": "2025-08-06T16:28:43.193Z",
-    "location": "Kenosha"
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Move Dirty NFT Channels to Storage Room",
@@ -1935,7 +1899,22 @@
     "instances": "General Maintenance",
     "id": 62,
     "createdAt": "2025-08-06T16:28:43.300Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Set Clean NFT Channels",
@@ -1959,7 +1938,22 @@
     "instances": "and ensures smooth transition back into operation.",
     "id": 63,
     "createdAt": "2025-08-06T16:28:43.406Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Clean Tower Basins",
@@ -1983,7 +1977,22 @@
     "instances": "we ensure that the system remains clean and supports healthy plant growth.",
     "id": 64,
     "createdAt": "2025-08-06T16:28:43.509Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Set Clean Towers",
@@ -2007,7 +2016,22 @@
     "instances": "Equipment Maintainer",
     "id": 65,
     "createdAt": "2025-08-06T16:28:43.622Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Clean Tower Garden Pots",
@@ -2036,7 +2060,21 @@
     ],
     "id": 66,
     "createdAt": "2025-08-06T16:28:43.732Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Assemble Tower Gardens",
@@ -2057,28 +2095,22 @@
     "instances": "",
     "id": 67,
     "createdAt": "2025-08-06T16:28:43.827Z",
-    "location": "Kenosha"
-  },
-  {
-    "title": "Untitled Task",
-    "description": "Medium Priority",
-    "priority": "medium",
-    "frequency": "daily",
-    "category": "Other",
-    "assignedRole": "General Staff",
-    "estimatedTime": null,
-    "requiresPhotoProof": false,
-    "processLink": "False",
-    "microgreensData": null,
-    "isActive": true,
-    "oldTaskId": "Equipment Maintainer",
-    "oldUniqueId": "N/A",
-    "migratedFrom": "SharePoint",
-    "migrationDate": "2025-08-06T16:28:37.265Z",
-    "instances": "ATT1",
-    "id": 68,
-    "createdAt": "2025-08-06T16:28:43.939Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Disassemble Towers",
@@ -2102,7 +2134,22 @@
     "instances": "Equipment Maintainer",
     "id": 69,
     "createdAt": "2025-08-06T16:28:44.047Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Replace Fan and Furnace Filter",
@@ -2128,7 +2175,22 @@
     "hasSharePointChecklist": true,
     "id": 70,
     "createdAt": "2025-08-06T16:28:44.149Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "cleaning",
+    "daysOfWeek": [],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Plant Towers",
@@ -2157,7 +2219,21 @@
     ],
     "id": 71,
     "createdAt": "2025-08-06T16:28:44.253Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "moving",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   },
   {
     "title": "Harvest Towers",
@@ -2186,6 +2262,20 @@
     ],
     "id": 72,
     "createdAt": "2025-08-06T16:28:44.366Z",
-    "location": "Kenosha"
+    "location": "Kenosha",
+    "type": "harvest-leafy-greens",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    }
   }
 ]
