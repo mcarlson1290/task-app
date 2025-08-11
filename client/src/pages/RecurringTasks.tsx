@@ -111,25 +111,45 @@ const RecurringTasks: React.FC = () => {
     // Day filter
     if (dayFilter !== 'all') {
       filtered = filtered.filter(task => {
-        const taskFreq = task.frequency.toLowerCase();
+        if (!task.frequency) return false;
         
-        // Weekly tasks - check if the selected day is included
-        if (taskFreq.includes(dayFilter)) {
+        const taskFreq = task.frequency.toLowerCase();
+        const selectedDay = dayFilter.toLowerCase();
+        
+        console.log(`🗓️ Checking task "${task.title}" with frequency "${taskFreq}" against day "${selectedDay}"`);
+        
+        // Check for exact day match in frequency string
+        if (taskFreq.includes(selectedDay)) {
+          console.log(`✅ Day match found for ${task.title}`);
           return true;
         }
         
-        // Bi-weekly tasks (1st & 15th) don't have specific weekdays
-        // They should NOT show up when filtering by specific days
-        if (taskFreq.includes('bi-weekly') || taskFreq.includes('biweekly')) {
-          return false;
+        // Check for day abbreviations (mon, tue, wed, etc.)
+        const dayAbbreviations = {
+          'monday': ['mon'],
+          'tuesday': ['tue', 'tues'],
+          'wednesday': ['wed'],
+          'thursday': ['thu', 'thur', 'thurs'],
+          'friday': ['fri'],
+          'saturday': ['sat'],
+          'sunday': ['sun']
+        };
+        
+        if (dayAbbreviations[selectedDay]) {
+          const hasAbbrev = dayAbbreviations[selectedDay].some(abbr => taskFreq.includes(abbr));
+          if (hasAbbrev) {
+            console.log(`✅ Day abbreviation match found for ${task.title}`);
+            return true;
+          }
         }
         
-        // Monthly tasks don't have specific weekdays
-        // They should NOT show up when filtering by specific days
-        if (taskFreq.includes('monthly')) {
-          return false;
+        // If task frequency contains "daily", it should show for any selected day
+        if (taskFreq.includes('daily')) {
+          console.log(`✅ Daily task ${task.title} shown for ${selectedDay}`);
+          return true;
         }
         
+        console.log(`❌ No match for ${task.title}`);
         return false;
       });
     }
