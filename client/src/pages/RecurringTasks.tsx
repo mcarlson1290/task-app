@@ -111,45 +111,55 @@ const RecurringTasks: React.FC = () => {
     // Day filter
     if (dayFilter !== 'all') {
       filtered = filtered.filter(task => {
-        if (!task.frequency) return false;
-        
-        const taskFreq = task.frequency.toLowerCase();
         const selectedDay = dayFilter.toLowerCase();
         
-        console.log(`🗓️ Checking task "${task.title}" with frequency "${taskFreq}" against day "${selectedDay}"`);
+        console.log(`🗓️ Checking task "${task.title}" for day "${selectedDay}"`);
+        console.log(`   - Frequency: "${task.frequency}"`);
+        console.log(`   - DaysOfWeek: ${task.daysOfWeek ? JSON.stringify(task.daysOfWeek) : 'undefined'}`);
         
-        // Check for exact day match in frequency string
-        if (taskFreq.includes(selectedDay)) {
-          console.log(`✅ Day match found for ${task.title}`);
-          return true;
-        }
-        
-        // Check for day abbreviations (mon, tue, wed, etc.)
-        const dayAbbreviations = {
-          'monday': ['mon'],
-          'tuesday': ['tue', 'tues'],
-          'wednesday': ['wed'],
-          'thursday': ['thu', 'thur', 'thurs'],
-          'friday': ['fri'],
-          'saturday': ['sat'],
-          'sunday': ['sun']
-        };
-        
-        if (dayAbbreviations[selectedDay]) {
-          const hasAbbrev = dayAbbreviations[selectedDay].some(abbr => taskFreq.includes(abbr));
-          if (hasAbbrev) {
-            console.log(`✅ Day abbreviation match found for ${task.title}`);
+        // First check if task has daysOfWeek array (most accurate)
+        if (task.daysOfWeek && Array.isArray(task.daysOfWeek)) {
+          const matchesDay = task.daysOfWeek.some(day => 
+            day.toLowerCase() === selectedDay || 
+            day.toLowerCase().startsWith(selectedDay.substring(0, 3)) // mon, tue, etc.
+          );
+          if (matchesDay) {
+            console.log(`✅ Day match in daysOfWeek for ${task.title}`);
             return true;
           }
         }
         
-        // If task frequency contains "daily", it should show for any selected day
-        if (taskFreq.includes('daily')) {
-          console.log(`✅ Daily task ${task.title} shown for ${selectedDay}`);
-          return true;
+        // Fallback: check frequency string for day names (for older data)
+        if (task.frequency) {
+          const taskFreq = task.frequency.toLowerCase();
+          
+          // Check for exact day match in frequency string
+          if (taskFreq.includes(selectedDay)) {
+            console.log(`✅ Day match in frequency for ${task.title}`);
+            return true;
+          }
+          
+          // Check for day abbreviations
+          const dayAbbreviations = {
+            'monday': ['mon'],
+            'tuesday': ['tue', 'tues'],
+            'wednesday': ['wed'],
+            'thursday': ['thu', 'thur', 'thurs'],
+            'friday': ['fri'],
+            'saturday': ['sat'],
+            'sunday': ['sun']
+          };
+          
+          if (dayAbbreviations[selectedDay]) {
+            const hasAbbrev = dayAbbreviations[selectedDay].some(abbr => taskFreq.includes(abbr));
+            if (hasAbbrev) {
+              console.log(`✅ Day abbreviation match in frequency for ${task.title}`);
+              return true;
+            }
+          }
         }
         
-        console.log(`❌ No match for ${task.title}`);
+        console.log(`❌ No day match for ${task.title}`);
         return false;
       });
     }
