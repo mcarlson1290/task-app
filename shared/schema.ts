@@ -10,6 +10,8 @@ export const users = pgTable("users", {
   role: text("role").notNull(), // 'technician', 'manager', 'corporate'
   approved: boolean("approved").default(false),
   location: text("location").default('Kenosha'), // User's assigned location
+  payType: text("pay_type").default('hourly'), // 'hourly', 'salary', 'unpaid'
+  payRate: real("pay_rate").default(16.00), // Pay rate: hourly rate, annual salary, or 0 for unpaid
   lastActive: timestamp("last_active"), // Track when user was last active
   createdAt: timestamp("created_at").defaultNow(),
 });

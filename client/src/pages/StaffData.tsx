@@ -188,7 +188,12 @@ const StaffTableRow: React.FC<{
       <td>{formatDate(person.dateHired)}</td>
       {isManager && (
         <td className="pay-rate">
-          ${person.payRate.toFixed(2)}/hr
+          {person.payType === 'unpaid' ? 
+            'Unpaid' : 
+            person.payType === 'salary' ? 
+              `$${person.payRate.toLocaleString()}/year` : 
+              `$${person.payRate.toFixed(2)}/hr`
+          }
         </td>
       )}
       <td>
@@ -406,6 +411,7 @@ const StaffEditModal: React.FC<{
     location: staff?.location || 'Grow Space',
     rolesAssigned: staff?.rolesAssigned || [],
     dateHired: staff?.dateHired || new Date().toISOString().split('T')[0],
+    payType: staff?.payType || 'hourly',
     payRate: staff?.payRate || 16.00,
     preferredHours: staff?.preferredHours || 'Flexible',
     activeStatus: staff?.activeStatus || 'active',
@@ -429,7 +435,10 @@ const StaffEditModal: React.FC<{
     if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.email.includes('@')) newErrors.email = 'Invalid email format';
-    if (formData.payRate <= 0) newErrors.payRate = 'Pay rate must be positive';
+    if (formData.payType !== 'unpaid' && formData.payRate <= 0) {
+      newErrors.payRate = 'Pay rate must be greater than 0 for paid positions';
+    }
+    if (formData.payRate < 0) newErrors.payRate = 'Pay rate cannot be negative';
     if (formData.rolesAssigned.length === 0) newErrors.roles = 'At least one role required';
     
     setErrors(newErrors);
@@ -441,9 +450,13 @@ const StaffEditModal: React.FC<{
     
     if (!validateForm()) return;
     
+    // For unpaid positions, ensure pay rate is 0
+    const finalPayRate = formData.payType === 'unpaid' ? 0 : formData.payRate;
+    
     const staffData = {
       ...staff,
       ...formData,
+      payRate: finalPayRate,
       id: staff?.id || Date.now(),
       // Keep existing data that isn't in the form
       trainingCompleted: staff?.trainingCompleted || [],
@@ -528,17 +541,47 @@ const StaffEditModal: React.FC<{
                 />
               </label>
               
+              <label>
+                Pay Type *
+                <select
+                  value={formData.payType}
+                  onChange={(e) => {
+                    const newPayType = e.target.value;
+                    setFormData({
+                      ...formData, 
+                      payType: newPayType,
+                      payRate: newPayType === 'unpaid' ? 0 : formData.payRate
+                    });
+                  }}
+                >
+                  <option value="hourly">Hourly</option>
+                  <option value="salary">Salary</option>
+                  <option value="unpaid">Unpaid (Volunteer/Intern)</option>
+                </select>
+              </label>
+              
               <label className={`pay-rate-field ${errors.payRate ? 'error' : ''}`}>
-                Pay Rate ($/hr) *
+                {formData.payType === 'hourly' ? 'Pay Rate ($/hr)' : 
+                 formData.payType === 'salary' ? 'Annual Salary ($)' : 
+                 'Pay Rate'} *
                 <div className="input-with-note">
                   <input
                     type="number"
                     value={formData.payRate}
                     onChange={(e) => setFormData({...formData, payRate: parseFloat(e.target.value) || 0})}
                     min="0"
-                    step="0.50"
+                    step={formData.payType === 'hourly' ? "0.01" : "1000"}
+                    disabled={formData.payType === 'unpaid'}
+                    placeholder={
+                      formData.payType === 'hourly' ? "15.00" : 
+                      formData.payType === 'salary' ? "40000" : 
+                      "0"
+                    }
                   />
                   <span className="field-note">🔒 Hidden from non-managers</span>
+                  {formData.payType === 'unpaid' && (
+                    <span className="field-note">Unpaid position - no compensation</span>
+                  )}
                 </div>
                 {errors.payRate && <span className="error-text">{errors.payRate}</span>}
               </label>

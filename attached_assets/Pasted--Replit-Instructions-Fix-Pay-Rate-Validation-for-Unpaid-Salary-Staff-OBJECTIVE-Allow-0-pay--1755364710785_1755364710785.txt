@@ -1,0 +1,149 @@
+# Replit Instructions: Fix Pay Rate Validation for Unpaid/Salary Staff
+
+**OBJECTIVE: Allow $0 pay rate for unpaid staff and add salary option.**
+
+## Step 1: Fix Pay Rate Validation
+
+Find the validation code that's requiring positive pay rates and update it:
+
+```javascript
+// Find code that looks like this:
+if (payRate <= 0) {
+  showError('Pay rate must be positive');
+  return false;
+}
+
+// Replace with:
+if (payRate < 0) {
+  showError('Pay rate cannot be negative');
+  return false;
+}
+// Allow 0 for unpaid staff
+```
+
+## Step 2: Add Pay Type Selection
+
+Add a pay type field before the pay rate field:
+
+```javascript
+// In the form, add:
+<div className="form-group">
+  <label>Pay Type *</label>
+  <select 
+    value={payType} 
+    onChange={(e) => setPayType(e.target.value)}
+    required
+  >
+    <option value="hourly">Hourly</option>
+    <option value="salary">Salary</option>
+    <option value="unpaid">Unpaid (Volunteer/Intern)</option>
+  </select>
+</div>
+
+// Then modify the pay rate field label and validation:
+<div className="form-group">
+  <label>
+    {payType === 'hourly' ? 'Pay Rate ($/hr)' : 
+     payType === 'salary' ? 'Annual Salary ($)' : 
+     'Pay Rate'} *
+  </label>
+  <input
+    type="number"
+    value={payRate}
+    onChange={(e) => setPayRate(e.target.value)}
+    min="0"
+    step={payType === 'hourly' ? "0.01" : "1000"}
+    disabled={payType === 'unpaid'}
+    placeholder={
+      payType === 'hourly' ? "15.00" : 
+      payType === 'salary' ? "40000" : 
+      "0"
+    }
+  />
+  {payType === 'unpaid' && (
+    <small>Unpaid position - no compensation</small>
+  )}
+</div>
+```
+
+## Step 3: Update Staff Data Structure
+
+Update the staff member object to include pay type:
+
+```javascript
+const staffMember = {
+  // ... existing fields
+  payType: 'hourly', // 'hourly', 'salary', 'unpaid'
+  payRate: 0, // 0 for unpaid, hourly rate, or annual salary
+  // ... rest of fields
+};
+```
+
+## Step 4: Update Form Submission
+
+```javascript
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  // Validation
+  if (payType !== 'unpaid' && payRate <= 0) {
+    showError('Pay rate must be greater than 0 for paid positions');
+    return;
+  }
+  
+  // For unpaid positions, ensure pay rate is 0
+  const finalPayRate = payType === 'unpaid' ? 0 : payRate;
+  
+  const newStaff = {
+    // ... other fields
+    payType: payType,
+    payRate: finalPayRate,
+    // ... rest of fields
+  };
+  
+  saveStaff(newStaff);
+};
+```
+
+## Step 5: Update Display in Staff List
+
+In the staff list table, show pay information appropriately:
+
+```javascript
+// In the table row:
+<td>
+  {staff.payType === 'unpaid' ? 
+    'Unpaid' : 
+    staff.payType === 'salary' ? 
+      `$${staff.payRate.toLocaleString()}/year` : 
+      `$${staff.payRate}/hr`
+  }
+</td>
+```
+
+## Step 6: Set Default Values
+
+When opening the add form, set appropriate defaults:
+
+```javascript
+const [payType, setPayType] = useState('hourly');
+const [payRate, setPayRate] = useState(0);
+
+// When pay type changes, reset pay rate
+useEffect(() => {
+  if (payType === 'unpaid') {
+    setPayRate(0);
+  }
+}, [payType]);
+```
+
+## Summary
+
+This fix:
+1. Allows $0 pay rate for unpaid positions
+2. Adds pay type selection (Hourly/Salary/Unpaid)
+3. Validates based on pay type (paid positions must be > 0)
+4. Automatically sets unpaid positions to $0
+5. Displays pay information correctly in the list
+
+The error message is now more helpful and the system supports volunteers, interns, and salaried employees.
