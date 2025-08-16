@@ -110,23 +110,7 @@ const Tasks: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       
-      // STEP 1: DATE STORAGE ANALYSIS
-      console.log("=== DATE STORAGE ANALYSIS ===");
-      data.slice(0, 5).forEach((task: any) => {
-        console.log(`Task: ${task.title}`);
-        console.log(`  dueDate raw value:`, task.dueDate);
-        console.log(`  typeof:`, typeof task.dueDate);
-        console.log(`  completedAt raw value:`, task.completedAt);
-        console.log(`  typeof completedAt:`, typeof task.completedAt);
-        console.log(`  createdAt raw value:`, task.createdAt);
-        if (task.dueDate) {
-          console.log(`  dueDate as Date object:`, new Date(task.dueDate));
-        }
-        if (task.completedAt) {
-          console.log(`  completedAt as Date object:`, new Date(task.completedAt));
-        }
-        console.log('---');
-      });
+
       
       return data;
     },
@@ -244,6 +228,37 @@ const Tasks: React.FC = () => {
     return counts;
   }, [tasks]);
 
+  // Late task detection functions - moved here before filteredTasks to avoid initialization errors
+  const isOverdue = (task: Task): boolean => {
+    // Can't be overdue if already completed
+    if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
+      return false;
+    }
+    
+    const now = new Date();
+    
+    // Handle both Date objects and strings
+    let dateString: string;
+    if (task.dueDate instanceof Date) {
+      const year = task.dueDate.getFullYear();
+      const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
+      const day = String(task.dueDate.getDate()).padStart(2, '0');
+      dateString = `${year}-${month}-${day}`;
+    } else {
+      dateString = (task.dueDate as string)?.split('T')[0] || '';
+    }
+    
+    const [year, month, day] = dateString.split('-');
+    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    // Set time to 8:30 PM Chicago time for due date
+    const chicagoTime = new Date(dueDate);
+    chicagoTime.setHours(20, 30, 0, 0); // 8:30 PM cutoff
+    
+    // Task is overdue if current time is past 8:30 PM on due date
+    return now > chicagoTime;
+  };
+
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
     
@@ -285,36 +300,66 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Date filter - FIXED: Tasks appear only on their due date
+    // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
-      console.log("=== FILTER ANALYSIS ===");
-      console.log("Selected date:", dateFilter);
-      console.log("Type of dateFilter:", typeof dateFilter);
+      const today = new Date().toISOString().split('T')[0];
+      const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
-        console.log(`Checking task "${task.title}"`);
-        console.log("  Task dueDate:", task.dueDate);
-        console.log("  Selected date:", dateFilter);
-        
-        if (task.dueDate) {
-          const taskDateStr = formatDateForComparison(task.dueDate);
-          const filterDateStr = formatDateForComparison(dateFilter);
-          
-          console.log(`  Formatted task date: "${taskDateStr}"`);
-          console.log(`  Formatted filter date: "${filterDateStr}"`);
-          console.log("  Match?:", taskDateStr === filterDateStr);
-          
-          const matches = taskDateStr === filterDateStr;
-          if (matches) console.log(`  ✅ Task "${task.title}" MATCHES filter`);
-          else console.log(`  ❌ Task "${task.title}" does NOT match filter`);
-          
-          return matches;
+        // Rule 1: Always show overdue tasks when viewing today
+        if (isViewingToday && isOverdue(task)) {
+          return true;
         }
-        console.log(`  ⚠️ Task "${task.title}" has no dueDate - excluded`);
-        return false; // Tasks without due dates don't appear in date-filtered views
+        
+        // Rule 2: Check task visibility based on type and frequency
+        const taskDueDate = task.dueDate;
+        if (!taskDueDate) return false;
+        
+        // Format the task due date for comparison
+        const taskDateStr = formatDateForComparison(taskDueDate);
+        
+        // Get recurring task frequency if available
+        const frequency = task.frequency || '';
+        
+        // For monthly tasks - visible from 1st to due date
+        if (frequency.includes('monthly')) {
+          const taskMonth = taskDateStr.substring(0, 7); // YYYY-MM
+          const selectedMonth = dateFilter.substring(0, 7);
+          if (taskMonth === selectedMonth) {
+            const selectedDay = parseInt(dateFilter.substring(8));
+            const dueDay = parseInt(taskDateStr.substring(8));
+            return selectedDay <= dueDay;
+          }
+        }
+        
+        // For bi-weekly tasks
+        if (frequency.includes('bi-weekly') || frequency.includes('biweekly')) {
+          const taskMonth = taskDateStr.substring(0, 7);
+          const selectedMonth = dateFilter.substring(0, 7);
+          if (taskMonth === selectedMonth) {
+            const selectedDay = parseInt(dateFilter.substring(8));
+            const dueDay = parseInt(taskDateStr.substring(8));
+            
+            // First half: due on 14th, visible days 1-14
+            if (dueDay === 14) {
+              return selectedDay >= 1 && selectedDay <= 14;
+            }
+            // Second half: due on last day, visible days 15-end
+            if (dueDay >= 28) { // Last day of month
+              return selectedDay >= 15;
+            }
+          }
+        }
+        
+        // For regular tasks - only show on due date
+        return taskDateStr === dateFilter;
       });
       
-      console.log(`📊 Date filter result: ${filtered.length} tasks match date ${dateFilter}`);
+      // Log for testing
+      console.log(`Filtered ${filtered.length} tasks from ${tasks.length} total`);
+      if (dateFilter) {
+        console.log(`Showing tasks for date: ${dateFilter}`);
+      }
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
@@ -374,37 +419,7 @@ const Tasks: React.FC = () => {
   };
 
   // Legacy function name for compatibility
-  const isTaskLate = isTaskCompletedLate;;
-
-  const isOverdue = (task: Task): boolean => {
-    // Can't be overdue if already completed
-    if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
-      return false;
-    }
-    
-    const now = new Date();
-    
-    // Handle both Date objects and strings
-    let dateString: string;
-    if (task.dueDate instanceof Date) {
-      const year = task.dueDate.getFullYear();
-      const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
-      const day = String(task.dueDate.getDate()).padStart(2, '0');
-      dateString = `${year}-${month}-${day}`;
-    } else {
-      dateString = (task.dueDate as string)?.split('T')[0] || '';
-    }
-    
-    const [year, month, day] = dateString.split('-');
-    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
-    // Set time to 8:30 PM Chicago time for due date
-    const chicagoTime = new Date(dueDate);
-    chicagoTime.setHours(20, 30, 0, 0); // 8:30 PM cutoff
-    
-    // Task is overdue if current time is past 8:30 PM on due date
-    return now > chicagoTime;
-  };
+  const isTaskLate = isTaskCompletedLate;
 
   // Single task action handler
   const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
@@ -775,16 +790,7 @@ const Tasks: React.FC = () => {
             <input
               type="date"
               value={dateFilter}
-              onChange={(e) => {
-                // STEP 2: DATE INPUT HANDLING ANALYSIS
-                console.log("=== DATE PICKER ANALYSIS ===");
-                console.log("Raw input value:", e.target.value);
-                console.log("Type of value:", typeof e.target.value);
-                console.log("As Date object:", new Date(e.target.value));
-                console.log("Current dateFilter state:", dateFilter);
-                console.log("New value being set:", e.target.value);
-                setDateFilter(e.target.value);
-              }}
+              onChange={(e) => setDateFilter(e.target.value)}
               className="date-input"
             />
             <button

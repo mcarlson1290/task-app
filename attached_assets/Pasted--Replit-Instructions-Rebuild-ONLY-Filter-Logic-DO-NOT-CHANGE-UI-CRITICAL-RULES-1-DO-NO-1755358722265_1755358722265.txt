@@ -1,0 +1,139 @@
+# Replit Instructions: Rebuild ONLY Filter Logic - DO NOT CHANGE UI
+
+**CRITICAL RULES:**
+1. DO NOT change ANY UI components, styling, or visual elements
+2. DO NOT change how the date picker looks or works
+3. DO NOT change the TaskCard component
+4. DO NOT add new buttons or remove existing ones
+5. ONLY modify the filtering logic that determines which tasks are shown
+
+## Step 1: Find the Current Filter Logic
+
+Locate the existing filter logic (likely in one of these patterns):
+```javascript
+// Could be named something like:
+const filteredTasks = tasks.filter(...)
+const filterTasksByDate = (...)
+const applyFilters = (...)
+// Or inside a useMemo:
+const filteredTasks = useMemo(() => {...}, [...])
+```
+
+## Step 2: Replace ONLY the Filter Logic
+
+Keep the EXACT SAME variable names and structure, but replace ONLY the filtering logic:
+
+```javascript
+// If the current code looks like this:
+const filteredTasks = useMemo(() => {
+  // [OLD COMPLEX FILTER LOGIC]
+}, [tasks, selectedDate, selectedCategory, selectedStatus, selectedPriority]);
+
+// Replace ONLY the logic inside:
+const filteredTasks = useMemo(() => {
+  let result = [...tasks];
+  
+  // Date filter
+  if (selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    const isViewingToday = selectedDate === today;
+    
+    result = result.filter(task => {
+      // Rule 1: Always show overdue tasks when viewing today
+      if (isViewingToday && task.isOverdue) {
+        return true;
+      }
+      
+      // Rule 2: Check task visibility based on type
+      const taskDueDate = task.completionDate || task.dueDate;
+      if (!taskDueDate) return false;
+      
+      // For monthly tasks - visible from 1st to due date
+      if (task.recurringPattern === 'monthly' || task.frequency === 'monthly') {
+        const taskMonth = taskDueDate.substring(0, 7); // YYYY-MM
+        const selectedMonth = selectedDate.substring(0, 7);
+        if (taskMonth === selectedMonth) {
+          const selectedDay = parseInt(selectedDate.substring(8));
+          const dueDay = parseInt(taskDueDate.substring(8));
+          return selectedDay <= dueDay;
+        }
+      }
+      
+      // For bi-weekly tasks
+      if (task.recurringPattern === 'bi-weekly' || task.frequency === 'bi-weekly') {
+        const taskMonth = taskDueDate.substring(0, 7);
+        const selectedMonth = selectedDate.substring(0, 7);
+        if (taskMonth === selectedMonth) {
+          const selectedDay = parseInt(selectedDate.substring(8));
+          const dueDay = parseInt(taskDueDate.substring(8));
+          
+          // First half: due on 14th, visible days 1-14
+          if (dueDay === 14) {
+            return selectedDay >= 1 && selectedDay <= 14;
+          }
+          // Second half: due on last day, visible days 15-end
+          if (dueDay >= 28) { // Last day of month
+            return selectedDay >= 15;
+          }
+        }
+      }
+      
+      // For regular tasks - only show on due date
+      return taskDueDate === selectedDate;
+    });
+  }
+  
+  // Category filter - DON'T CHANGE
+  if (selectedCategory && selectedCategory !== 'all') {
+    result = result.filter(task => task.type === selectedCategory);
+  }
+  
+  // Status filter - DON'T CHANGE
+  if (selectedStatus && selectedStatus !== 'all') {
+    result = result.filter(task => task.status === selectedStatus);
+  }
+  
+  // Priority filter - DON'T CHANGE
+  if (selectedPriority && selectedPriority !== 'all') {
+    result = result.filter(task => task.priority === selectedPriority);
+  }
+  
+  return result;
+}, [tasks, selectedDate, selectedCategory, selectedStatus, selectedPriority]);
+```
+
+## Step 3: DO NOT TOUCH
+
+Leave these EXACTLY as they are:
+- The date input element
+- Any buttons
+- The task list rendering
+- The TaskCard component
+- Any styling or CSS
+- Component structure
+- State management (except the filter logic)
+
+## Step 4: Test the Filter
+
+Add a TEMPORARY console.log to verify the filter is working:
+```javascript
+// Add right after the filter logic:
+console.log(`Filtered ${result.length} tasks from ${tasks.length} total`);
+if (selectedDate) {
+  console.log(`Showing tasks for date: ${selectedDate}`);
+}
+```
+
+## Summary
+
+You are ONLY changing:
+1. The logic that decides which tasks to show
+2. Nothing else
+
+The new logic should:
+- Show overdue tasks when "today" is selected
+- Show monthly tasks from day 1 through their due date
+- Show bi-weekly tasks during their active period
+- Show regular tasks only on their due date
+
+Everything else stays EXACTLY THE SAME. No UI changes, no new features, no visual modifications.
