@@ -12,10 +12,10 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
-  const getTaskEmoji = (type: TaskType): string => {
-    const emojis = {
+  const getTaskEmoji = (type: string): string => {
+    const emojis: Record<string, string> = {
       "seeding-microgreens": "🌱",
-      "seeding-leafy-greens": "🌿",
+      "seeding-leafy-greens": "🌿", 
       "harvest-microgreens": "🌾",
       "harvest-leafy-greens": "🥬",
       "blackout-tasks": "🌑",
@@ -146,7 +146,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           {/* Title with proper spacing */}
           <h3 className="task-title flex-1 pr-3 text-lg font-semibold text-gray-800 word-wrap break-word" 
               style={{ maxWidth: '60%' }}>
-            {getTaskEmoji(task.type as TaskType)} {task.title}
+            {getTaskEmoji(task.type)} {task.title}
           </h3>
           
           {/* Right side badges container */}
@@ -177,7 +177,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
         <div className="task-details mb-4" style={{ paddingRight: '90px' }}>
           {/* Task type */}
           <p className="text-sm text-gray-600 mb-2">
-            {task.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {task.type.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </p>
           
           {/* Overdue warning if applicable */}
