@@ -110,6 +110,24 @@ const Tasks: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       
+      // STEP 1: DATE STORAGE ANALYSIS
+      console.log("=== DATE STORAGE ANALYSIS ===");
+      data.slice(0, 5).forEach((task: any) => {
+        console.log(`Task: ${task.title}`);
+        console.log(`  dueDate raw value:`, task.dueDate);
+        console.log(`  typeof:`, typeof task.dueDate);
+        console.log(`  completedAt raw value:`, task.completedAt);
+        console.log(`  typeof completedAt:`, typeof task.completedAt);
+        console.log(`  createdAt raw value:`, task.createdAt);
+        if (task.dueDate) {
+          console.log(`  dueDate as Date object:`, new Date(task.dueDate));
+        }
+        if (task.completedAt) {
+          console.log(`  completedAt as Date object:`, new Date(task.completedAt));
+        }
+        console.log('---');
+      });
+      
       return data;
     },
     enabled: !!auth.user,
@@ -269,14 +287,34 @@ const Tasks: React.FC = () => {
 
     // Date filter - FIXED: Tasks appear only on their due date
     if (dateFilter) {
+      console.log("=== FILTER ANALYSIS ===");
+      console.log("Selected date:", dateFilter);
+      console.log("Type of dateFilter:", typeof dateFilter);
+      
       filtered = filtered.filter(task => {
+        console.log(`Checking task "${task.title}"`);
+        console.log("  Task dueDate:", task.dueDate);
+        console.log("  Selected date:", dateFilter);
+        
         if (task.dueDate) {
           const taskDateStr = formatDateForComparison(task.dueDate);
           const filterDateStr = formatDateForComparison(dateFilter);
-          return taskDateStr === filterDateStr;
+          
+          console.log(`  Formatted task date: "${taskDateStr}"`);
+          console.log(`  Formatted filter date: "${filterDateStr}"`);
+          console.log("  Match?:", taskDateStr === filterDateStr);
+          
+          const matches = taskDateStr === filterDateStr;
+          if (matches) console.log(`  ✅ Task "${task.title}" MATCHES filter`);
+          else console.log(`  ❌ Task "${task.title}" does NOT match filter`);
+          
+          return matches;
         }
+        console.log(`  ⚠️ Task "${task.title}" has no dueDate - excluded`);
         return false; // Tasks without due dates don't appear in date-filtered views
       });
+      
+      console.log(`📊 Date filter result: ${filtered.length} tasks match date ${dateFilter}`);
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
@@ -737,7 +775,16 @@ const Tasks: React.FC = () => {
             <input
               type="date"
               value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
+              onChange={(e) => {
+                // STEP 2: DATE INPUT HANDLING ANALYSIS
+                console.log("=== DATE PICKER ANALYSIS ===");
+                console.log("Raw input value:", e.target.value);
+                console.log("Type of value:", typeof e.target.value);
+                console.log("As Date object:", new Date(e.target.value));
+                console.log("Current dateFilter state:", dateFilter);
+                console.log("New value being set:", e.target.value);
+                setDateFilter(e.target.value);
+              }}
               className="date-input"
             />
             <button
