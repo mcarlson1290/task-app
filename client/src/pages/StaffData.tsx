@@ -174,8 +174,9 @@ const StaffTableRow: React.FC<{
       </td>
       <td>
         <div className="contact-info">
-          <div className="email">{person.email}</div>
-          <div className="phone">{person.phone}</div>
+          <div className="email">{person.businessEmail || person.email}</div>
+          <div className="phone">{person.mobilePhone || person.phone}</div>
+          {person.personalEmail && <div className="personal-email">Personal: {person.personalEmail}</div>}
         </div>
       </td>
       <td>
@@ -406,8 +407,14 @@ const StaffEditModal: React.FC<{
 }> = ({ staff, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     fullName: staff?.fullName || '',
-    email: staff?.email || '',
-    phone: staff?.phone || '',
+    businessEmail: staff?.businessEmail || staff?.email || '',
+    personalEmail: staff?.personalEmail || '',
+    homePhone: staff?.homePhone || '',
+    businessPhone: staff?.businessPhone || '',
+    mobilePhone: staff?.mobilePhone || staff?.phone || '',
+    emergencyContactName: staff?.emergencyContactName || '',
+    emergencyRelationship: staff?.emergencyRelationship || '',
+    emergencyPhone: staff?.emergencyPhone || '',
     location: staff?.location || 'Grow Space',
     rolesAssigned: staff?.rolesAssigned || [],
     dateHired: staff?.dateHired || new Date().toISOString().split('T')[0],
@@ -433,8 +440,12 @@ const StaffEditModal: React.FC<{
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.email.includes('@')) newErrors.email = 'Invalid email format';
+    if (!formData.businessEmail.trim()) newErrors.businessEmail = 'Business email is required';
+    if (!formData.businessEmail.includes('@')) newErrors.businessEmail = 'Invalid email format';
+    if (!formData.mobilePhone.trim()) newErrors.mobilePhone = 'Mobile phone is required for emergencies';
+    if (!formData.emergencyContactName.trim()) newErrors.emergencyContactName = 'Emergency contact name is required';
+    if (!formData.emergencyRelationship.trim()) newErrors.emergencyRelationship = 'Emergency contact relationship is required';
+    if (!formData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency contact phone is required';
     if (formData.payType !== 'unpaid' && formData.payRate <= 0) {
       newErrors.payRate = 'Pay rate must be greater than 0 for paid positions';
     }
@@ -457,6 +468,9 @@ const StaffEditModal: React.FC<{
       ...staff,
       ...formData,
       payRate: finalPayRate,
+      // Backward compatibility: keep the original email and phone fields
+      email: formData.businessEmail,
+      phone: formData.mobilePhone,
       id: staff?.id || Date.now(),
       // Keep existing data that isn't in the form
       trainingCompleted: staff?.trainingCompleted || [],
@@ -496,26 +510,107 @@ const StaffEditModal: React.FC<{
                 {errors.fullName && <span className="error-text">{errors.fullName}</span>}
               </label>
               
-              <label className={errors.email ? 'error' : ''}>
-                Email *
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="john.smith@growspace.farm"
-                />
-                {errors.email && <span className="error-text">{errors.email}</span>}
-              </label>
-              
-              <label>
-                Phone
+              {/* Email Fields Row */}
+              <div className="form-row">
+                <label className={errors.businessEmail ? 'error' : ''}>
+                  Business Email *
+                  <input
+                    type="email"
+                    value={formData.businessEmail}
+                    onChange={(e) => setFormData({...formData, businessEmail: e.target.value})}
+                    placeholder="john@growspace.farm"
+                  />
+                  <small>Used for login authentication (Teams/Work account)</small>
+                  {errors.businessEmail && <span className="error-text">{errors.businessEmail}</span>}
+                </label>
+                
+                <label>
+                  Personal Email
+                  <input
+                    type="email"
+                    value={formData.personalEmail}
+                    onChange={(e) => setFormData({...formData, personalEmail: e.target.value})}
+                    placeholder="john.doe@gmail.com"
+                  />
+                  <small>Personal email address</small>
+                </label>
+              </div>
+
+              {/* Phone Fields Row */}
+              <div className="form-row">
+                <label>
+                  Home Phone
+                  <input
+                    type="tel"
+                    value={formData.homePhone}
+                    onChange={(e) => setFormData({...formData, homePhone: e.target.value})}
+                    placeholder="555-555-5555"
+                  />
+                </label>
+                
+                <label>
+                  Business Phone
+                  <input
+                    type="tel"
+                    value={formData.businessPhone}
+                    onChange={(e) => setFormData({...formData, businessPhone: e.target.value})}
+                    placeholder="555-555-5555 ext 123"
+                  />
+                </label>
+              </div>
+
+              {/* Mobile Phone - Critical for emergencies */}
+              <label className={errors.mobilePhone ? 'error' : ''}>
+                Mobile Phone *
                 <input
                   type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  placeholder="555-0123"
+                  value={formData.mobilePhone}
+                  onChange={(e) => setFormData({...formData, mobilePhone: e.target.value})}
+                  placeholder="555-555-5555"
                 />
+                <small>Primary contact for emergencies</small>
+                {errors.mobilePhone && <span className="error-text">{errors.mobilePhone}</span>}
               </label>
+            </div>
+            
+            {/* Emergency Contact Section */}
+            <div className="form-section">
+              <h3>🚨 Emergency Contact</h3>
+              
+              <label className={errors.emergencyContactName ? 'error' : ''}>
+                Emergency Contact Name *
+                <input
+                  type="text"
+                  value={formData.emergencyContactName}
+                  onChange={(e) => setFormData({...formData, emergencyContactName: e.target.value})}
+                  placeholder="Jane Doe"
+                />
+                {errors.emergencyContactName && <span className="error-text">{errors.emergencyContactName}</span>}
+              </label>
+              
+              <div className="form-row">
+                <label className={errors.emergencyRelationship ? 'error' : ''}>
+                  Relationship *
+                  <input
+                    type="text"
+                    value={formData.emergencyRelationship}
+                    onChange={(e) => setFormData({...formData, emergencyRelationship: e.target.value})}
+                    placeholder="Spouse, Parent, etc."
+                  />
+                  {errors.emergencyRelationship && <span className="error-text">{errors.emergencyRelationship}</span>}
+                </label>
+                
+                <label className={errors.emergencyPhone ? 'error' : ''}>
+                  Emergency Phone *
+                  <input
+                    type="tel"
+                    value={formData.emergencyPhone}
+                    onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})}
+                    placeholder="555-555-5555"
+                  />
+                  {errors.emergencyPhone && <span className="error-text">{errors.emergencyPhone}</span>}
+                </label>
+              </div>
             </div>
             
             {/* Work Information Section */}

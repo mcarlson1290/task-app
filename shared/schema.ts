@@ -12,6 +12,19 @@ export const users = pgTable("users", {
   location: text("location").default('Kenosha'), // User's assigned location
   payType: text("pay_type").default('hourly'), // 'hourly', 'salary', 'unpaid'
   payRate: real("pay_rate").default(16.00), // Pay rate: hourly rate, annual salary, or 0 for unpaid
+  
+  // Contact Information
+  businessEmail: text("business_email"), // Login email (Teams/Work account)
+  personalEmail: text("personal_email"), // Personal email address
+  homePhone: text("home_phone"), // Home phone number
+  businessPhone: text("business_phone"), // Business phone number  
+  mobilePhone: text("mobile_phone"), // Mobile phone (required for emergencies)
+  
+  // Emergency Contact
+  emergencyContactName: text("emergency_contact_name"), // Emergency contact name
+  emergencyRelationship: text("emergency_relationship"), // Relationship to emergency contact
+  emergencyPhone: text("emergency_phone"), // Emergency contact phone
+  
   lastActive: timestamp("last_active"), // Track when user was last active
   createdAt: timestamp("created_at").defaultNow(),
 });
