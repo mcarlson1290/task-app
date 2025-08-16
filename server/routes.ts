@@ -344,48 +344,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Skip all overdue tasks
-  app.post('/api/tasks/skip-overdue', async (req, res) => {
-    try {
-      console.log('Skipping all overdue tasks...');
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
-      
-      // Get all tasks that are overdue (due before today and not completed)
-      const allTasks = await storage.getAllTasks();
-      const overdueTasks = allTasks.filter(task => {
-        if (!task.dueDate || task.status === 'completed' || task.status === 'approved' || task.status === 'skipped') {
-          return false;
-        }
-        
-        const taskDueDate = task.dueDate.split('T')[0];
-        return taskDueDate < todayString;
-      });
-      
-      console.log(`Found ${overdueTasks.length} overdue tasks to skip`);
-      
-      // Skip each overdue task
-      let skippedCount = 0;
-      for (const task of overdueTasks) {
-        await storage.updateTask(task.id, {
-          status: 'skipped',
-          skippedAt: new Date().toISOString(),
-          skipReason: 'Bulk skip - overdue task cleanup'
-        });
-        skippedCount++;
-      }
-      
-      console.log(`Successfully skipped ${skippedCount} overdue tasks`);
-      res.json({ 
-        message: `Successfully skipped ${skippedCount} overdue tasks`,
-        skippedCount 
-      });
-    } catch (error) {
-      console.error('Error skipping overdue tasks:', error);
-      res.status(500).json({ error: 'Failed to skip overdue tasks' });
-    }
-  });
-
   // Inventory routes
   app.get("/api/inventory", async (req, res) => {
     try {

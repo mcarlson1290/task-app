@@ -181,27 +181,6 @@ const Tasks: React.FC = () => {
     },
   });
 
-  const skipOverdueTasksMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/api/tasks/skip-overdue", {});
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({
-        title: "Overdue Tasks Skipped",
-        description: `Successfully skipped ${data.skippedCount || 0} overdue tasks.`,
-      });
-    },
-    onError: (error) => {
-      console.error("Error skipping overdue tasks:", error);
-      toast({
-        title: "Failed to skip overdue tasks",
-        description: "There was an error skipping overdue tasks. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
@@ -837,34 +816,6 @@ const Tasks: React.FC = () => {
             onClick={clearAllFilters}
           >
             <X size={16} /> Clear Filters
-          </button>
-
-          {/* Skip All Overdue Tasks Button */}
-          <button 
-            className="btn-skip-overdue"
-            onClick={() => skipOverdueTasksMutation.mutate()}
-            disabled={skipOverdueTasksMutation.isPending}
-            style={{
-              background: '#f59e0b',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: skipOverdueTasksMutation.isPending ? 'not-allowed' : 'pointer',
-              opacity: skipOverdueTasksMutation.isPending ? 0.6 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {skipOverdueTasksMutation.isPending ? (
-              <>⏳ Skipping...</>
-            ) : (
-              <>⏭️ Skip Overdue</>
-            )}
           </button>
 
           {/* Search Box */}
