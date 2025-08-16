@@ -5,13 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Filter, Search, ChevronDown, X, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import { isSameDay, formatDateForComparison, shouldTaskAppearOnDate, getTodayString, debugDateComparison } from "@/utils/dateUtils";
+import { filterTasks, getTodayString, isTaskOverdue, debugFiltering, type TaskFilters as FilterOptions } from "@/utils/taskFiltering";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import { AddTaskModal } from "@/components/AddTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
 import { Task } from "@shared/schema";
-import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -21,30 +20,34 @@ import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
 
 const Tasks: React.FC = () => {
+  // State management using new clean filtering system
+  const [filters, setFilters] = React.useState<FilterOptions>(() => ({
+    selectedDate: getTodayString(),
+    selectedCategory: 'all',
+    selectedStatus: 'all',
+    selectedPriority: 'all',
+    searchTerm: ''
+  }));
+
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = React.useState(false);
   const [taskActionModalOpen, setTaskActionModalOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [filters, setFilters] = React.useState<TaskFilters>({});
-  const [activeFilter, setActiveFilter] = React.useState<string>("all");
+  
+  // Dropdown states
   const [categoryDropdownOpen, setCategoryDropdownOpen] = React.useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = React.useState(false);
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
-  const [statusFilter, setStatusFilter] = React.useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
-  const [dateFilter, setDateFilter] = React.useState<string>(() => {
-    const todayString = getTodayString();
-    console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
-    return todayString;
-  });
-
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
+  
+  // Refs for dropdowns
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const statusDropdownRef = React.useRef<HTMLDivElement>(null);
   const priorityDropdownRef = React.useRef<HTMLDivElement>(null);
   const dateDropdownRef = React.useRef<HTMLDivElement>(null);
   const filtersRef = React.useRef<HTMLDivElement>(null);
+  
+  // Scroll indicators
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
   
@@ -52,8 +55,6 @@ const Tasks: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
-
-
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -93,8 +94,9 @@ const Tasks: React.FC = () => {
     }
     
     return () => resizeObserver.disconnect();
-  }, [activeFilter, statusFilter, priorityFilter, dateFilter]);
+  }, [filters]);
 
+  // Fetch tasks with overdue status
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.name }],
     queryFn: async () => {
@@ -110,93 +112,34 @@ const Tasks: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       
-      // STEP 1: DATE STORAGE ANALYSIS
-      console.log("=== DATE STORAGE ANALYSIS ===");
-      data.slice(0, 5).forEach((task: any) => {
-        console.log(`Task: ${task.title}`);
-        console.log(`  dueDate raw value:`, task.dueDate);
-        console.log(`  typeof:`, typeof task.dueDate);
-        console.log(`  completedAt raw value:`, task.completedAt);
-        console.log(`  typeof completedAt:`, typeof task.completedAt);
-        console.log(`  createdAt raw value:`, task.createdAt);
-        if (task.dueDate) {
-          console.log(`  dueDate as Date object:`, new Date(task.dueDate));
-        }
-        if (task.completedAt) {
-          console.log(`  completedAt as Date object:`, new Date(task.completedAt));
-        }
-        console.log('---');
-      });
-      
-      return data;
+      // Add overdue status to tasks
+      return data.map((task: Task) => ({
+        ...task,
+        description: task.description || undefined, // Convert null to undefined
+        isOverdue: isTaskOverdue(task)
+      }));
     },
     enabled: !!auth.user,
   });
 
-  const { data: recurringTasks = [] } = useQuery({
-    queryKey: ["/api/recurring-tasks", { location: currentLocation.name }],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (!isViewingAllLocations) {
-        params.append('location', currentLocation.name);
-      }
-      const url = `/api/recurring-tasks?${params.toString()}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch recurring tasks');
-      return response.json();
-    },
-    enabled: !!auth.user,
-  });
+  // Clean filtering using the new system
+  const filteredTasks = React.useMemo(() => {
+    // Apply location filter first
+    let locationFiltered = tasks;
+    if (!isViewingAllLocations) {
+      locationFiltered = locationFiltered.filter(task => task.location === currentLocation.name);
+    }
 
+    // Apply the clean filtering system
+    const filtered = filterTasks(locationFiltered, filters);
 
+    // Debug the new system
+    debugFiltering(locationFiltered, filters);
 
-  // Periodic overdue status check (every minute)
-  React.useEffect(() => {
-    const checkOverdueStatus = () => {
-      // Force a refetch to ensure overdue status is up-to-date
-      refetch();
-    };
-    
-    // Check immediately on mount
-    checkOverdueStatus();
-    
-    // Set up interval to check every minute
-    const interval = setInterval(checkOverdueStatus, 60000); // 60 seconds
-    
-    return () => clearInterval(interval);
-  }, [refetch]);
+    return filtered;
+  }, [tasks, filters, currentLocation.name, isViewingAllLocations]);
 
-  // Task update mutation
-  const updateTaskMutation = useMutation({
-    mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
-      return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
-  const resetTasksMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/api/tasks/reset", {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({
-        title: "Tasks Reset",
-        description: "All tasks have been reset to their original state.",
-      });
-    },
-    onError: (error) => {
-      console.error("Error resetting tasks:", error);
-      toast({
-        title: "Failed to reset tasks",
-        description: "There was an error resetting the tasks. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Task types configuration
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
@@ -217,7 +160,6 @@ const Tasks: React.FC = () => {
     { value: "pending", label: "Assigned" },
     { value: "in_progress", label: "In Progress" },
     { value: "completed", label: "Completed" },
-    { value: "completed-late", label: "Completed Late" },
     { value: "approved", label: "Approved" },
     { value: "paused", label: "Paused" },
     { value: "skipped", label: "Skipped" },
@@ -244,176 +186,45 @@ const Tasks: React.FC = () => {
     return counts;
   }, [tasks]);
 
-  const filteredTasks = React.useMemo(() => {
-    let filtered = tasks;
-    
-    // Location filter
-    if (!isViewingAllLocations) {
-      filtered = filtered.filter(task => task.location === currentLocation.name);
-    }
+  // Task update mutation
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
+      return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(task => 
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  // Filter update functions
+  const updateFilter = (key: keyof FilterOptions, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
-    // Type filter
-    if (activeFilter !== "all") {
-      filtered = filtered.filter(task => task.type === activeFilter);
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      switch (statusFilter) {
-        case 'completed-late':
-          filtered = filtered.filter(task => isTaskLate(task));
-          break;
-        case 'overdue':
-          filtered = filtered.filter(task => isOverdue(task));
-          break;
-        default:
-          filtered = filtered.filter(task => task.status === statusFilter);
-          break;
-      }
-    }
-
-    // Priority filter
-    if (priorityFilter !== "all") {
-      filtered = filtered.filter(task => task.priority === priorityFilter);
-    }
-
-    // Date filter - FIXED: Tasks appear only on their due date
-    if (dateFilter) {
-      console.log("=== FILTER ANALYSIS ===");
-      console.log("Selected date:", dateFilter);
-      console.log("Type of dateFilter:", typeof dateFilter);
-      
-      filtered = filtered.filter(task => {
-        console.log(`Checking task "${task.title}"`);
-        console.log("  Task dueDate:", task.dueDate);
-        console.log("  Selected date:", dateFilter);
-        
-        if (task.dueDate) {
-          const taskDateStr = formatDateForComparison(task.dueDate);
-          const filterDateStr = formatDateForComparison(dateFilter);
-          
-          console.log(`  Formatted task date: "${taskDateStr}"`);
-          console.log(`  Formatted filter date: "${filterDateStr}"`);
-          console.log("  Match?:", taskDateStr === filterDateStr);
-          
-          const matches = taskDateStr === filterDateStr;
-          if (matches) console.log(`  ✅ Task "${task.title}" MATCHES filter`);
-          else console.log(`  ❌ Task "${task.title}" does NOT match filter`);
-          
-          return matches;
-        }
-        console.log(`  ⚠️ Task "${task.title}" has no dueDate - excluded`);
-        return false; // Tasks without due dates don't appear in date-filtered views
-      });
-      
-      console.log(`📊 Date filter result: ${filtered.length} tasks match date ${dateFilter}`);
-    }
-
-    // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
-    const taskIds = new Set<number>();
-    const uniqueFiltered = filtered.filter(task => {
-      if (taskIds.has(task.id)) {
-        console.warn(`Duplicate task detected and removed: ${task.id} - ${task.title}`);
-        return false;
-      }
-      taskIds.add(task.id);
-      return true;
-    });
-    
-    // Log summary for debugging
-    console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
-    
-    return uniqueFiltered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.name, isViewingAllLocations]);
-
-  // Clear all filters function
   const clearAllFilters = () => {
-    setActiveFilter("all");
-    setStatusFilter("all");
-    setPriorityFilter("all");
-    setDateFilter("");
-    setSearchTerm("");
+    setFilters({
+      selectedDate: undefined,
+      selectedCategory: 'all',
+      selectedStatus: 'all',
+      selectedPriority: 'all',
+      searchTerm: ''
+    });
   };
 
-  // Late task detection functions - fixed to avoid false positives
-  // Check if task was completed AFTER becoming overdue (8:30 AM on due date)
-  const isTaskCompletedLate = (task: Task): boolean => {
-    // Must be completed to be late
-    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
-      return false;
-    }
-    
-    // For TEST tasks or tasks without proper dates, return false
-    if (task.dueDate === 'Not specified' || task.dueDate === '') return false;
-    
-    try {
-      const dueDate = new Date(task.dueDate);
-      const completedTime = new Date(task.completedAt);
-      
-      // Check if dates are valid
-      if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
-      
-      // Create overdue cutoff time: 8:30 PM on due date
-      const overdueTime = new Date(dueDate);
-      overdueTime.setHours(20, 30, 0, 0);
-      
-      // Task is late if completed AFTER the overdue time (8:30 PM on due date)
-      return completedTime > overdueTime;
-    } catch (error) {
-      // If any date parsing fails, task is not late
-      return false;
-    }
+  const clearDateFilter = () => {
+    updateFilter('selectedDate', undefined);
   };
 
-  // Legacy function name for compatibility
-  const isTaskLate = isTaskCompletedLate;;
-
-  const isOverdue = (task: Task): boolean => {
-    // Can't be overdue if already completed
-    if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
-      return false;
-    }
-    
-    const now = new Date();
-    
-    // Handle both Date objects and strings
-    let dateString: string;
-    if (task.dueDate instanceof Date) {
-      const year = task.dueDate.getFullYear();
-      const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
-      const day = String(task.dueDate.getDate()).padStart(2, '0');
-      dateString = `${year}-${month}-${day}`;
-    } else {
-      dateString = (task.dueDate as string)?.split('T')[0] || '';
-    }
-    
-    const [year, month, day] = dateString.split('-');
-    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
-    // Set time to 8:30 PM Chicago time for due date
-    const chicagoTime = new Date(dueDate);
-    chicagoTime.setHours(20, 30, 0, 0); // 8:30 PM cutoff
-    
-    // Task is overdue if current time is past 8:30 PM on due date
-    return now > chicagoTime;
-  };
-
-  // Single task action handler
+  // Task action handlers
   const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
     switch (action) {
       case 'start':
-        // Update task to in-progress and open modal
         updateTaskMutation.mutate({
           taskId,
           updates: { 
@@ -424,495 +235,229 @@ const Tasks: React.FC = () => {
         setSelectedTask({ ...task, status: 'in_progress' });
         setModalOpen(true);
         break;
-        
-      case 'collaborate':
-        // Just open modal for in-progress tasks
-        setSelectedTask(task);
-        setModalOpen(true);
-        break;
-        
-      case 'complete':
-        // Update task to completed
-        updateTaskMutation.mutate({
-          taskId,
-          updates: { 
-            status: 'completed', 
-            completedAt: new Date().toISOString() as any,
-            progress: 100
-          }
-        });
-        setModalOpen(false);
-        
-        // Process task completion through TaskCompletionService
-        if (auth.user) {
-          TaskCompletionService.handleTaskCompletion({
-            taskId: task.id,
-            title: task.title,
-            type: task.type,
-            checklistData: task.checklist,
-            completedBy: auth.user.id
-          });
-        }
-        
-        // Show completion message
-        toast({
-          title: "🎉 Task completed!",
-          description: "Great job! The task has been marked as completed.",
-        });
-        
-        // Celebrate with confetti!
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-        break;
-        
       case 'view':
-        // Just open modal in read-only mode
         setSelectedTask(task);
         setModalOpen(true);
         break;
-        
-      case 'pause':
-        // Update task to paused
-        updateTaskMutation.mutate({
-          taskId,
-          updates: { 
-            status: 'paused',
-            pausedAt: new Date().toISOString() as any
-          }
-        });
-        setModalOpen(false);
-        toast({
-          title: "Task Paused",
-          description: "The task has been paused and can be resumed later.",
-        });
-        break;
-        
-      case 'skip':
-        // Update task to skipped with reason
-        updateTaskMutation.mutate({
-          taskId,
-          updates: { 
-            status: 'skipped',
-            skipReason: reason || 'No reason provided',
-            skippedAt: new Date().toISOString() as any
-          }
-        });
-        setModalOpen(false);
-        toast({
-          title: "Task Skipped",
-          description: reason ? `Task skipped: ${reason}` : "Task has been skipped.",
-        });
-        break;
-        
-      case 'resume':
-        // Update paused task back to in-progress
-        updateTaskMutation.mutate({
-          taskId,
-          updates: {
-            status: 'in_progress',
-            resumedAt: new Date().toISOString() as any
-          }
-        });
-        setSelectedTask({ ...task, status: 'in_progress' });
-        setModalOpen(true);
-        toast({
-          title: "Task Resumed",
-          description: "The task has been resumed and you can continue working.",
-        });
-        break;
+      // Add other cases as needed
     }
   };
-
-  // Create task mutation
-  const createTaskMutation = useMutation({
-    mutationFn: (taskData: any) => apiRequest('POST', '/api/tasks', taskData),
-    onSuccess: () => {
-      // Invalidate all task queries to ensure proper cache refresh
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
-      
-      // Force refetch of current task query
-      refetch();
-      
-      setAddTaskModalOpen(false);
-      toast({
-        title: "Task Created",
-        description: "New task has been added successfully",
-      });
-    },
-    onError: (error) => {
-      console.error('Create task error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create task. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleAddTask = (taskData: any) => {
-    console.log('handleAddTask called with:', taskData);
-    
-    const newTask = {
-      ...taskData,
-      // Send date as string, server will handle conversion
-      dueDate: taskData.dueDate,
-      // Add location to the task
-      location: currentLocation.code,
-    };
-    
-    console.log('Calling createTaskMutation with:', newTask);
-    createTaskMutation.mutate(newTask);
-  };
-
-  const handleNewTask = () => {
-    setAddTaskModalOpen(true);
-  };
-
-
-
-  // Task Summary Component - now responsive to filters
-  const TaskSummary = ({ 
-    tasks, 
-    activeFilter, 
-    statusFilter, 
-    dateFilter 
-  }: { 
-    tasks: Task[], 
-    activeFilter: string, 
-    statusFilter: string, 
-    dateFilter: string 
-  }) => {
-    const completedTasks = tasks.filter(t => t.status === 'completed');
-    const lateTasks = completedTasks.filter(t => isTaskLate(t));
-    const onTimeTasks = completedTasks.length - lateTasks.length;
-    const overdueTasks = tasks.filter(t => isOverdue(t));
-    const pendingTasks = tasks.filter(t => t.status === 'pending');
-    const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
-    
-    // Calculate completion rate only if there are completed tasks
-    const completionRate = completedTasks.length > 0 
-      ? Math.round((onTimeTasks / completedTasks.length) * 100) 
-      : 0;
-    
-    // Get filter description for context
-    const getFilterDescription = () => {
-      let desc = '';
-      
-      // Add date context
-      if (dateFilter) {
-        const today = new Date().toISOString().split('T')[0];
-        if (dateFilter === today) {
-          desc += "Today's ";
-        } else {
-          desc += `${dateFilter} `;
-        }
-      }
-      
-      // Add type filter context
-      if (activeFilter !== 'all') {
-        const taskType = taskTypes.find(t => t.value === activeFilter);
-        desc += taskType ? taskType.label + ' ' : '';
-      }
-      
-      // Add status filter context
-      if (statusFilter !== 'all') {
-        const statusOption = statusOptions.find(s => s.value === statusFilter);
-        desc += statusOption ? statusOption.label + ' ' : '';
-      }
-      
-      return desc || 'All ';
-    };
-    
-    return (
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-[#203B17]">Task Statistics</h3>
-          <span className="text-sm text-gray-600 font-medium">{getFilterDescription()}Tasks</span>
-        </div>
-        
-        {tasks.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="text-2xl mb-2">📭</div>
-            <p>No tasks match the current filters</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-xl font-bold text-blue-600">{tasks.length}</div>
-              <div className="text-xs text-blue-700">Total</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xl font-bold text-gray-600">{pendingTasks.length}</div>
-              <div className="text-xs text-gray-700">Pending</div>
-            </div>
-            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <div className="text-xl font-bold text-yellow-600">{inProgressTasks.length}</div>
-              <div className="text-xs text-yellow-700">In Progress</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-xl font-bold text-green-600">{onTimeTasks}</div>
-              <div className="text-xs text-green-700">On Time</div>
-            </div>
-            <div className="text-center p-3 bg-amber-50 rounded-lg">
-              <div className="text-xl font-bold text-amber-600">{lateTasks.length}</div>
-              <div className="text-xs text-amber-700">Late</div>
-            </div>
-            <div className="text-center p-3 bg-red-50 rounded-lg">
-              <div className="text-xl font-bold text-red-600">{overdueTasks.length}</div>
-              <div className="text-xs text-red-700">Overdue</div>
-            </div>
-          </div>
-        )}
-        
-        {completedTasks.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-gray-200">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Completion Performance:</span>
-              <div className="flex items-center gap-2">
-                <span className={`text-lg font-bold ${
-                  completionRate >= 80 ? 'text-green-600' : 
-                  completionRate >= 60 ? 'text-amber-600' : 'text-red-600'
-                }`}>
-                  {completionRate}%
-                </span>
-                <span className="text-xs text-gray-500">
-                  ({onTimeTasks} on time, {lateTasks.length} late)
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded-xl"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="page-content">
-      <div className="task-manager">
-      {/* Updated filter bar with New Task button */}
-      <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
-        <div 
-          className="task-filters tasks-filter-container"
-          ref={filtersRef}
-          onScroll={(e) => {
-            const target = e.target as HTMLDivElement;
-            setCanScrollLeft(target.scrollLeft > 0);
-            setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
-          }}
-        >
-          {/* All Tasks Button */}
-          <button 
-            className={`task-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tasks</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Manage and track your daily tasks
+          </p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setAddTaskModalOpen(true)}
+            className="flex items-center gap-2"
+            data-testid="button-add-task"
           >
-            All Tasks
-          </button>
-
-          {/* Category Select */}
-          <select 
-            value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Category</option>
-            {taskTypes.filter(type => type.value !== "all").map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Select */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Status</option>
-            {statusOptions.filter(option => option.value !== "all").map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Priority Select */}
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">Priority</option>
-            {priorityOptions.filter(option => option.value !== "all").map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Date Input */}
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => {
-                // STEP 2: DATE INPUT HANDLING ANALYSIS
-                console.log("=== DATE PICKER ANALYSIS ===");
-                console.log("Raw input value:", e.target.value);
-                console.log("Type of value:", typeof e.target.value);
-                console.log("As Date object:", new Date(e.target.value));
-                console.log("Current dateFilter state:", dateFilter);
-                console.log("New value being set:", e.target.value);
-                setDateFilter(e.target.value);
-              }}
-              className="date-input"
-            />
-            <button
-              onClick={() => {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const todayString = `${year}-${month}-${day}`;
-                console.log('🗓️ Today button clicked, setting date to:', todayString);
-                setDateFilter(todayString);
-              }}
-              className="btn-today"
-              title="Go to today"
-            >
-              Today
-            </button>
-          </div>
-
-          {/* Clear Filters Button */}
-          <button 
-            className="btn-clear-filters"
-            onClick={clearAllFilters}
-          >
-            <X size={16} /> Clear Filters
-          </button>
-
-          {/* Search Box */}
-          <div className="search-box">
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-
-          {/* New Task Button */}
-          <button 
-            className="btn-new-task"
-            onClick={handleNewTask}
-          >
-            <Plus size={16} /> New Task
-          </button>
-
-          {/* Refresh Tasks Button */}
-          <button 
-            onClick={() => {
-              console.log('=== REFRESHING TASKS ===');
-              queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-              refetch();
-              toast({
-                title: "Tasks Refreshed",
-                description: "All tasks reloaded successfully",
-              });
-            }}
-            style={{
-              background: '#3b82f6',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              marginRight: '8px'
-            }}
-            title="Refresh and reload all tasks"
-          >
-            🔄 Refresh Tasks
-          </button>
+            <Plus className="h-4 w-4" />
+            Add Task
+          </Button>
         </div>
       </div>
 
-      {/* Task Summary Statistics - now responsive to filters */}
-      <TaskSummary 
-        tasks={filteredTasks} 
-        activeFilter={activeFilter}
-        statusFilter={statusFilter}
-        dateFilter={dateFilter}
-      />
+      {/* Clean Filter Interface */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex flex-col gap-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Search tasks..."
+              value={filters.searchTerm || ''}
+              onChange={(e) => updateFilter('searchTerm', e.target.value)}
+              className="pl-10"
+              data-testid="input-search-tasks"
+            />
+          </div>
 
-      {/* Task Content */}
-      <div className="task-content">
-        {filteredTasks.length === 0 ? (
-          <div className="no-tasks">
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌱</div>
-            <h3>No tasks found</h3>
-            <p>You're all caught up! No tasks available right now.</p>
+          {/* Filter Controls */}
+          <div className="flex flex-wrap gap-4">
+            {/* Date Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+              <div className="flex gap-2">
+                <Input
+                  type="date"
+                  value={filters.selectedDate || ''}
+                  onChange={(e) => updateFilter('selectedDate', e.target.value)}
+                  className="w-auto"
+                  data-testid="input-date-filter"
+                />
+                {filters.selectedDate && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearDateFilter}
+                    data-testid="button-clear-date"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+              <Select value={filters.selectedCategory} onValueChange={(value) => updateFilter('selectedCategory', value)}>
+                <SelectTrigger className="w-48" data-testid="select-category-filter">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  {taskTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.emoji} {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+              <Select value={filters.selectedStatus} onValueChange={(value) => updateFilter('selectedStatus', value)}>
+                <SelectTrigger className="w-48" data-testid="select-status-filter">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Priority Filter */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
+              <Select value={filters.selectedPriority} onValueChange={(value) => updateFilter('selectedPriority', value)}>
+                <SelectTrigger className="w-48" data-testid="select-priority-filter">
+                  <SelectValue placeholder="All Priorities" />
+                </SelectTrigger>
+                <SelectContent>
+                  {priorityOptions.map(priority => (
+                    <SelectItem key={priority.value} value={priority.value}>
+                      {priority.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear All Filters */}
+            <div className="flex flex-col gap-1 justify-end">
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                className="flex items-center gap-2"
+                data-testid="button-clear-all-filters"
+              >
+                <X className="h-4 w-4" />
+                Clear All
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Task Results */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {filteredTasks.length} {filteredTasks.length === 1 ? 'Task' : 'Tasks'}
+            {filters.selectedDate && (
+              <span className="text-gray-500 dark:text-gray-400 font-normal ml-2">
+                for {format(new Date(filters.selectedDate), 'MMMM d, yyyy')}
+              </span>
+            )}
+          </h2>
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Loading tasks...</p>
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">📋</div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No tasks found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              {Object.values(filters).some(v => v && v !== 'all') 
+                ? 'Try adjusting your filters to see more tasks.'
+                : 'Create your first task to get started.'
+              }
+            </p>
+            {Object.values(filters).some(v => v && v !== 'all') && (
+              <Button variant="outline" onClick={clearAllFilters}>
+                Clear All Filters
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="task-list">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onTaskAction={handleTaskAction}
-                />
-              ))}
-            </div>
+          <div className="grid gap-4">
+            {filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onTaskAction={handleTaskAction}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* Task Modal */}
-      <TaskModal
-        task={selectedTask}
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onTaskAction={handleTaskAction}
-      />
+      {/* Modals */}
+      {modalOpen && selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          open={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedTask(null);
+          }}
+          onTaskUpdate={(updatedTask) => {
+            queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+            setSelectedTask(updatedTask);
+          }}
+        />
+      )}
 
-      {/* Add Task Modal */}
       <AddTaskModal
         open={addTaskModalOpen}
         onClose={() => setAddTaskModalOpen(false)}
-        onSave={handleAddTask}
+        onTaskAdded={() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+          setAddTaskModalOpen(false);
+        }}
       />
 
-      {/* Task Action Modal */}
       <TaskActionModal
-        task={selectedTask}
         open={taskActionModalOpen}
         onClose={() => setTaskActionModalOpen(false)}
+        task={selectedTask}
+        onTaskUpdate={(updatedTask) => {
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+          setSelectedTask(updatedTask);
+          setTaskActionModalOpen(false);
+        }}
       />
-      </div>
     </div>
   );
 };
