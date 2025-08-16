@@ -134,18 +134,32 @@ const Tasks: React.FC = () => {
 
 
 
+  // Automatic overdue task skipping
+  React.useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    
+    const overdueTaskIds = tasks
+      .filter(task => 
+        task.status !== 'completed' && 
+        task.status !== 'approved' && 
+        task.status !== 'skipped' && 
+        isOverdue(task)
+      )
+      .map(task => task.id);
+    
+    if (overdueTaskIds.length > 0) {
+      autoSkipOverdueMutation.mutate(overdueTaskIds);
+    }
+  }, [tasks]);
+
   // Periodic overdue status check (every minute)
   React.useEffect(() => {
     const checkOverdueStatus = () => {
-      // Force a refetch to ensure overdue status is up-to-date
       refetch();
     };
     
-    // Check immediately on mount
     checkOverdueStatus();
-    
-    // Set up interval to check every minute
-    const interval = setInterval(checkOverdueStatus, 60000); // 60 seconds
+    const interval = setInterval(checkOverdueStatus, 60000);
     
     return () => clearInterval(interval);
   }, [refetch]);
@@ -441,81 +455,87 @@ const Tasks: React.FC = () => {
   // Legacy function name for compatibility
   const isTaskLate = isTaskCompletedLate;
 
+  // Task status update functions
+  const updateTaskStatus = (taskId: number, newStatus: string) => {
+    const updates: any = { status: newStatus };
+    
+    if (newStatus === 'in_progress') {
+      updates.startedAt = new Date().toISOString();
+    } else if (newStatus === 'completed') {
+      updates.completedAt = new Date().toISOString();
+      updates.progress = 100;
+    }
+    
+    updateTaskMutation.mutate({ taskId, updates });
+  };
+
+  const handleStartTask = (taskId: number) => {
+    updateTaskStatus(taskId, 'in_progress');
+    const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
+    if (task) {
+      setSelectedTask({ ...task, status: 'in_progress' });
+      setModalOpen(true);
+    }
+  };
+
+  const handleCompleteTask = (taskId: number) => {
+    updateTaskStatus(taskId, 'completed');
+    setModalOpen(false);
+    
+    const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
+    
+    if (auth.user && task) {
+      TaskCompletionService.handleTaskCompletion({
+        taskId: task.id,
+        title: task.title,
+        type: task.type,
+        checklistData: task.checklist,
+        completedBy: auth.user.id
+      });
+    }
+    
+    toast({
+      title: "🎉 Task completed!",
+      description: "Great job! The task has been marked as completed.",
+    });
+    
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
+
   // Single task action handler
   const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
-    const task = tasks.find(t => t.id === taskId);
+    const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (!task) return;
 
     switch (action) {
       case 'start':
-        // Update task to in-progress and open modal
-        updateTaskMutation.mutate({
-          taskId,
-          updates: { 
-            status: 'in_progress', 
-            startedAt: new Date().toISOString() as any 
-          }
-        });
-        setSelectedTask({ ...task, status: 'in_progress' });
-        setModalOpen(true);
+        handleStartTask(taskId);
         break;
         
       case 'collaborate':
-        // Just open modal for in-progress tasks
         setSelectedTask(task);
         setModalOpen(true);
         break;
         
       case 'complete':
-        // Update task to completed
-        updateTaskMutation.mutate({
-          taskId,
-          updates: { 
-            status: 'completed', 
-            completedAt: new Date().toISOString() as any,
-            progress: 100
-          }
-        });
-        setModalOpen(false);
-        
-        // Process task completion through TaskCompletionService
-        if (auth.user) {
-          TaskCompletionService.handleTaskCompletion({
-            taskId: task.id,
-            title: task.title,
-            type: task.type,
-            checklistData: task.checklist,
-            completedBy: auth.user.id
-          });
-        }
-        
-        // Show completion message
-        toast({
-          title: "🎉 Task completed!",
-          description: "Great job! The task has been marked as completed.",
-        });
-        
-        // Celebrate with confetti!
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
+        handleCompleteTask(taskId);
         break;
         
       case 'view':
-        // Just open modal in read-only mode
         setSelectedTask(task);
         setModalOpen(true);
         break;
         
       case 'pause':
-        // Update task to paused
         updateTaskMutation.mutate({
           taskId,
           updates: { 
             status: 'paused',
-            pausedAt: new Date().toISOString() as any
+            pausedAt: new Date().toISOString()
           }
         });
         setModalOpen(false);
@@ -526,13 +546,12 @@ const Tasks: React.FC = () => {
         break;
         
       case 'skip':
-        // Update task to skipped with reason
         updateTaskMutation.mutate({
           taskId,
           updates: { 
             status: 'skipped',
             skipReason: reason || 'No reason provided',
-            skippedAt: new Date().toISOString() as any
+            skippedAt: new Date().toISOString()
           }
         });
         setModalOpen(false);
@@ -543,12 +562,11 @@ const Tasks: React.FC = () => {
         break;
         
       case 'resume':
-        // Update paused task back to in-progress
         updateTaskMutation.mutate({
           taskId,
           updates: {
             status: 'in_progress',
-            resumedAt: new Date().toISOString() as any
+            resumedAt: new Date().toISOString()
           }
         });
         setSelectedTask({ ...task, status: 'in_progress' });
