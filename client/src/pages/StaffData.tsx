@@ -406,14 +406,8 @@ const StaffEditModal: React.FC<{
 }> = ({ staff, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     fullName: staff?.fullName || '',
-    personalEmail: staff?.personalEmail || staff?.email || '',
-    businessEmail: staff?.businessEmail || '',
-    homePhone: staff?.homePhone || '',
-    businessPhone: staff?.businessPhone || '',
-    mobilePhone: staff?.mobilePhone || staff?.phone || '',
-    emergencyContactName: staff?.emergencyContactName || '',
-    emergencyRelationship: staff?.emergencyRelationship || '',
-    emergencyPhone: staff?.emergencyPhone || '',
+    email: staff?.email || '',
+    phone: staff?.phone || '',
     location: staff?.location || 'Grow Space',
     rolesAssigned: staff?.rolesAssigned || [],
     dateHired: staff?.dateHired || new Date().toISOString().split('T')[0],
@@ -439,12 +433,8 @@ const StaffEditModal: React.FC<{
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
-    if (!formData.personalEmail.trim()) newErrors.personalEmail = 'Personal email is required';
-    if (!formData.personalEmail.includes('@')) newErrors.personalEmail = 'Invalid email format';
-    if (!formData.mobilePhone.trim()) newErrors.mobilePhone = 'Mobile phone is required';
-    if (!formData.emergencyContactName.trim()) newErrors.emergencyContactName = 'Emergency contact name is required';
-    if (!formData.emergencyRelationship.trim()) newErrors.emergencyRelationship = 'Emergency contact relationship is required';
-    if (!formData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency contact phone is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.email.includes('@')) newErrors.email = 'Invalid email format';
     if (formData.payType !== 'unpaid' && formData.payRate <= 0) {
       newErrors.payRate = 'Pay rate must be greater than 0 for paid positions';
     }
