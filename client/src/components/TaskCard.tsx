@@ -1,10 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Weight, Info, CheckCircle, User, Calendar, AlertTriangle } from "lucide-react";
-import { format, isAfter, isToday, isTomorrow, differenceInDays } from "date-fns";
+import { Clock, CheckCircle, Info } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
 
@@ -31,40 +29,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return emojis[type] || "📋";
   };
 
-  const getStatusColor = (status: TaskStatus): string => {
-    const colors = {
-      pending: "bg-gray-500 text-white",
-      in_progress: "bg-blue-500 text-white",
-      completed: "bg-green-500 text-white",
-      approved: "bg-green-600 text-white",
-      paused: "bg-yellow-500 text-white",
-      skipped: "bg-gray-500 text-white"
-    };
-    return colors[status] || "bg-gray-500 text-white";
-  };
-
-  const getStatusLabel = (status: TaskStatus): string => {
-    const labels = {
-      pending: "Pending",
-      in_progress: "In Progress",
-      completed: "Completed",
-      approved: "Approved",
-      paused: "Paused",
-      skipped: "Skipped"
-    };
-    return labels[status] || status;
-  };
-
-  const getPriorityColor = (priority: string | null): string => {
-    if (!priority) return "bg-gray-500";
-    const colors: Record<string, string> = {
-      high: "bg-red-500",
-      medium: "bg-yellow-500",
-      low: "bg-green-500"
-    };
-    return colors[priority] || "bg-gray-500";
-  };
-
   const formatTime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -74,199 +38,53 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return `${mins}m`;
   };
 
-  const getDueDateDisplay = () => {
-    if (!task.dueDate) return null;
+  const getTaskDayDisplay = (task: Task) => {
+    // Check for monthly or bi-weekly patterns
+    if (task.description?.toLowerCase().includes('monthly') || task.title?.toLowerCase().includes('monthly')) {
+      return { text: 'MONTHLY', color: '#7c3aed' }; // Purple
+    }
+    if (task.description?.toLowerCase().includes('bi-weekly') || task.description?.toLowerCase().includes('biweekly') || task.title?.toLowerCase().includes('bi-weekly')) {
+      return { text: 'BI-WEEKLY', color: '#0891b2' }; // Cyan
+    }
     
-    // Calculate days until due with timezone-safe date comparison
-    const calculateDaysUntilDue = (dueDateInput: string | Date) => {
-      // Extract date string without timezone conversion
-      let dateString: string;
-      if (dueDateInput instanceof Date) {
-        const year = dueDateInput.getFullYear();
-        const month = String(dueDateInput.getMonth() + 1).padStart(2, '0');
-        const day = String(dueDateInput.getDate()).padStart(2, '0');
-        dateString = `${year}-${month}-${day}`;
-      } else {
-        dateString = dueDateInput.split('T')[0];
-      }
-      
-      // Parse dates without timezone issues
-      const [year, month, day] = dateString.split('-');
-      const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / msPerDay);
-      
-      return diffDays;
-    };
+    // For regular tasks, show the day
+    if (!task.dueDate) {
+      return { text: 'NO DATE', color: '#6b7280' }; // Gray
+    }
+    const dueDate = new Date(task.dueDate);
+    const dayName = dueDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    return { text: dayName, color: '#059669' }; // Green
+  };
+
+  const formatDueDate = (dateInput: string | Date | null): string => {
+    if (!dateInput) return '';
     
-    const diffDays = calculateDaysUntilDue(task.dueDate);
+    let dateString: string;
     
-    // Format the actual date - ALWAYS include it (timezone-safe)
-    const formatDate = (dateInput: string | Date) => {
-      let dateString: string;
-      
-      // Handle both Date objects and strings
-      if (dateInput instanceof Date) {
-        // Convert Date to YYYY-MM-DD format without timezone issues
-        const year = dateInput.getFullYear();
-        const month = String(dateInput.getMonth() + 1).padStart(2, '0');
-        const day = String(dateInput.getDate()).padStart(2, '0');
-        dateString = `${year}-${month}-${day}`;
-      } else {
-        // Handle ISO string format by extracting date part
-        dateString = dateInput.split('T')[0];
-      }
-      
-      // Parse the date string without timezone conversion
-      const [year, month, day] = dateString.split('-');
-      
-      // Create month names array
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
-      // Return formatted date (e.g., "Jul 31")
-      return `${months[parseInt(month) - 1]} ${parseInt(day)}`;
-    };
-    const dateStr = formatDate(task.dueDate);
-    
-    if (diffDays < 0) {
-      const absDays = Math.abs(diffDays);
-      return {
-        text: `Overdue by ${absDays} day${absDays !== 1 ? 's' : ''} (${dateStr})`,
-        className: 'text-red-600 font-semibold'
-      };
-    } else if (diffDays === 0) {
-      return {
-        text: `Due today (${dateStr})`,
-        className: 'text-orange-600 font-semibold'
-      };
-    } else if (diffDays === 1) {
-      return {
-        text: `Due in 1 day (${dateStr})`, // ALWAYS include the actual date
-        className: 'text-yellow-600 font-medium'
-      };
+    // Handle both Date objects and strings
+    if (dateInput instanceof Date) {
+      // Convert Date to YYYY-MM-DD format without timezone issues
+      const year = dateInput.getFullYear();
+      const month = String(dateInput.getMonth() + 1).padStart(2, '0');
+      const day = String(dateInput.getDate()).padStart(2, '0');
+      dateString = `${year}-${month}-${day}`;
     } else {
-      return {
-        text: `Due in ${diffDays} days (${dateStr})`,
-        className: 'text-gray-600'
-      };
-    }
-  };
-
-  // Late task detection functions
-  // Check if task is currently overdue (8:30 PM deadline on due date)
-  const isTaskOverdue = (task: Task, checkTime: Date = new Date()): boolean => {
-    if (!task.dueDate || task.status === 'completed') return false;
-    
-    try {
-      // Parse the due date safely
-      let dateString: string;
-      if (task.dueDate instanceof Date) {
-        const year = task.dueDate.getFullYear();
-        const month = String(task.dueDate.getMonth() + 1).padStart(2, '0');
-        const day = String(task.dueDate.getDate()).padStart(2, '0');
-        dateString = `${year}-${month}-${day}`;
-      } else {
-        dateString = task.dueDate.split('T')[0];
-      }
-      
-      const [year, month, day] = dateString.split('-');
-      const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      
-      if (isNaN(dueDate.getTime())) return false;
-      
-      // Get current date (today)
-      const today = new Date(checkTime);
-      today.setHours(0, 0, 0, 0);
-      
-      const dueDateStart = new Date(dueDate);
-      dueDateStart.setHours(0, 0, 0, 0);
-      
-      // If due date is in the future, NOT overdue
-      if (dueDateStart > today) {
-        return false;
-      }
-      
-      // If due date is in the past, IS overdue
-      if (dueDateStart < today) {
-        return true;
-      }
-      
-      // Due date is today - check if past 8:30 PM
-      const deadline = new Date(today);
-      deadline.setHours(20, 30, 0, 0); // 8:30 PM
-      
-      return checkTime > deadline;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  // Check if task was completed AFTER becoming overdue (truly late)
-  const isTaskCompletedLate = (task: Task): boolean => {
-    // Must be completed to be late
-    if (task.status !== 'completed' || !task.completedAt || !task.dueDate) {
-      return false;
+      // Handle ISO string format by extracting date part
+      dateString = dateInput.split('T')[0];
     }
     
-    try {
-      const dueDate = new Date(task.dueDate);
-      const completedTime = new Date(task.completedAt);
-      
-      if (isNaN(dueDate.getTime()) || isNaN(completedTime.getTime())) return false;
-      
-      // Create overdue cutoff time: 8:30 PM on due date
-      const overdueTime = new Date(dueDate);
-      overdueTime.setHours(20, 30, 0, 0);
-      
-      // Task is late if completed AFTER the overdue time (8:30 PM on due date)
-      return completedTime > overdueTime;
-    } catch (error) {
-      return false;
-    }
+    // Parse the date string without timezone conversion
+    const [year, month, day] = dateString.split('-');
+    
+    // Create month names array
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Return formatted date (e.g., "Jan 18, 2025")
+    return `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
   };
 
-  // Legacy function name for compatibility
-  const isTaskLate = isTaskCompletedLate;
-
-  const getLateDuration = (task: Task): string | null => {
-    if (!isTaskLate(task) || !task.completedAt) return null;
-    
-    const dueTime = new Date(task.dueDate!);
-    const completedTime = new Date(task.completedAt!);
-    const diffMinutes = Math.floor((completedTime.getTime() - dueTime.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 60) {
-      return `${diffMinutes} min late`;
-    } else if (diffMinutes < 1440) { // Less than 24 hours
-      const hours = Math.floor(diffMinutes / 60);
-      return `${hours} hr${hours > 1 ? 's' : ''} late`;
-    } else {
-      const days = Math.floor(diffMinutes / 1440);
-      return `${days} day${days > 1 ? 's' : ''} late`;
-    }
-  };
-
-  const getTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    }
-    if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    }
-    return "Just now";
-  };
-
-  const checkIfOverdue = (dueDateInput: string | Date): boolean => {
+  const checkIfOverdue = (dueDateInput: string | Date | null): boolean => {
     if (!dueDateInput) return false;
     
     const now = new Date();
@@ -303,72 +121,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return now > chicagoTime;
   };
 
-  const formatDueDate = (dateInput: string | Date): string => {
-    if (!dateInput) return '';
-    
-    let dateString: string;
-    
-    // Handle both Date objects and strings
-    if (dateInput instanceof Date) {
-      // Convert Date to YYYY-MM-DD format without timezone issues
-      const year = dateInput.getFullYear();
-      const month = String(dateInput.getMonth() + 1).padStart(2, '0');
-      const day = String(dateInput.getDate()).padStart(2, '0');
-      dateString = `${year}-${month}-${day}`;
-    } else {
-      // Handle ISO string format by extracting date part
-      dateString = dateInput.split('T')[0];
-    }
-    
-    // Parse the date string without timezone conversion
-    const [year, month, day] = dateString.split('-');
-    
-    // Create month names array
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Return formatted date (e.g., "Jan 18, 2025")
-    return `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
-  };
-
-  const getOverdueMessage = (task: any): string => {
-    if (!isCurrentlyOverdue) return '';
-    
-    const today = new Date().toISOString().split('T')[0];
-    const taskDateString = task.dueDate instanceof Date ? 
-      task.dueDate.toISOString().split('T')[0] : 
-      task.dueDate.split('T')[0];
-    
-    if (taskDateString === today) {
-      return 'OVERDUE (8:30 PM deadline passed)';
-    }
-    
-    const daysDiff = Math.abs(differenceInDays(new Date(), new Date(task.dueDate)));
-    return `OVERDUE by ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
-  };
-
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
   const isPending = task.status === 'pending';
   const isPaused = task.status === 'paused';
   const isSkipped = task.status === 'skipped';
   
-  // NEW LOGIC: Distinguish between overdue (pending) and late (completed after overdue)
-  const isCurrentlyOverdue = isTaskOverdue(task, new Date()); // For pending tasks that are overdue
-  const wasCompletedLate = isTaskCompletedLate(task); // For completed tasks that were completed late
-
-  const getCardClassName = () => {
-    let baseClass = "hover:shadow-lg transition-all duration-200 cursor-pointer";
-    if (isInProgress) {
-      baseClass += " bg-blue-50 border-blue-200";
-    } else if (isCompleted) {
-      baseClass += " bg-green-50 border-green-200";
-    }
-    return baseClass;
-  };
+  const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
+  const dayDisplay = getTaskDayDisplay(task);
 
   return (
-    <Card className={`relative shadow-sm hover:shadow-md transition-shadow ${
+    <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
       isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
       isPaused ? 'bg-yellow-50 border-l-4 border-l-yellow-500' : ''
@@ -376,68 +139,67 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       isSkipped ? 'bg-gray-50 border-l-4 border-l-gray-500' : ''
     } ${
       isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
-    } ${
-      wasCompletedLate ? 'border-l-4 border-l-amber-400' : ''
-    }`}>
+    }`} data-status={task.status}>
       <CardContent className="p-6">
-        {/* Status, Priority, and Status Icons - Repositioned */}
-        <div className="absolute top-3 right-3 flex flex-col items-center gap-1">
-          {/* Status Badge */}
-          <div className={`px-2 py-1 rounded text-xs font-semibold ${
-            wasCompletedLate
-              ? 'bg-amber-100 text-amber-800 border border-amber-300' 
-              : isCurrentlyOverdue && !isCompleted
-              ? 'bg-red-100 text-red-800 border border-red-300'
-              : getStatusColor(task.status as TaskStatus)
-          }`}>
-            {wasCompletedLate ? '✓ Completed Late' : 
-             isCurrentlyOverdue && !isCompleted ? '🔴 Overdue' :
-             getStatusLabel(task.status as TaskStatus)}
-          </div>
+        {/* Header Section */}
+        <div className="task-header flex justify-between items-start mb-4">
+          {/* Title with proper spacing */}
+          <h3 className="task-title flex-1 pr-3 text-lg font-semibold text-gray-800 word-wrap break-word" 
+              style={{ maxWidth: '60%' }}>
+            {getTaskEmoji(task.type as TaskType)} {task.title}
+          </h3>
           
-          {/* Priority Badge */}
-          <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${getPriorityColor(task.priority)}`}>
-            {task.priority?.toUpperCase() || 'N/A'}
-          </div>
-          
-          {/* Status Icons Row - Positioned under priority */}
-          <div className="flex items-center gap-1 min-h-[20px]">
-            {task.isRecurring && task.recurringTaskId && (
-              <span className="text-sm text-blue-600" title="Recurring Task">
-                🔄
-              </span>
-            )}
-            {wasCompletedLate && (
-              <span 
-                className="text-sm text-amber-600"
-                title={`Completed Late: ${getLateDuration(task)}`}
-              >
-                ⚠️
-              </span>
-            )}
-            {isCurrentlyOverdue && !isCompleted && (
-              <span 
-                className="text-sm text-red-600"
-                title="Currently Overdue (due before 8:30 AM)"
-              >
-                🔴
-              </span>
-            )}
+          {/* Right side badges container */}
+          <div className="task-badges flex flex-col items-end gap-1 flex-shrink-0">
+            {/* Day/Frequency Badge */}
+            <span 
+              className="day-badge px-2 py-1 rounded text-xs font-bold text-white text-center"
+              style={{ 
+                backgroundColor: dayDisplay.color,
+                minWidth: '70px'
+              }}
+            >
+              {dayDisplay.text}
+            </span>
+            
+            {/* Priority Badge */}
+            <span className={`priority-badge px-2 py-1 rounded text-xs font-bold text-center ${
+              task.priority === 'high' ? 'bg-red-500 text-white' :
+              task.priority === 'medium' ? 'bg-yellow-500 text-white' :
+              'bg-green-500 text-white'
+            }`} style={{ minWidth: '70px' }}>
+              {task.priority?.toUpperCase() || 'LOW'}
+            </span>
           </div>
         </div>
-
-        <div className="flex items-start mb-4 pr-20">
-          <div className="flex items-center">
-            <span className="text-2xl mr-3">{getTaskEmoji(task.type as TaskType)}</span>
-            <div>
-              <div>
-                <h3 className="font-semibold text-[#203B17]">{task.title}</h3>
-              </div>
-              {task.assignedTo && (
-                <p className="text-sm text-gray-600">Assigned to: User {task.assignedTo}</p>
-              )}
-            </div>
-          </div>
+        
+        {/* Task Details - with proper spacing */}
+        <div className="task-details mb-4" style={{ paddingRight: '90px' }}>
+          {/* Task type */}
+          <p className="text-sm text-gray-600 mb-2">
+            {task.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </p>
+          
+          {/* Overdue warning if applicable */}
+          {isCurrentlyOverdue && !isCompleted && (
+            <p className="overdue-warning text-red-600 font-medium mb-2">
+              ⚠️ OVERDUE - Task is past due
+            </p>
+          )}
+          
+          {/* Due date */}
+          {task.dueDate && (
+            <p className="due-date text-sm text-gray-600 mb-1">
+              📅 {isCurrentlyOverdue ? 'Was due' : 'Due'} {formatDueDate(task.dueDate)}
+            </p>
+          )}
+          
+          {/* Time estimate */}
+          {task.estimatedTime && (
+            <p className="time-estimate text-sm text-gray-600">
+              ⏱️ Est. {formatTime(task.estimatedTime)}
+            </p>
+          )}
         </div>
 
         {/* Progress Bar (for in-progress tasks) */}
@@ -453,154 +215,66 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           </div>
         )}
 
-        {/* Task Details */}
-        <div className="mb-4">
+        {/* Checklist info if available */}
+        {task.checklist && task.checklist.length > 0 && (
+          <div className="text-sm text-gray-600 mb-3">
+            <div className="flex items-center">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              <span>
+                {(() => {
+                  const completedFromItems = task.checklist.filter(item => item.completed).length;
+                  return `${completedFromItems}/${task.checklist.length} checklist items`;
+                })()}
+              </span>
+            </div>
+          </div>
+        )}
 
-          
-          {task.description && (
-            <div className="flex items-center text-sm text-gray-600 mb-2">
+        {/* Description if available */}
+        {task.description && (
+          <div className="text-sm text-gray-600 mb-3">
+            <div className="flex items-center">
               <Info className="h-4 w-4 mr-1" />
               <span>{task.description}</span>
             </div>
-          )}
-          
-
-          
-          {task.checklist && task.checklist.length > 0 && (
-            <div className="text-sm text-gray-600 mb-2">
-              <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 mr-1" />
-                <span>
-                  {(() => {
-                    // Use saved progress data if available, otherwise fall back to checklist items
-                    const completedFromSaved = task.data?.checklistProgress ? 
-                      Object.keys(task.data.checklistProgress).length : 0;
-                    const completedFromItems = task.checklist.filter(item => item.completed).length;
-                    const completedCount = Math.max(completedFromSaved, completedFromItems);
-                    
-                    return `${completedCount}/${task.checklist.length} checklist items`;
-                  })()}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {task.dueDate && (
-            <div className="space-y-1">
-              {(() => {
-                const dueDateDisplay = getDueDateDisplay();
-                return dueDateDisplay ? (
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span className={dueDateDisplay.className}>
-                      {dueDateDisplay.text}
-                    </span>
-                  </div>
-                ) : (
-                  <div className={`flex items-center text-sm ${
-                    isCurrentlyOverdue ? 'text-red-600' : 'text-gray-600'
-                  }`}>
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span className={isCurrentlyOverdue ? 'font-semibold' : ''}>
-                      Due: {formatDueDate(task.dueDate)}
-                    </span>
-                  </div>
-                );
-              })()}
-              {isCurrentlyOverdue && (
-                <div className="flex items-center text-sm text-red-600">
-                  <AlertTriangle className="h-4 w-4 mr-1" />
-                  <span className="font-semibold">
-                    {getOverdueMessage(task)}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Late task completion indicator */}
-          {wasCompletedLate && (
-            <div className="flex items-center text-sm text-amber-600 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              <span className="font-semibold">
-                Completed Late ({getLateDuration(task)})
-              </span>
-            </div>
-          )}
-
-          {isCompleted && (
-            <div className="flex items-center text-sm text-gray-600 mb-2">
-              <User className="h-4 w-4 mr-1" />
-              <span>Completed and approved</span>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-600">
-            <Clock className="h-4 w-4 mr-1" />
-            <span>
-              {isInProgress && task.startedAt
-                ? `Started ${getTimeAgo(new Date(task.startedAt))}`
-                : isCompleted && task.completedAt
-                ? `Completed ${getTimeAgo(new Date(task.completedAt))}`
-                : task.estimatedTime
-                ? `Est. ${formatTime(task.estimatedTime)}`
-                : "No time estimate"
-              }
-            </span>
           </div>
-          
-          <div className="flex gap-2">
-            {/* Single button based on task status */}
-            {task.status === 'pending' && (
-              <Button
-                onClick={() => onTaskAction(task.id, 'start')}
-                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
-              >
-                Start Task
-              </Button>
-            )}
-            
-            {task.status === 'in_progress' && (
-              <Button
-                onClick={() => onTaskAction(task.id, 'collaborate')}
-                className="bg-[#2D8028] hover:bg-[#203B17] text-white"
-              >
-                🤝 Collaborate
-              </Button>
-            )}
-            
-            {task.status === 'completed' && (
-              <Button
-                variant="outline"
-                onClick={() => onTaskAction(task.id, 'view')}
-                className="text-gray-600"
-              >
-                View Details
-              </Button>
-            )}
-            
-            {task.status === 'paused' && (
-              <Button
-                onClick={() => onTaskAction(task.id, 'resume')}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
-              >
-                ▶️ Resume
-              </Button>
-            )}
-            
-            {task.status === 'skipped' && (
-              <Button
-                variant="outline"
-                onClick={() => onTaskAction(task.id, 'view')}
-                className="text-gray-600"
-              >
-                View Details
-              </Button>
-            )}
-          </div>
+        )}
+
+        {/* Action button - centered */}
+        <div className="task-actions flex justify-center mt-4">
+          {isPending && (
+            <Button 
+              onClick={() => onTaskAction(task.id, 'start')}
+              className="btn-action bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium"
+            >
+              Start Task
+            </Button>
+          )}
+          {isInProgress && (
+            <Button 
+              onClick={() => onTaskAction(task.id, 'collaborate')}
+              className="btn-action bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium"
+            >
+              Continue Task
+            </Button>
+          )}
+          {isPaused && (
+            <Button 
+              onClick={() => onTaskAction(task.id, 'resume')}
+              className="btn-action bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md font-medium"
+            >
+              Resume Task
+            </Button>
+          )}
+          {(isCompleted || isSkipped) && (
+            <Button 
+              onClick={() => onTaskAction(task.id, 'view')}
+              variant="outline"
+              className="btn-action px-6 py-2 rounded-md font-medium"
+            >
+              View Details
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
