@@ -56,6 +56,16 @@ const Tasks: React.FC = () => {
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
 
+  // Debug auth on component mount
+  React.useEffect(() => {
+    console.log('🔍 TASKS COMPONENT AUTH CHECK:');
+    console.log('  auth object:', auth);
+    console.log('  auth.user:', auth?.user);
+    console.log('  user exists:', !!auth?.user);
+    console.log('  localStorage auth:', localStorage.getItem('auth'));
+    console.log('  currentLocation:', currentLocation);
+  }, [auth, currentLocation]);
+
   // Close dropdown when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -101,34 +111,52 @@ const Tasks: React.FC = () => {
     queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.name }],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (auth.user?.role === 'technician') {
-        params.append('userId', auth.user.id.toString());
-      }
+      // Temporarily skip user filtering to test the system
+      // if (auth.user?.role === 'technician') {
+      //   params.append('userId', auth.user.id.toString());
+      // }
       if (!isViewingAllLocations) {
         params.append('location', currentLocation.name);
       }
       const url = `/api/tasks?${params.toString()}`;
+      
+      // Debug task fetching
+      console.log('🔍 FETCHING TASKS:', url);
+      
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch tasks');
+      if (!response.ok) {
+        console.error('Task fetch failed:', response.status, response.statusText);
+        throw new Error('Failed to fetch tasks');
+      }
       const data = await response.json();
       
+      console.log('✅ SUCCESS: Fetched', data.length, 'tasks for filtering');
+      
       // Add overdue status to tasks
-      return data.map((task: Task) => ({
+      const tasksWithOverdue = data.map((task: Task) => ({
         ...task,
         description: task.description || undefined, // Convert null to undefined
         isOverdue: isTaskOverdue(task)
       }));
+      
+      return tasksWithOverdue;
     },
-    enabled: !!auth.user,
+    enabled: true, // Temporarily disable auth requirement to test filtering
+    staleTime: 0, // Force fresh data
+    refetchOnMount: true,
   });
 
   // Clean filtering using the new system
   const filteredTasks = React.useMemo(() => {
+    console.log('🔍 FILTERING:', tasks.length, 'tasks with filters:', filters);
+    
     // Apply location filter first
     let locationFiltered = tasks;
     if (!isViewingAllLocations) {
       locationFiltered = locationFiltered.filter(task => task.location === currentLocation.name);
     }
+
+    console.log('  After location filter:', locationFiltered.length);
 
     // Apply the clean filtering system
     const filtered = filterTasks(locationFiltered, filters);
@@ -137,7 +165,7 @@ const Tasks: React.FC = () => {
     debugFiltering(locationFiltered, filters);
 
     return filtered;
-  }, [tasks, filters, currentLocation.name, isViewingAllLocations]);
+  }, [tasks, filters, currentLocation.name, isViewingAllLocations, isLoading]);
 
   // Task types configuration
   const taskTypes = [
