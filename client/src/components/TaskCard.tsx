@@ -12,6 +12,16 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
+  // Safety check for task object
+  if (!task) {
+    return (
+      <Card className="task-card relative shadow-sm border-red-200">
+        <CardContent className="p-6">
+          <div className="text-red-600">Error: Task data is missing</div>
+        </CardContent>
+      </Card>
+    );
+  }
   const getTaskEmoji = (type: string): string => {
     const emojis: Record<string, string> = {
       "seeding-microgreens": "🌱",
@@ -29,7 +39,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     return emojis[type] || "📋";
   };
 
-  const formatTime = (minutes: number): string => {
+  const formatTime = (minutes: number | null | undefined): string => {
+    if (!minutes || minutes <= 0) return '0m';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours > 0) {
@@ -39,6 +50,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   };
 
   const getTaskDayDisplay = (task: Task) => {
+    // Safety check for task object
+    if (!task) {
+      return { text: 'NO DATA', color: '#6b7280' }; // Gray
+    }
+    
     // Check for monthly or bi-weekly patterns
     if (task.description?.toLowerCase().includes('monthly') || task.title?.toLowerCase().includes('monthly')) {
       return { text: 'MONTHLY', color: '#7c3aed' }; // Purple
@@ -51,9 +67,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
     if (!task.dueDate) {
       return { text: 'NO DATE', color: '#6b7280' }; // Gray
     }
-    const dueDate = new Date(task.dueDate);
-    const dayName = dueDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-    return { text: dayName, color: '#059669' }; // Green
+    
+    try {
+      const dueDate = new Date(task.dueDate);
+      const dayName = dueDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      return { text: dayName, color: '#059669' }; // Green
+    } catch (error) {
+      return { text: 'INVALID DATE', color: '#ef4444' }; // Red
+    }
   };
 
   const formatDueDate = (dateInput: string | Date | null): string => {
@@ -146,7 +167,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           {/* Title with proper spacing */}
           <h3 className="task-title flex-1 pr-3 text-lg font-semibold text-gray-800 word-wrap break-word" 
               style={{ maxWidth: '60%' }}>
-            {getTaskEmoji(task.type)} {task.title}
+            {getTaskEmoji(task.type || 'other')} {task.title || 'Untitled Task'}
           </h3>
           
           {/* Right side badges container */}
@@ -177,7 +198,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
         <div className="task-details mb-4" style={{ paddingRight: '90px' }}>
           {/* Task type */}
           <p className="text-sm text-gray-600 mb-2">
-            {task.type.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {task.type ? task.type.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown Type'}
           </p>
           
           {/* Overdue warning if applicable */}
