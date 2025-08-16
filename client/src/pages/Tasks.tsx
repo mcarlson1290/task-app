@@ -353,7 +353,7 @@ const Tasks: React.FC = () => {
         const taskDateStr = formatDateForComparison(taskDueDate);
         
         // Get recurring task frequency if available
-        const frequency = task.frequency || '';
+        const frequency = '';
         
         // For monthly tasks - visible from 1st to due date
         if (frequency.includes('monthly')) {
@@ -431,7 +431,7 @@ const Tasks: React.FC = () => {
     }
     
     // For TEST tasks or tasks without proper dates, return false
-    if (task.dueDate === 'Not specified' || task.dueDate === '') return false;
+    if (!task.dueDate) return false;
     
     try {
       const dueDate = new Date(task.dueDate);
@@ -489,7 +489,7 @@ const Tasks: React.FC = () => {
         taskId: task.id,
         title: task.title,
         type: task.type,
-        checklistData: task.checklist,
+        checklistData: task.checklist || [],
         completedBy: auth.user.id
       });
     }
@@ -536,7 +536,7 @@ const Tasks: React.FC = () => {
           updates: { 
             status: 'paused',
             pausedAt: new Date().toISOString()
-          }
+          } as any
         });
         setModalOpen(false);
         toast({
@@ -552,7 +552,7 @@ const Tasks: React.FC = () => {
             status: 'skipped',
             skipReason: reason || 'No reason provided',
             skippedAt: new Date().toISOString()
-          }
+          } as any
         });
         setModalOpen(false);
         toast({
@@ -567,7 +567,7 @@ const Tasks: React.FC = () => {
           updates: {
             status: 'in_progress',
             resumedAt: new Date().toISOString()
-          }
+          } as any
         });
         setSelectedTask({ ...task, status: 'in_progress' });
         setModalOpen(true);
