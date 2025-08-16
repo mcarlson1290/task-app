@@ -181,6 +181,26 @@ const Tasks: React.FC = () => {
     },
   });
 
+  // Auto-skip overdue tasks mutation
+  const autoSkipOverdueMutation = useMutation({
+    mutationFn: async (taskIds: number[]) => {
+      const promises = taskIds.map(taskId => 
+        apiRequest("PATCH", `/api/tasks/${taskId}`, { 
+          status: 'skipped', 
+          skipReason: 'Automatically skipped - overdue' 
+        })
+      );
+      return await Promise.all(promises);
+    },
+    onSuccess: (_, taskIds) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      console.log(`Automatically skipped ${taskIds.length} overdue tasks`);
+    },
+    onError: (error) => {
+      console.error("Error skipping overdue tasks:", error);
+    },
+  });
+
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
