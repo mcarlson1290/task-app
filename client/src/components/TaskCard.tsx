@@ -266,7 +266,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
           {isPending && (
             <Button 
               onClick={() => onTaskAction(task.id, 'start')}
-              className="btn-action bg-[#203B17] hover:bg-[#1a311a] text-white px-6 py-2 rounded-md font-medium"
+              className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
             >
               Start Task
             </Button>
