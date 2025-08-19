@@ -97,7 +97,7 @@ export const createStaffFromMicrosoftLogin = async (
   let defaultLocation = 'K'; // Default to Kenosha
   
   // Corporate managers
-  if (email === 'robert@growspace.farm' || email === 'matt@growspace.farm' || email === 'matt.carlson@growspace.farm') {
+  if (email === 'robert@growspace.farm' || email === 'matt@growspace.farm' || email === 'matt.carlson@growspace.farm' || email === 'dan@growspace.farm') {
     defaultRoles = ['Corporate Manager'];
   }
 
@@ -113,7 +113,7 @@ export const createStaffFromMicrosoftLogin = async (
     trainingCompleted: [],
     trainingInProgress: [],
     preferredHours: 'Flexible',
-    activeStatus: 'Active',
+    activeStatus: 'active',
     lastTaskCompleted: null,
     managerNotes: 'Auto-created from Microsoft login',
     tasksCompleted: 0,
