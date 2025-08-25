@@ -17,10 +17,17 @@ const DevTools = () => {
   const { toast } = useToast();
   const auth = getStoredAuth();
 
+  // Debug the auth object
+  console.log('DevTools - Auth object:', auth);
+  console.log('DevTools - User object:', auth.user);
+  console.log('DevTools - User role:', auth.user?.role);
+  console.log('DevTools - User email:', auth.user?.email);
+  console.log('DevTools - User username:', auth.user?.username);
+  
   // Only allow access for Corporate users (Robert and Matt)
   const hasAccess = auth.user && 
     auth.user.role === 'Corporate' && 
-    (auth.user.username === 'robert@growspace.farm' || auth.user.username === 'matt@growspace.farm');
+    (auth.user.email === 'robert@growspace.farm' || auth.user.email === 'matt@growspace.farm');
 
   if (!hasAccess) {
     return (
