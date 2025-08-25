@@ -52,6 +52,10 @@ const Tasks: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
+  
+  // Add refresh state for loading indicator
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
 
 
@@ -116,6 +120,23 @@ const Tasks: React.FC = () => {
     },
     enabled: !!auth.user,
   });
+  
+  // Refresh function to update tasks immediately
+  const refreshTasks = React.useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      // Force refetch to get latest data
+      await refetch();
+      // Also invalidate queries to ensure cache coherence
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/dashboard"] });
+    } catch (error) {
+      console.error('Failed to refresh tasks:', error);
+    } finally {
+      // Brief delay to show the refresh indicator
+      setTimeout(() => setIsRefreshing(false), 300);
+    }
+  }, [refetch, queryClient]);
 
   const { data: recurringTasks = [] } = useQuery({
     queryKey: ["/api/recurring-tasks", { location: currentLocation.name }],
@@ -169,8 +190,10 @@ const Tasks: React.FC = () => {
     mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
       return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      // Immediately refresh tasks for instant UI update
+      await refreshTasks();
     },
   });
 
@@ -206,9 +229,11 @@ const Tasks: React.FC = () => {
       );
       return await Promise.all(promises);
     },
-    onSuccess: (_, taskIds) => {
+    onSuccess: async (_, taskIds) => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       console.log(`Automatically skipped ${taskIds.length} overdue tasks`);
+      // Immediately refresh tasks for instant UI update
+      await refreshTasks();
     },
     onError: (error) => {
       console.error("Error skipping overdue tasks:", error);
@@ -414,12 +439,14 @@ const Tasks: React.FC = () => {
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.name, isViewingAllLocations]);
 
   // Clear all filters function
-  const clearAllFilters = () => {
+  const clearAllFilters = async () => {
     setActiveFilter("all");
     setStatusFilter("all");
     setPriorityFilter("all");
     setDateFilter("");
     setSearchTerm("");
+    // Refresh tasks to ensure immediate UI update
+    await refreshTasks();
   };
 
   // Late task detection functions - fixed to avoid false positives
@@ -469,16 +496,18 @@ const Tasks: React.FC = () => {
     updateTaskMutation.mutate({ taskId, updates });
   };
 
-  const handleStartTask = (taskId: number) => {
+  const handleStartTask = async (taskId: number) => {
     updateTaskStatus(taskId, 'in_progress');
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (task) {
       setSelectedTask({ ...task, status: 'in_progress' });
       setModalOpen(true);
     }
+    // Refresh tasks to ensure immediate UI update
+    await refreshTasks();
   };
 
-  const handleCompleteTask = (taskId: number) => {
+  const handleCompleteTask = async (taskId: number) => {
     updateTaskStatus(taskId, 'completed');
     setModalOpen(false);
     
@@ -504,30 +533,37 @@ const Tasks: React.FC = () => {
       spread: 70,
       origin: { y: 0.6 }
     });
+    
+    // Refresh tasks to ensure immediate UI update
+    await refreshTasks();
   };
 
   // Single task action handler
-  const handleTaskAction = (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
+  const handleTaskAction = async (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (!task) return;
 
     switch (action) {
       case 'start':
-        handleStartTask(taskId);
+        await handleStartTask(taskId);
         break;
         
       case 'collaborate':
         setSelectedTask(task);
         setModalOpen(true);
+        // Refresh tasks in case status changed
+        await refreshTasks();
         break;
         
       case 'complete':
-        handleCompleteTask(taskId);
+        await handleCompleteTask(taskId);
         break;
         
       case 'view':
         setSelectedTask(task);
         setModalOpen(true);
+        // Refresh tasks in case status changed
+        await refreshTasks();
         break;
         
       case 'pause':
@@ -543,6 +579,7 @@ const Tasks: React.FC = () => {
           title: "Task Paused",
           description: "The task has been paused and can be resumed later.",
         });
+        await refreshTasks();
         break;
         
       case 'skip':
@@ -559,6 +596,7 @@ const Tasks: React.FC = () => {
           title: "Task Skipped",
           description: reason ? `Task skipped: ${reason}` : "Task has been skipped.",
         });
+        await refreshTasks();
         break;
         
       case 'resume':
@@ -575,6 +613,7 @@ const Tasks: React.FC = () => {
           title: "Task Resumed",
           description: "The task has been resumed and you can continue working.",
         });
+        await refreshTasks();
         break;
     }
   };
@@ -582,13 +621,13 @@ const Tasks: React.FC = () => {
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: (taskData: any) => apiRequest('POST', '/api/tasks', taskData),
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all task queries to ensure proper cache refresh
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
       
-      // Force refetch of current task query
-      refetch();
+      // Immediately refresh tasks for instant UI update
+      await refreshTasks();
       
       setAddTaskModalOpen(false);
       toast({
@@ -606,7 +645,7 @@ const Tasks: React.FC = () => {
     }
   });
 
-  const handleAddTask = (taskData: any) => {
+  const handleAddTask = async (taskData: any) => {
     console.log('handleAddTask called with:', taskData);
     
     const newTask = {
@@ -619,10 +658,14 @@ const Tasks: React.FC = () => {
     
     console.log('Calling createTaskMutation with:', newTask);
     createTaskMutation.mutate(newTask);
+    // Additional refresh to ensure immediate UI update
+    await refreshTasks();
   };
 
-  const handleNewTask = () => {
+  const handleNewTask = async () => {
     setAddTaskModalOpen(true);
+    // Refresh tasks when opening modal to ensure latest data
+    await refreshTasks();
   };
 
 
@@ -776,7 +819,10 @@ const Tasks: React.FC = () => {
           {/* All Tasks Button */}
           <button 
             className={`task-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
+            onClick={async () => {
+              setActiveFilter('all');
+              await refreshTasks();
+            }}
           >
             All Tasks
           </button>
@@ -784,7 +830,10 @@ const Tasks: React.FC = () => {
           {/* Category Select */}
           <select 
             value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value)}
+            onChange={async (e) => {
+              setActiveFilter(e.target.value);
+              await refreshTasks();
+            }}
             className="filter-select"
           >
             <option value="all">Category</option>
@@ -798,7 +847,10 @@ const Tasks: React.FC = () => {
           {/* Status Select */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={async (e) => {
+              setStatusFilter(e.target.value);
+              await refreshTasks();
+            }}
             className="filter-select"
           >
             <option value="all">Status</option>
@@ -812,7 +864,10 @@ const Tasks: React.FC = () => {
           {/* Priority Select */}
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
+            onChange={async (e) => {
+              setPriorityFilter(e.target.value);
+              await refreshTasks();
+            }}
             className="filter-select"
           >
             <option value="all">Priority</option>
@@ -828,11 +883,14 @@ const Tasks: React.FC = () => {
             <input
               type="date"
               value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
+              onChange={async (e) => {
+                setDateFilter(e.target.value);
+                await refreshTasks();
+              }}
               className="date-input"
             />
             <button
-              onClick={() => {
+              onClick={async () => {
                 const today = new Date();
                 const year = today.getFullYear();
                 const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -840,6 +898,7 @@ const Tasks: React.FC = () => {
                 const todayString = `${year}-${month}-${day}`;
                 console.log('🗓️ Today button clicked, setting date to:', todayString);
                 setDateFilter(todayString);
+                await refreshTasks();
               }}
               className="btn-today"
               title="Go to today"
@@ -863,7 +922,16 @@ const Tasks: React.FC = () => {
               type="text"
               placeholder="Search tasks..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={async (e) => {
+                setSearchTerm(e.target.value);
+                // Debounce search to avoid too many refreshes
+                if (searchTimeoutRef.current) {
+                  clearTimeout(searchTimeoutRef.current);
+                }
+                searchTimeoutRef.current = setTimeout(async () => {
+                  await refreshTasks();
+                }, 300);
+              }}
               className="search-input"
             />
           </div>
@@ -878,31 +946,60 @@ const Tasks: React.FC = () => {
 
           {/* Refresh Tasks Button */}
           <button 
-            onClick={() => {
+            onClick={async () => {
               console.log('=== REFRESHING TASKS ===');
-              queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-              refetch();
+              await refreshTasks();
               toast({
                 title: "Tasks Refreshed",
                 description: "All tasks reloaded successfully",
               });
             }}
             style={{
-              background: '#3b82f6',
+              background: isRefreshing ? '#9ca3af' : '#3b82f6',
               color: 'white',
               padding: '10px 20px',
               border: 'none',
               borderRadius: '6px',
-              cursor: 'pointer',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer',
               fontSize: '14px',
               marginRight: '8px'
             }}
+            disabled={isRefreshing}
             title="Refresh and reload all tasks"
           >
-            🔄 Refresh Tasks
+            {isRefreshing ? '⏳ Refreshing...' : '🔄 Refresh Tasks'}
           </button>
         </div>
       </div>
+
+      {/* Refresh Loading Indicator */}
+      {isRefreshing && (
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 1000,
+          padding: '8px 16px',
+          background: '#2D8028',
+          color: 'white',
+          borderRadius: '6px',
+          fontSize: '14px',
+          fontWeight: '500',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <div className="animate-spin" style={{
+            width: '16px',
+            height: '16px',
+            border: '2px solid transparent',
+            borderTop: '2px solid white',
+            borderRadius: '50%'
+          }}></div>
+          Updating tasks...
+        </div>
+      )}
 
       {/* Task Summary Statistics - now responsive to filters */}
       <TaskSummary 
