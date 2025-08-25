@@ -251,7 +251,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               <CheckCircle className="h-4 w-4 mr-1" />
               <span>
                 {(() => {
-                  // Check for completion in multiple possible fields to ensure accuracy
+                  // Use the actual progress data from ChecklistExecution if available
+                  if (task.data?.checklistProgress) {
+                    const completedSteps = Object.values(task.data.checklistProgress).filter(
+                      (step: any) => step.completed === true
+                    ).length;
+                    return `✓ ${completedSteps}/${task.checklist.length} checklist items`;
+                  }
+                  
+                  // Fallback to checking individual item completion status
                   const completedFromItems = task.checklist.filter(item => 
                     item.completed === true || item.isCompleted === true
                   ).length;
