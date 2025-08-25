@@ -1,0 +1,166 @@
+# Fix Missing Start Task Button
+
+## Problem
+All tasks are showing "View Details" button regardless of their status. Tasks that haven't been started should show "Start Task" button instead.
+
+## Solution for Replit
+
+### Find the Task Card Component
+Look for where task cards are rendered (likely `TaskCard.tsx` or within the Tasks page) and fix the button logic:
+
+```typescript
+// The button rendering logic should look something like this:
+const renderTaskButton = (task) => {
+  // Check task status to determine which button to show
+  switch (task.status) {
+    case 'pending':
+    case 'not-started':
+    case undefined: // In case status is missing
+      return (
+        <button 
+          onClick={() => handleStartTask(task.id)}
+          className="start-button"
+          style={{
+            backgroundColor: '#2D8028',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Start Task
+        </button>
+      );
+      
+    case 'in-progress':
+    case 'started':
+      return (
+        <>
+          <button 
+            onClick={() => handlePauseTask(task.id)}
+            className="pause-button"
+          >
+            Pause Task
+          </button>
+          <button 
+            onClick={() => handleViewDetails(task.id)}
+            className="details-button"
+          >
+            View Details
+          </button>
+        </>
+      );
+      
+    case 'paused':
+      return (
+        <>
+          <button 
+            onClick={() => handleResumeTask(task.id)}
+            className="resume-button"
+          >
+            Resume Task
+          </button>
+          <button 
+            onClick={() => handleViewDetails(task.id)}
+            className="details-button"
+          >
+            View Details
+          </button>
+        </>
+      );
+      
+    case 'completed':
+    case 'skipped':
+      return (
+        <button 
+          onClick={() => handleViewDetails(task.id)}
+          className="details-button"
+        >
+          View Details
+        </button>
+      );
+      
+    default:
+      // Default to Start Task for safety
+      return (
+        <button 
+          onClick={() => handleStartTask(task.id)}
+          className="start-button"
+        >
+          Start Task
+        </button>
+      );
+  }
+};
+```
+
+### Common Issues to Check
+
+1. **Task Status Not Set Properly**
+```typescript
+// When creating new tasks, ensure status is set
+const createTask = (taskData) => {
+  const newTask = {
+    ...taskData,
+    status: 'pending', // Make sure this is set!
+    createdAt: new Date().toISOString()
+  };
+  // save task
+};
+```
+
+2. **Wrong Property Name**
+```typescript
+// Check if the code is looking for the wrong property
+// Common mistakes:
+// - Using 'state' instead of 'status'
+// - Using 'isStarted' instead of checking status
+// - Using 'completed' as a boolean instead of status string
+```
+
+3. **Button Condition Logic Error**
+```typescript
+// WRONG - This would show View Details for everything
+if (task) {
+  return <button>View Details</button>;
+}
+
+// RIGHT - Check the actual status
+if (task.status === 'pending' || !task.status) {
+  return <button>Start Task</button>;
+} else {
+  return <button>View Details</button>;
+}
+```
+
+### Quick Debug Test
+Add this temporary debug code to see task statuses:
+
+```typescript
+// In the task card component
+console.log('Task:', task.title, 'Status:', task.status);
+
+// Or display it visually
+<small style={{ color: 'red' }}>
+  Debug: {task.status || 'NO STATUS'}
+</small>
+```
+
+## Complete Fix Instructions for Replit
+
+Tell Replit:
+
+"Fix the task card buttons. The Start Task button is missing. Update the button rendering logic to show:
+- 'Start Task' button for tasks with status 'pending' or no status
+- 'Pause Task' and 'View Details' for 'in-progress' tasks  
+- 'Resume Task' and 'View Details' for 'paused' tasks
+- Only 'View Details' for 'completed' or 'skipped' tasks
+
+Also check that new tasks are created with status: 'pending' by default."
+
+## Expected Result
+After the fix, you should see:
+- Tasks that haven't been started: Green "Start Task" button
+- Tasks in progress: "Pause Task" and "View Details" buttons
+- Completed/skipped tasks: Only "View Details" button

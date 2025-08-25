@@ -150,9 +150,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
 
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
-  const isPending = task.status === 'pending';
+  const isPending = task.status === 'pending' || !task.status; // Include tasks with no status
   const isPaused = task.status === 'paused';
   const isSkipped = task.status === 'skipped';
+  
+  // Debug logging (removed after fixing issue)
   
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
@@ -273,6 +275,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             <Button 
               onClick={() => onTaskAction(task.id, 'start')}
               className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
+              data-testid="button-start-task"
             >
               Start Task
             </Button>
@@ -281,6 +284,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             <Button 
               onClick={() => onTaskAction(task.id, 'collaborate')}
               className="btn-action bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium"
+              data-testid="button-continue-task"
             >
               Continue Task
             </Button>
@@ -289,6 +293,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
             <Button 
               onClick={() => onTaskAction(task.id, 'resume')}
               className="btn-action bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md font-medium"
+              data-testid="button-resume-task"
             >
               Resume Task
             </Button>
@@ -298,8 +303,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               onClick={() => onTaskAction(task.id, 'view')}
               variant="outline"
               className="btn-action px-6 py-2 rounded-md font-medium"
+              data-testid="button-view-details"
             >
               View Details
+            </Button>
+          )}
+          {/* Fallback for tasks that don't match any status */}
+          {!isPending && !isInProgress && !isPaused && !isCompleted && !isSkipped && (
+            <Button 
+              onClick={() => onTaskAction(task.id, 'start')}
+              className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
+              data-testid="button-start-task-fallback"
+            >
+              Start Task
             </Button>
           )}
         </div>
