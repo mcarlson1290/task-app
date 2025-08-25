@@ -1,0 +1,135 @@
+# Fix Text Instruction Checkbox Issue
+
+## Problem
+Text Instruction checklist items are showing a checkbox when they should only show the "Complete Step" button.
+
+## Solution for Replit
+
+### Find the Checklist Rendering Component
+Look for where checklist items are rendered in the task details modal:
+
+```typescript
+// The checklist item rendering should check the step type
+const renderChecklistItem = (step, index) => {
+  // Check if this is a Text Instruction type
+  if (step.type === 'text' || step.type === 'instruction' || step.type === 'Text Instruction') {
+    return (
+      <div key={index} className="checklist-item">
+        <div className="step-header">
+          <span className="step-number">Step {index + 1}</span>
+          <h4>{step.label || 'Text Instruction'}</h4>
+        </div>
+        
+        {/* Text instruction content */}
+        <div className="instruction-text">
+          {step.instructionText || step.description || 'No instructions provided'}
+        </div>
+        
+        {/* Only show Complete Step button, NO checkbox */}
+        <button 
+          onClick={() => handleCompleteStep(step.id)}
+          className="complete-step-btn"
+          style={{
+            backgroundColor: '#2D8028',
+            color: 'white',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '4px',
+            marginTop: '10px'
+          }}
+        >
+          Complete Step
+        </button>
+        
+        {step.required && (
+          <div className="required-warning" style={{ color: 'red', marginTop: '5px' }}>
+            ⚠️ This field is required
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // For other step types (checkbox, number input, etc.)
+  return (
+    <div key={index} className="checklist-item">
+      {/* Regular checkbox rendering */}
+      <label>
+        <input 
+          type="checkbox"
+          checked={step.completed || false}
+          onChange={() => handleToggleStep(step.id)}
+        />
+        <span>{step.label}</span>
+      </label>
+      {/* ... other step types ... */}
+    </div>
+  );
+};
+```
+
+### Common Issues to Fix
+
+1. **Wrong Type Check**
+```typescript
+// WRONG - might be checking wrong property
+if (step.inputType === 'text') { // This might mean text input, not instruction
+
+// RIGHT - check for text instruction type specifically  
+if (step.type === 'Text Instruction' || step.type === 'instruction') {
+```
+
+2. **Missing Type Differentiation**
+```typescript
+// Make sure the checklist data structure distinguishes between:
+// - Text Instruction (read-only with complete button)
+// - Text Input (user enters text)
+// - Checkbox (user checks box)
+// - Number Input (user enters number)
+```
+
+3. **Default Checkbox Rendering**
+```typescript
+// WRONG - defaulting everything to checkbox
+const renderStep = (step) => (
+  <label>
+    <input type="checkbox" /> {step.label}
+  </label>
+);
+
+// RIGHT - check type first
+const renderStep = (step) => {
+  switch(step.type) {
+    case 'Text Instruction':
+      return <TextInstructionStep step={step} />;
+    case 'checkbox':
+      return <CheckboxStep step={step} />;
+    // ... other cases
+  }
+};
+```
+
+## Quick Debug
+Add this to see what type is being detected:
+
+```typescript
+console.log('Step type:', step.type, 'Full step:', step);
+// Or display it
+<small>Debug: Type = {step.type}</small>
+```
+
+## Instructions for Replit
+
+"Fix the checklist rendering in the task details modal. Text Instruction type checklist items should NOT show a checkbox. They should only display:
+1. The step number and label
+2. The instruction text
+3. A 'Complete Step' button
+4. The required warning if applicable
+
+Only show checkboxes for actual checkbox-type steps. Check the step type property to determine how to render each checklist item."
+
+## Expected Result
+- Text Instructions: Display text + "Complete Step" button only
+- Checkbox items: Display checkbox that can be checked
+- Number inputs: Display number input field
+- Text inputs: Display text input field

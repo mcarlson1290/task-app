@@ -4328,318 +4328,6 @@
     "createdAt": "2025-08-07T21:33:33.338Z"
   },
   {
-    "id": 1768,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-26T12:00:00.000Z",
-    "visibleFromDate": "2025-08-26T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1769,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-27T12:00:00.000Z",
-    "visibleFromDate": "2025-08-27T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1770,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-28T12:00:00.000Z",
-    "visibleFromDate": "2025-08-28T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1771,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-29T12:00:00.000Z",
-    "visibleFromDate": "2025-08-29T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1772,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-30T12:00:00.000Z",
-    "visibleFromDate": "2025-08-30T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1773,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-31T12:00:00.000Z",
-    "visibleFromDate": "2025-08-31T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1774,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-01T12:00:00.000Z",
-    "visibleFromDate": "2025-09-01T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1775,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-02T12:00:00.000Z",
-    "visibleFromDate": "2025-09-02T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1776,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-03T12:00:00.000Z",
-    "visibleFromDate": "2025-09-03T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1777,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-04T12:00:00.000Z",
-    "visibleFromDate": "2025-09-04T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1778,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-05T12:00:00.000Z",
-    "visibleFromDate": "2025-09-05T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.338Z"
-  },
-  {
-    "id": 1779,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-06T12:00:00.000Z",
-    "visibleFromDate": "2025-09-06T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-07T21:33:33.339Z"
-  },
-  {
     "id": 1780,
     "title": "Clean Tower Clips",
     "description": "Clean tower clips.",
@@ -10025,110 +9713,6 @@
     "isRecurring": true,
     "recurringTaskId": 7,
     "createdAt": "2025-08-11T20:28:48.340Z"
-  },
-  {
-    "id": 2891,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-07T12:00:00.000Z",
-    "visibleFromDate": "2025-09-07T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-11T20:28:48.341Z"
-  },
-  {
-    "id": 2892,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-08T12:00:00.000Z",
-    "visibleFromDate": "2025-09-08T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-11T20:28:48.341Z"
-  },
-  {
-    "id": 2893,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-09T12:00:00.000Z",
-    "visibleFromDate": "2025-09-09T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-11T20:28:48.342Z"
-  },
-  {
-    "id": 2894,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-10T12:00:00.000Z",
-    "visibleFromDate": "2025-09-10T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-11T20:28:48.342Z"
   },
   {
     "id": 2895,
@@ -20688,35 +20272,63 @@
   },
   {
     "id": 3436,
-    "title": "Remove BO and Move Arugula Microgreens to Watering Rack",
-    "description": "Move to watering rack",
-    "type": "blackout-tasks",
-    "status": "pending",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "in_progress",
     "priority": "medium",
     "assignedTo": null,
     "location": "Kenosha",
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-17T12:00:00.000Z",
-    "visibleFromDate": "2025-09-17T12:00:00.000Z",
-    "startedAt": null,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {
+      "checklistProgress": {},
+      "checklistStepData": {
+        "1756163507086": true
+      },
+      "currentStep": 0,
+      "lastUpdated": "2025-08-25T23:13:00.689Z"
+    },
+    "dueDate": "2025-08-26T12:00:00.000Z",
+    "visibleFromDate": "2025-08-26T12:00:00.000Z",
+    "startedAt": "2025-08-25T23:12:57.670Z",
     "completedAt": null,
     "pausedAt": null,
     "resumedAt": null,
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-25T22:23:51.433Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.433Z"
   },
   {
     "id": 3437,
-    "title": "Remove BO and Move Arugula Microgreens to Watering Rack",
-    "description": "Move to watering rack",
-    "type": "blackout-tasks",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20724,10 +20336,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-24T12:00:00.000Z",
-    "visibleFromDate": "2025-09-24T12:00:00.000Z",
+    "dueDate": "2025-08-27T12:00:00.000Z",
+    "visibleFromDate": "2025-08-27T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20735,14 +20368,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 1,
-    "createdAt": "2025-08-25T22:23:51.433Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.433Z"
   },
   {
     "id": 3438,
-    "title": "Seed Broccoli Microgreens",
-    "description": "Seed Broccoli Microgreens",
-    "type": "seeding-microgreens",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20750,10 +20383,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-14T12:00:00.000Z",
-    "visibleFromDate": "2025-09-14T12:00:00.000Z",
+    "dueDate": "2025-08-28T12:00:00.000Z",
+    "visibleFromDate": "2025-08-28T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20761,14 +20415,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 2,
-    "createdAt": "2025-08-25T22:23:51.434Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.433Z"
   },
   {
     "id": 3439,
-    "title": "Seed Broccoli Microgreens",
-    "description": "Seed Broccoli Microgreens",
-    "type": "seeding-microgreens",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20776,10 +20430,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-21T12:00:00.000Z",
-    "visibleFromDate": "2025-09-21T12:00:00.000Z",
+    "dueDate": "2025-08-29T12:00:00.000Z",
+    "visibleFromDate": "2025-08-29T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20787,13 +20462,13 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 2,
-    "createdAt": "2025-08-25T22:23:51.434Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.434Z"
   },
   {
     "id": 3440,
-    "title": "Soak Pea Microgreens",
-    "description": "Soak the Seeds for 12 hours; Drain and rinse occasionaly until tomorrow afternoon.",
+    "title": "Opening",
+    "description": "Open the farm.",
     "type": "other",
     "status": "pending",
     "priority": "medium",
@@ -20802,10 +20477,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-14T12:00:00.000Z",
-    "visibleFromDate": "2025-09-14T12:00:00.000Z",
+    "dueDate": "2025-08-30T12:00:00.000Z",
+    "visibleFromDate": "2025-08-30T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20813,13 +20509,13 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 3,
-    "createdAt": "2025-08-25T22:23:51.435Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.434Z"
   },
   {
     "id": 3441,
-    "title": "Soak Pea Microgreens",
-    "description": "Soak the Seeds for 12 hours; Drain and rinse occasionaly until tomorrow afternoon.",
+    "title": "Opening",
+    "description": "Open the farm.",
     "type": "other",
     "status": "pending",
     "priority": "medium",
@@ -20828,10 +20524,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-21T12:00:00.000Z",
-    "visibleFromDate": "2025-09-21T12:00:00.000Z",
+    "dueDate": "2025-08-31T12:00:00.000Z",
+    "visibleFromDate": "2025-08-31T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20839,14 +20556,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 3,
-    "createdAt": "2025-08-25T22:23:51.435Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.434Z"
   },
   {
     "id": 3442,
-    "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
-    "description": "Remove Weight/BO and Move Radish Microgreens",
-    "type": "blackout-tasks",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20854,10 +20571,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-16T12:00:00.000Z",
-    "visibleFromDate": "2025-09-16T12:00:00.000Z",
+    "dueDate": "2025-09-01T12:00:00.000Z",
+    "visibleFromDate": "2025-09-01T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20865,14 +20603,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 4,
-    "createdAt": "2025-08-25T22:23:51.436Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.434Z"
   },
   {
     "id": 3443,
-    "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
-    "description": "Remove Weight/BO and Move Radish Microgreens",
-    "type": "blackout-tasks",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20880,10 +20618,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-23T12:00:00.000Z",
-    "visibleFromDate": "2025-09-23T12:00:00.000Z",
+    "dueDate": "2025-09-02T12:00:00.000Z",
+    "visibleFromDate": "2025-09-02T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20891,14 +20650,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 4,
-    "createdAt": "2025-08-25T22:23:51.436Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.437Z"
   },
   {
     "id": 3444,
-    "title": "Adjust Nutrients in Microgreen Reservoirs",
-    "description": "Check the nutrient and pH level and adjust",
-    "type": "equipment-maintenance",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20906,10 +20665,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-17T12:00:00.000Z",
-    "visibleFromDate": "2025-09-17T12:00:00.000Z",
+    "dueDate": "2025-09-03T12:00:00.000Z",
+    "visibleFromDate": "2025-09-03T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20917,14 +20697,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 5,
-    "createdAt": "2025-08-25T22:23:51.437Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.437Z"
   },
   {
     "id": 3445,
-    "title": "Adjust Nutrients in Microgreen Reservoirs",
-    "description": "Check the nutrient and pH level and adjust",
-    "type": "equipment-maintenance",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20932,10 +20712,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-24T12:00:00.000Z",
-    "visibleFromDate": "2025-09-24T12:00:00.000Z",
+    "dueDate": "2025-09-04T12:00:00.000Z",
+    "visibleFromDate": "2025-09-04T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20943,14 +20744,14 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 5,
-    "createdAt": "2025-08-25T22:23:51.437Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.438Z"
   },
   {
     "id": 3446,
-    "title": "Clean Bathroom",
-    "description": "Clean the Bathroom",
-    "type": "cleaning",
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
     "status": "pending",
     "priority": "medium",
     "assignedTo": null,
@@ -20958,10 +20759,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-15T12:00:00.000Z",
-    "visibleFromDate": "2025-09-15T12:00:00.000Z",
+    "dueDate": "2025-09-05T12:00:00.000Z",
+    "visibleFromDate": "2025-09-05T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -20969,37 +20791,11 @@
     "skippedAt": null,
     "skipReason": null,
     "isRecurring": true,
-    "recurringTaskId": 7,
-    "createdAt": "2025-08-25T22:23:51.438Z"
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
   },
   {
     "id": 3447,
-    "title": "Clean Bathroom",
-    "description": "Clean the Bathroom",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-22T12:00:00.000Z",
-    "visibleFromDate": "2025-09-22T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 7,
-    "createdAt": "2025-08-25T22:23:51.438Z"
-  },
-  {
-    "id": 3448,
     "title": "Opening",
     "description": "Open the farm.",
     "type": "other",
@@ -21010,36 +20806,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
-    "dueDate": "2025-09-11T12:00:00.000Z",
-    "visibleFromDate": "2025-09-11T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.439Z"
-  },
-  {
-    "id": 3449,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-12T12:00:00.000Z",
-    "visibleFromDate": "2025-09-12T12:00:00.000Z",
+    "dueDate": "2025-09-06T12:00:00.000Z",
+    "visibleFromDate": "2025-09-06T12:00:00.000Z",
     "startedAt": null,
     "completedAt": null,
     "pausedAt": null,
@@ -21048,10 +20839,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.439Z"
+    "createdAt": "2025-08-25T23:12:31.441Z"
   },
   {
-    "id": 3450,
+    "id": 3462,
     "title": "Opening",
     "description": "Open the farm.",
     "type": "other",
@@ -21062,215 +20853,28 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-13T12:00:00.000Z",
-    "visibleFromDate": "2025-09-13T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3451,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-14T12:00:00.000Z",
-    "visibleFromDate": "2025-09-14T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3452,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-15T12:00:00.000Z",
-    "visibleFromDate": "2025-09-15T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3453,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-16T12:00:00.000Z",
-    "visibleFromDate": "2025-09-16T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3454,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-17T12:00:00.000Z",
-    "visibleFromDate": "2025-09-17T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3455,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-18T12:00:00.000Z",
-    "visibleFromDate": "2025-09-18T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3456,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-19T12:00:00.000Z",
-    "visibleFromDate": "2025-09-19T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3457,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-20T12:00:00.000Z",
-    "visibleFromDate": "2025-09-20T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
-  },
-  {
-    "id": 3458,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-21T12:00:00.000Z",
     "visibleFromDate": "2025-09-21T12:00:00.000Z",
@@ -21282,10 +20886,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.440Z"
+    "createdAt": "2025-08-25T23:12:31.443Z"
   },
   {
-    "id": 3459,
+    "id": 3463,
     "title": "Opening",
     "description": "Open the farm.",
     "type": "other",
@@ -21296,7 +20900,28 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-22T12:00:00.000Z",
     "visibleFromDate": "2025-09-22T12:00:00.000Z",
@@ -21308,10 +20933,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.441Z"
+    "createdAt": "2025-08-25T23:12:31.443Z"
   },
   {
-    "id": 3460,
+    "id": 3464,
     "title": "Opening",
     "description": "Open the farm.",
     "type": "other",
@@ -21322,7 +20947,28 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-23T12:00:00.000Z",
     "visibleFromDate": "2025-09-23T12:00:00.000Z",
@@ -21334,10 +20980,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.441Z"
+    "createdAt": "2025-08-25T23:12:31.443Z"
   },
   {
-    "id": 3461,
+    "id": 3465,
     "title": "Opening",
     "description": "Open the farm.",
     "type": "other",
@@ -21348,7 +20994,28 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-24T12:00:00.000Z",
     "visibleFromDate": "2025-09-24T12:00:00.000Z",
@@ -21360,111 +21027,7 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 9,
-    "createdAt": "2025-08-25T22:23:51.441Z"
-  },
-  {
-    "id": 3462,
-    "title": "Clean Tower Clips",
-    "description": "Clean tower clips.",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-16T12:00:00.000Z",
-    "visibleFromDate": "2025-09-16T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 10,
-    "createdAt": "2025-08-25T22:23:51.441Z"
-  },
-  {
-    "id": 3463,
-    "title": "Clean Tower Clips",
-    "description": "Clean tower clips.",
-    "type": "cleaning",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-23T12:00:00.000Z",
-    "visibleFromDate": "2025-09-23T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 10,
-    "createdAt": "2025-08-25T22:23:51.441Z"
-  },
-  {
-    "id": 3464,
-    "title": "Seed Pea Microgreens",
-    "description": "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-15T12:00:00.000Z",
-    "visibleFromDate": "2025-09-15T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 15,
-    "createdAt": "2025-08-25T22:23:51.442Z"
-  },
-  {
-    "id": 3465,
-    "title": "Seed Pea Microgreens",
-    "description": "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.",
-    "type": "seeding-microgreens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-22T12:00:00.000Z",
-    "visibleFromDate": "2025-09-22T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 15,
-    "createdAt": "2025-08-25T22:23:51.442Z"
+    "createdAt": "2025-08-25T23:12:31.443Z"
   },
   {
     "id": 3466,
@@ -22869,5 +22432,663 @@
     "isRecurring": true,
     "recurringTaskId": 72,
     "createdAt": "2025-08-25T22:23:51.455Z"
+  },
+  {
+    "id": 3448,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-07T12:00:00.000Z",
+    "visibleFromDate": "2025-09-07T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3449,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-08T12:00:00.000Z",
+    "visibleFromDate": "2025-09-08T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3450,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-09T12:00:00.000Z",
+    "visibleFromDate": "2025-09-09T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3451,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-10T12:00:00.000Z",
+    "visibleFromDate": "2025-09-10T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3452,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-11T12:00:00.000Z",
+    "visibleFromDate": "2025-09-11T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3453,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-12T12:00:00.000Z",
+    "visibleFromDate": "2025-09-12T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.441Z"
+  },
+  {
+    "id": 3454,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-13T12:00:00.000Z",
+    "visibleFromDate": "2025-09-13T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.442Z"
+  },
+  {
+    "id": 3455,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-14T12:00:00.000Z",
+    "visibleFromDate": "2025-09-14T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.442Z"
+  },
+  {
+    "id": 3456,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-15T12:00:00.000Z",
+    "visibleFromDate": "2025-09-15T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.442Z"
+  },
+  {
+    "id": 3457,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-16T12:00:00.000Z",
+    "visibleFromDate": "2025-09-16T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.442Z"
+  },
+  {
+    "id": 3458,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-17T12:00:00.000Z",
+    "visibleFromDate": "2025-09-17T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.442Z"
+  },
+  {
+    "id": 3459,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-18T12:00:00.000Z",
+    "visibleFromDate": "2025-09-18T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.443Z"
+  },
+  {
+    "id": 3460,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-19T12:00:00.000Z",
+    "visibleFromDate": "2025-09-19T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.443Z"
+  },
+  {
+    "id": 3461,
+    "title": "Opening",
+    "description": "Open the farm.",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756163507086",
+        "text": "Check the Lights are On",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      },
+      {
+        "id": "1756163528155",
+        "text": "Make Sure no Breakers are Tripped",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-20T12:00:00.000Z",
+    "visibleFromDate": "2025-09-20T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 9,
+    "createdAt": "2025-08-25T23:12:31.443Z"
   }
 ]

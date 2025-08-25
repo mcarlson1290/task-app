@@ -366,7 +366,26 @@
       }
     },
     "checklistTemplate": {
-      "steps": []
+      "steps": [
+        {
+          "id": "1756163507086",
+          "type": "instruction",
+          "label": "Check the Lights are On",
+          "required": true,
+          "config": {
+            "text": ""
+          }
+        },
+        {
+          "id": "1756163528155",
+          "type": "instruction",
+          "label": "Make Sure no Breakers are Tripped",
+          "required": true,
+          "config": {
+            "text": ""
+          }
+        }
+      ]
     }
   },
   {
