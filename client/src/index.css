@@ -276,6 +276,8 @@
   overflow-x: auto;
   overflow-y: hidden;
   min-height: 56px;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   
   /* Hide scrollbar but keep functionality */
   -ms-overflow-style: none;
