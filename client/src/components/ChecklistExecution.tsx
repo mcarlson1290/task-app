@@ -361,23 +361,21 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         return (
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <div className="flex items-center text-blue-900">
-                <input
-                  type="checkbox"
-                  checked={stepData[step.id] || false}
-                  onChange={() => {
-                    setStepData({ ...stepData, [step.id]: true });
-                    handleStepComplete();
-                  }}
-                  className="mr-3 h-5 w-5 text-blue-600"
-                  id={`step-${step.id}`}
-                />
-                <FileText className="w-5 h-5 mr-2" />
-                <label htmlFor={`step-${step.id}`} className="font-medium cursor-pointer">
-                  {step.config.text || step.label}
-                </label>
+              <div className="flex items-start text-blue-900">
+                <FileText className="w-5 h-5 mr-3 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="font-medium mb-2">{step.label}</h4>
+                  <p className="text-blue-800 text-sm leading-relaxed">
+                    {step.config.text || step.text || 'No instructions provided'}
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-blue-700 mt-2">Click the checkbox to mark as read</p>
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-blue-600 flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Click "Complete Step" below when you've read and understood these instructions
+                </p>
+              </div>
             </div>
           </div>
         );
