@@ -16,6 +16,7 @@ import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
 import Education from "@/pages/Education";
 import Account from "@/pages/Account";
+import DevTools from "@/pages/DevTools";
 import RecurringTasks from "@/pages/RecurringTasks";
 import TaskData from "@/pages/TaskData";
 import StaffData from "@/pages/StaffData";
@@ -29,6 +30,7 @@ import { initializeCleanState } from "@/utils/dataCleanup";
 import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaff } from "@/services/staffService";
 import { useActivityTracking } from "@/hooks/useActivityTracking";
 import { teamsAuthService } from "./services/teamsAuthService";
+import { useLocation } from "wouter";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -46,9 +48,23 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [teamsAuthAttempted, setTeamsAuthAttempted] = useState(false);
+  const [, setLocation] = useLocation();
   
   // Activity tracking for the current user
   useActivityTracking(currentUser?.id);
+
+  // Keyboard shortcut for dev tools (Ctrl+Shift+D)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D' && currentUser?.role === 'Corporate') {
+        e.preventDefault();
+        setLocation('/dev');
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [setLocation, currentUser]);
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -234,6 +250,11 @@ function Router() {
       <Route path="/tray-tracking">
         <ProtectedRoute>
           <TrayTracking />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dev">
+        <ProtectedRoute>
+          <DevTools />
         </ProtectedRoute>
       </Route>
       <Route>

@@ -106,6 +106,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
   };
 
   const checkIfOverdue = (dueDateInput: string | Date | null): boolean => {
+    // Check if dev overdue protection is enabled
+    const overdueProtection = localStorage.getItem('devOverdueProtection') === 'true';
+    if (overdueProtection) {
+      return false; // Never show as overdue in dev mode
+    }
+    
     if (!dueDateInput) return false;
     
     const now = new Date();

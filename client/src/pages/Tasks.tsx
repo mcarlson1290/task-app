@@ -289,6 +289,12 @@ const Tasks: React.FC = () => {
 
   // Late task detection functions - moved here before filteredTasks to avoid initialization errors
   const isOverdue = (task: Task): boolean => {
+    // Check if dev overdue protection is enabled
+    const overdueProtection = localStorage.getItem('devOverdueProtection') === 'true';
+    if (overdueProtection) {
+      return false; // Never show as overdue in dev mode
+    }
+    
     // Can't be overdue if already completed
     if (!task.dueDate || task.status === 'completed' || task.status === 'approved') {
       return false;
