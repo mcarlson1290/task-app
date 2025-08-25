@@ -2296,7 +2296,29 @@
       }
     },
     "checklistTemplate": {
-      "steps": []
+      "steps": [
+        {
+          "id": "1756164441780",
+          "type": "number-input",
+          "label": "Harvest the Kale Tower. How much kale did you harvest?",
+          "required": true,
+          "config": {
+            "min": 0,
+            "max": 100,
+            "unit": "",
+            "default": 0
+          }
+        },
+        {
+          "id": "1756164466560",
+          "type": "instruction",
+          "label": "Make sure the tower is unplugged",
+          "required": true,
+          "config": {
+            "text": ""
+          }
+        }
+      ]
     }
   }
 ]

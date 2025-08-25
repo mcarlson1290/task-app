@@ -20089,84 +20089,6 @@
     "createdAt": "2025-08-11T20:40:09.939Z"
   },
   {
-    "id": 3429,
-    "title": "Harvest Towers",
-    "description": "Harvest the Towers in the checklist.",
-    "type": "harvest-leafy-greens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-08-26T12:00:00.000Z",
-    "visibleFromDate": "2025-08-26T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 72,
-    "createdAt": "2025-08-11T20:40:09.939Z"
-  },
-  {
-    "id": 3430,
-    "title": "Harvest Towers",
-    "description": "Harvest the Towers in the checklist.",
-    "type": "harvest-leafy-greens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-02T12:00:00.000Z",
-    "visibleFromDate": "2025-09-02T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 72,
-    "createdAt": "2025-08-11T20:40:09.939Z"
-  },
-  {
-    "id": 3431,
-    "title": "Harvest Towers",
-    "description": "Harvest the Towers in the checklist.",
-    "type": "harvest-leafy-greens",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": null,
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [],
-    "data": {},
-    "dueDate": "2025-09-09T12:00:00.000Z",
-    "visibleFromDate": "2025-09-09T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 72,
-    "createdAt": "2025-08-11T20:40:09.939Z"
-  },
-  {
     "id": 3432,
     "title": "Assemble Tower Gardens",
     "description": "This task covers the full assembly of Tower Garden units",
@@ -23467,7 +23389,75 @@
     "createdAt": "2025-08-25T23:19:17.603Z"
   },
   {
-    "id": 3534,
+    "id": 3536,
+    "title": "Harvest Towers",
+    "description": "Harvest the Towers in the checklist.",
+    "type": "harvest-leafy-greens",
+    "status": "completed",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 100,
+    "checklist": [
+      {
+        "id": "1756164441780",
+        "text": "Harvest the Kale Tower. How much kale did you harvest?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1756164466560",
+        "text": "Make sure the tower is unplugged",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {
+      "checklistProgress": {
+        "0": {
+          "completed": true,
+          "completedAt": "2025-08-25T23:28:25.779Z",
+          "stepData": null
+        },
+        "1": {
+          "completed": true,
+          "completedAt": "2025-08-25T23:28:25.779Z",
+          "stepData": null
+        }
+      },
+      "checklistStepData": {
+        "1756164441780": 23
+      },
+      "currentStep": 2,
+      "lastUpdated": "2025-08-25T23:28:25.779Z"
+    },
+    "dueDate": "2025-08-26T12:00:00.000Z",
+    "visibleFromDate": "2025-08-26T12:00:00.000Z",
+    "startedAt": "2025-08-25T23:28:09.443Z",
+    "completedAt": "2025-08-25T23:28:26.152Z",
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 72,
+    "createdAt": "2025-08-25T23:27:56.628Z"
+  },
+  {
+    "id": 3537,
     "title": "Harvest Towers",
     "description": "Harvest the Towers in the checklist.",
     "type": "harvest-leafy-greens",
@@ -23478,7 +23468,131 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756164441780",
+        "text": "Harvest the Kale Tower. How much kale did you harvest?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1756164466560",
+        "text": "Make sure the tower is unplugged",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-02T12:00:00.000Z",
+    "visibleFromDate": "2025-09-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 72,
+    "createdAt": "2025-08-25T23:27:56.628Z"
+  },
+  {
+    "id": 3538,
+    "title": "Harvest Towers",
+    "description": "Harvest the Towers in the checklist.",
+    "type": "harvest-leafy-greens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756164441780",
+        "text": "Harvest the Kale Tower. How much kale did you harvest?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1756164466560",
+        "text": "Make sure the tower is unplugged",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-09T12:00:00.000Z",
+    "visibleFromDate": "2025-09-09T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "recurringTaskId": 72,
+    "createdAt": "2025-08-25T23:27:56.628Z"
+  },
+  {
+    "id": 3539,
+    "title": "Harvest Towers",
+    "description": "Harvest the Towers in the checklist.",
+    "type": "harvest-leafy-greens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": null,
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756164441780",
+        "text": "Harvest the Kale Tower. How much kale did you harvest?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1756164466560",
+        "text": "Make sure the tower is unplugged",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-16T12:00:00.000Z",
     "visibleFromDate": "2025-09-16T12:00:00.000Z",
@@ -23490,10 +23604,10 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 72,
-    "createdAt": "2025-08-25T23:19:17.603Z"
+    "createdAt": "2025-08-25T23:27:56.628Z"
   },
   {
-    "id": 3535,
+    "id": 3540,
     "title": "Harvest Towers",
     "description": "Harvest the Towers in the checklist.",
     "type": "harvest-leafy-greens",
@@ -23504,7 +23618,31 @@
     "estimatedTime": null,
     "actualTime": null,
     "progress": 0,
-    "checklist": [],
+    "checklist": [
+      {
+        "id": "1756164441780",
+        "text": "Harvest the Kale Tower. How much kale did you harvest?",
+        "completed": false,
+        "required": true,
+        "type": "number-input",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "unit": "",
+          "default": 0
+        }
+      },
+      {
+        "id": "1756164466560",
+        "text": "Make sure the tower is unplugged",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": ""
+        }
+      }
+    ],
     "data": {},
     "dueDate": "2025-09-23T12:00:00.000Z",
     "visibleFromDate": "2025-09-23T12:00:00.000Z",
@@ -23516,6 +23654,6 @@
     "skipReason": null,
     "isRecurring": true,
     "recurringTaskId": 72,
-    "createdAt": "2025-08-25T23:19:17.603Z"
+    "createdAt": "2025-08-25T23:27:56.631Z"
   }
 ]
