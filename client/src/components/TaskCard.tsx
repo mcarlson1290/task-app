@@ -251,8 +251,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               <CheckCircle className="h-4 w-4 mr-1" />
               <span>
                 {(() => {
-                  const completedFromItems = task.checklist.filter(item => item.completed).length;
-                  return `${completedFromItems}/${task.checklist.length} checklist items`;
+                  // Check for completion in multiple possible fields to ensure accuracy
+                  const completedFromItems = task.checklist.filter(item => 
+                    item.completed === true || item.isCompleted === true
+                  ).length;
+                  return `✓ ${completedFromItems}/${task.checklist.length} checklist items`;
                 })()}
               </span>
             </div>
@@ -286,7 +289,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               className="btn-action bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium"
               data-testid="button-continue-task"
             >
-              Continue Task
+              👥 Collaborate/Continue
             </Button>
           )}
           {isPaused && (

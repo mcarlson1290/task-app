@@ -1,0 +1,134 @@
+# Fix Continue/Collaborate Button and Progress Count
+
+## Problems to Fix
+
+1. **Button Text**: "Continue Task" doesn't indicate collaboration - should be clearer
+2. **Progress Count**: Shows "0/2 checklist items" when it should show "1/2" (matching the 50% progress)
+
+## Solutions for Replit
+
+### 1. Update Continue Task Button Text
+
+```typescript
+// Find where the task card renders the button for in-progress tasks
+// Change from:
+<button onClick={() => handleContinueTask(task.id)}>
+  Continue Task
+</button>
+
+// To one of these options:
+<button onClick={() => handleContinueTask(task.id)}>
+  Continue/Collaborate
+</button>
+
+// OR
+<button onClick={() => handleContinueTask(task.id)}>
+  Continue Task +
+</button>
+
+// OR with an icon
+<button onClick={() => handleContinueTask(task.id)}>
+  👥 Continue Task
+</button>
+
+// OR most descriptive
+<button onClick={() => handleContinueTask(task.id)}>
+  Collaborate/Continue
+</button>
+```
+
+### 2. Fix Checklist Progress Count
+
+```typescript
+// Find where the checklist count is calculated
+// It's currently showing completed items incorrectly
+
+// WRONG - might be checking wrong property
+const completedCount = task.checklistItems?.filter(item => item.completed).length || 0;
+const totalCount = task.checklistItems?.length || 0;
+
+// RIGHT - ensure it's counting correctly
+const calculateChecklistProgress = (task) => {
+  if (!task.checklist || !Array.isArray(task.checklist)) {
+    return { completed: 0, total: 0 };
+  }
+  
+  const completedSteps = task.checklist.filter(step => 
+    step.completed === true || step.isCompleted === true
+  ).length;
+  
+  const totalSteps = task.checklist.length;
+  
+  return { completed: completedSteps, total: totalSteps };
+};
+
+// Then in the render:
+const { completed, total } = calculateChecklistProgress(task);
+
+// Display as:
+<div className="checklist-count">
+  ✓ {completed}/{total} checklist items
+</div>
+
+// Progress bar should also use same calculation
+<div className="progress-bar">
+  <div 
+    className="progress-fill" 
+    style={{ width: `${(completed / total) * 100}%` }}
+  />
+</div>
+```
+
+### 3. Ensure Data Consistency
+
+```typescript
+// When updating checklist items, make sure both are updated:
+const toggleChecklistItem = (taskId, itemIndex) => {
+  // Update the checklist item
+  const updatedTasks = tasks.map(task => {
+    if (task.id === taskId) {
+      const updatedChecklist = [...task.checklist];
+      updatedChecklist[itemIndex] = {
+        ...updatedChecklist[itemIndex],
+        completed: !updatedChecklist[itemIndex].completed
+      };
+      
+      // Recalculate progress
+      const completedCount = updatedChecklist.filter(item => item.completed).length;
+      const progress = (completedCount / updatedChecklist.length) * 100;
+      
+      return {
+        ...task,
+        checklist: updatedChecklist,
+        progress: progress,
+        checklistProgress: {
+          completed: completedCount,
+          total: updatedChecklist.length
+        }
+      };
+    }
+    return task;
+  });
+  
+  setTasks(updatedTasks);
+};
+```
+
+## Complete Instructions for Replit
+
+Tell Replit:
+
+"Fix two issues on the task cards:
+
+1. Change the 'Continue Task' button text to 'Collaborate/Continue' to better indicate that multiple people can work on the same task
+
+2. Fix the checklist count - it currently shows '0/2 checklist items' even when items are checked. Make it accurately count completed items (e.g., '1/2' when one item is checked). The count should match the progress bar percentage.
+
+Ensure the checklist count updates in real-time as items are checked/unchecked."
+
+## Expected Results
+
+- Button shows: "Collaborate/Continue" (or similar)
+- Progress shows: "✓ 1/2 checklist items" when 1 of 2 is complete
+- Progress bar shows: 50% filled when 1 of 2 is complete
+- All three (button, count, bar) update together when items are checked
