@@ -822,17 +822,6 @@ const Tasks: React.FC = () => {
             setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
           }}
         >
-          {/* All Tasks Button */}
-          <button 
-            className={`task-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={async () => {
-              setActiveFilter('all');
-              await refreshTasks();
-            }}
-          >
-            All Tasks
-          </button>
-
           {/* Category Select */}
           <select 
             value={activeFilter}
