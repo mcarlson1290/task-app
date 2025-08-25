@@ -341,7 +341,7 @@
   font-size: 14px;
   color: #374151;
   cursor: pointer;
-  min-width: 120px;
+  width: 110px;
   box-sizing: border-box;
 }
 
@@ -353,6 +353,7 @@
   border-radius: 6px;
   font-size: 14px;
   color: #374151;
+  width: 140px;
   box-sizing: border-box;
 }
 
@@ -387,7 +388,7 @@
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  min-width: 200px;
+  width: 180px;
   margin-left: auto; /* Push to right */
   box-sizing: border-box;
 }
@@ -450,6 +451,23 @@
 .btn-today:hover {
   background: #f3f4f6;
   border-color: #9ca3af;
+}
+
+/* Standardize all filter button widths */
+.btn-today {
+  width: 70px;
+}
+
+.btn-clear-filters {
+  width: 120px;
+}
+
+.btn-new-task {
+  width: 110px;
+}
+
+.btn-refresh {
+  width: 140px;
 }
 
 /* Task Content */
