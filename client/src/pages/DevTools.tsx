@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation as useWouterLocation } from 'wouter';
-import { getStoredAuth } from '@/lib/auth';
+import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { Task } from '@shared/schema';
@@ -15,19 +15,14 @@ const DevTools = () => {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const auth = getStoredAuth();
+  const { currentUser } = useUser();
 
-  // Debug the auth object
-  console.log('DevTools - Auth object:', auth);
-  console.log('DevTools - User object:', auth.user);
-  console.log('DevTools - User role:', auth.user?.role);
-  console.log('DevTools - User email:', auth.user?.email);
-  console.log('DevTools - User username:', auth.user?.username);
+  // Check access for Corporate users only
   
   // Only allow access for Corporate users (Robert and Matt)
-  const hasAccess = auth.user && 
-    auth.user.role === 'Corporate' && 
-    (auth.user.email === 'robert@growspace.farm' || auth.user.email === 'matt@growspace.farm');
+  const hasAccess = currentUser && 
+    currentUser.role === 'Corporate' && 
+    (currentUser.email === 'robert@growspace.farm' || currentUser.email === 'matt@growspace.farm');
 
   if (!hasAccess) {
     return (
@@ -171,9 +166,9 @@ const DevTools = () => {
             <CardTitle className="text-sm">Current User</CardTitle>
           </CardHeader>
           <CardContent>
-            <p><strong>Name:</strong> {auth.user?.name}</p>
-            <p><strong>Email:</strong> {auth.user?.username}</p>
-            <p><strong>Role:</strong> {auth.user?.role}</p>
+            <p><strong>Name:</strong> {currentUser?.name}</p>
+            <p><strong>Email:</strong> {currentUser?.email}</p>
+            <p><strong>Role:</strong> {currentUser?.role}</p>
           </CardContent>
         </Card>
 
