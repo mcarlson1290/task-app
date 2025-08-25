@@ -3018,7 +3018,15 @@ button {
   border-color: #2D8028;
 }
 
-/* Override: All filter elements use consistent 38px height */
+/* STRONG OVERRIDE: Force all filter elements to 38px height */
+.task-filters .filter-select,
+.task-filters .date-input,  
+.task-filters .search-box,
+.task-filters .search-input,
+.task-filters .btn-clear-filters,
+.task-filters .btn-new-task,
+.task-filters .btn-today,
+.task-filters .btn-refresh,
 .tasks-filter-container .filter-select,
 .tasks-filter-container .date-input,
 .tasks-filter-container .search-input,
@@ -3027,7 +3035,7 @@ button {
 .tasks-filter-container .btn-today,
 .tasks-filter-container .btn-refresh {
   height: 38px !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
 
 /* Refresh Tasks Button */
