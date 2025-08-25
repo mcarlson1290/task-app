@@ -941,6 +941,7 @@ const Tasks: React.FC = () => {
 
           {/* Refresh Tasks Button */}
           <button 
+            className="btn-refresh"
             onClick={async () => {
               console.log('=== REFRESHING TASKS ===');
               await refreshTasks();
@@ -948,16 +949,6 @@ const Tasks: React.FC = () => {
                 title: "Tasks Refreshed",
                 description: "All tasks reloaded successfully",
               });
-            }}
-            style={{
-              background: isRefreshing ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: isRefreshing ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              marginRight: '8px'
             }}
             disabled={isRefreshing}
             title="Refresh and reload all tasks"
