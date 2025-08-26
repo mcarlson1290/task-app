@@ -31,6 +31,7 @@ import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaf
 import { useActivityTracking } from "@/hooks/useActivityTracking";
 import { teamsAuthService } from "./services/teamsAuthService";
 import { useLocation } from "wouter";
+import { setStoredAuth } from "@/lib/auth";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -154,6 +155,17 @@ function AppContent() {
 
         console.log('Initialized user:', user.name, user.email, user.role);
         setCurrentUser(user);
+        
+        // Store in localStorage for getStoredAuth()
+        setStoredAuth({
+          id: parseInt(staffMember.id),
+          username: staffMember.email,
+          name: staffMember.fullName,
+          email: staffMember.email,
+          role: role.toLowerCase() as 'staff' | 'manager' | 'corporate',
+          location: staffMember.location,
+          createdAt: new Date().toISOString()
+        });
 
         // Initialize expected staff members if current user is corporate
         if (role === 'Corporate') {
