@@ -36,16 +36,8 @@ const Tasks: React.FC = () => {
   const [dateFilter, setDateFilter] = React.useState<string>(() => {
     const todayString = getTodayString();
     console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
-    console.log('🗓️ Current server time:', new Date().toISOString());
     return todayString;
   });
-
-  // Force refresh date filter to current date on mount
-  React.useEffect(() => {
-    const correctDate = getTodayString();
-    console.log('🗓️ Force setting date filter to current date:', correctDate);
-    setDateFilter(correctDate);
-  }, []);
 
   const [dateDropdownOpen, setDateDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -337,7 +329,7 @@ const Tasks: React.FC = () => {
     
     // Location filter
     if (!isViewingAllLocations) {
-      filtered = filtered.filter(task => task.location === currentLocation.name);
+      filtered = filtered.filter(task => task.location === currentLocation.code);
     }
 
     // Search filter
