@@ -167,15 +167,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/staff/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      // In a real system, you might want to soft delete instead
       const user = await storage.getUser(id);
+      
       if (!user) {
         return res.status(404).json({ message: "Staff member not found" });
       }
-      // For now, just mark as inactive
-      await storage.updateUser(id, { approved: false });
-      res.json({ success: true });
+      
+      // Check for active tasks assigned to this staff member
+      const tasks = await storage.getAllTasks();
+      const activeTasks = tasks.filter(task => 
+        task.assignedTo === id && 
+        task.status !== 'completed' && 
+        task.status !== 'cancelled'
+      );
+      
+      if (activeTasks.length > 0) {
+        return res.status(400).json({ 
+          message: "Cannot delete staff member with active tasks",
+          activeTasks: true,
+          activeTaskCount: activeTasks.length
+        });
+      }
+      
+      // Check for recurring tasks that might be assigned to this user's roles
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const userRoles = user.role ? user.role.split(',').map((r: string) => r.trim()) : [];
+      // Note: recurring tasks don't have assignedRoles field in current schema
+      const recurringTasksAssigned = recurringTasks.filter(rt => 
+        // For now, assume all recurring tasks could be affected
+        rt.isActive
+      );
+      
+      // Log deletion for audit purposes
+      console.log(`Attempting to delete staff member: ${user.name} (ID: ${id})`);
+      console.log(`User roles: ${userRoles.join(', ')}`);
+      console.log(`Active tasks: ${activeTasks.length}`);
+      console.log(`Recurring tasks potentially affected: ${recurringTasksAssigned.length}`);
+      
+      // Perform soft delete by marking as inactive and removing roles
+      const updatedUser = await storage.updateUser(id, { 
+        approved: false,
+        role: 'inactive',
+        name: `[DELETED] ${user.name}`
+      });
+      
+      console.log(`Staff member soft deleted: ${user.name} (ID: ${id})`);
+      
+      res.json({ 
+        success: true, 
+        deleted: {
+          id: user.id,
+          name: user.name,
+          username: user.username
+        },
+        softDelete: true,
+        message: "Staff member has been deactivated and removed from assignments"
+      });
     } catch (error) {
+      console.error('Staff deletion error:', error);
       res.status(500).json({ message: "Failed to delete staff member" });
     }
   });

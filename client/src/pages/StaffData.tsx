@@ -7,6 +7,7 @@ import {
   getAllStaff, 
   updateStaffMember, 
   addStaffMember, 
+  deleteStaffMember,
   getAvailableRoles, 
   canAssignRole,
   type StaffMember 
@@ -236,7 +237,8 @@ const StaffEditView: React.FC<{
   staff: any[];
   isManager: boolean;
   onUpdateStaff: (updatedStaff: any[]) => void;
-}> = ({ staff, isManager, onUpdateStaff }) => {
+  onDeleteStaff?: () => void;
+}> = ({ staff, isManager, onUpdateStaff, onDeleteStaff }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [showEditModal, setShowEditModal] = useState(false);
@@ -393,6 +395,7 @@ const StaffEditView: React.FC<{
             setShowEditModal(false);
             setEditingStaff(null);
           }}
+          onDelete={onDeleteStaff}
         />
       )}
     </div>
@@ -404,7 +407,8 @@ const StaffEditModal: React.FC<{
   staff: any;
   onSave: (staffData: any) => void;
   onClose: () => void;
-}> = ({ staff, onSave, onClose }) => {
+  onDelete?: () => void;
+}> = ({ staff, onSave, onClose, onDelete }) => {
   const [formData, setFormData] = useState({
     fullName: staff?.fullName || '',
     businessEmail: staff?.businessEmail || staff?.email || '',
@@ -426,6 +430,8 @@ const StaffEditModal: React.FC<{
   });
   
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const availableRoles = [
     'General Staff',
@@ -454,6 +460,42 @@ const StaffEditModal: React.FC<{
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Delete handler with double-click confirmation
+  const handleDelete = async () => {
+    if (!staff || !onDelete) return;
+
+    if (!showDeleteConfirm) {
+      // First click - show confirmation
+      setShowDeleteConfirm(true);
+      
+      // Reset confirmation after 5 seconds
+      setTimeout(() => {
+        setShowDeleteConfirm(false);
+      }, 5000);
+      return;
+    }
+    
+    // Second click - actually delete
+    setIsDeleting(true);
+    
+    try {
+      await deleteStaffMember(staff.id);
+      
+      // Close modal and trigger parent refresh
+      onDelete();
+      onClose();
+    } catch (error: any) {
+      // Handle different error types
+      if (error.message.includes('active tasks')) {
+        alert(`Cannot delete ${staff.fullName}: They have active tasks that need to be completed or reassigned first.`);
+      } else {
+        alert(`Error deleting staff member: ${error.message}`);
+      }
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -785,12 +827,28 @@ const StaffEditModal: React.FC<{
           </div>
           
           <div className="modal-actions">
-            <button type="submit" className="btn-save">
-              {staff ? 'Save Changes' : 'Add Staff Member'}
-            </button>
-            <button type="button" onClick={onClose} className="btn-cancel">
-              Cancel
-            </button>
+            {staff && onDelete && ( // Only show delete for existing staff, not new ones
+              <button 
+                type="button" 
+                className={`btn-delete ${showDeleteConfirm ? 'confirm' : ''}`}
+                onClick={handleDelete}
+                disabled={isDeleting}
+                data-testid="button-delete-staff"
+              >
+                {isDeleting ? 'Deleting...' : 
+                 showDeleteConfirm ? '⚠️ Click again to confirm delete' : 
+                 '🗑️ Delete Staff Member'}
+              </button>
+            )}
+            
+            <div className="modal-actions-right">
+              <button type="submit" className="btn-save" disabled={isDeleting} data-testid="button-save-staff">
+                {staff ? 'Save Changes' : 'Add Staff Member'}
+              </button>
+              <button type="button" onClick={onClose} className="btn-cancel" disabled={isDeleting} data-testid="button-cancel-staff">
+                Cancel
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -1181,17 +1239,6 @@ const StaffData: React.FC = () => {
 
   // Load staff data from service on component mount
   useEffect(() => {
-    const loadStaff = async () => {
-      try {
-        const allStaff = await getAllStaff();
-        setStaff(allStaff);
-        console.log('Loaded staff data:', allStaff.length, 'members');
-      } catch (error) {
-        console.error('Error loading staff data:', error);
-        setStaff([]); // Fallback to empty array
-      }
-    };
-    
     loadStaff();
   }, []);
   
@@ -1203,10 +1250,33 @@ const StaffData: React.FC = () => {
     return staff.filter(person => person.location === currentLocation.code);
   }, [staff, currentLocation.code, isViewingAllLocations, currentUser?.role]);
 
+  // Load staff data function to reuse
+  const loadStaff = async () => {
+    try {
+      const allStaff = await getAllStaff();
+      setStaff(allStaff);
+      console.log('Loaded staff data:', allStaff.length, 'members');
+    } catch (error) {
+      console.error('Error loading staff data:', error);
+      setStaff([]); // Fallback to empty array
+    }
+  };
+
   // Update staff data handler
   const handleUpdateStaff = (updatedStaff: StaffMember[]) => {
     setStaff(updatedStaff);
     // Staff service handles persistence automatically
+  };
+
+  // Delete staff handler
+  const handleDeleteStaff = async () => {
+    // Refresh staff list after deletion
+    await loadStaff();
+    
+    toast({
+      title: "Staff Member Deleted",
+      description: "Staff member has been successfully removed from the system.",
+    });
   };
 
   const handleExport = () => {
@@ -1254,6 +1324,7 @@ const StaffData: React.FC = () => {
             staff={filteredStaff}
             isManager={isManager}
             onUpdateStaff={setStaff}
+            onDeleteStaff={handleDeleteStaff}
           />
         ) : (
           <StaffAnalyticsView 

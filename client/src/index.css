@@ -1374,10 +1374,15 @@ label.error select {
 /* Modal Actions */
 .modal-actions {
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   padding: 24px;
   border-top: 1px solid #e5e7eb;
+}
+
+.modal-actions-right {
+  display: flex;
+  gap: 12px;
 }
 
 .btn-save {
@@ -1388,10 +1393,16 @@ label.error select {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  transition: all 0.2s;
 }
 
 .btn-save:hover {
   background: #236622;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-cancel {
@@ -1401,10 +1412,48 @@ label.error select {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-cancel:hover {
   background: #d1d5db;
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Delete button styling */
+.btn-delete {
+  background: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
+.btn-delete.confirm {
+  background: #ff6b6b;
+  animation: pulse 0.5s ease-in-out;
+}
+
+.btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* Mobile responsive */
@@ -1465,7 +1514,22 @@ label.error select {
   
   .modal-actions {
     flex-direction: column;
+    gap: 12px;
     padding: 16px;
+  }
+  
+  .btn-delete {
+    width: 100%;
+    order: 3; /* Put delete at bottom on mobile */
+  }
+  
+  .modal-actions-right {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .modal-actions-right button {
+    width: 100%;
   }
 }
 
