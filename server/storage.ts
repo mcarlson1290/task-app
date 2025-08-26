@@ -2211,5 +2211,284 @@ class DatabaseStorage implements IStorage {
   async clearAllData(): Promise<boolean> { return false; }
 }
 
-// Use MemStorage for now as it has full implementation
-export const storage = new MemStorage();
+// Hybrid Storage: Database for users/staff, Memory for other features
+class HybridStorage implements IStorage {
+  private dbStorage = new DatabaseStorage();
+  private memStorage = new MemStorage();
+
+  // User methods - use DATABASE for persistence
+  async getUser(id: number): Promise<User | undefined> {
+    return this.dbStorage.getUser(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.dbStorage.getUserByUsername(username);
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    return this.dbStorage.createUser(userData);
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    return this.dbStorage.updateUser(id, updates);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.dbStorage.getAllUsers();
+  }
+
+  // All other methods - use MEMORY storage to maintain current functionality
+  async getTask(id: number): Promise<Task | undefined> {
+    return this.memStorage.getTask(id);
+  }
+
+  async getTasksByUser(userId: number): Promise<Task[]> {
+    return this.memStorage.getTasksByUser(userId);
+  }
+
+  async getAllTasks(): Promise<Task[]> {
+    return this.memStorage.getAllTasks();
+  }
+
+  async getTasksByLocation(locationId: string): Promise<Task[]> {
+    return this.memStorage.getTasksByLocation(locationId);
+  }
+
+  async createTask(taskData: InsertTask): Promise<Task> {
+    return this.memStorage.createTask(taskData);
+  }
+
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
+    return this.memStorage.updateTask(id, updates);
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    return this.memStorage.deleteTask(id);
+  }
+
+  async resetTasks(): Promise<boolean> {
+    return this.memStorage.resetTasks();
+  }
+
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    return this.memStorage.getInventoryItem(id);
+  }
+
+  async getAllInventoryItems(): Promise<InventoryItem[]> {
+    return this.memStorage.getAllInventoryItems();
+  }
+
+  async getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]> {
+    return this.memStorage.getInventoryItemsByLocation(locationId);
+  }
+
+  async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
+    return this.memStorage.createInventoryItem(itemData);
+  }
+
+  async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
+    return this.memStorage.updateInventoryItem(id, updates);
+  }
+
+  async deleteInventoryItem(id: number): Promise<boolean> {
+    return this.memStorage.deleteInventoryItem(id);
+  }
+
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return this.memStorage.getLowStockItems();
+  }
+
+  async getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]> {
+    return this.memStorage.getLowStockItemsByLocation(locationId);
+  }
+
+  async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
+    return this.memStorage.addInventoryStock(data);
+  }
+
+  async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
+    return this.memStorage.getTrainingModule(id);
+  }
+
+  async getAllTrainingModules(): Promise<TrainingModule[]> {
+    return this.memStorage.getAllTrainingModules();
+  }
+
+  async createTrainingModule(moduleData: InsertTrainingModule): Promise<TrainingModule> {
+    return this.memStorage.createTrainingModule(moduleData);
+  }
+
+  async getUserProgress(userId: number): Promise<UserProgress[]> {
+    return this.memStorage.getUserProgress(userId);
+  }
+
+  async updateUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
+    return this.memStorage.updateUserProgress(progressData);
+  }
+
+  async createTaskLog(logData: InsertTaskLog): Promise<TaskLog> {
+    return this.memStorage.createTaskLog(logData);
+  }
+
+  async getTaskLogs(taskId: number): Promise<TaskLog[]> {
+    return this.memStorage.getTaskLogs(taskId);
+  }
+
+  async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
+    return this.memStorage.getRecurringTask(id);
+  }
+
+  async getAllRecurringTasks(): Promise<RecurringTask[]> {
+    return this.memStorage.getAllRecurringTasks();
+  }
+
+  async getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]> {
+    return this.memStorage.getRecurringTasksByLocation(locationId);
+  }
+
+  async createRecurringTask(taskData: InsertRecurringTask): Promise<RecurringTask> {
+    return this.memStorage.createRecurringTask(taskData);
+  }
+
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
+    return this.memStorage.updateRecurringTask(id, updates);
+  }
+
+  async deleteRecurringTask(id: number): Promise<boolean> {
+    return this.memStorage.deleteRecurringTask(id);
+  }
+
+  async resetRecurringTasks(): Promise<boolean> {
+    return this.memStorage.resetRecurringTasks();
+  }
+
+  async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
+    return this.memStorage.getGrowingSystem(id);
+  }
+
+  async getAllGrowingSystems(): Promise<GrowingSystem[]> {
+    return this.memStorage.getAllGrowingSystems();
+  }
+
+  async getGrowingSystemsByLocation(locationId: string): Promise<GrowingSystem[]> {
+    return this.memStorage.getGrowingSystemsByLocation(locationId);
+  }
+
+  async createGrowingSystem(systemData: InsertGrowingSystem): Promise<GrowingSystem> {
+    return this.memStorage.createGrowingSystem(systemData);
+  }
+
+  async updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined> {
+    return this.memStorage.updateGrowingSystem(id, updates);
+  }
+
+  async deleteGrowingSystem(id: number): Promise<boolean> {
+    return this.memStorage.deleteGrowingSystem(id);
+  }
+
+  async getTray(id: string): Promise<Tray | undefined> {
+    return this.memStorage.getTray(id);
+  }
+
+  async getAllTrays(): Promise<Tray[]> {
+    return this.memStorage.getAllTrays();
+  }
+
+  async getTraysByLocation(locationId: string): Promise<Tray[]> {
+    return this.memStorage.getTraysByLocation(locationId);
+  }
+
+  async createTray(trayData: InsertTray): Promise<Tray> {
+    return this.memStorage.createTray(trayData);
+  }
+
+  async updateTray(id: string, updates: Partial<Tray>): Promise<Tray | undefined> {
+    return this.memStorage.updateTray(id, updates);
+  }
+
+  async deleteTray(id: string): Promise<boolean> {
+    return this.memStorage.deleteTray(id);
+  }
+
+  async splitTray(originalTrayId: string, splitData: { splitCount: number; newTrayIds: string[] }): Promise<Tray[]> {
+    return this.memStorage.splitTray(originalTrayId, splitData);
+  }
+
+  async createTrayMovement(movementData: InsertTrayMovement): Promise<TrayMovement> {
+    return this.memStorage.createTrayMovement(movementData);
+  }
+
+  async getTrayMovements(trayId: string): Promise<TrayMovement[]> {
+    return this.memStorage.getTrayMovements(trayId);
+  }
+
+  async addInventoryTransaction(transactionData: InsertInventoryTransaction): Promise<InventoryTransaction> {
+    return this.memStorage.addInventoryTransaction(transactionData);
+  }
+
+  async getInventoryTransactions(itemId?: number): Promise<InventoryTransaction[]> {
+    return this.memStorage.getInventoryTransactions(itemId);
+  }
+
+  async getCourseAssignment(id: number): Promise<CourseAssignment | undefined> {
+    return this.memStorage.getCourseAssignment(id);
+  }
+
+  async getAllCourseAssignments(): Promise<CourseAssignment[]> {
+    return this.memStorage.getAllCourseAssignments();
+  }
+
+  async getCourseAssignmentsByUser(userId: number): Promise<CourseAssignment[]> {
+    return this.memStorage.getCourseAssignmentsByUser(userId);
+  }
+
+  async createCourseAssignment(assignmentData: InsertCourseAssignment): Promise<CourseAssignment> {
+    return this.memStorage.createCourseAssignment(assignmentData);
+  }
+
+  async updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined> {
+    return this.memStorage.updateCourseAssignment(id, updates);
+  }
+
+  async deleteCourseAssignment(id: number): Promise<boolean> {
+    return this.memStorage.deleteCourseAssignment(id);
+  }
+
+  async getNotification(id: number): Promise<Notification | undefined> {
+    return this.memStorage.getNotification(id);
+  }
+
+  async getAllNotifications(): Promise<Notification[]> {
+    return this.memStorage.getAllNotifications();
+  }
+
+  async getNotificationsByUser(userId: number): Promise<Notification[]> {
+    return this.memStorage.getNotificationsByUser(userId);
+  }
+
+  async createNotification(notificationData: InsertNotification): Promise<Notification> {
+    return this.memStorage.createNotification(notificationData);
+  }
+
+  async updateNotification(id: number, updates: Partial<Notification>): Promise<Notification | undefined> {
+    return this.memStorage.updateNotification(id, updates);
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    return this.memStorage.markNotificationAsRead(id);
+  }
+
+  async markAllNotificationsAsRead(userId: number): Promise<void> {
+    return this.memStorage.markAllNotificationsAsRead(userId);
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    return this.memStorage.deleteNotification(id);
+  }
+
+  async clearAllData(): Promise<boolean> {
+    return this.memStorage.clearAllData();
+  }
+}
+
+export const storage = new HybridStorage();
