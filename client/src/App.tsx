@@ -160,11 +160,23 @@ function AppContent() {
         setStoredAuth({
           id: parseInt(staffMember.id),
           username: staffMember.email,
+          password: '', // Not needed for client-side auth with SSO
           name: staffMember.fullName,
-          email: staffMember.email,
           role: role.toLowerCase() as 'staff' | 'manager' | 'corporate',
+          approved: true, // SSO users are pre-approved
           location: staffMember.location,
-          createdAt: new Date().toISOString()
+          payType: 'hourly',
+          payRate: 16.00,
+          businessEmail: staffMember.email,
+          personalEmail: null,
+          homePhone: null,
+          businessPhone: null,
+          mobilePhone: null,
+          emergencyContactName: null,
+          emergencyRelationship: null,
+          emergencyPhone: null,
+          lastActive: null,
+          createdAt: new Date()
         });
 
         // Initialize expected staff members if current user is corporate

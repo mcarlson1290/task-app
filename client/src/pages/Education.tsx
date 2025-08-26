@@ -164,7 +164,7 @@ const Education: React.FC = () => {
       
       // Show success message with role assignment confirmation
       setTimeout(() => {
-        alert(`🎉 Congratulations! You've completed "${completedCourse.title}" and earned the ${completedCourse.roleAwarded} role!\n\n${response.message}`);
+        alert(`🎉 Congratulations! You've completed "${completedCourse.title}" and earned the ${completedCourse.roleAwarded} role!`);
       }, 500);
       
       // Refresh user authentication to show updated role
