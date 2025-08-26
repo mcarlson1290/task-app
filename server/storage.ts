@@ -1974,8 +1974,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Database Storage Implementation (switching from MemStorage to use database)
-class DatabaseStorage implements IStorage {
+// Database Storage Implementation
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -1986,45 +1986,58 @@ class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
     return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return db.select().from(users);
+    return await db.select().from(users);
   }
 
-  // Task methods
   async getTask(id: number): Promise<Task | undefined> {
     const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
     return task || undefined;
   }
 
   async getTasksByUser(userId: number): Promise<Task[]> {
-    return db.select().from(tasks).where(eq(tasks.userId, userId));
+    return await db.select().from(tasks).where(eq(tasks.assignedTo, userId));
   }
 
   async getAllTasks(): Promise<Task[]> {
-    return db.select().from(tasks);
+    return await db.select().from(tasks);
   }
 
   async getTasksByLocation(locationId: string): Promise<Task[]> {
-    return db.select().from(tasks).where(eq(tasks.location, locationId));
+    return await db.select().from(tasks).where(eq(tasks.location, locationId));
   }
 
-  async createTask(taskData: InsertTask): Promise<Task> {
-    const [task] = await db.insert(tasks).values(taskData).returning();
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const [task] = await db
+      .insert(tasks)
+      .values(insertTask)
+      .returning();
     return task;
   }
 
   async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
-    const [task] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
+    const [task] = await db
+      .update(tasks)
+      .set(updates)
+      .where(eq(tasks.id, id))
+      .returning();
     return task || undefined;
   }
 
@@ -2038,27 +2051,33 @@ class DatabaseStorage implements IStorage {
     return true;
   }
 
-  // Inventory methods (stub implementation - keeping interface)
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
     const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
     return item || undefined;
   }
 
   async getAllInventoryItems(): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems);
+    return await db.select().from(inventoryItems);
   }
 
   async getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems).where(eq(inventoryItems.location, locationId));
+    return await db.select().from(inventoryItems).where(eq(inventoryItems.location, locationId));
   }
 
-  async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
-    const [item] = await db.insert(inventoryItems).values(itemData).returning();
+  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
+    const [item] = await db
+      .insert(inventoryItems)
+      .values(insertItem)
+      .returning();
     return item;
   }
 
   async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
-    const [item] = await db.update(inventoryItems).set(updates).where(eq(inventoryItems.id, id)).returning();
+    const [item] = await db
+      .update(inventoryItems)
+      .set(updates)
+      .where(eq(inventoryItems.id, id))
+      .returning();
     return item || undefined;
   }
 
@@ -2068,103 +2087,111 @@ class DatabaseStorage implements IStorage {
   }
 
   async getLowStockItems(): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems).where(sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`);
+    return await db.select().from(inventoryItems).where(sql`quantity <= reorder_level`);
   }
 
   async getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems).where(and(
-      eq(inventoryItems.location, locationId),
-      sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`
-    ));
+    return await db.select().from(inventoryItems)
+      .where(and(eq(inventoryItems.location, locationId), sql`quantity <= reorder_level`));
   }
 
   async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
-    // Get current item
-    const [currentItem] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, data.itemId));
-    if (!currentItem) throw new Error('Item not found');
-
-    // Calculate weighted average cost
-    const currentValue = (currentItem.currentStock || 0) * (currentItem.averageCost || 0);
-    const newValue = data.quantity * data.unitCost;
-    const totalQuantity = (currentItem.currentStock || 0) + data.quantity;
-    const newAverageCost = totalQuantity > 0 ? (currentValue + newValue) / totalQuantity : 0;
-
-    // Update item
-    const [updatedItem] = await db.update(inventoryItems)
+    // Add to existing stock and update weighted average cost
+    const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, data.itemId));
+    if (!item) throw new Error('Item not found');
+    
+    const newQuantity = item.quantity + data.quantity;
+    const newTotalCost = (item.quantity * item.unitCost) + (data.quantity * data.unitCost);
+    const newUnitCost = newTotalCost / newQuantity;
+    
+    const [updatedItem] = await db
+      .update(inventoryItems)
       .set({
-        currentStock: totalQuantity,
-        averageCost: newAverageCost,
+        quantity: newQuantity,
+        unitCost: newUnitCost,
         lastRestocked: new Date()
       })
       .where(eq(inventoryItems.id, data.itemId))
       .returning();
-
+    
     return updatedItem;
   }
 
-  // Training methods (stub implementation)
+  // Training methods (basic implementation)
   async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
     const [module] = await db.select().from(trainingModules).where(eq(trainingModules.id, id));
     return module || undefined;
   }
 
   async getAllTrainingModules(): Promise<TrainingModule[]> {
-    return db.select().from(trainingModules);
+    return await db.select().from(trainingModules);
   }
 
-  async createTrainingModule(moduleData: InsertTrainingModule): Promise<TrainingModule> {
-    const [module] = await db.insert(trainingModules).values(moduleData).returning();
+  async createTrainingModule(insertModule: InsertTrainingModule): Promise<TrainingModule> {
+    const [module] = await db
+      .insert(trainingModules)
+      .values(insertModule)
+      .returning();
     return module;
   }
 
   async getUserProgress(userId: number): Promise<UserProgress[]> {
-    return db.select().from(userProgress).where(eq(userProgress.userId, userId));
+    return await db.select().from(userProgress).where(eq(userProgress.userId, userId));
   }
 
-  async updateUserProgress(progressData: InsertUserProgress): Promise<UserProgress> {
-    const [progress] = await db.insert(userProgress).values(progressData)
+  async updateUserProgress(progress: InsertUserProgress): Promise<UserProgress> {
+    const [updated] = await db
+      .insert(userProgress)
+      .values(progress)
       .onConflictDoUpdate({
         target: [userProgress.userId, userProgress.moduleId],
-        set: {
-          completed: progressData.completed,
-          completedAt: progressData.completedAt,
-          progress: progressData.progress
-        }
-      }).returning();
-    return progress;
+        set: progress
+      })
+      .returning();
+    return updated;
   }
 
   // Task logs
-  async createTaskLog(logData: InsertTaskLog): Promise<TaskLog> {
-    const [log] = await db.insert(taskLogs).values(logData).returning();
+  async createTaskLog(insertLog: InsertTaskLog): Promise<TaskLog> {
+    const [log] = await db
+      .insert(taskLogs)
+      .values(insertLog)
+      .returning();
     return log;
   }
 
   async getTaskLogs(taskId: number): Promise<TaskLog[]> {
-    return db.select().from(taskLogs).where(eq(taskLogs.taskId, taskId));
+    return await db.select().from(taskLogs).where(eq(taskLogs.taskId, taskId));
   }
 
-  // Recurring tasks - KEY METHODS FOR THE FIX
+  // Recurring tasks
   async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
     const [task] = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id));
     return task || undefined;
   }
 
   async getAllRecurringTasks(): Promise<RecurringTask[]> {
-    return db.select().from(recurringTasks);
+    return await db.select().from(recurringTasks);
   }
 
   async getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]> {
-    return db.select().from(recurringTasks).where(eq(recurringTasks.location, locationId));
+    return await db.select().from(recurringTasks).where(eq(recurringTasks.location, locationId));
   }
 
-  async createRecurringTask(taskData: InsertRecurringTask): Promise<RecurringTask> {
-    const [task] = await db.insert(recurringTasks).values(taskData).returning();
+  async createRecurringTask(insertTask: InsertRecurringTask): Promise<RecurringTask> {
+    const [task] = await db
+      .insert(recurringTasks)
+      .values(insertTask)
+      .returning();
     return task;
   }
 
   async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
-    const [task] = await db.update(recurringTasks).set(updates).where(eq(recurringTasks.id, id)).returning();
+    const [task] = await db
+      .update(recurringTasks)
+      .set(updates)
+      .where(eq(recurringTasks.id, id))
+      .returning();
     return task || undefined;
   }
 
@@ -2178,38 +2205,66 @@ class DatabaseStorage implements IStorage {
     return true;
   }
 
-  // Other stub implementations to satisfy interface
-  async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> { return undefined; }
-  async getAllGrowingSystems(): Promise<GrowingSystem[]> { return []; }
-  async getGrowingSystemsByLocation(locationId: string): Promise<GrowingSystem[]> { return []; }
-  async createGrowingSystem(systemData: InsertGrowingSystem): Promise<GrowingSystem> { throw new Error('Not implemented'); }
-  async updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined> { return undefined; }
-  async deleteGrowingSystem(id: number): Promise<boolean> { return false; }
-  
+  // Stub implementations for remaining methods
+  async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
+    const [system] = await db.select().from(growingSystems).where(eq(growingSystems.id, id));
+    return system || undefined;
+  }
+
+  async getAllGrowingSystems(): Promise<GrowingSystem[]> {
+    return await db.select().from(growingSystems);
+  }
+
+  async getGrowingSystemsByLocation(locationId: string): Promise<GrowingSystem[]> {
+    return await db.select().from(growingSystems).where(eq(growingSystems.location, locationId));
+  }
+
+  async createGrowingSystem(insertSystem: InsertGrowingSystem): Promise<GrowingSystem> {
+    const [system] = await db
+      .insert(growingSystems)
+      .values(insertSystem)
+      .returning();
+    return system;
+  }
+
+  async updateGrowingSystem(id: number, updates: Partial<GrowingSystem>): Promise<GrowingSystem | undefined> {
+    const [system] = await db
+      .update(growingSystems)
+      .set(updates)
+      .where(eq(growingSystems.id, id))
+      .returning();
+    return system || undefined;
+  }
+
+  async deleteGrowingSystem(id: number): Promise<boolean> {
+    const result = await db.delete(growingSystems).where(eq(growingSystems.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Simplified stubs for other methods to satisfy interface
   async getTray(id: string): Promise<Tray | undefined> { return undefined; }
   async getAllTrays(): Promise<Tray[]> { return []; }
   async getTraysByLocation(locationId: string): Promise<Tray[]> { return []; }
-  async createTray(trayData: InsertTray): Promise<Tray> { throw new Error('Not implemented'); }
+  async createTray(tray: InsertTray): Promise<Tray> { throw new Error('Not implemented'); }
   async updateTray(id: string, updates: Partial<Tray>): Promise<Tray | undefined> { return undefined; }
   async deleteTray(id: string): Promise<boolean> { return false; }
-  
-  async createTrayMovement(movementData: InsertTrayMovement): Promise<TrayMovement> { throw new Error('Not implemented'); }
-  async getTrayMovements(trayId: string): Promise<TrayMovement[]> { return []; }
-  
-  async addInventoryTransaction(transactionData: InsertInventoryTransaction): Promise<InventoryTransaction> { throw new Error('Not implemented'); }
-  async getInventoryTransactions(itemId?: number): Promise<InventoryTransaction[]> { return []; }
-  
-  async createCourseAssignment(assignmentData: InsertCourseAssignment): Promise<CourseAssignment> { throw new Error('Not implemented'); }
-  async getCourseAssignments(userId?: number): Promise<CourseAssignment[]> { return []; }
+  async getTrayMovement(id: number): Promise<TrayMovement | undefined> { return undefined; }
+  async getAllTrayMovements(): Promise<TrayMovement[]> { return []; }
+  async getTrayMovementsByTray(trayId: string): Promise<TrayMovement[]> { return []; }
+  async createTrayMovement(movement: InsertTrayMovement): Promise<TrayMovement> { throw new Error('Not implemented'); }
+  async getInventoryTransactions(): Promise<InventoryTransaction[]> { return []; }
+  async getInventoryTransactionsByItem(itemId: number): Promise<InventoryTransaction[]> { return []; }
+  async createInventoryTransaction(transaction: InsertInventoryTransaction): Promise<InventoryTransaction> { throw new Error('Not implemented'); }
+  async getAllCourseAssignments(): Promise<CourseAssignment[]> { return []; }
+  async getCourseAssignmentsByUser(userId: number): Promise<CourseAssignment[]> { return []; }
+  async createCourseAssignment(assignment: InsertCourseAssignment): Promise<CourseAssignment> { throw new Error('Not implemented'); }
   async updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined> { return undefined; }
-  
-  async createNotification(notificationData: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
-  async getUserNotifications(userId: number): Promise<Notification[]> { return []; }
+  async deleteCourseAssignment(id: number): Promise<boolean> { return false; }
+  async getAllNotifications(): Promise<Notification[]> { return []; }
+  async getNotificationsByUser(userId: number): Promise<Notification[]> { return []; }
+  async createNotification(notification: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
   async markNotificationAsRead(id: number): Promise<boolean> { return false; }
-  
-  async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> { return false; }
-  async clearAllData(): Promise<boolean> { return false; }
+  async deleteNotification(id: number): Promise<boolean> { return false; }
 }
 
-// Use MemStorage for now as it has full implementation
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
