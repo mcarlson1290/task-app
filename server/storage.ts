@@ -2265,6 +2265,88 @@ export class DatabaseStorage implements IStorage {
   async createNotification(notification: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
   async markNotificationAsRead(id: number): Promise<boolean> { return false; }
   async deleteNotification(id: number): Promise<boolean> { return false; }
+
+  // Generate task instances from recurring tasks
+  private async generateTaskInstances(recurringTask: RecurringTask): Promise<void> {
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 30); // Generate 30 days worth
+    
+    console.log(`Generating instances for: ${recurringTask.title}`);
+    
+    let currentDate = new Date(today);
+    while (currentDate <= endDate) {
+      if (this.shouldCreateTaskForDate(recurringTask, currentDate)) {
+        // Check if task already exists for this date
+        const existingTasks = await db.select().from(tasks).where(
+          and(
+            eq(tasks.recurringTaskId, recurringTask.id),
+            sql`DATE(due_date) = DATE(${currentDate.toISOString()})`
+          )
+        );
+        
+        if (existingTasks.length === 0) {
+          const taskData: InsertTask = {
+            title: recurringTask.title,
+            description: recurringTask.description,
+            type: recurringTask.type,
+            location: recurringTask.location,
+            estimatedTime: recurringTask.estimatedTime,
+            priority: recurringTask.priority,
+            checklist: recurringTask.checklist,
+            isRecurring: true,
+            recurringTaskId: recurringTask.id,
+            dueDate: new Date(currentDate),
+            visibleFromDate: new Date(currentDate),
+            status: 'pending'
+          };
+          
+          await db.insert(tasks).values(taskData);
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+
+  private shouldCreateTaskForDate(recurringTask: RecurringTask, date: Date): boolean {
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    switch (recurringTask.frequency) {
+      case 'daily':
+        return true;
+      case 'weekly':
+        return recurringTask.daysOfWeek?.includes(dayOfWeek) || false;
+      case 'bi-weekly':
+        const weeksSinceEpoch = Math.floor(date.getTime() / (1000 * 60 * 60 * 24 * 7));
+        return weeksSinceEpoch % 2 === 0 && (recurringTask.daysOfWeek?.includes(dayOfWeek) || false);
+      case 'monthly':
+        return date.getDate() === (recurringTask.dayOfMonth || 1);
+      default:
+        return false;
+    }
+  }
+
+  // Generate all task instances for all recurring tasks
+  async generateAllTaskInstances(): Promise<void> {
+    const recurringTasks = await this.getAllRecurringTasks();
+    console.log(`Generating task instances for ${recurringTasks.length} recurring tasks`);
+    
+    for (const recurringTask of recurringTasks) {
+      if (recurringTask.isActive) {
+        await this.generateTaskInstances(recurringTask);
+      }
+    }
+    
+    console.log('Task generation complete');
+  }
+
+  async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> { 
+    const recurringTask = await this.getRecurringTask(recurringTaskId);
+    if (!recurringTask) return false;
+    
+    await this.generateTaskInstances(recurringTask);
+    return true;
+  }
 }
 
 export const storage = new DatabaseStorage();
