@@ -28,6 +28,14 @@ const Education: React.FC = () => {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const isCorporateManager = auth.user?.role === 'corporate';
   const isManager = auth.user?.role === 'manager' || auth.user?.role === 'corporate';
+  
+  // Debug logging for create course button visibility
+  console.log('🎓 Education Page Debug:', {
+    userRole: auth.user?.role,
+    isCorporateManager,
+    isManager,
+    userName: auth.user?.name
+  });
   const currentUser = auth.user as User;
   // Query for course assignments
   const { data: courseAssignments = [] } = useQuery<CourseAssignment[]>({
