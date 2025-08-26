@@ -295,17 +295,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate task instances from recurring tasks
-  app.post("/api/tasks/generate", async (req, res) => {
-    try {
-      await storage.generateAllTaskInstances();
-      res.json({ message: "Task instances generated successfully" });
-    } catch (error) {
-      console.error('Task generation error:', error);
-      res.status(500).json({ message: "Failed to generate task instances" });
-    }
-  });
-
   app.patch("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
