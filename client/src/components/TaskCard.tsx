@@ -307,6 +307,39 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
           </div>
         )}
 
+        {/* Task Date Info - Shows completion date, overdue status, or due date */}
+        <div className="task-date-info text-xs text-gray-500 mb-3">
+          {(() => {
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (task.status === 'completed' && task.completedAt) {
+              const completedDate = new Date(task.completedAt);
+              return `✅ Completed ${completedDate.toLocaleDateString()}`;
+            }
+            
+            if (task.status === 'skipped' && task.skippedAt) {
+              const skippedDate = new Date(task.skippedAt);
+              return `⏭️ Skipped ${skippedDate.toLocaleDateString()}`;
+            }
+            
+            if (task.dueDate) {
+              const dueDateStr = typeof task.dueDate === 'string' ? 
+                task.dueDate.split('T')[0] : 
+                task.dueDate.toISOString().split('T')[0];
+              
+              if (dueDateStr < today && (task.status === 'pending' || task.status === 'in_progress')) {
+                const overdueDays = Math.floor(
+                  (new Date(today).getTime() - new Date(dueDateStr).getTime()) / (1000 * 60 * 60 * 24)
+                );
+                return `⚠️ ${overdueDays} day${overdueDays === 1 ? '' : 's'} overdue`;
+              }
+              return `📅 Due ${new Date(dueDateStr).toLocaleDateString()}`;
+            }
+            
+            return '';
+          })()}
+        </div>
+
         {/* Action button - centered */}
         <div className="task-actions flex justify-center mt-4">
           {isPending && (

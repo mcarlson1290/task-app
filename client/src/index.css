@@ -48,6 +48,28 @@
   }
 }
 
+/* Enhanced Task Card States */
+.task-card.completed {
+  opacity: 0.8;
+  background: linear-gradient(to right, rgba(34, 197, 94, 0.05) 0%, transparent 100%) !important;
+}
+
+.task-card.skipped {
+  opacity: 0.7;
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.05) 0%, transparent 100%) !important;
+}
+
+/* Task date info styling */
+.task-date-info {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+  text-align: center;
+}
+
 /* Login Page Styles */
 .login-page {
   display: flex;
