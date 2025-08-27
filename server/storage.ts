@@ -2049,7 +2049,9 @@ class DatabaseStorage implements IStorage {
   }
 
   async getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems).where(eq(inventoryItems.location, locationId));
+    // Note: Current schema doesn't have location field for inventory items
+    // Return all items for now - location filtering can be added later if needed
+    return db.select().from(inventoryItems);
   }
 
   async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
@@ -2072,10 +2074,9 @@ class DatabaseStorage implements IStorage {
   }
 
   async getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return db.select().from(inventoryItems).where(and(
-      eq(inventoryItems.location, locationId),
-      sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`
-    ));
+    // Note: Current schema doesn't have location field for inventory items
+    // Return all low stock items for now - location filtering can be added later if needed
+    return db.select().from(inventoryItems).where(sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`);
   }
 
   async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
@@ -2084,7 +2085,7 @@ class DatabaseStorage implements IStorage {
     if (!currentItem) throw new Error('Item not found');
 
     // Calculate weighted average cost
-    const currentValue = (currentItem.currentStock || 0) * (currentItem.averageCost || 0);
+    const currentValue = (currentItem.currentStock || 0) * (currentItem.avgCostPerUnit || 0);
     const newValue = data.quantity * data.unitCost;
     const totalQuantity = (currentItem.currentStock || 0) + data.quantity;
     const newAverageCost = totalQuantity > 0 ? (currentValue + newValue) / totalQuantity : 0;
@@ -2093,7 +2094,8 @@ class DatabaseStorage implements IStorage {
     const [updatedItem] = await db.update(inventoryItems)
       .set({
         currentStock: totalQuantity,
-        averageCost: newAverageCost,
+        avgCostPerUnit: newAverageCost,
+        totalValue: totalQuantity * newAverageCost,
         lastRestocked: new Date()
       })
       .where(eq(inventoryItems.id, data.itemId))
@@ -2271,39 +2273,39 @@ class HybridStorage implements IStorage {
   }
 
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
-    return this.memStorage.getInventoryItem(id);
+    return this.dbStorage.getInventoryItem(id);
   }
 
   async getAllInventoryItems(): Promise<InventoryItem[]> {
-    return this.memStorage.getAllInventoryItems();
+    return this.dbStorage.getAllInventoryItems();
   }
 
   async getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return this.memStorage.getInventoryItemsByLocation(locationId);
+    return this.dbStorage.getInventoryItemsByLocation(locationId);
   }
 
   async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
-    return this.memStorage.createInventoryItem(itemData);
+    return this.dbStorage.createInventoryItem(itemData);
   }
 
   async updateInventoryItem(id: number, updates: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
-    return this.memStorage.updateInventoryItem(id, updates);
+    return this.dbStorage.updateInventoryItem(id, updates);
   }
 
   async deleteInventoryItem(id: number): Promise<boolean> {
-    return this.memStorage.deleteInventoryItem(id);
+    return this.dbStorage.deleteInventoryItem(id);
   }
 
   async getLowStockItems(): Promise<InventoryItem[]> {
-    return this.memStorage.getLowStockItems();
+    return this.dbStorage.getLowStockItems();
   }
 
   async getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    return this.memStorage.getLowStockItemsByLocation(locationId);
+    return this.dbStorage.getLowStockItemsByLocation(locationId);
   }
 
   async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
-    return this.memStorage.addInventoryStock(data);
+    return this.dbStorage.addInventoryStock(data);
   }
 
   async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
