@@ -399,82 +399,27 @@ const Tasks: React.FC = () => {
       const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
-        // Rule 1: Show overdue tasks when viewing today, BUT NOT if they're completed or skipped
-        if (isViewingToday && isOverdue(task)) {
-          // Completed or skipped overdue tasks should stay on their completion date, not flow
-          if (task.status === 'completed' || task.status === 'skipped') {
-            // Get the appropriate completion date based on status
-            const completionDate = task.status === 'completed' ? task.completedAt : task.skippedAt;
-            const completedDate = completionDate ? 
-              new Date(completionDate).toISOString().split('T')[0] : 
-              null;
-            
-            // If task was completed/skipped on a different date, don't show it on today
-            if (completedDate && completedDate !== dateFilter) {
-              return false;
-            }
-          }
-          return true;
+        // Handle completed/skipped tasks - they ONLY show on their action date
+        if (task.status === 'completed' || task.status === 'skipped') {
+          const actionDate = (task.completedAt || task.skippedAt || task.dueDate);
+          const actionDateStr = actionDate ? new Date(actionDate).toISOString().split('T')[0] : null;
+          return actionDateStr === dateFilter;
         }
         
-        // Rule 2: Check task visibility based on type and frequency
+        // For pending/in-progress tasks
         const taskDueDate = task.dueDate;
         if (!taskDueDate) return false;
         
-        // Format the task due date for comparison
         const taskDateStr = formatDateForComparison(taskDueDate);
+        const isTaskOverdue = isOverdue(task) && (task.status === 'pending' || task.status === 'in_progress');
         
-        // Get recurring task frequency if available
-        const frequency = '';
-        
-        // For monthly tasks - visible from 1st to due date
-        if (frequency.includes('monthly')) {
-          const taskMonth = taskDateStr.substring(0, 7); // YYYY-MM
-          const selectedMonth = dateFilter.substring(0, 7);
-          if (taskMonth === selectedMonth) {
-            const selectedDay = parseInt(dateFilter.substring(8));
-            const dueDay = parseInt(taskDateStr.substring(8));
-            return selectedDay <= dueDay;
-          }
+        if (isTaskOverdue) {
+          // Overdue tasks show ONLY on today
+          return dateFilter === today;
+        } else {
+          // Non-overdue tasks show on their due date
+          return taskDateStr === dateFilter;
         }
-        
-        // For bi-weekly tasks
-        if (frequency.includes('bi-weekly') || frequency.includes('biweekly')) {
-          const taskMonth = taskDateStr.substring(0, 7);
-          const selectedMonth = dateFilter.substring(0, 7);
-          if (taskMonth === selectedMonth) {
-            const selectedDay = parseInt(dateFilter.substring(8));
-            const dueDay = parseInt(taskDateStr.substring(8));
-            
-            // First half: due on 14th, visible days 1-14
-            if (dueDay === 14) {
-              return selectedDay >= 1 && selectedDay <= 14;
-            }
-            // Second half: due on last day, visible days 15-end
-            if (dueDay >= 28) { // Last day of month
-              return selectedDay >= 15;
-            }
-          }
-        }
-        
-        // For regular tasks - show on due date, OR show completed/skipped tasks on their completion date
-        if (taskDateStr === dateFilter) {
-          return true;
-        }
-        
-        // Show completed/skipped tasks on the date they were completed, regardless of original due date
-        if (task.status === 'completed' || task.status === 'skipped') {
-          const completionDate = task.status === 'completed' ? task.completedAt : task.skippedAt;
-          const completedDate = completionDate ? 
-            new Date(completionDate).toISOString().split('T')[0] : 
-            null;
-          
-          if (completedDate === dateFilter) {
-            return true;
-          }
-        }
-        
-        return false;
       });
       
       console.log(`📅 DATE FILTER ACTIVE - After: ${filtered.length} tasks`);

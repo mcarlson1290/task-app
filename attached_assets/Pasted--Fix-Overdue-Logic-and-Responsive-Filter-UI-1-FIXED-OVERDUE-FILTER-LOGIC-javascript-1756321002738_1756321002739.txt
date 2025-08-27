@@ -1,0 +1,389 @@
+# 🔧 Fix Overdue Logic and Responsive Filter UI
+
+## 1. FIXED OVERDUE FILTER LOGIC
+
+```javascript
+// Updated filter logic with correct overdue handling
+const filterTasksByDate = (tasks, selectedDate, filters) => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  return tasks.filter(task => {
+    // DATE FILTER WITH CORRECTED OVERDUE LOGIC
+    if (task.status === 'completed' || task.status === 'skipped') {
+      // Completed/skipped tasks ONLY show on their action date
+      const actionDate = (task.completedAt || task.skippedAt || task.dueDate).split('T')[0];
+      if (actionDate !== selectedDate) {
+        return false;
+      }
+    } else {
+      // For pending/in-progress tasks
+      const isOverdue = task.dueDate < today && (task.status === 'pending' || task.status === 'in_progress');
+      
+      if (isOverdue) {
+        // Overdue tasks show ONLY on today
+        if (selectedDate !== today) {
+          return false;
+        }
+      } else {
+        // Non-overdue tasks show on their due date
+        if (task.dueDate !== selectedDate) {
+          return false;
+        }
+      }
+    }
+    
+    // Apply other filters...
+    if (filters.category !== 'All' && task.taskType !== filters.category) {
+      return false;
+    }
+    
+    if (filters.status !== 'All' && task.status !== filters.status) {
+      return false;
+    }
+    
+    if (filters.priority !== 'All' && task.priority !== filters.priority) {
+      return false;
+    }
+    
+    if (filters.assignedToMe && !isTaskAssignedToUser(task)) {
+      return false;
+    }
+    
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      const matchesSearch = 
+        task.title?.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.taskType?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+    
+    return true;
+  });
+};
+```
+
+## 2. RESPONSIVE FILTER BAR UI
+
+```javascript
+const ResponsiveFilterBar = ({ filters, onFilterChange, onReset }) => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  return (
+    <div className="responsive-filter-container">
+      {/* Group 1: Category and Status */}
+      <div className="filter-group-wrapper">
+        <select
+          value={filters.category}
+          onChange={(e) => onFilterChange('category', e.target.value)}
+          className="filter-select filter-category"
+        >
+          <option value="All">All Categories</option>
+          <option value="Seeding - Microgreens">Seeding - Microgreens</option>
+          <option value="Seeding - Leafy Greens">Seeding - Leafy Greens</option>
+          <option value="Harvest - Microgreens">Harvest - Microgreens</option>
+          <option value="Harvest - Leafy Greens">Harvest - Leafy Greens</option>
+          <option value="Blackout Tasks">Blackout Tasks</option>
+          <option value="Moving">Moving</option>
+          <option value="Packing">Packing</option>
+          <option value="Cleaning">Cleaning</option>
+          <option value="Inventory">Inventory</option>
+          <option value="Equipment Maintenance">Equipment Maintenance</option>
+          <option value="Other">Other</option>
+        </select>
+        
+        <select
+          value={filters.status}
+          onChange={(e) => onFilterChange('status', e.target.value)}
+          className="filter-select filter-status"
+        >
+          <option value="All">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="skipped">Skipped</option>
+        </select>
+        
+        <select
+          value={filters.priority}
+          onChange={(e) => onFilterChange('priority', e.target.value)}
+          className="filter-select filter-priority"
+        >
+          <option value="All">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      
+      {/* Group 2: Toggle, Date, Today */}
+      <div className="filter-group-wrapper">
+        <label className="toggle-container">
+          <input
+            type="checkbox"
+            checked={filters.assignedToMe}
+            onChange={(e) => onFilterChange('assignedToMe', e.target.checked)}
+            className="toggle-input"
+          />
+          <span className="toggle-slider"></span>
+          <span className="toggle-label">📌 Assigned to Me</span>
+        </label>
+        
+        <input
+          type="date"
+          value={filters.date}
+          onChange={(e) => onFilterChange('date', e.target.value)}
+          className="filter-date-input"
+        />
+        
+        <button
+          onClick={() => onFilterChange('date', today)}
+          className={`filter-today-btn ${filters.date === today ? 'active' : ''}`}
+        >
+          Today
+        </button>
+      </div>
+      
+      {/* Group 3: Search and Clear */}
+      <div className="filter-group-wrapper">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={filters.searchQuery}
+          onChange={(e) => onFilterChange('searchQuery', e.target.value)}
+          className="filter-search-input"
+        />
+        
+        <button 
+          onClick={onReset}
+          className="filter-clear-btn"
+        >
+          ✕ Clear Filters
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+## 3. RESPONSIVE CSS
+
+```css
+/* Responsive Filter Container */
+.responsive-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* Filter Group Wrapper */
+.filter-group-wrapper {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Base Filter Select */
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  height: 38px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Dynamic widths for different selects */
+.filter-category {
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.filter-status,
+.filter-priority {
+  min-width: 120px;
+  max-width: 150px;
+}
+
+/* Toggle Container */
+.toggle-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 40px;
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.toggle-input:checked + .toggle-slider {
+  background: #2D8028;
+}
+
+.toggle-input:checked + .toggle-slider::after {
+  transform: translateX(18px);
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Date Input */
+.filter-date-input {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  height: 38px;
+  min-width: 140px;
+}
+
+/* Today Button */
+.filter-today-btn {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-weight: 500;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-today-btn:hover {
+  background: #e5e7eb;
+}
+
+.filter-today-btn.active {
+  background: #2D8028;
+  color: white;
+  border-color: #2D8028;
+}
+
+/* Search Input */
+.filter-search-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  height: 38px;
+}
+
+/* Clear Button */
+.filter-clear-btn {
+  padding: 8px 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  font-weight: 500;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-clear-btn:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .filter-group-wrapper {
+    flex: 1 1 auto;
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-filter-container {
+    gap: 8px;
+  }
+  
+  .filter-group-wrapper {
+    width: 100%;
+  }
+  
+  .filter-category,
+  .filter-search-input {
+    max-width: none;
+    width: 100%;
+  }
+  
+  .filter-status,
+  .filter-priority {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-select,
+  .filter-date-input,
+  .filter-today-btn,
+  .filter-clear-btn {
+    width: 100%;
+  }
+  
+  .toggle-container {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+  }
+}
+```
+
+## Summary of changes:
+
+1. **Overdue Logic Fixed**:
+   - Completed/skipped tasks only show on their action date
+   - Pending overdue tasks only show on today
+   - Regular tasks show on their due date
+
+2. **Responsive UI**:
+   - Filter groups wrap to new lines as needed
+   - No horizontal scrolling
+   - Dynamic widths adjust based on screen size
+   - Mobile-friendly with full-width elements on small screens
