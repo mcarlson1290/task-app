@@ -1,0 +1,192 @@
+# 🔧 Fix Assignment Filter Stacking and Green Highlighting
+
+## 1. FIX THE FILTER TO STACK PROPERLY
+
+The filter should work WITH other filters, not replace them. Update your filter logic:
+
+```javascript
+// In your filter logic, make sure ALL filters are applied together
+const getFilteredTasks = () => {
+  return tasks.filter(task => {
+    // DATE FILTER FIRST
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check date logic
+    if (task.status === 'completed' || task.status === 'skipped') {
+      const actionDate = (task.completedAt || task.skippedAt || task.dueDate).split('T')[0];
+      if (actionDate !== filters.date) return false;
+    } else if (task.dueDate < today && filters.date === today && task.status === 'pending') {
+      // Overdue shows on today
+    } else if (task.dueDate !== filters.date) {
+      return false;
+    }
+    
+    // CATEGORY FILTER
+    if (filters.category !== 'All' && task.taskType !== filters.category) {
+      return false;
+    }
+    
+    // STATUS FILTER
+    if (filters.status !== 'All' && task.status !== filters.status) {
+      return false;
+    }
+    
+    // PRIORITY FILTER
+    if (filters.priority !== 'All' && task.priority !== filters.priority) {
+      return false;
+    }
+    
+    // ASSIGNED TO ME FILTER - This should ADD to other filters, not replace
+    if (filters.assignedToMe) {
+      const isAssigned = isTaskAssignedToUser(task, currentUser, staff);
+      if (!isAssigned) return false;
+    }
+    
+    // SEARCH FILTER
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      const matchesSearch = 
+        task.title?.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.taskType?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+    
+    return true; // Task passes ALL filters
+  });
+};
+```
+
+## 2. FIX THE ASSIGNMENT CHECK FUNCTION
+
+Make sure this function is defined and accessible:
+
+```javascript
+const isTaskAssignedToUser = (task, currentUser, staff) => {
+  if (!currentUser || !task.assignTo) return false;
+  
+  console.log('Checking assignment:', {
+    taskAssignTo: task.assignTo,
+    currentUserId: currentUser.id,
+    currentUserEmail: currentUser.email
+  });
+  
+  // Direct user assignment
+  if (task.assignTo === `user_${currentUser.id}`) return true;
+  
+  // All staff assignment
+  if (task.assignTo === 'all_staff') return true;
+  
+  // Role assignment
+  if (task.assignTo?.startsWith('role_')) {
+    const roleName = task.assignTo.replace('role_', '');
+    // Make sure we're checking the current user's roles correctly
+    if (currentUser.rolesAssigned && Array.isArray(currentUser.rolesAssigned)) {
+      return currentUser.rolesAssigned.includes(roleName);
+    }
+  }
+  
+  return false;
+};
+```
+
+## 3. UPDATE TASK CARD TO ALWAYS SHOW GREEN HIGHLIGHT
+
+Make sure TaskCard component receives all needed props and applies highlighting:
+
+```javascript
+const TaskCard = ({ task, currentUser, staff }) => {
+  // Check assignment for EVERY task card
+  const isAssignedToMe = isTaskAssignedToUser(task, currentUser, staff);
+  
+  // Debug log to see what's happening
+  console.log(`Task "${task.title}" assigned to me:`, isAssignedToMe);
+  
+  return (
+    <div className={`task-card ${isAssignedToMe ? 'assigned-to-me' : ''}`}>
+      {/* Green badge - always show if assigned */}
+      {isAssignedToMe && (
+        <div className="assigned-to-me-badge">
+          📌 Your Task
+        </div>
+      )}
+      
+      {/* Day/Priority badges */}
+      <div className="task-badges-row">
+        {/* Your existing badges */}
+      </div>
+      
+      {/* Rest of your task card content */}
+    </div>
+  );
+};
+```
+
+## 4. ENSURE PROPS ARE PASSED TO TASK CARDS
+
+In your TasksPage where you render TaskCards:
+
+```javascript
+// Make sure you're passing currentUser and staff to EACH TaskCard
+<div className="task-grid">
+  {filteredTasks.map(task => (
+    <TaskCard 
+      key={task.id} 
+      task={task}
+      currentUser={currentUser} // Make sure this is passed
+      staff={staff} // Make sure this is passed
+    />
+  ))}
+</div>
+```
+
+## 5. DEBUG WHY NO TASKS ARE SHOWING
+
+Add this debug section temporarily to see what's happening:
+
+```javascript
+// In your TasksPage component, add this before the return
+console.log('Debug Info:', {
+  totalTasks: tasks.length,
+  filteredTasks: filteredTasks.length,
+  currentUser: currentUser,
+  filters: filters,
+  todayDate: new Date().toISOString().split('T')[0]
+});
+
+// Also add a debug message if no tasks show
+if (filteredTasks.length === 0 && tasks.length > 0) {
+  console.log('No tasks after filtering. Checking each filter:');
+  tasks.forEach(task => {
+    console.log(`Task: ${task.title}`, {
+      dueDate: task.dueDate,
+      status: task.status,
+      category: task.taskType,
+      assignTo: task.assignTo
+    });
+  });
+}
+```
+
+## 6. VERIFY CURRENT USER IS LOADED
+
+Make sure currentUser has the expected structure:
+
+```javascript
+// The currentUser should look like:
+{
+  id: 1, // or whatever the ID is
+  email: "user@growspace.farm",
+  fullName: "User Name",
+  rolesAssigned: ["Equipment Tech", "Manager"] // Array of role names
+}
+```
+
+## Common Issues to Check:
+
+1. **CurrentUser not loaded**: If currentUser is null/undefined, no assignments will match
+2. **ID type mismatch**: Make sure user IDs match (number vs string)
+3. **Role names**: Ensure role names match exactly between user and tasks
+4. **All Staff logic**: Everyone should match "all_staff" assignments
+
+The debug logs will help identify exactly where the breakdown is occurring.

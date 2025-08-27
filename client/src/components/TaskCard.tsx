@@ -166,22 +166,43 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
 
   // ALWAYS check if task is assigned to current user
   const isAssignedToCurrentUser = React.useMemo(() => {
-    if (!currentUser || !task.assignTo) return false;
+    if (!currentUser) return false;
+    
+    // Check both assignTo (new) and assignedTo (legacy) fields
+    const assignment = task.assignTo || task.assignedTo;
+    if (!assignment) return false;
+    
+    console.log(`🔍 Task "${task.title}" assignment check:`, {
+      assignTo: task.assignTo,
+      assignedTo: task.assignedTo,
+      finalAssignment: assignment,
+      currentUserId: currentUser.id,
+      currentUserRoles: currentUser.rolesAssigned
+    });
     
     // Direct user assignment
-    if (task.assignTo === `user_${currentUser.id}`) return true;
-    
-    // All staff assignment
-    if (task.assignTo === 'all_staff' && currentUser.id) return true;
-    
-    // Role assignment
-    if (task.assignTo?.startsWith('role_')) {
-      const roleName = task.assignTo.replace('role_', '');
-      return currentUser.rolesAssigned?.includes(roleName) || false;
+    if (assignment === `user_${currentUser.id}`) {
+      console.log(`  → Direct user match: user_${currentUser.id}`);
+      return true;
     }
     
+    // All staff assignment
+    if (assignment === 'all_staff' && currentUser.id) {
+      console.log(`  → All staff match for user ${currentUser.id}`);
+      return true;
+    }
+    
+    // Role assignment
+    if (typeof assignment === 'string' && assignment.startsWith('role_')) {
+      const roleName = assignment.replace('role_', '');
+      const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
+      console.log(`  → Role check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
+      return hasRole;
+    }
+    
+    console.log(`  → No assignment match for: ${assignment}`);
     return false;
-  }, [task.assignTo, currentUser]);
+  }, [task.assignTo, task.assignedTo, currentUser]);
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${

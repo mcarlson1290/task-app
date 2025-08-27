@@ -382,13 +382,39 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Assigned to Me filter
+    // Assigned to Me filter - should work WITH other filters, not replace them
     if (assignedToMeFilter && currentUser) {
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - Before: ${filtered.length} tasks`);
       filtered = filtered.filter(task => {
-        const isAssigned = isTaskAssignedToCurrentUser(task, currentUser, staffData);
-        console.log(`🔍 Task "${task.title}" assignment check:`, isAssigned);
-        return isAssigned;
+        // Check both assignTo (new) and assignedTo (legacy) fields
+        const assignment = task.assignTo || task.assignedTo;
+        if (!assignment) {
+          console.log(`  → Task "${task.title}" has no assignment`);
+          return false;
+        }
+        
+        // Direct user assignment
+        if (assignment === `user_${currentUser.id}`) {
+          console.log(`  → Task "${task.title}" directly assigned to user ${currentUser.id}`);
+          return true;
+        }
+        
+        // All staff assignment
+        if (assignment === 'all_staff' && currentUser.id) {
+          console.log(`  → Task "${task.title}" assigned to all staff`);
+          return true;
+        }
+        
+        // Role assignment
+        if (typeof assignment === 'string' && assignment.startsWith('role_')) {
+          const roleName = assignment.replace('role_', '');
+          const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
+          console.log(`  → Task "${task.title}" role check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
+          return hasRole;
+        }
+        
+        console.log(`  → Task "${task.title}" not assigned to current user: ${assignment}`);
+        return false;
       });
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);
     }
