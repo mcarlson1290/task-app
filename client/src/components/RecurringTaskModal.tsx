@@ -69,7 +69,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         frequency: task.frequency || 'daily',
         daysOfWeek: task.daysOfWeek || [],
         isActive: task.isActive ?? true,
-        assignTo: task.assignTo || '',
+        assignTo: task.assignTo || 'no-assignment',
         automation: task.automation || {
           enabled: false,
           generateTrays: false,
@@ -94,7 +94,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         frequency: 'daily',
         daysOfWeek: [],
         isActive: true,
-        assignTo: '',
+        assignTo: 'no-assignment',
         automation: {
           enabled: false,
           generateTrays: false,
@@ -409,7 +409,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                     <SelectValue placeholder={loadingAssignments ? "Loading assignments..." : "No default assignment"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No default assignment</SelectItem>
+                    <SelectItem value="no-assignment">No default assignment</SelectItem>
                     
                     {/* All Staff Option */}
                     {assignmentOptions.special.map(option => (
