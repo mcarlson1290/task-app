@@ -812,7 +812,7 @@ const Tasks: React.FC = () => {
               }}
               className="h-4 w-4 text-[#2D8028] focus:ring-[#2D8028] border-gray-300 rounded"
             />
-            <span className="text-sm font-medium text-gray-700">📌 Assigned to Me</span>
+            <span className="text-sm font-medium text-gray-700">📌 Only My Tasks</span>
           </label>
 
           {/* Date Input */}
@@ -950,21 +950,15 @@ const Tasks: React.FC = () => {
         ) : (
           <div className="task-list">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredTasks.map((task) => {
-                const isAssigned = currentUser ? 
-                  isTaskAssignedToCurrentUser(task, currentUser, staffData) : 
-                  false;
-                return (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onTaskAction={handleTaskAction}
-                    currentUser={currentUser}
-                    staff={staffData}
-                    isAssignedToMe={isAssigned}
-                  />
-                );
-              })}
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onTaskAction={handleTaskAction}
+                  currentUser={currentUser}
+                  staff={staffData}
+                />
+              ))}
             </div>
           </div>
         )}

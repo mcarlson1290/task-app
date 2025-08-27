@@ -164,12 +164,28 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
 
-  // Check if task is assigned to current user (use prop if available, fallback to legacy)
-  const isAssignedToCurrentUser = isAssignedToMe || isTaskAssignedToUser(task, currentUser, staff);
+  // ALWAYS check if task is assigned to current user
+  const isAssignedToCurrentUser = React.useMemo(() => {
+    if (!currentUser || !task.assignTo) return false;
+    
+    // Direct user assignment
+    if (task.assignTo === `user_${currentUser.id}`) return true;
+    
+    // All staff assignment
+    if (task.assignTo === 'all_staff' && currentUser.id) return true;
+    
+    // Role assignment
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      return currentUser.rolesAssigned?.includes(roleName) || false;
+    }
+    
+    return false;
+  }, [task.assignTo, currentUser]);
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
-      isAssignedToCurrentUser && !isInProgress && !isPaused && !isSkipped && !isCurrentlyOverdue ? 'assigned-to-me' : ''
+      isAssignedToCurrentUser ? 'assigned-to-me' : ''
     } ${
       isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
