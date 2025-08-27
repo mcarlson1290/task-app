@@ -12,6 +12,7 @@ interface CurrentUser {
  */
 export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser | null): boolean => {
   if (!currentUser || !currentUser.id) {
+    console.log('No current user or user ID:', currentUser);
     return false;
   }
   
@@ -24,20 +25,37 @@ export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser 
   // Convert user ID to string for comparison
   const userIdStr = String(currentUser.id);
   
+  // Debug logging for problematic tasks
+  if (task.id === 1347) {
+    console.log('🔍 Assignment Debug:', {
+      taskId: task.id,
+      assignment: assignment,
+      userIdStr: userIdStr,
+      userRoles: currentUser.rolesAssigned,
+      assignmentType: typeof assignment
+    });
+  }
+  
   // Direct user assignment
   if (assignment === `user_${userIdStr}`) {
+    console.log('✅ Direct user assignment match');
     return true;
   }
   
   // All staff assignment
   if (assignment === 'all_staff') {
+    console.log('✅ All staff assignment match');
     return true;
   }
   
   // Role-based assignment
   if (typeof assignment === 'string' && assignment.startsWith('role_')) {
     const roleName = assignment.replace('role_', '');
-    return currentUser.rolesAssigned?.includes(roleName) || false;
+    const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
+    if (task.id === 1347) {
+      console.log(`🎯 Role check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
+    }
+    return hasRole;
   }
   
   return false;

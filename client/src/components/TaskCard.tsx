@@ -166,6 +166,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
 
   // Check if task is assigned to current user using centralized function
   const isAssignedToCurrentUser = isTaskAssignedToUser(task, currentUser);
+  
+  // Debug logging for assignment
+  if (task.id === 1347) { // Log for first task
+    console.log('DEBUG TaskCard Assignment:', {
+      taskId: task.id,
+      taskTitle: task.title,
+      assignTo: task.assignTo,
+      assignedTo: task.assignedTo,
+      currentUser: currentUser,
+      isAssigned: isAssignedToCurrentUser
+    });
+  }
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
