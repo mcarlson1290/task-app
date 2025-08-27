@@ -2,6 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Task Card - Assigned to Me Highlighting */
+.task-card.assigned-to-me {
+  position: relative;
+  border-left: 4px solid #2D8028 !important;
+  background: linear-gradient(to right, rgba(45, 128, 40, 0.05) 0%, transparent 100%) !important;
+  box-shadow: 0 2px 4px rgba(45, 128, 40, 0.1) !important;
+}
+
+/* Hover effect for assigned tasks */
+.task-card.assigned-to-me:hover {
+  box-shadow: 0 4px 8px rgba(45, 128, 40, 0.15) !important;
+  border-left-color: #236622 !important;
+}
+
+/* Assigned to Me Badge */
+.assigned-to-me-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #2D8028;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .assigned-to-me-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    top: 6px;
+    right: 6px;
+  }
+  
+  .task-card.assigned-to-me {
+    border-left-width: 3px !important;
+  }
+}
+
 /* Login Page Styles */
 .login-page {
   display: flex;

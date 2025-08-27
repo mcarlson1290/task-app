@@ -1,0 +1,231 @@
+# 🟢 Add Green Highlight for Tasks Assigned to You
+
+## 1. UPDATE TASK CARD COMPONENT
+
+Add logic to determine if a task is assigned to the current user:
+
+```javascript
+// In your TaskCard component
+const TaskCard = ({ task, currentUser, staff }) => {
+  
+  // Function to check if task is assigned to current user
+  const isAssignedToMe = () => {
+    if (!currentUser || !task.assignTo) return false;
+    
+    // Direct user assignment
+    if (task.assignTo === `user_${currentUser.id}`) return true;
+    
+    // All staff assignment
+    if (task.assignTo === 'all_staff') return true;
+    
+    // Role assignment - check if current user has the role
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      const currentUserStaff = staff.find(s => s.id === currentUser.id);
+      return currentUserStaff?.rolesAssigned?.includes(roleName) || false;
+    }
+    
+    return false;
+  };
+  
+  const assignedToMe = isAssignedToMe();
+  
+  return (
+    <div className={`task-card ${assignedToMe ? 'assigned-to-me' : ''}`}>
+      {/* Add visual indicator badge */}
+      {assignedToMe && (
+        <div className="assigned-to-me-badge">
+          📌 Your Task
+        </div>
+      )}
+      
+      {/* Rest of your task card content */}
+    </div>
+  );
+};
+```
+
+## 2. ADD CSS FOR THE GREEN HIGHLIGHT
+
+Add these styles to highlight tasks assigned to the current user:
+
+```css
+/* Task card assigned to current user */
+.task-card.assigned-to-me {
+  position: relative;
+  border-left: 4px solid #2D8028;
+  background: linear-gradient(to right, rgba(45, 128, 40, 0.05) 0%, transparent 100%);
+  box-shadow: 0 2px 4px rgba(45, 128, 40, 0.1);
+}
+
+/* Optional: Add a subtle glow effect on hover */
+.task-card.assigned-to-me:hover {
+  box-shadow: 0 4px 8px rgba(45, 128, 40, 0.15);
+  border-left-color: #236622;
+}
+
+/* Badge for assigned tasks */
+.assigned-to-me-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #2D8028;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+/* Alternative: Corner ribbon style */
+.assigned-to-me-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #2D8028;
+  color: white;
+  padding: 2px 24px;
+  font-size: 10px;
+  font-weight: 600;
+  transform: rotate(45deg) translate(26%, -50%);
+  transform-origin: top left;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .assigned-to-me-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .task-card.assigned-to-me {
+    border-left-width: 3px;
+  }
+}
+```
+
+## 3. ENSURE CURRENT USER DATA IS AVAILABLE
+
+Make sure the current user information is passed down properly:
+
+```javascript
+// In your main App or layout component
+const App = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  useEffect(() => {
+    // Load current user from your auth system
+    const loadCurrentUser = async () => {
+      try {
+        // This depends on your auth implementation
+        const user = await getCurrentUser(); // Your auth method
+        
+        // Match with staff data to get roles
+        const staffResponse = await fetch('/api/staff');
+        const staffData = await staffResponse.json();
+        const userStaff = staffData.find(s => s.email === user.email);
+        
+        setCurrentUser({
+          id: userStaff?.id || user.id,
+          email: user.email,
+          name: user.name,
+          rolesAssigned: userStaff?.rolesAssigned || []
+        });
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    };
+    
+    loadCurrentUser();
+  }, []);
+  
+  return (
+    // Pass currentUser to all pages that need it
+    <TasksPage currentUser={currentUser} />
+  );
+};
+```
+
+## 4. ADD TO EXISTING FILTER (IF YOU HAVE ONE)
+
+If you already have the "Assigned to Me" filter, make sure it uses the same logic:
+
+```javascript
+// In your Tasks page filter
+const filteredTasks = tasks.filter(task => {
+  // ... other filters ...
+  
+  if (filters.assignedToMe) {
+    const assignedToUser = isTaskAssignedToMe(task, currentUser, staff);
+    if (!assignedToUser) return false;
+  }
+  
+  return true;
+});
+
+// Use the same logic as the card
+const isTaskAssignedToMe = (task, user, allStaff) => {
+  if (!user || !task.assignTo) return false;
+  
+  if (task.assignTo === `user_${user.id}`) return true;
+  if (task.assignTo === 'all_staff') return true;
+  
+  if (task.assignTo?.startsWith('role_')) {
+    const roleName = task.assignTo.replace('role_', '');
+    const userStaff = allStaff.find(s => s.id === user.id);
+    return userStaff?.rolesAssigned?.includes(roleName) || false;
+  }
+  
+  return false;
+};
+```
+
+## 5. VISUAL ALTERNATIVES
+
+Choose one of these visual styles or combine them:
+
+```css
+/* Option A: Left border (current implementation) */
+.task-card.assigned-to-me {
+  border-left: 4px solid #2D8028;
+}
+
+/* Option B: Full border glow */
+.task-card.assigned-to-me {
+  border: 2px solid #2D8028;
+  box-shadow: 0 0 8px rgba(45, 128, 40, 0.3);
+}
+
+/* Option C: Background pattern */
+.task-card.assigned-to-me {
+  background-image: 
+    linear-gradient(135deg, rgba(45, 128, 40, 0.05) 0%, transparent 60%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(45, 128, 40, 0.02) 10px,
+      rgba(45, 128, 40, 0.02) 20px
+    );
+}
+
+/* Option D: Icon indicator only */
+.task-card.assigned-to-me .task-header::before {
+  content: "👤";
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+```
+
+The implementation checks three assignment types:
+1. Direct user assignment (`user_123`)
+2. All staff assignment (`all_staff`)
+3. Role-based assignment (checks if user has the assigned role)
+
+The green highlight will automatically appear on any task that matches these criteria.

@@ -163,8 +163,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
 
+  // Check if task is assigned to current user
+  const isAssignedToMe = isTaskAssignedToUser(task, currentUser, staff);
+
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
+      isAssignedToMe && !isInProgress && !isPaused && !isSkipped && !isCurrentlyOverdue ? 'assigned-to-me' : ''
+    } ${
       isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
       isPaused ? 'bg-yellow-50 border-l-4 border-l-yellow-500' : ''
@@ -174,6 +179,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
       isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
     }`} data-status={task.status}>
       <CardContent className="p-6">
+        {/* Assigned to Me Badge */}
+        {isAssignedToMe && (
+          <div className="assigned-to-me-badge">
+            📌 Your Task
+          </div>
+        )}
+        
         {/* Header Section */}
         <div className="task-header flex justify-between items-start mb-4">
           {/* Title with proper spacing */}
