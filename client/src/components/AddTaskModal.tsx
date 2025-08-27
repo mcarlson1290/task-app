@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/contexts/UserContext';
-import { getAssignmentOptions, getAssignedStaffIds } from '@/services/assignmentService';
-import { AssignmentOptions } from '@/data/roleTaskMapping';
 
 interface AddTaskModalProps {
   open: boolean;
@@ -18,7 +15,6 @@ interface AddTaskModalProps {
 
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSave }) => {
   const { toast } = useToast();
-  const { currentUser } = useUser();
   
   const [taskData, setTaskData] = useState({
     title: '',
@@ -29,38 +25,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     dueDate: new Date().toISOString().split('T')[0],
     estimatedTime: ''
   });
-
-  const [assignmentOptions, setAssignmentOptions] = useState<AssignmentOptions>({
-    roles: [],
-    users: [],
-    special: []
-  });
-
-  const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
-
-  // Fetch assignment options when task type changes
-  useEffect(() => {
-    const loadAssignmentOptions = async () => {
-      if (taskData.type && currentUser) {
-        setIsLoadingAssignments(true);
-        try {
-          const options = await getAssignmentOptions(currentUser, taskData.type);
-          setAssignmentOptions(options);
-        } catch (error) {
-          console.error('Error loading assignment options:', error);
-          toast({
-            title: "Error Loading Assignments",
-            description: "Could not load assignment options. Please try again.",
-            variant: "destructive"
-          });
-        } finally {
-          setIsLoadingAssignments(false);
-        }
-      }
-    };
-
-    loadAssignmentOptions();
-  }, [taskData.type, currentUser, toast]);
 
   const taskTypes = [
     { value: 'seeding-microgreens', label: 'Seeding - Microgreens' },
@@ -76,17 +40,16 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     { value: 'other', label: 'Other' }
   ];
 
-  // Get all assignment options in order
-  const getAllAssignmentOptions = () => {
-    const allOptions = [
-      ...assignmentOptions.special,
-      ...(assignmentOptions.roles.length > 0 ? [{ value: '---roles---', label: '──────── Roles ────────', type: 'separator' as const }] : []),
-      ...assignmentOptions.roles,
-      ...(assignmentOptions.users.length > 0 ? [{ value: '---users---', label: '──────── People ────────', type: 'separator' as const }] : []),
-      ...assignmentOptions.users
-    ];
-    return allOptions;
-  };
+  const assigneeOptions = [
+    { value: '1', label: 'User 1' },
+    { value: '2', label: 'User 2' },
+    { value: '3', label: 'User 3' },
+    { value: 'all-staff', label: 'All Staff' },
+    { value: 'seeding-tech', label: 'Seeding Tech' },
+    { value: 'harvest-team', label: 'Harvest Team' },
+    { value: 'cleaning-crew', label: 'Cleaning Crew' },
+    { value: 'manager', label: 'Manager' }
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,59 +205,18 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
 
           <div className="space-y-2">
             <Label htmlFor="assignedTo">Assign To *</Label>
-            <Select 
-              value={taskData.assignedTo} 
-              onValueChange={(value) => {
-                if (value && !value.startsWith('---')) {
-                  setTaskData({ ...taskData, assignedTo: value })
-                }
-              }}
-              disabled={!taskData.type || isLoadingAssignments}
-            >
+            <Select value={taskData.assignedTo} onValueChange={(value) => setTaskData({ ...taskData, assignedTo: value })}>
               <SelectTrigger>
-                <SelectValue placeholder={
-                  !taskData.type 
-                    ? "Select task type first"
-                    : isLoadingAssignments 
-                      ? "Loading assignments..." 
-                      : "Select Assignee"
-                } />
+                <SelectValue placeholder="Select Assignee" />
               </SelectTrigger>
               <SelectContent>
-                {getAllAssignmentOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
-                    value={option.value}
-                    disabled={option.type === 'separator'}
-                    className={option.isSuggested ? 'font-semibold bg-yellow-50' : ''}
-                  >
-                    {option.label}
-                    {option.isSuggested && ' ⭐'}
+                {assigneeOptions.map((assignee) => (
+                  <SelectItem key={assignee.value} value={assignee.value}>
+                    {assignee.label}
                   </SelectItem>
                 ))}
-                {getAllAssignmentOptions().length === 0 && taskData.type && !isLoadingAssignments && (
-                  <SelectItem value="" disabled>
-                    No assignment options available
-                  </SelectItem>
-                )}
               </SelectContent>
             </Select>
-            
-            {/* Show assignment preview for roles */}
-            {taskData.assignedTo && taskData.assignedTo.startsWith('role_') && (
-              <div className="text-sm text-gray-600 mt-1">
-                <div className="p-2 bg-gray-50 rounded text-xs">
-                  <strong>Will assign to:</strong> {
-                    assignmentOptions.roles
-                      .find(r => r.value === taskData.assignedTo)
-                      ?.staffIds
-                      ?.map(id => assignmentOptions.users.find(u => u.userId === id)?.label?.replace(' (You)', ''))
-                      .filter(Boolean)
-                      .join(', ') || 'No staff found'
-                  }
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
