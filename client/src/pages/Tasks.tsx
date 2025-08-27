@@ -392,11 +392,10 @@ const Tasks: React.FC = () => {
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);
     }
 
-    // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
+    // FIXED DATE FILTER LOGIC - Corrected overdue handling
     if (dateFilter) {
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
       const today = new Date().toISOString().split('T')[0];
-      const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
         // Handle completed/skipped tasks - they ONLY show on their action date
