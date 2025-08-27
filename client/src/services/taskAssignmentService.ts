@@ -166,7 +166,10 @@ export const isTaskAssignedToUser = (task: any, currentUser: any, staff: StaffMe
 
 // Get assignment display text for a task
 export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
-  console.log('getAssignmentText - Task:', task.id, 'assignTo:', task.assignTo, 'staff count:', staff.length);
+  // Debug logging - can be removed later
+  if (task.assignTo || task.assignedTo) {
+    console.log('getAssignmentText - Task:', task.id, 'assignTo:', task.assignTo, 'assignedTo:', task.assignedTo);
+  }
   
   // Check new assignTo field first
   if (task.assignTo) {
@@ -188,16 +191,39 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
     if (task.assignTo === 'all_staff') {
       return '👥 All Staff';
     }
+    
+    // Handle malformed assignTo values
+    console.log('Malformed assignTo value:', task.assignTo);
+    return `Unknown Assignment: ${task.assignTo}`;
   }
   
   // Fallback to legacy assignedTo field
   if (task.assignedTo) {
+    console.log('Using legacy assignedTo:', task.assignedTo, typeof task.assignedTo);
+    
+    // Handle legacy role assignments (e.g., "role_Blackout Specialist")
+    if (typeof task.assignedTo === 'string' && task.assignedTo.startsWith('role_')) {
+      const roleName = task.assignedTo.replace('role_', '');
+      console.log('Legacy role assignment:', roleName);
+      return `👤 ${roleName}`;
+    }
+    
+    // Handle direct user ID assignment
     const assignedUser = staff.find(s => 
       s.id === task.assignedTo || 
-      s.id === task.assignedTo.toString() || 
+      s.id === parseInt(task.assignedTo) || 
       s.id.toString() === task.assignedTo.toString()
     );
-    return assignedUser?.fullName || `Unknown User (Legacy ID: ${task.assignedTo})`;
+    
+    if (assignedUser) {
+      const result = assignedUser.fullName;
+      console.log('Legacy user assignment result:', result);
+      return result;
+    }
+    
+    // If it's a string that doesn't match a user, it might be a malformed assignment
+    console.log('Unknown legacy assignment:', task.assignedTo);
+    return `Unknown Assignment: ${task.assignedTo}`;
   }
   
   return 'Unassigned';
