@@ -166,12 +166,18 @@ export const isTaskAssignedToUser = (task: any, currentUser: any, staff: StaffMe
 
 // Get assignment display text for a task
 export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
+  console.log('getAssignmentText - Task:', task.id, 'assignTo:', task.assignTo, 'staff count:', staff.length);
+  
   // Check new assignTo field first
   if (task.assignTo) {
     if (task.assignTo.startsWith('user_')) {
       const userId = task.assignTo.replace('user_', '');
-      const assignedUser = staff.find(s => s.id === userId);
-      return assignedUser?.fullName || 'Unknown User';
+      console.log('Looking for user ID:', userId, 'Staff IDs:', staff.map(s => ({ id: s.id, name: s.fullName })));
+      
+      // Try both string and number comparison since ID types might vary
+      const assignedUser = staff.find(s => s.id === userId || s.id === parseInt(userId) || s.id.toString() === userId);
+      console.log('Found user:', assignedUser?.fullName || 'NOT FOUND');
+      return assignedUser?.fullName || `Unknown User (ID: ${userId})`;
     }
     
     if (task.assignTo.startsWith('role_')) {
@@ -186,8 +192,12 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
   
   // Fallback to legacy assignedTo field
   if (task.assignedTo) {
-    const assignedUser = staff.find(s => s.id === task.assignedTo.toString());
-    return assignedUser?.fullName || 'Unknown User';
+    const assignedUser = staff.find(s => 
+      s.id === task.assignedTo || 
+      s.id === task.assignedTo.toString() || 
+      s.id.toString() === task.assignedTo.toString()
+    );
+    return assignedUser?.fullName || `Unknown User (Legacy ID: ${task.assignedTo})`;
   }
   
   return 'Unassigned';
