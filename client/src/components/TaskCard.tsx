@@ -5,18 +5,18 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, CheckCircle, Info, Users } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
-import { isTaskAssignedToUser, getAssignmentText } from "../services/taskAssignmentService";
+import { isTaskAssignedToUser, getAssignmentDisplay } from "../utils/taskAssignment";
+import { useCurrentUser } from "../contexts/CurrentUserContext";
 import { StaffMember } from "../services/staffService";
 
 interface TaskCardProps {
   task: Task;
   onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume') => void;
-  currentUser?: any;
   staff?: StaffMember[];
-  isAssignedToMe?: boolean;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, staff = [], isAssignedToMe = false }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) => {
+  const { currentUser } = useCurrentUser();
   // Safety check for task object
   if (!task) {
     return (
@@ -164,45 +164,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
 
-  // ALWAYS check if task is assigned to current user
-  const isAssignedToCurrentUser = React.useMemo(() => {
-    if (!currentUser) return false;
-    
-    // Check both assignTo (new) and assignedTo (legacy) fields
-    const assignment = task.assignTo || task.assignedTo;
-    if (!assignment) return false;
-    
-    console.log(`🔍 Task "${task.title}" assignment check:`, {
-      assignTo: task.assignTo,
-      assignedTo: task.assignedTo,
-      finalAssignment: assignment,
-      currentUserId: currentUser.id,
-      currentUserRoles: currentUser.rolesAssigned
-    });
-    
-    // Direct user assignment
-    if (assignment === `user_${currentUser.id}`) {
-      console.log(`  → Direct user match: user_${currentUser.id}`);
-      return true;
-    }
-    
-    // All staff assignment
-    if (assignment === 'all_staff' && currentUser.id) {
-      console.log(`  → All staff match for user ${currentUser.id}`);
-      return true;
-    }
-    
-    // Role assignment
-    if (typeof assignment === 'string' && assignment.startsWith('role_')) {
-      const roleName = assignment.replace('role_', '');
-      const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
-      console.log(`  → Role check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
-      return hasRole;
-    }
-    
-    console.log(`  → No assignment match for: ${assignment}`);
-    return false;
-  }, [task.assignTo, task.assignedTo, currentUser]);
+  // Check if task is assigned to current user using centralized function
+  const isAssignedToCurrentUser = isTaskAssignedToUser(task, currentUser);
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
@@ -285,7 +248,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
           {/* Assignment information - simplified */}
           <div className="assignment-info text-sm text-gray-600 mb-1 flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            <span>{getAssignmentText(task, staff)}</span>
+            <span>{getAssignmentDisplay(task.assignTo || task.assignedTo)}</span>
           </div>
         </div>
 
