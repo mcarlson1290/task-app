@@ -21,6 +21,7 @@ import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import { isTaskAssignedToCurrentUser } from "@/utils/taskAssignmentUtils";
+import DebugPanel from "@/components/DebugPanel";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -1115,6 +1116,14 @@ const Tasks: React.FC = () => {
         task={selectedTask}
         open={taskActionModalOpen}
         onClose={() => setTaskActionModalOpen(false)}
+      />
+      
+      {/* Debug Panel */}
+      <DebugPanel 
+        tasks={tasks}
+        filteredTasks={filteredTasks}
+        staff={staffData}
+        filters={{ activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter }}
       />
       </div>
     </div>

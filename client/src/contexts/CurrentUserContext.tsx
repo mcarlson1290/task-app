@@ -38,13 +38,30 @@ export const CurrentUserProvider: React.FC<{ children: React.ReactNode }> = ({ c
       
       // Get the logged-in user from the auth system
       const auth = getStoredAuth();
-      if (!auth?.user?.email) {
-        console.warn('No authenticated user found');
-        setCurrentUser(null);
+      console.log('=== AUTH DEBUG ===');
+      console.log('Full auth object:', auth);
+      console.log('Auth user:', auth?.user);
+      console.log('Auth user email:', auth?.user?.businessEmail || auth?.user?.username);
+      
+      const userEmail = auth?.user?.businessEmail || auth?.user?.username;
+      if (!userEmail) {
+        console.warn('No authenticated user found - using fallback for Robert');
+        // For development/testing, use Robert's account as fallback
+        const staffResponse = await fetch('/api/staff');
+        const staffData = await staffResponse.json();
+        const robertStaff = staffData.find((s: any) => s.email === 'robert@growspace.farm');
+        
+        if (robertStaff) {
+          setCurrentUser({
+            id: parseInt(robertStaff.id),
+            email: robertStaff.email,
+            fullName: robertStaff.fullName,
+            rolesAssigned: robertStaff.rolesAssigned || []
+          });
+          console.log('✅ Using Robert as fallback user:', robertStaff.fullName);
+        }
         return;
       }
-      
-      const userEmail = auth.user.email;
       
       // Now find this user in staff data
       const staffResponse = await fetch('/api/staff');
