@@ -120,7 +120,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
@@ -163,7 +164,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Adjust Nutrients in Microgreen Reservoirs",
@@ -202,7 +204,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Remove 5 Dirty Towers and Clean Basins",
@@ -241,7 +244,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Clean Bathroom",
@@ -281,7 +285,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Deep Floor Scrub",
@@ -320,7 +325,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Opening",
@@ -387,7 +393,8 @@
           }
         }
       ]
-    }
+    },
+    "assignTo": "all_staff"
   },
   {
     "title": "Clean Tower Clips",
@@ -427,7 +434,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Check the Inventory of Leafy Green Stock",
@@ -466,7 +474,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Inventory Tech"
   },
   {
     "title": "Check General Inventory Stock",
@@ -505,7 +514,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Inventory Tech"
   },
   {
     "title": "Check Nutrient Inventory",
@@ -542,7 +552,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Inventory Tech"
   },
   {
     "title": "Uncover the Leafy Green and Herb trays.",
@@ -581,7 +592,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Seed Pea Microgreens",
@@ -623,7 +635,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Seed Radish Microgreens",
@@ -664,7 +677,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Seed Mustard Microgreens",
@@ -705,7 +719,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack",
@@ -746,7 +761,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Remove Weight and BO for Pea Microgreens",
@@ -788,7 +804,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Remove BO and Move Mustard Microgreens to Watering Rack",
@@ -830,7 +847,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Harvest Pea Microgreens",
@@ -872,7 +890,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Harvest Broccoli Microgreens",
@@ -914,7 +933,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Harvest Radish Microgreens",
@@ -956,7 +976,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Harvest Mustard Microgreens",
@@ -998,7 +1019,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Seed Arugula Microgreens",
@@ -1039,7 +1061,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Harvest Arugula Micogreens",
@@ -1081,7 +1104,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Water Microgreen Germination Trays",
@@ -1123,13 +1147,14 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Change Microgreen Reservoir Water and Clean Shelves",
     "description": "This process ensures that the water in the microgreen reservoir is fresh and properly prepared with nutrients and pH adjustments to maintain optimal plant growth. Regular water changes prevent buildup of debris",
     "priority": "medium",
-    "frequency": "daily",
+    "frequency": "bi-weekly",
     "category": "Cleaning",
     "assignedRole": "General Staff",
     "estimatedTime": null,
@@ -1162,7 +1187,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Check Paper Towel Levels",
@@ -1188,7 +1214,9 @@
     "createdAt": "2025-08-06T16:28:39.950Z",
     "location": "Kenosha",
     "type": "cleaning",
-    "daysOfWeek": [],
+    "daysOfWeek": [
+      "monday"
+    ],
     "automation": {
       "enabled": false,
       "generateTrays": false,
@@ -1201,7 +1229,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Remove Garbage from Non-Farm areas",
@@ -1227,7 +1256,9 @@
     "createdAt": "2025-08-06T16:28:40.043Z",
     "location": "Kenosha",
     "type": "cleaning",
-    "daysOfWeek": [],
+    "daysOfWeek": [
+      "tuesday"
+    ],
     "automation": {
       "enabled": false,
       "generateTrays": false,
@@ -1240,7 +1271,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Vacuum the Office and Lobby",
@@ -1279,7 +1311,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Clean Outside Facing Lobby Window",
@@ -1318,7 +1351,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Washing Farm Towels and Filter Socks",
@@ -1356,7 +1390,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Clean Farm Floor",
@@ -1379,8 +1414,7 @@
     "migrationDate": "2025-08-06T16:28:37.264Z",
     "instances": "1",
     "daysOfWeek": [
-      "monday",
-      "monday"
+      "tuesday"
     ],
     "id": 35,
     "createdAt": "2025-08-06T16:28:40.544Z",
@@ -1398,7 +1432,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Interior Window Cleaning",
@@ -1437,7 +1472,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Check pH and Water Levels in Towers",
@@ -1480,7 +1516,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Seed Leafy Greens",
@@ -1523,7 +1560,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Leafy Greens Seeder"
   },
   {
     "title": "Clean NFT Channels Covers",
@@ -1562,7 +1600,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Repair Leaking NFT Channels",
@@ -1601,7 +1640,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Replace NFT Channels and Manifolds",
@@ -1642,7 +1682,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Harvest Turnip Microgreens",
@@ -1684,7 +1725,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Harvest Spicy Mix Microgreens",
@@ -1726,7 +1768,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Harvester"
   },
   {
     "title": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
@@ -1769,7 +1812,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Remove BO and Move Spicy Mix Microgreens to Watering Rack",
@@ -1811,7 +1855,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Seed Turnip Microgreens",
@@ -1853,7 +1898,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Seed Spicy Mix Microgreens",
@@ -1895,7 +1941,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Move Dirty NFT Channels to Storage Room",
@@ -1934,7 +1981,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Set Clean NFT Channels",
@@ -1973,7 +2021,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Clean Tower Basins",
@@ -2012,7 +2061,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Set Clean Towers",
@@ -2051,7 +2101,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Clean Tower Garden Pots",
@@ -2094,7 +2145,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Assemble Tower Gardens",
@@ -2132,7 +2184,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Disassemble Towers",
@@ -2171,7 +2224,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Equipment Tech"
   },
   {
     "title": "Replace Fan and Furnace Filter",
@@ -2212,7 +2266,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Cleaning Crew"
   },
   {
     "title": "Plant Towers",
@@ -2255,7 +2310,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Moving Tech"
   },
   {
     "title": "Harvest Towers",
@@ -2297,29 +2353,8 @@
       }
     },
     "checklistTemplate": {
-      "steps": [
-        {
-          "id": "1756164441780",
-          "type": "number-input",
-          "label": "Harvest the Kale Tower. How much kale did you harvest?",
-          "required": true,
-          "config": {
-            "min": 0,
-            "max": 100,
-            "unit": "",
-            "default": 0
-          }
-        },
-        {
-          "id": "1756164466560",
-          "type": "instruction",
-          "label": "Make sure the tower is unplugged",
-          "required": true,
-          "config": {
-            "text": ""
-          }
-        }
-      ]
-    }
+      "steps": []
+    },
+    "assignTo": "role_Leafy Greens Harvester"
   }
 ]
