@@ -178,7 +178,7 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
       console.log('Looking for user ID:', userId, 'Staff IDs:', staff.map(s => ({ id: s.id, name: s.fullName })));
       
       // Try both string and number comparison since ID types might vary
-      const assignedUser = staff.find(s => s.id === userId || s.id === parseInt(userId) || s.id.toString() === userId);
+      const assignedUser = staff.find(s => s.id === userId || s.id === parseInt(userId, 10).toString());
       console.log('Found user:', assignedUser?.fullName || 'NOT FOUND');
       return assignedUser?.fullName || `Unknown User (ID: ${userId})`;
     }
@@ -210,9 +210,8 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
     
     // Handle direct user ID assignment
     const assignedUser = staff.find(s => 
-      s.id === task.assignedTo || 
-      s.id === parseInt(task.assignedTo) || 
-      s.id.toString() === task.assignedTo.toString()
+      s.id === task.assignedTo.toString() || 
+      s.id === parseInt(task.assignedTo.toString(), 10).toString()
     );
     
     if (assignedUser) {
