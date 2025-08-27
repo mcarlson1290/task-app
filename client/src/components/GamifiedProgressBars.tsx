@@ -7,18 +7,10 @@ interface GamifiedProgressBarsProps {
 }
 
 const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, currentUser, selectedDate }) => {
-  // Safety check - don't render if we don't have tasks or current user
-  if (!tasks || !Array.isArray(tasks) || !currentUser) {
-    return null;
-  }
-
   const today = new Date().toISOString().split('T')[0];
   const [currentAffirmation, setCurrentAffirmation] = useState(0);
   
-  // Only show for today view
-  if (selectedDate !== today) return null;
-  
-  // Affirmations pool
+  // Affirmations pool - moved before useEffect to ensure consistent order
   const affirmations = [
     "Keep crushing it! 💪",
     "You're doing amazing!",
@@ -52,14 +44,22 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
     "You're making it happen!"
   ];
   
-  // Rotate affirmations
+  // Rotate affirmations - ensure this is always called
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentAffirmation((prev) => (prev + 1) % affirmations.length);
     }, 5000); // Change every 5 seconds
     
     return () => clearInterval(interval);
-  }, []);
+  }, [affirmations.length]);
+  
+  // Safety check - don't render if we don't have tasks or current user (after all hooks)
+  if (!tasks || !Array.isArray(tasks) || !currentUser) {
+    return null;
+  }
+  
+  // Only show for today view
+  if (selectedDate !== today) return null;
   
   // Calculate task stats for all tasks - with error handling
   const teamStats = {
