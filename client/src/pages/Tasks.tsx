@@ -19,8 +19,11 @@ import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
 import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
+import { useUser } from "@/contexts/UserContext";
+import { isTaskAssignedToUser } from "@/services/assignmentService";
 
 const Tasks: React.FC = () => {
+  const { currentUser } = useUser();
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = React.useState(false);
@@ -33,6 +36,7 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
+  const [assignedToMeFilter, setAssignedToMeFilter] = React.useState<boolean>(false);
   const [dateFilter, setDateFilter] = React.useState<string>(() => {
     const todayString = getTodayString();
     console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
@@ -151,6 +155,12 @@ const Tasks: React.FC = () => {
       return response.json();
     },
     enabled: !!auth.user,
+  });
+
+  // Fetch staff data for assignment filtering
+  const { data: staff = [] } = useQuery({
+    queryKey: ['/api/staff'],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
 

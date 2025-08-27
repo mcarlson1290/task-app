@@ -2,9 +2,12 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, Info } from "lucide-react";
+import { Clock, CheckCircle, Info, Users } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
+import { useUser } from "@/contexts/UserContext";
+import { useQuery } from "@tanstack/react-query";
+import { isTaskAssignedToUser, getAssignmentDisplayText } from "@/services/assignmentService";
 
 interface TaskCardProps {
   task: Task;
@@ -12,6 +15,14 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
+  const { currentUser } = useUser();
+  
+  // Fetch staff data for assignment display
+  const { data: staff = [] } = useQuery({
+    queryKey: ['/api/staff'],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
   // Safety check for task object
   if (!task) {
     return (
@@ -22,6 +33,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
       </Card>
     );
   }
+
+  // Check if task is assigned to current user
+  const isAssignedToMe = isTaskAssignedToUser(task, currentUser, staff);
+  
+  // Get assignment display text
+  const assignmentText = getAssignmentDisplayText(task, staff);
   const getTaskEmoji = (type: string): string => {
     const emojis: Record<string, string> = {
       "seeding-microgreens": "🌱",
@@ -229,6 +246,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               ⏱️ Est. {formatTime(task.estimatedTime)}
             </p>
           )}
+          
+          {/* Assignment information */}
+          <div className="assignment-info flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              <Users className="h-4 w-4 inline mr-1" />
+              {assignmentText}
+            </p>
+            {isAssignedToMe && (
+              <span className="assigned-to-me-badge bg-[#2D8028] text-white text-xs px-2 py-1 rounded-full font-medium">
+                📌 Assigned to You
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar (for in-progress tasks) */}
