@@ -50,11 +50,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id.toString(),
         fullName: user.name || 'Unknown User',
         email: user.username,
-        phone: '',
-        location: 'Kenosha', // Default location
+        phone: user.businessPhone || user.mobilePhone || user.homePhone || '',
+        location: user.location || 'Kenosha',
         rolesAssigned: user.role ? user.role.split(',').map(r => r.trim()) : ['General Staff'],
         dateHired: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        payRate: 0,
+        payType: user.payType || 'hourly',
+        payRate: user.payRate || 16.00,
+        businessEmail: user.businessEmail || user.username,
+        personalEmail: user.personalEmail,
+        homePhone: user.homePhone,
+        businessPhone: user.businessPhone,
+        mobilePhone: user.mobilePhone,
+        emergencyContactName: user.emergencyContactName,
+        emergencyRelationship: user.emergencyRelationship,
+        emergencyPhone: user.emergencyPhone,
         trainingCompleted: [],
         trainingInProgress: [],
         preferredHours: 'Flexible',
@@ -89,11 +98,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: existingUser.id.toString(),
           fullName: existingUser.name,
           email: existingUser.username,
-          phone: '',
-          location: 'Kenosha', // Default location
+          phone: existingUser.businessPhone || existingUser.mobilePhone || existingUser.homePhone || '',
+          location: existingUser.location || 'Kenosha',
           rolesAssigned: existingUser.role ? existingUser.role.split(',').map(r => r.trim()) : ['General Staff'],
-          dateHired: new Date().toISOString().split('T')[0],
-          payRate: 0,
+          dateHired: existingUser.createdAt ? new Date(existingUser.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          payType: existingUser.payType || 'hourly',
+          payRate: existingUser.payRate || 16.00,
+          businessEmail: existingUser.businessEmail || existingUser.username,
+          personalEmail: existingUser.personalEmail,
+          homePhone: existingUser.homePhone,
+          businessPhone: existingUser.businessPhone,
+          mobilePhone: existingUser.mobilePhone,
+          emergencyContactName: existingUser.emergencyContactName,
+          emergencyRelationship: existingUser.emergencyRelationship,
+          emergencyPhone: existingUser.emergencyPhone,
           trainingCompleted: [],
           trainingInProgress: [],
           preferredHours: 'Flexible',
@@ -116,6 +134,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: staffData.fullName,
         role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : 'technician',
         approved: staffData.activeStatus === 'Active',
+        location: staffData.location || 'Kenosha',
+        payType: staffData.payType || 'hourly',
+        payRate: staffData.payRate || 16.00,
+        businessEmail: staffData.businessEmail || staffData.email,
+        personalEmail: staffData.personalEmail,
+        homePhone: staffData.homePhone,
+        businessPhone: staffData.businessPhone || staffData.phone,
+        mobilePhone: staffData.mobilePhone || staffData.phone,
+        emergencyContactName: staffData.emergencyContactName,
+        emergencyRelationship: staffData.emergencyRelationship,
+        emergencyPhone: staffData.emergencyPhone,
         lastActive: new Date() // Set last active on first creation
       };
       const user = await storage.createUser(userData);
@@ -141,17 +170,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password: 'temp-password', // Will be set via Microsoft auth
           name: staffData.fullName,
           role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : 'technician',
-          approved: staffData.activeStatus === 'Active'
+          approved: staffData.activeStatus === 'Active',
+          location: staffData.location || 'Kenosha',
+          payType: staffData.payType || 'hourly',
+          payRate: staffData.payRate || 16.00,
+          businessEmail: staffData.businessEmail || staffData.email,
+          personalEmail: staffData.personalEmail,
+          homePhone: staffData.homePhone,
+          businessPhone: staffData.businessPhone || staffData.phone,
+          mobilePhone: staffData.mobilePhone || staffData.phone,
+          emergencyContactName: staffData.emergencyContactName,
+          emergencyRelationship: staffData.emergencyRelationship,
+          emergencyPhone: staffData.emergencyPhone
         };
         const newUser = await storage.createUser(userData);
         return res.json({ ...staffData, id: newUser.id.toString() });
       }
       
-      // Update existing user
+      // Update existing user with complete staff data
       const updates = {
         name: staffData.fullName,
         role: Array.isArray(staffData.rolesAssigned) ? staffData.rolesAssigned.join(', ') : staffData.rolesAssigned,
-        approved: staffData.activeStatus === 'Active'
+        approved: staffData.activeStatus === 'Active',
+        location: staffData.location || 'Kenosha',
+        payType: staffData.payType || 'hourly',
+        payRate: staffData.payRate || 16.00,
+        businessEmail: staffData.businessEmail || staffData.email,
+        personalEmail: staffData.personalEmail,
+        homePhone: staffData.homePhone,
+        businessPhone: staffData.businessPhone || staffData.phone,
+        mobilePhone: staffData.mobilePhone || staffData.phone,
+        emergencyContactName: staffData.emergencyContactName,
+        emergencyRelationship: staffData.emergencyRelationship,
+        emergencyPhone: staffData.emergencyPhone
       };
       const user = await storage.updateUser(existingUser.id, updates);
       if (!user) {
