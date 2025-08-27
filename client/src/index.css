@@ -2216,13 +2216,53 @@ label.error select {
   z-index: 1;
 }
 
+/* Portal dropdown styles */
+.select-dropdown-portal {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Flip dropdown when it appears above */
+.select-dropdown-portal.flip {
+  box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure dropdown appears above modal */
+.select-dropdown-portal {
+  z-index: 10000 !important; /* Higher than modal z-index */
+}
+
+/* Scrollbar styling for dropdown */
+.options-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.options-list::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.options-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.options-list::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
   .searchable-select {
     max-width: 100%;
   }
   
-  .select-dropdown {
+  .select-dropdown, .select-dropdown-portal {
     max-height: 300px;
   }
   
