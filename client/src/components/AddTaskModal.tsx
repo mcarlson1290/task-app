@@ -42,13 +42,16 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
   // Fetch assignment options when task type changes
   useEffect(() => {
     const loadAssignmentOptions = async () => {
-      if (taskData.type) {
+      if (taskData.type && currentUser) {
+        console.log('🔄 Loading assignment options for task type:', taskData.type);
+        console.log('👤 Current user:', currentUser);
         setIsLoadingAssignments(true);
         try {
           const options = await getAssignmentOptions(currentUser, taskData.type);
+          console.log('✅ Assignment options loaded:', options);
           setAssignmentOptions(options);
         } catch (error) {
-          console.error('Error loading assignment options:', error);
+          console.error('❌ Error loading assignment options:', error);
           toast({
             title: "Error Loading Assignments",
             description: "Could not load assignment options. Please try again.",
@@ -57,6 +60,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
         } finally {
           setIsLoadingAssignments(false);
         }
+      } else {
+        console.log('⏳ Waiting for task type and current user...', { taskType: taskData.type, currentUser: !!currentUser });
       }
     };
     

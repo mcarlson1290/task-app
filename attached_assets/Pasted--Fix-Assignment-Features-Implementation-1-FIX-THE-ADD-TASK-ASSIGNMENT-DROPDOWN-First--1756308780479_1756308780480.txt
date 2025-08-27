@@ -1,0 +1,744 @@
+# 🔧 Fix Assignment Features Implementation
+
+## 1. FIX THE ADD TASK ASSIGNMENT DROPDOWN
+
+First, let's debug why the assignment dropdown isn't populating. Update your Add Task modal:
+
+```javascript
+// In your AddTaskModal component
+import { getAssignmentOptions, taskTypeToRoleMapping } from '../services/taskService';
+
+const AddTaskModal = ({ onSave, onClose, currentUser }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    taskType: '',
+    priority: 'Medium',
+    assignTo: '',
+    dueDate: new Date().toISOString().split('T')[0]
+  });
+  
+  const [assignmentOptions, setAssignmentOptions] = useState({
+    roles: [],
+    users: [],
+    special: []
+  });
+  
+  const [loading, setLoading] = useState(false);
+  
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('AddTaskModal mounted, currentUser:', currentUser);
+  }, []);
+  
+  // Fetch assignment options when task type changes
+  useEffect(() => {
+    const loadAssignmentOptions = async () => {
+      if (formData.taskType) {
+        console.log('Loading assignment options for task type:', formData.taskType);
+        setLoading(true);
+        
+        try {
+          const options = await getAssignmentOptions(currentUser, formData.taskType);
+          console.log('Assignment options loaded:', options);
+          setAssignmentOptions(options);
+        } catch (error) {
+          console.error('Error loading assignment options:', error);
+        }
+        
+        setLoading(false);
+      }
+    };
+    
+    loadAssignmentOptions();
+  }, [formData.taskType, currentUser]);
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Add New Task</h2>
+        <form onSubmit={handleSubmit}>
+          {/* Other form fields... */}
+          
+          {/* Task Type Dropdown */}
+          <div className="form-group">
+            <label>Task Type *</label>
+            <select
+              value={formData.taskType}
+              onChange={(e) => {
+                console.log('Task type changed to:', e.target.value);
+                setFormData({ ...formData, taskType: e.target.value, assignTo: '' });
+              }}
+              required
+            >
+              <option value="">Select Type</option>
+              <option value="Seeding - Microgreens">Seeding - Microgreens</option>
+              <option value="Seeding - Leafy Greens">Seeding - Leafy Greens</option>
+              <option value="Harvest - Microgreens">Harvest - Microgreens</option>
+              <option value="Harvest - Leafy Greens">Harvest - Leafy Greens</option>
+              <option value="Blackout Tasks">Blackout Tasks</option>
+              <option value="Moving">Moving</option>
+              <option value="Packing">Packing</option>
+              <option value="Cleaning">Cleaning</option>
+              <option value="Inventory">Inventory</option>
+              <option value="Equipment Maintenance">Equipment Maintenance</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          {/* Assignment Dropdown */}
+          <div className="form-group">
+            <label>Assign To *</label>
+            <select
+              value={formData.assignTo}
+              onChange={(e) => setFormData({ ...formData, assignTo: e.target.value })}
+              required
+              disabled={!formData.taskType || loading}
+            >
+              <option value="">
+                {!formData.taskType 
+                  ? 'Select task type first' 
+                  : loading 
+                    ? 'Loading...' 
+                    : 'Select Assignee'}
+              </option>
+              
+              {/* Special Options (All Staff for "Other" tasks) */}
+              {assignmentOptions.special.length > 0 && (
+                <>
+                  {assignmentOptions.special.map(option => (
+                    <option 
+                      key={option.value} 
+                      value={option.value}
+                      style={option.isPrimary ? { background: '#e0f2fe', fontWeight: 'bold' } : {}}
+                    >
+                      {option.label} ({option.staffCount} people)
+                    </option>
+                  ))}
+                </>
+              )}
+              
+              {/* Roles Section */}
+              {assignmentOptions.roles.length > 0 && (
+                <>
+                  <option disabled>──────── Roles ────────</option>
+                  {assignmentOptions.roles.map(role => (
+                    <option 
+                      key={role.value} 
+                      value={role.value}
+                      style={role.isPrimary ? { background: '#e0f2fe', fontWeight: 'bold' } : {}}
+                    >
+                      {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
+                    </option>
+                  ))}
+                </>
+              )}
+              
+              {/* Users Section */}
+              {assignmentOptions.users.length > 0 && (
+                <>
+                  <option disabled>──────── People ────────</option>
+                  {assignmentOptions.users.map(user => (
+                    <option 
+                      key={user.value} 
+                      value={user.value}
+                      style={user.isCurrentUser ? { background: '#dbeafe', fontWeight: 'bold' } : {}}
+                    >
+                      {user.label} 
+                      {user.isCurrentUser && ' (You)'}
+                      {user.roles.length > 0 && ` - ${user.roles.join(', ')}`}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+          </div>
+          
+          {/* Show assignment preview */}
+          {formData.assignTo && formData.assignTo.startsWith('role_') && (
+            <div className="assignment-preview">
+              <small>
+                This will assign to: {
+                  assignmentOptions.roles
+                    .find(r => r.value === formData.assignTo)
+                    ?.staffIds
+                    .map(id => assignmentOptions.users.find(u => u.userId === id)?.label)
+                    .join(', ') || 'Loading...'
+                }
+              </small>
+            </div>
+          )}
+          
+          <div className="modal-actions">
+            <button type="submit" className="btn-primary">Save Task</button>
+            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+```
+
+## 2. ADD "ASSIGNED TO ME" FILTER TO TASKS PAGE
+
+Update your Tasks page to include the filter:
+
+```javascript
+const TasksPage = ({ currentUser }) => {
+  const [tasks, setTasks] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [filters, setFilters] = useState({
+    category: 'All',
+    status: 'All',
+    priority: 'All',
+    assignedToMe: false,
+    searchQuery: ''
+  });
+  
+  // Load tasks and staff
+  useEffect(() => {
+    loadTasks();
+    loadStaff();
+  }, []);
+  
+  const loadStaff = async () => {
+    try {
+      const response = await fetch('/api/staff');
+      const data = await response.json();
+      setStaff(data);
+    } catch (error) {
+      console.error('Error loading staff:', error);
+    }
+  };
+  
+  // Check if task is assigned to current user
+  const isTaskAssignedToUser = (task) => {
+    if (!currentUser) return false;
+    
+    // Direct user assignment
+    if (task.assignTo === `user_${currentUser.id}`) return true;
+    
+    // All staff assignment
+    if (task.assignTo === 'all_staff') return true;
+    
+    // Role assignment
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      const userStaff = staff.find(s => s.id === currentUser.id);
+      return userStaff?.rolesAssigned?.includes(roleName) || false;
+    }
+    
+    return false;
+  };
+  
+  // Filter tasks
+  const filteredTasks = tasks.filter(task => {
+    // Category filter
+    if (filters.category !== 'All' && task.taskType !== filters.category) {
+      return false;
+    }
+    
+    // Status filter
+    if (filters.status !== 'All' && task.status !== filters.status) {
+      return false;
+    }
+    
+    // Priority filter
+    if (filters.priority !== 'All' && task.priority !== filters.priority) {
+      return false;
+    }
+    
+    // Assigned to me filter
+    if (filters.assignedToMe && !isTaskAssignedToUser(task)) {
+      return false;
+    }
+    
+    // Search query
+    if (filters.searchQuery && !task.title.toLowerCase().includes(filters.searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    return true;
+  });
+  
+  return (
+    <div className="tasks-page">
+      {/* Filter Bar */}
+      <div className="filter-bar">
+        <select
+          value={filters.category}
+          onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+          className="filter-select"
+        >
+          <option value="All">All Categories</option>
+          <option value="Seeding - Microgreens">Seeding - Microgreens</option>
+          <option value="Seeding - Leafy Greens">Seeding - Leafy Greens</option>
+          {/* Add other categories */}
+        </select>
+        
+        <select
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          className="filter-select"
+        >
+          <option value="All">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        
+        <select
+          value={filters.priority}
+          onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+          className="filter-select"
+        >
+          <option value="All">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        
+        {/* Assigned to Me Toggle */}
+        <label className="assigned-to-me-toggle">
+          <input
+            type="checkbox"
+            checked={filters.assignedToMe}
+            onChange={(e) => setFilters({ ...filters, assignedToMe: e.target.checked })}
+          />
+          <span className="toggle-slider"></span>
+          <span className="toggle-label">📌 Assigned to Me</span>
+        </label>
+        
+        <button 
+          className="clear-filters-btn"
+          onClick={() => setFilters({
+            category: 'All',
+            status: 'All',
+            priority: 'All',
+            assignedToMe: false,
+            searchQuery: ''
+          })}
+        >
+          × Clear Filters
+        </button>
+      </div>
+      
+      {/* Task List */}
+      <div className="task-grid">
+        {filteredTasks.map(task => (
+          <TaskCard 
+            key={task.id} 
+            task={task} 
+            isAssignedToMe={isTaskAssignedToUser(task)}
+            currentUser={currentUser}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+## 3. ADD ASSIGNMENT TO RECURRING TASKS
+
+Add bulk assignment functionality to recurring tasks:
+
+```javascript
+// Add to your Recurring Tasks page
+const RecurringTasksPage = ({ currentUser }) => {
+  const [recurringTasks, setRecurringTasks] = useState([]);
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [showBulkAssign, setShowBulkAssign] = useState(false);
+  const [bulkAssignTo, setBulkAssignTo] = useState('');
+  const [assignmentOptions, setAssignmentOptions] = useState({
+    roles: [],
+    users: [],
+    special: []
+  });
+  
+  // Add assignment field to Edit Recurring Task modal
+  const EditRecurringTaskModal = ({ task, onSave, onClose }) => {
+    const [formData, setFormData] = useState({
+      ...task,
+      assignedRoles: task.assignedRoles || [] // This will store the assignment
+    });
+    
+    const [assignOptions, setAssignOptions] = useState({
+      roles: [],
+      users: [],
+      special: []
+    });
+    
+    // Load assignment options when modal opens
+    useEffect(() => {
+      const loadOptions = async () => {
+        const options = await getAssignmentOptions(currentUser, formData.taskType);
+        setAssignOptions(options);
+      };
+      loadOptions();
+    }, [formData.taskType]);
+    
+    return (
+      <div className="modal">
+        <h2>Edit Recurring Task</h2>
+        {/* Other fields... */}
+        
+        {/* Add Assignment Section */}
+        <div className="form-group">
+          <label>Default Assignment</label>
+          <select
+            value={formData.assignTo || ''}
+            onChange={(e) => setFormData({ ...formData, assignTo: e.target.value })}
+          >
+            <option value="">No default assignment</option>
+            
+            {assignOptions.special.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+            
+            {assignOptions.roles.length > 0 && (
+              <>
+                <option disabled>──────── Roles ────────</option>
+                {assignOptions.roles.map(role => (
+                  <option key={role.value} value={role.value}>
+                    {role.label} ({role.staffCount} people)
+                  </option>
+                ))}
+              </>
+            )}
+            
+            {assignOptions.users.length > 0 && (
+              <>
+                <option disabled>──────── People ────────</option>
+                {assignOptions.users.map(user => (
+                  <option key={user.value} value={user.value}>
+                    {user.label}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+          <small className="help-text">
+            Tasks generated from this recurring task will be assigned to this selection
+          </small>
+        </div>
+        
+        {/* Save/Cancel buttons */}
+      </div>
+    );
+  };
+  
+  // Bulk Assignment Feature
+  const BulkAssignmentBar = () => {
+    return (
+      <div className="bulk-assignment-bar">
+        <button
+          className="bulk-assign-btn"
+          onClick={() => setShowBulkAssign(!showBulkAssign)}
+          disabled={selectedTasks.length === 0}
+        >
+          👥 Bulk Assign ({selectedTasks.length} selected)
+        </button>
+        
+        {showBulkAssign && selectedTasks.length > 0 && (
+          <div className="bulk-assign-dropdown">
+            <select
+              value={bulkAssignTo}
+              onChange={(e) => setBulkAssignTo(e.target.value)}
+            >
+              <option value="">Select assignment...</option>
+              {/* Same assignment options as above */}
+            </select>
+            
+            <button
+              onClick={handleBulkAssign}
+              disabled={!bulkAssignTo}
+              className="apply-btn"
+            >
+              Apply to Selected
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  const handleBulkAssign = async () => {
+    try {
+      // Update all selected recurring tasks with new assignment
+      const updates = selectedTasks.map(taskId => 
+        fetch(`/api/recurring-tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assignTo: bulkAssignTo })
+        })
+      );
+      
+      await Promise.all(updates);
+      
+      // Refresh the list
+      loadRecurringTasks();
+      setSelectedTasks([]);
+      setShowBulkAssign(false);
+      setBulkAssignTo('');
+      
+      alert(`Successfully assigned ${selectedTasks.length} tasks!`);
+    } catch (error) {
+      console.error('Error bulk assigning:', error);
+      alert('Failed to assign tasks');
+    }
+  };
+  
+  return (
+    <div className="recurring-tasks-page">
+      <div className="page-header">
+        <h1>Recurring Tasks</h1>
+        <BulkAssignmentBar />
+      </div>
+      
+      {/* Task list with checkboxes for bulk selection */}
+      <div className="recurring-task-list">
+        {recurringTasks.map(task => (
+          <div key={task.id} className="recurring-task-item">
+            <input
+              type="checkbox"
+              checked={selectedTasks.includes(task.id)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelectedTasks([...selectedTasks, task.id]);
+                } else {
+                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                }
+              }}
+            />
+            
+            <div className="task-info">
+              <h3>{task.title}</h3>
+              <span className="task-type">{task.taskType}</span>
+              <span className="assignment">
+                {task.assignTo ? getAssignmentDisplay(task.assignTo) : 'Unassigned'}
+              </span>
+            </div>
+            
+            <button onClick={() => editTask(task)}>Edit</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+## 4. UPDATE CSS FOR NEW FEATURES
+
+Add these styles to your CSS:
+
+```css
+/* Filter Bar Styles */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Assigned to Me Toggle */
+.assigned-to-me-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.assigned-to-me-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 44px;
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.assigned-to-me-toggle input:checked + .toggle-slider {
+  background: #2D8028;
+}
+
+.assigned-to-me-toggle input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+.clear-filters-btn {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background 0.2s;
+}
+
+.clear-filters-btn:hover {
+  background: #e5e7eb;
+}
+
+/* Bulk Assignment Styles */
+.bulk-assignment-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.bulk-assign-btn {
+  padding: 8px 16px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.bulk-assign-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulk-assign-dropdown {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recurring-task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.recurring-task-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.task-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assignment {
+  padding: 4px 12px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Assignment Preview */
+.assignment-preview {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #0369a1;
+}
+
+.help-text {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 12px;
+}
+```
+
+## 5. DEBUGGING STEPS
+
+If the assignment dropdown still isn't working:
+
+1. **Check API Response**:
+```javascript
+// In your browser console
+fetch('/api/staff')
+  .then(res => res.json())
+  .then(data => console.log('Staff data:', data));
+```
+
+2. **Verify Current User**:
+```javascript
+// Make sure currentUser is being passed correctly
+console.log('Current user in TasksPage:', currentUser);
+```
+
+3. **Check Role Mapping**:
+```javascript
+// Verify the role mapping is imported correctly
+console.log('Task type to role mapping:', taskTypeToRoleMapping);
+```
+
+4. **Test Assignment Service**:
+```javascript
+// Test the getAssignmentOptions function directly
+getAssignmentOptions(currentUser, 'Seeding - Microgreens')
+  .then(options => console.log('Options:', options));
+```
+
+## Common Issues and Fixes
+
+1. **Empty Dropdown**: Usually means the API call is failing or returning empty data
+2. **No Current User**: Make sure user context is passed down from your app root
+3. **Roles Not Matching**: Ensure staff roles in the database match the role names in the mapping
+4. **Assignment Not Saving**: Check that the backend is handling the new assignment format
+
+The assignment system should now work across all pages with proper filtering and bulk assignment capabilities!

@@ -33,6 +33,7 @@ const Tasks: React.FC = () => {
   const [priorityDropdownOpen, setPriorityDropdownOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
+  const [assignedToMeFilter, setAssignedToMeFilter] = React.useState<boolean>(false);
   const [dateFilter, setDateFilter] = React.useState<string>(() => {
     const todayString = getTodayString();
     console.log('🗓️ Initial date filter set to:', todayString, '(Today)');
@@ -376,6 +377,38 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
+    // Assigned to Me filter
+    if (assignedToMeFilter) {
+      filtered = filtered.filter(task => {
+        if (!auth?.user) return false;
+        
+        const userId = auth.user.id?.toString();
+        
+        // Check new assignTo field first
+        if (task.assignTo) {
+          // Direct user assignment
+          if (task.assignTo === `user_${userId}`) return true;
+          
+          // All staff assignment
+          if (task.assignTo === 'all_staff') return true;
+          
+          // Role assignment - check if user has the role
+          if (task.assignTo.startsWith('role_')) {
+            const roleName = task.assignTo.replace('role_', '');
+            const currentStaff = staffData.find((s: any) => s.id === userId);
+            return currentStaff?.rolesAssigned.includes(roleName) || false;
+          }
+        }
+        
+        // Fallback to legacy assignedTo field
+        if (task.assignedTo && task.assignedTo.toString() === userId) {
+          return true;
+        }
+        
+        return false;
+      });
+    }
+
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
       const today = new Date().toISOString().split('T')[0];
@@ -453,13 +486,14 @@ const Tasks: React.FC = () => {
     console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
     return uniqueFiltered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, dateFilter, currentLocation.name, isViewingAllLocations]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.name, isViewingAllLocations, staffData]);
 
   // Clear all filters function
   const clearAllFilters = async () => {
     setActiveFilter("all");
     setStatusFilter("all");
     setPriorityFilter("all");
+    setAssignedToMeFilter(false);
     setDateFilter("");
     setSearchTerm("");
     // Refresh tasks to ensure immediate UI update
@@ -883,6 +917,20 @@ const Tasks: React.FC = () => {
               </option>
             ))}
           </select>
+
+          {/* Assigned to Me Toggle */}
+          <label className="assigned-to-me-toggle flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={assignedToMeFilter}
+              onChange={async (e) => {
+                setAssignedToMeFilter(e.target.checked);
+                await refreshTasks();
+              }}
+              className="h-4 w-4 text-[#2D8028] focus:ring-[#2D8028] border-gray-300 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">📌 Assigned to Me</span>
+          </label>
 
           {/* Date Input */}
           <div className="flex items-center gap-2">
