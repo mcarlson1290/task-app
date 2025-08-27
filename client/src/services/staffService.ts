@@ -132,7 +132,22 @@ export const createStaffFromMicrosoftLogin = async (
 
 // Update existing staff member
 export const updateStaffMember = async (updatedStaff: StaffMember): Promise<void> => {
-  await saveStaffToAPI(updatedStaff);
+  try {
+    const response = await fetch(`${API_BASE}/staff/${updatedStaff.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedStaff)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Update API Error:', response.status, errorText);
+      throw new Error(`Failed to update staff member: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error updating staff member:', error);
+    throw error;
+  }
 };
 
 // Update last active time for staff member
