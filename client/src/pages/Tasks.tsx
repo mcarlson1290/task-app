@@ -20,7 +20,7 @@ import { TrayService } from "@/services/trayService";
 import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
-import { isTaskAssignedToUser } from "@/utils/taskAssignment";
+import { isMyTask } from "../utils/taskHelpers";
 import DebugPanel from "@/components/DebugPanel";
 import GamifiedProgressBars from "@/components/GamifiedProgressBars";
 
@@ -382,12 +382,11 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    // Assigned to Me filter - should work WITH other filters, not replace them
+    // Only My Tasks filter
     if (assignedToMeFilter && currentUser) {
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - Before: ${filtered.length} tasks`);
       filtered = filtered.filter(task => {
-        const isAssigned = isTaskAssignedToUser(task, currentUser);
-        console.log(`  → Task "${task.title}" assignment check:`, isAssigned);
+        const isAssigned = isMyTask(task, currentUser);
         return isAssigned;
       });
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);

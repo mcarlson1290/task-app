@@ -2,13 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Task Card - Assigned to Me Highlighting - ALWAYS VISIBLE */
 .task-card.assigned-to-me {
-  position: relative !important;
-  border-left: 6px solid #2D8028 !important;
-  background: linear-gradient(to right, rgba(45, 128, 40, 0.1) 0%, rgba(45, 128, 40, 0.02) 100%) !important;
-  box-shadow: 0 2px 8px rgba(45, 128, 40, 0.2) !important;
-  transform: translateX(2px) !important;
+  border-left: 4px solid #2D8028 !important;
 }
 
 /* Hover effect for assigned tasks */
@@ -29,8 +24,25 @@
 }
 
 .your-task-badge {
+  background: #2D8028;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.task-badges-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.right-badges {
+  display: flex;
+  gap: 4px;
 }
 
 /* Badge styling improvements */

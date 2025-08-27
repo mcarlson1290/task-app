@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, CheckCircle, Info, Users } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
-import { isTaskAssignedToUser, getAssignmentDisplay } from "../utils/taskAssignment";
+import { isMyTask } from "../utils/taskHelpers";
 import { useCurrentUser } from "../contexts/CurrentUserContext";
 import { StaffMember } from "../services/staffService";
 
@@ -164,24 +164,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
 
-  // Check if task is assigned to current user using centralized function
-  const isAssignedToCurrentUser = isTaskAssignedToUser(task, currentUser);
-  
-  // Debug logging for assignment - show assigned tasks
-  if (isAssignedToCurrentUser) {
-    console.log('🎯 ASSIGNED TASK FOUND - SHOULD HAVE GREEN BORDER:', {
-      taskId: task.id,
-      taskTitle: task.title,
-      assignTo: task.assignTo,
-      assignedTo: task.assignedTo,
-      isAssigned: isAssignedToCurrentUser,
-      cssClass: 'assigned-to-me'
-    });
-  }
+  // Check if task is assigned to current user
+  const assignedToMe = isMyTask(task, currentUser);
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
-      isAssignedToCurrentUser ? 'assigned-to-me' : ''
+      assignedToMe ? 'assigned-to-me' : ''
     } ${
       isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
@@ -212,8 +200,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
           </div>
           
           {/* Right badge: Your Task (only when assigned) */}
-          {isAssignedToCurrentUser && (
-            <div className="your-task-badge bg-[#2D8028] text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border-2 border-[#1a5a15]">
+          {assignedToMe && (
+            <div className="your-task-badge">
               📌 Your Task
             </div>
           )}
@@ -260,7 +248,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
           {/* Assignment information - simplified */}
           <div className="assignment-info text-sm text-gray-600 mb-1 flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            <span>{getAssignmentDisplay(task.assignTo || task.assignedTo)}</span>
+            <span>{task.assignTo || task.assignedTo || 'Unassigned'}</span>
           </div>
         </div>
 
