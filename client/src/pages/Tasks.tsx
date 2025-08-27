@@ -22,6 +22,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import { isTaskAssignedToCurrentUser } from "@/utils/taskAssignmentUtils";
 import DebugPanel from "@/components/DebugPanel";
+import GamifiedProgressBars from "@/components/GamifiedProgressBars";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -815,17 +816,50 @@ const Tasks: React.FC = () => {
   return (
     <div className="page-content">
       <div className="task-manager">
-      {/* Updated filter bar with New Task button */}
-      <div className={`task-filters-wrapper ${canScrollLeft ? 'can-scroll-left' : ''} ${canScrollRight ? 'can-scroll-right' : ''}`}>
-        <div 
-          className="task-filters tasks-filter-container"
-          ref={filtersRef}
-          onScroll={(e) => {
-            const target = e.target as HTMLDivElement;
-            setCanScrollLeft(target.scrollLeft > 0);
-            setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
-          }}
-        >
+      {/* Updated filter bar with responsive scroll */}
+      <div className="filters-container">
+        <div className="filters-scroll-wrapper">
+          {/* Left scroll indicator */}
+          {canScrollLeft && (
+            <div 
+              className="scroll-indicator left"
+              onClick={() => {
+                if (filtersRef.current) {
+                  filtersRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+                }
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 18l-6-6 6-6v12z"/>
+              </svg>
+            </div>
+          )}
+          
+          {/* Right scroll indicator */}
+          {canScrollRight && (
+            <div 
+              className="scroll-indicator right"
+              onClick={() => {
+                if (filtersRef.current) {
+                  filtersRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+                }
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 18l6-6-6-6v12z"/>
+              </svg>
+            </div>
+          )}
+          
+          <div 
+            className="filters-scroll-content task-filters tasks-filter-container"
+            ref={filtersRef}
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              setCanScrollLeft(target.scrollLeft > 0);
+              setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
+            }}
+          >
           {/* Category Select */}
           <select 
             value={activeFilter}
@@ -977,6 +1011,7 @@ const Tasks: React.FC = () => {
           >
             {isRefreshing ? '⏳ Refreshing...' : '🔄 Refresh Tasks'}
           </button>
+          </div>
         </div>
       </div>
 
@@ -1015,6 +1050,13 @@ const Tasks: React.FC = () => {
         activeFilter={activeFilter}
         statusFilter={statusFilter}
         dateFilter={dateFilter}
+      />
+
+      {/* Gamified Progress Bars */}
+      <GamifiedProgressBars 
+        tasks={tasks as any}
+        currentUser={currentUser as any}
+        selectedDate={dateFilter}
       />
 
       {/* Task Content */}
