@@ -1,0 +1,114 @@
+# 📊 Progress Bar Updates Instructions
+
+## 1. REMOVE NUMBERS FROM PROGRESS BARS
+
+In the `renderProgressBar` function, remove the span elements that display numbers:
+
+```javascript
+// Change all progress segments from this:
+<div 
+  className="progress-segment overdue"
+  style={{ width: `${(stats.overdue / total) * 100}%` }}
+  title={`${stats.overdue} overdue`}
+>
+  {stats.overdue > 2 && <span>{stats.overdue}</span>}
+</div>
+
+// To this (remove the span):
+<div 
+  className="progress-segment overdue"
+  style={{ width: `${(stats.overdue / total) * 100}%` }}
+  title={`${stats.overdue} overdue`}
+/>
+```
+
+Do this for ALL segments: overdue, pending, in-progress, paused, completed, and skipped.
+
+## 2. FILTER TASKS TO TODAY ONLY
+
+Add a filter to only include today's tasks. After the `if (selectedDate !== today) return null;` line, add:
+
+```javascript
+// Filter tasks to only today's tasks
+const todayTasks = tasks.filter(task => {
+  // Completed/skipped tasks: check if completed today
+  if (task.status === 'completed' || task.status === 'skipped') {
+    const actionDate = (task.completedAt || task.skippedAt || task.dueDate).split('T')[0];
+    return actionDate === today;
+  }
+  
+  // Overdue tasks: show on today
+  if (task.dueDate < today && (task.status === 'pending' || task.status === 'in_progress')) {
+    return true;
+  }
+  
+  // Regular tasks: due today
+  return task.dueDate === today;
+});
+```
+
+Then update all references from `tasks` to `todayTasks`:
+- Change `tasks.filter(...)` to `todayTasks.filter(...)`
+- Change the myTasks filter to use `todayTasks` instead of `tasks`
+
+## 3. SWAP IN PROGRESS AND PENDING COLORS
+
+In the CSS, swap the colors for pending and in-progress:
+
+```css
+/* Change from: */
+.progress-segment.pending {
+  background: #f59e0b;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.progress-segment.in-progress {
+  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* To: */
+.progress-segment.pending {
+  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.progress-segment.in-progress {
+  background: #f59e0b;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Also update the legend colors: */
+.legend-color.pending { background: #3b82f6; }
+.legend-color.in-progress { background: #f59e0b; }
+```
+
+## 4. CHANGE AFFIRMATION ROTATION TO HOURLY
+
+Update the useEffect interval:
+
+```javascript
+// Change from:
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentAffirmation((prev) => (prev + 1) % affirmations.length);
+  }, 5000); // Every 5 seconds
+  
+  return () => clearInterval(interval);
+}, []);
+
+// To:
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentAffirmation((prev) => (prev + 1) % affirmations.length);
+  }, 3600000); // Every hour (60 * 60 * 1000 ms)
+  
+  return () => clearInterval(interval);
+}, []);
+```
+
+## Summary of Changes:
+- ✅ No numbers displayed in progress segments
+- ✅ Data based only on today's tasks (not all-time)
+- ✅ Blue for pending, Orange for in-progress (swapped)
+- ✅ Affirmations rotate every hour instead of every 5 seconds

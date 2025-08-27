@@ -48,7 +48,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentAffirmation((prev) => (prev + 1) % affirmations.length);
-    }, 5000); // Change every 5 seconds
+    }, 3600000); // Change every hour (60 * 60 * 1000 ms)
     
     return () => clearInterval(interval);
   }, [affirmations.length]);
@@ -61,9 +61,32 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
   // Only show for today view
   if (selectedDate !== today) return null;
   
-  // Calculate task stats for all tasks - with error handling
+  // Filter tasks to only today's tasks
+  const todayTasks = tasks.filter(task => {
+    try {
+      // Completed/skipped tasks: check if completed today
+      if (task.status === 'completed' || task.status === 'skipped') {
+        const actionDate = (task.completedAt || task.skippedAt || task.dueDate);
+        const actionDateString = actionDate ? new Date(actionDate).toISOString().split('T')[0] : '';
+        return actionDateString === today;
+      }
+      
+      // Overdue tasks: show on today
+      const taskDate = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '';
+      if (taskDate < today && (task.status === 'pending' || task.status === 'in_progress')) {
+        return true;
+      }
+      
+      // Regular tasks: due today
+      return taskDate === today;
+    } catch (error) {
+      return false;
+    }
+  });
+  
+  // Calculate task stats for today's tasks only - with error handling
   const teamStats = {
-    overdue: tasks.filter(t => {
+    overdue: todayTasks.filter(t => {
       try {
         const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
         return taskDate < today && t?.status === 'pending';
@@ -71,7 +94,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
         return false;
       }
     }).length,
-    pending: tasks.filter(t => {
+    pending: todayTasks.filter(t => {
       try {
         const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
         return t?.status === 'pending' && taskDate >= today;
@@ -79,14 +102,14 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
         return false;
       }
     }).length,
-    inProgress: tasks.filter(t => t?.status === 'in_progress').length,
-    paused: tasks.filter(t => t?.status === 'paused').length,
-    completed: tasks.filter(t => t?.status === 'completed').length,
-    skipped: tasks.filter(t => t?.status === 'skipped').length,
+    inProgress: todayTasks.filter(t => t?.status === 'in_progress').length,
+    paused: todayTasks.filter(t => t?.status === 'paused').length,
+    completed: todayTasks.filter(t => t?.status === 'completed').length,
+    skipped: todayTasks.filter(t => t?.status === 'skipped').length,
   };
   
   // Calculate stats for user's tasks only - with error handling
-  const myTasks = tasks.filter(task => {
+  const myTasks = todayTasks.filter(task => {
     try {
       if (!currentUser || !task) return false;
       
@@ -180,9 +203,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment overdue"
               style={{ width: `${(stats.overdue / total) * 100}%` }}
               title={`${stats.overdue} overdue`}
-            >
-              {stats.overdue > 2 && <span>{stats.overdue}</span>}
-            </div>
+            />
           )}
           
           {/* Pending */}
@@ -191,9 +212,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment pending"
               style={{ width: `${(stats.pending / total) * 100}%` }}
               title={`${stats.pending} pending`}
-            >
-              {stats.pending > 2 && <span>{stats.pending}</span>}
-            </div>
+            />
           )}
           
           {/* In Progress */}
@@ -202,9 +221,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment in-progress"
               style={{ width: `${(stats.inProgress / total) * 100}%` }}
               title={`${stats.inProgress} in progress`}
-            >
-              {stats.inProgress > 2 && <span>{stats.inProgress}</span>}
-            </div>
+            />
           )}
           
           {/* Paused */}
@@ -213,9 +230,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment paused"
               style={{ width: `${(stats.paused / total) * 100}%` }}
               title={`${stats.paused} paused`}
-            >
-              {stats.paused > 2 && <span>{stats.paused}</span>}
-            </div>
+            />
           )}
           
           {/* Completed */}
@@ -224,9 +239,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment completed"
               style={{ width: `${(stats.completed / total) * 100}%` }}
               title={`${stats.completed} completed`}
-            >
-              {stats.completed > 2 && <span>{stats.completed}</span>}
-            </div>
+            />
           )}
           
           {/* Skipped */}
@@ -235,9 +248,7 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
               className="progress-segment skipped"
               style={{ width: `${(stats.skipped / total) * 100}%` }}
               title={`${stats.skipped} skipped`}
-            >
-              {stats.skipped > 2 && <span>{stats.skipped}</span>}
-            </div>
+            />
           )}
         </div>
         
