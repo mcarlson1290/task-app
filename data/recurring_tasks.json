@@ -35,7 +35,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Blackout Specialist"
   },
   {
     "title": "Seed Broccoli Microgreens",

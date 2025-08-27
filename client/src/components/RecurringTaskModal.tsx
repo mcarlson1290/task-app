@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { RecurringTask, GrowingSystem } from '@shared/schema';
 import ChecklistBuilder from './ChecklistBuilder';
+import SearchableAssignmentSelect from './SearchableAssignmentSelect';
 import { Calendar, Clock, Settings, CheckSquare, Building2, Repeat } from 'lucide-react';
 import { useLocation } from '@/contexts/LocationContext';
 
@@ -400,53 +401,13 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
 
               <div className="space-y-2">
                 <Label htmlFor="assignTo">Default Assignment</Label>
-                <Select
-                  value={formData.assignTo}
-                  onValueChange={(value) => updateFormData({ assignTo: value })}
+                <SearchableAssignmentSelect
+                  value={formData.assignTo || ''}
+                  onChange={(value) => updateFormData({ assignTo: value })}
+                  assignmentOptions={assignmentOptions}
                   disabled={loadingAssignments}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingAssignments ? "Loading assignments..." : "No default assignment"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no-assignment">No default assignment</SelectItem>
-                    
-                    {/* All Staff Option */}
-                    {assignmentOptions.special.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label} ({option.staffCount} people)
-                      </SelectItem>
-                    ))}
-                    
-                    {/* Roles Section */}
-                    {assignmentOptions.roles.length > 0 && (
-                      <>
-                        <SelectItem value="roles-separator" disabled className="text-center text-gray-500 font-medium">
-                          ──────── Roles ────────
-                        </SelectItem>
-                        {assignmentOptions.roles.map(role => (
-                          <SelectItem key={role.value} value={role.value}>
-                            {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
-                    
-                    {/* Individual Users Section */}
-                    {assignmentOptions.users.length > 0 && (
-                      <>
-                        <SelectItem value="people-separator" disabled className="text-center text-gray-500 font-medium">
-                          ──────── People ────────
-                        </SelectItem>
-                        {assignmentOptions.users.map(user => (
-                          <SelectItem key={user.value} value={user.value}>
-                            {user.label} {user.roles.length > 0 && `- ${user.roles.join(', ')}`}
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
+                  placeholder={loadingAssignments ? "Loading assignments..." : "Search or select assignment..."}
+                />
                 <p className="text-sm text-gray-600">
                   When this recurring task generates daily tasks, they will be automatically assigned to this selection
                 </p>

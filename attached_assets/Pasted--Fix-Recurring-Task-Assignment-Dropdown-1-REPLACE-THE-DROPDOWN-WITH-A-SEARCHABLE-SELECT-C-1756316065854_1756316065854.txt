@@ -1,0 +1,504 @@
+# 🔍 Fix Recurring Task Assignment Dropdown
+
+## 1. REPLACE THE DROPDOWN WITH A SEARCHABLE SELECT COMPONENT
+
+Create a new searchable dropdown component:
+
+```javascript
+// Create a new component: SearchableAssignmentSelect.js
+import React, { useState, useRef, useEffect } from 'react';
+
+const SearchableAssignmentSelect = ({ 
+  value, 
+  onChange, 
+  assignmentOptions, 
+  placeholder = "Search or select assignment..." 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  // Get all options in a flat list
+  const getAllOptions = () => {
+    const options = [];
+    
+    // Add "No default assignment" option
+    options.push({
+      value: '',
+      label: 'No default assignment',
+      type: 'none'
+    });
+    
+    // Add special options
+    assignmentOptions.special.forEach(opt => {
+      options.push({
+        ...opt,
+        searchText: opt.label.toLowerCase()
+      });
+    });
+    
+    // Add roles
+    assignmentOptions.roles.forEach(opt => {
+      options.push({
+        ...opt,
+        searchText: opt.label.toLowerCase()
+      });
+    });
+    
+    // Add users
+    assignmentOptions.users.forEach(opt => {
+      options.push({
+        ...opt,
+        searchText: `${opt.label} ${opt.roles?.join(' ')}`.toLowerCase()
+      });
+    });
+    
+    return options;
+  };
+  
+  // Filter options based on search
+  const filteredOptions = getAllOptions().filter(option => 
+    !searchQuery || option.searchText?.includes(searchQuery.toLowerCase())
+  );
+  
+  // Get display text for selected value
+  const getDisplayText = () => {
+    if (!value) return 'No default assignment';
+    
+    const allOptions = getAllOptions();
+    const selected = allOptions.find(opt => opt.value === value);
+    
+    if (selected) {
+      if (selected.staffCount !== undefined) {
+        return `${selected.label} (${selected.staffCount} ${selected.staffCount === 1 ? 'person' : 'people'})`;
+      }
+      return selected.label;
+    }
+    
+    return value;
+  };
+  
+  // Handle keyboard navigation
+  const handleKeyDown = (e) => {
+    if (!isOpen) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        setIsOpen(true);
+        e.preventDefault();
+      }
+      return;
+    }
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev < filteredOptions.length - 1 ? prev + 1 : prev
+        );
+        break;
+        
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => prev > 0 ? prev - 1 : 0);
+        break;
+        
+      case 'Enter':
+        e.preventDefault();
+        if (filteredOptions[highlightedIndex]) {
+          selectOption(filteredOptions[highlightedIndex]);
+        }
+        break;
+        
+      case 'Escape':
+        setIsOpen(false);
+        setSearchQuery('');
+        break;
+    }
+  };
+  
+  const selectOption = (option) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchQuery('');
+    setHighlightedIndex(0);
+  };
+  
+  // Reset highlighted index when search changes
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchQuery]);
+  
+  return (
+    <div className="searchable-select" ref={dropdownRef}>
+      <div 
+        className="select-input"
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen) {
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }
+        }}
+      >
+        <div className="select-value">
+          {getDisplayText()}
+        </div>
+        <div className="select-arrow">▼</div>
+      </div>
+      
+      {isOpen && (
+        <div className="select-dropdown">
+          <div className="search-box">
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              placeholder="Type to search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+          </div>
+          
+          <div className="options-list">
+            {filteredOptions.length === 0 ? (
+              <div className="no-results">No matches found</div>
+            ) : (
+              <>
+                {/* No assignment option */}
+                {filteredOptions.filter(opt => opt.type === 'none').map((option, idx) => (
+                  <div
+                    key={option.value}
+                    className={`option ${highlightedIndex === idx ? 'highlighted' : ''}`}
+                    onClick={() => selectOption(option)}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+                
+                {/* Special options */}
+                {filteredOptions.filter(opt => opt.type === 'special').length > 0 && (
+                  <div className="option-group-header">All Staff</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'special').map((option, idx) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label} ({option.staffCount} people)
+                    </div>
+                  );
+                })}
+                
+                {/* Roles */}
+                {filteredOptions.filter(opt => opt.type === 'role').length > 0 && (
+                  <div className="option-group-header">Roles</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'role').map((option) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label} ({option.staffCount} {option.staffCount === 1 ? 'person' : 'people'})
+                    </div>
+                  );
+                })}
+                
+                {/* Users */}
+                {filteredOptions.filter(opt => opt.type === 'user').length > 0 && (
+                  <div className="option-group-header">People</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'user').map((option) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label}
+                      {option.roles && option.roles.length > 0 && (
+                        <span className="option-roles"> - {option.roles.join(', ')}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SearchableAssignmentSelect;
+```
+
+## 2. UPDATE THE RECURRING TASK MODAL TO USE THE NEW COMPONENT
+
+Replace the existing assignment dropdown in your Edit Recurring Task modal:
+
+```javascript
+// Import the new component
+import SearchableAssignmentSelect from './SearchableAssignmentSelect';
+
+// In your EditRecurringTaskModal component, replace the select with:
+<div className="form-group">
+  <label>Default Assignment</label>
+  <SearchableAssignmentSelect
+    value={formData.assignTo || ''}
+    onChange={(value) => setFormData({ ...formData, assignTo: value })}
+    assignmentOptions={assignmentOptions}
+  />
+  
+  <small className="help-text">
+    When this recurring task generates daily tasks, they will be automatically assigned to this selection
+  </small>
+</div>
+```
+
+## 3. ADD CSS FOR THE SEARCHABLE DROPDOWN
+
+Add these styles to make the dropdown compact and functional:
+
+```css
+/* Searchable Select Component */
+.searchable-select {
+  position: relative;
+  width: 100%;
+  max-width: 400px; /* Limit the width */
+}
+
+.select-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select-input:hover {
+  border-color: #d1d5db;
+}
+
+.select-input:focus-within {
+  border-color: #2D8028;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 128, 40, 0.1);
+}
+
+.select-value {
+  flex: 1;
+  color: #374151;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-arrow {
+  color: #6b7280;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.select-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-box {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #2D8028;
+  box-shadow: 0 0 0 2px rgba(45, 128, 40, 0.1);
+}
+
+.options-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.option-group-header {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.option {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  font-size: 14px;
+  color: #374151;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.option:hover {
+  background: #f3f4f6;
+}
+
+.option.highlighted {
+  background: #e0f2fe;
+}
+
+.option-roles {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 8px;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Adjust form group for proper spacing */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.help-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Make sure the dropdown appears above other elements */
+.modal-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .searchable-select {
+    max-width: 100%;
+  }
+  
+  .select-dropdown {
+    max-height: 300px;
+  }
+  
+  .options-list {
+    max-height: 200px;
+  }
+}
+```
+
+## 4. QUICK ALTERNATIVE: FIX THE EXISTING DROPDOWN
+
+If you prefer to just fix the width of the existing dropdown without adding search:
+
+```css
+/* Quick fix for dropdown width */
+.form-group select {
+  width: 100%;
+  max-width: 400px; /* Limit the width */
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Make option text wrap if needed */
+.form-group select option {
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 400px;
+  padding: 8px;
+}
+
+/* Style the option groups */
+.form-group select option:disabled {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f9fafb;
+  text-align: left;
+  padding: 4px 8px;
+}
+```
+
+## Features of the Searchable Dropdown:
+
+1. **Compact Width**: Limited to 400px max width
+2. **Search Functionality**: Start typing to filter options
+3. **Keyboard Navigation**: Use arrow keys to navigate, Enter to select
+4. **Grouped Options**: Clear visual separation between roles and people
+5. **Shows Staff Counts**: Displays how many people in each role
+6. **Mobile Friendly**: Responsive design that works on small screens
+7. **Escape to Close**: Press Escape to close without selecting
+
+The searchable dropdown provides a much better user experience when dealing with many options!
