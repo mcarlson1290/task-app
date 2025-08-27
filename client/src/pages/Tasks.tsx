@@ -681,121 +681,7 @@ const Tasks: React.FC = () => {
 
 
 
-  // Task Summary Component - now responsive to filters
-  const TaskSummary = ({ 
-    tasks, 
-    activeFilter, 
-    statusFilter, 
-    dateFilter 
-  }: { 
-    tasks: Task[], 
-    activeFilter: string, 
-    statusFilter: string, 
-    dateFilter: string 
-  }) => {
-    const completedTasks = tasks.filter(t => t.status === 'completed');
-    const lateTasks = completedTasks.filter(t => isTaskLate(t));
-    const onTimeTasks = completedTasks.length - lateTasks.length;
-    const overdueTasks = tasks.filter(t => isOverdue(t));
-    const pendingTasks = tasks.filter(t => t.status === 'pending');
-    const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
-    
-    // Calculate completion rate only if there are completed tasks
-    const completionRate = completedTasks.length > 0 
-      ? Math.round((onTimeTasks / completedTasks.length) * 100) 
-      : 0;
-    
-    // Get filter description for context
-    const getFilterDescription = () => {
-      let desc = '';
-      
-      // Add date context
-      if (dateFilter) {
-        const today = new Date().toISOString().split('T')[0];
-        if (dateFilter === today) {
-          desc += "Today's ";
-        } else {
-          desc += `${dateFilter} `;
-        }
-      }
-      
-      // Add type filter context
-      if (activeFilter !== 'all') {
-        const taskType = taskTypes.find(t => t.value === activeFilter);
-        desc += taskType ? taskType.label + ' ' : '';
-      }
-      
-      // Add status filter context
-      if (statusFilter !== 'all') {
-        const statusOption = statusOptions.find(s => s.value === statusFilter);
-        desc += statusOption ? statusOption.label + ' ' : '';
-      }
-      
-      return desc || 'All ';
-    };
-    
-    return (
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-[#203B17]">Task Statistics</h3>
-          <span className="text-sm text-gray-600 font-medium">{getFilterDescription()}Tasks</span>
-        </div>
-        
-        {tasks.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="text-2xl mb-2">📭</div>
-            <p>No tasks match the current filters</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-xl font-bold text-blue-600">{tasks.length}</div>
-              <div className="text-xs text-blue-700">Total</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xl font-bold text-gray-600">{pendingTasks.length}</div>
-              <div className="text-xs text-gray-700">Pending</div>
-            </div>
-            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <div className="text-xl font-bold text-yellow-600">{inProgressTasks.length}</div>
-              <div className="text-xs text-yellow-700">In Progress</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-xl font-bold text-green-600">{onTimeTasks}</div>
-              <div className="text-xs text-green-700">On Time</div>
-            </div>
-            <div className="text-center p-3 bg-amber-50 rounded-lg">
-              <div className="text-xl font-bold text-amber-600">{lateTasks.length}</div>
-              <div className="text-xs text-amber-700">Late</div>
-            </div>
-            <div className="text-center p-3 bg-red-50 rounded-lg">
-              <div className="text-xl font-bold text-red-600">{overdueTasks.length}</div>
-              <div className="text-xs text-red-700">Overdue</div>
-            </div>
-          </div>
-        )}
-        
-        {completedTasks.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-gray-200">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Completion Performance:</span>
-              <div className="flex items-center gap-2">
-                <span className={`text-lg font-bold ${
-                  completionRate >= 80 ? 'text-green-600' : 
-                  completionRate >= 60 ? 'text-amber-600' : 'text-red-600'
-                }`}>
-                  {completionRate}%
-                </span>
-                <span className="text-xs text-gray-500">
-                  ({onTimeTasks} on time, {lateTasks.length} late)
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+
 
   if (isLoading) {
     return (
@@ -1044,13 +930,7 @@ const Tasks: React.FC = () => {
         </div>
       )}
 
-      {/* Task Summary Statistics - now responsive to filters */}
-      <TaskSummary 
-        tasks={filteredTasks} 
-        activeFilter={activeFilter}
-        statusFilter={statusFilter}
-        dateFilter={dateFilter}
-      />
+
 
       {/* Gamified Progress Bars */}
       <GamifiedProgressBars 
