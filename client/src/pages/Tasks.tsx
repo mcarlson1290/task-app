@@ -392,10 +392,11 @@ const Tasks: React.FC = () => {
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);
     }
 
-    // FIXED DATE FILTER LOGIC - Corrected overdue handling
+    // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
       const today = new Date().toISOString().split('T')[0];
+      const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
         // Handle completed/skipped tasks - they ONLY show on their action date
@@ -883,7 +884,10 @@ const Tasks: React.FC = () => {
               checked={assignedToMeFilter}
               onChange={async (e) => {
                 setAssignedToMeFilter(e.target.checked);
-                // Allow "Assigned to Me" to work with other filters
+                // When enabling "Assigned to Me", clear the date filter to show all assigned tasks
+                if (e.target.checked) {
+                  setDateFilter("");
+                }
                 await refreshTasks();
               }}
               className="h-4 w-4 text-[#2D8028] focus:ring-[#2D8028] border-gray-300 rounded"

@@ -1729,8 +1729,7 @@ export class MemStorage implements IStorage {
       type: recurringTask.type,
       status: 'pending',
       priority: 'medium',
-      assignedTo: null, // Legacy field for direct user IDs
-      assignTo: (recurringTask.assignTo && recurringTask.assignTo !== 'no-assignment') ? recurringTask.assignTo : null, // New assignment field
+      assignedTo: (recurringTask.assignTo && recurringTask.assignTo !== 'no-assignment') ? recurringTask.assignTo : null,
       createdBy: recurringTask.createdBy,
       location: recurringTask.location,
       estimatedTime: null,

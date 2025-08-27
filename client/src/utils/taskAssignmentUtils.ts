@@ -33,22 +33,21 @@ export const isTaskAssignedToCurrentUser = (
     return false;
   }
   
-  // Debug only when needed
-  // console.log('🔍 Checking task assignment:', { 
-  //   taskTitle: task.title,
-  //   taskAssignTo: task.assignTo,
-  //   taskAssignedTo: task.assignedTo,
-  //   finalAssignment: assignment,
-  //   currentUserId: currentUser.id,
-  //   currentUserEmail: currentUser.email,
-  //   currentUserRoles: currentUser.rolesAssigned
-  // });
+  console.log('🔍 Checking task assignment:', { 
+    taskTitle: task.title,
+    taskAssignTo: task.assignTo,
+    taskAssignedTo: task.assignedTo,
+    finalAssignment: assignment,
+    currentUserId: currentUser.id,
+    currentUserEmail: currentUser.email,
+    currentUserRoles: currentUser.rolesAssigned
+  });
   
   // Handle direct user assignment (user_123)
   if (assignment.startsWith('user_')) {
     const assignedUserId = parseInt(assignment.replace('user_', ''));
     const isAssigned = assignedUserId === currentUser.id;
-    // console.log(`  → User assignment check: ${assignedUserId} === ${currentUser.id} = ${isAssigned}`);
+    console.log(`  → User assignment check: ${assignedUserId} === ${currentUser.id} = ${isAssigned}`);
     return isAssigned;
   }
   
@@ -56,7 +55,7 @@ export const isTaskAssignedToCurrentUser = (
   if (assignment === 'all_staff') {
     // User must be in staff to be included in all_staff
     const isInStaff = currentUser.id !== null;
-    // console.log(`  → All staff assignment check: user in staff = ${isInStaff}`);
+    console.log(`  → All staff assignment check: user in staff = ${isInStaff}`);
     return isInStaff;
   }
   
@@ -64,11 +63,11 @@ export const isTaskAssignedToCurrentUser = (
   if (assignment.startsWith('role_')) {
     const roleName = assignment.replace('role_', '');
     const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
-    // console.log(`  → Role assignment check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
+    console.log(`  → Role assignment check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
     return hasRole;
   }
   
-  // console.log(`  → Unknown assignment type: ${assignment}`);
+  console.log(`  → Unknown assignment type: ${assignment}`);
   return false;
 };
 
