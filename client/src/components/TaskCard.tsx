@@ -167,15 +167,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
   // Check if task is assigned to current user using centralized function
   const isAssignedToCurrentUser = isTaskAssignedToUser(task, currentUser);
   
-  // Debug logging for assignment
-  if (task.id === 1347) { // Log for first task
-    console.log('DEBUG TaskCard Assignment:', {
+  // Debug logging for assignment - show assigned tasks
+  if (isAssignedToCurrentUser) {
+    console.log('🎯 ASSIGNED TASK FOUND - SHOULD HAVE GREEN BORDER:', {
       taskId: task.id,
       taskTitle: task.title,
       assignTo: task.assignTo,
       assignedTo: task.assignedTo,
-      currentUser: currentUser,
-      isAssigned: isAssignedToCurrentUser
+      isAssigned: isAssignedToCurrentUser,
+      cssClass: 'assigned-to-me'
     });
   }
 
@@ -213,7 +213,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
           
           {/* Right badge: Your Task (only when assigned) */}
           {isAssignedToCurrentUser && (
-            <div className="your-task-badge bg-[#2D8028] text-white px-3 py-1 rounded-full text-xs font-semibold">
+            <div className="your-task-badge bg-[#2D8028] text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border-2 border-[#1a5a15]">
               📌 Your Task
             </div>
           )}

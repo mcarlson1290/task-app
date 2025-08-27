@@ -25,10 +25,11 @@ export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser 
   // Convert user ID to string for comparison
   const userIdStr = String(currentUser.id);
   
-  // Debug logging for problematic tasks
-  if (task.id === 1347) {
+  // Debug logging for any assigned tasks
+  if (assignment === 'all_staff' || (assignment && assignment.startsWith('role_'))) {
     console.log('🔍 Assignment Debug:', {
       taskId: task.id,
+      taskTitle: task.title,
       assignment: assignment,
       userIdStr: userIdStr,
       userRoles: currentUser.rolesAssigned,
@@ -44,7 +45,7 @@ export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser 
   
   // All staff assignment
   if (assignment === 'all_staff') {
-    console.log('✅ All staff assignment match');
+    console.log('✅ All staff assignment match for task:', task.title);
     return true;
   }
   
@@ -52,8 +53,8 @@ export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser 
   if (typeof assignment === 'string' && assignment.startsWith('role_')) {
     const roleName = assignment.replace('role_', '');
     const hasRole = currentUser.rolesAssigned?.includes(roleName) || false;
-    if (task.id === 1347) {
-      console.log(`🎯 Role check: "${roleName}" in [${currentUser.rolesAssigned?.join(', ')}] = ${hasRole}`);
+    if (hasRole) {
+      console.log(`✅ Role match: "${roleName}" for task:`, task.title);
     }
     return hasRole;
   }
