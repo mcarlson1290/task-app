@@ -415,8 +415,21 @@ const Tasks: React.FC = () => {
       const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
-        // Rule 1: Always show overdue tasks when viewing today
+        // Rule 1: Show overdue tasks when viewing today, BUT NOT if they're completed or skipped
         if (isViewingToday && isOverdue(task)) {
+          // Completed or skipped overdue tasks should stay on their completion date, not flow
+          if (task.status === 'completed' || task.status === 'skipped') {
+            // Only show completed/skipped tasks on the date they were completed
+            const completedDate = task.completedAt ? 
+              new Date(task.completedAt).toISOString().split('T')[0] : 
+              null;
+            
+            // If task was completed on a different date, don't show it on today
+            if (completedDate && completedDate !== dateFilter) {
+              console.log(`🚫 Preventing overdue task flow: ${task.title} (status: ${task.status}, completed: ${completedDate}, viewing: ${dateFilter})`);
+              return false;
+            }
+          }
           return true;
         }
         
@@ -460,8 +473,23 @@ const Tasks: React.FC = () => {
           }
         }
         
-        // For regular tasks - only show on due date
-        return taskDateStr === dateFilter;
+        // For regular tasks - show on due date, OR show completed/skipped tasks on their completion date
+        if (taskDateStr === dateFilter) {
+          return true;
+        }
+        
+        // Show completed/skipped tasks on the date they were completed, regardless of original due date
+        if (task.status === 'completed' || task.status === 'skipped') {
+          const completedDate = task.completedAt ? 
+            new Date(task.completedAt).toISOString().split('T')[0] : 
+            null;
+          
+          if (completedDate === dateFilter) {
+            return true;
+          }
+        }
+        
+        return false;
       });
       
       // Log for testing
