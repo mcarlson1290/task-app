@@ -28,6 +28,16 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   const [originalData, setOriginalData] = useState<any>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [assignmentOptions, setAssignmentOptions] = useState<{
+    roles: { value: string; label: string; staffCount: number }[];
+    users: { value: string; label: string; roles: string[] }[];
+    special: { value: string; label: string; staffCount: number }[];
+  }>({
+    roles: [],
+    users: [],
+    special: []
+  });
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -35,6 +45,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     frequency: 'daily',
     daysOfWeek: [],
     isActive: true,
+    assignTo: '',
     automation: {
       enabled: false,
       generateTrays: false,
@@ -58,6 +69,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         frequency: task.frequency || 'daily',
         daysOfWeek: task.daysOfWeek || [],
         isActive: task.isActive ?? true,
+        assignTo: task.assignTo || '',
         automation: task.automation || {
           enabled: false,
           generateTrays: false,
@@ -82,6 +94,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         frequency: 'daily',
         daysOfWeek: [],
         isActive: true,
+        assignTo: '',
         automation: {
           enabled: false,
           generateTrays: false,
@@ -100,6 +113,63 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     }
     setIsSaving(false);
   }, [task]);
+
+  // Load assignment options when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      loadAssignmentOptions();
+    }
+  }, [isOpen]);
+
+  // Function to load staff and build assignment options
+  const loadAssignmentOptions = async () => {
+    setLoadingAssignments(true);
+    
+    try {
+      // Fetch staff data
+      const response = await fetch('/api/staff');
+      const staff = await response.json();
+      
+      // Filter active staff only
+      const activeStaff = staff.filter((s: any) => s.activeStatus === 'Active');
+      
+      // Build roles with staff counts
+      const rolesMap: Record<string, any[]> = {};
+      activeStaff.forEach((member: any) => {
+        (member.rolesAssigned || []).forEach((role: string) => {
+          if (!rolesMap[role]) {
+            rolesMap[role] = [];
+          }
+          rolesMap[role].push(member);
+        });
+      });
+      
+      // Format options
+      const options = {
+        special: [{
+          value: 'all_staff',
+          label: '👥 All Staff',
+          staffCount: activeStaff.length
+        }],
+        roles: Object.entries(rolesMap).map(([role, members]) => ({
+          value: `role_${role}`,
+          label: `👤 ${role}`,
+          staffCount: members.length
+        })),
+        users: activeStaff.map((member: any) => ({
+          value: `user_${member.id}`,
+          label: member.fullName,
+          roles: member.rolesAssigned
+        }))
+      };
+      
+      setAssignmentOptions(options);
+    } catch (error) {
+      console.error('Error loading assignment options:', error);
+    }
+    
+    setLoadingAssignments(false);
+  };
 
   // Warn if user tries to leave with unsaved changes
   React.useEffect(() => {
@@ -326,6 +396,60 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                   placeholder="Enter task description"
                   rows={3}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="assignTo">Default Assignment</Label>
+                <Select
+                  value={formData.assignTo}
+                  onValueChange={(value) => updateFormData({ assignTo: value })}
+                  disabled={loadingAssignments}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingAssignments ? "Loading assignments..." : "No default assignment"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No default assignment</SelectItem>
+                    
+                    {/* All Staff Option */}
+                    {assignmentOptions.special.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label} ({option.staffCount} people)
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Roles Section */}
+                    {assignmentOptions.roles.length > 0 && (
+                      <>
+                        <SelectItem value="" disabled className="text-center text-gray-500 font-medium">
+                          ──────── Roles ────────
+                        </SelectItem>
+                        {assignmentOptions.roles.map(role => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                    
+                    {/* Individual Users Section */}
+                    {assignmentOptions.users.length > 0 && (
+                      <>
+                        <SelectItem value="" disabled className="text-center text-gray-500 font-medium">
+                          ──────── People ────────
+                        </SelectItem>
+                        {assignmentOptions.users.map(user => (
+                          <SelectItem key={user.value} value={user.value}>
+                            {user.label} {user.roles.length > 0 && `- ${user.roles.join(', ')}`}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-600">
+                  When this recurring task generates daily tasks, they will be automatically assigned to this selection
+                </p>
               </div>
 
               <div className="flex items-center space-x-2">

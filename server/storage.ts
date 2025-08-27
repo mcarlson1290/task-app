@@ -1727,7 +1727,7 @@ export class MemStorage implements IStorage {
       type: recurringTask.type,
       status: 'pending',
       priority: 'medium',
-      assignedTo: null,
+      assignedTo: recurringTask.assignTo || null,
       createdBy: recurringTask.createdBy,
       location: recurringTask.location,
       estimatedTime: null,

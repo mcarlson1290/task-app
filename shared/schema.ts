@@ -73,6 +73,7 @@ export const recurringTasks = pgTable("recurring_tasks", {
   dayOfMonth: integer("day_of_month"), // For monthly tasks
   isActive: boolean("is_active").default(true),
   location: text("location").notNull(), // Location code (K, R, MKE)
+  assignTo: text("assign_to"), // Default assignment: 'user_123', 'role_Manager', 'all_staff'
   createdBy: integer("created_by").references(() => users.id),
   
   // Automation settings
