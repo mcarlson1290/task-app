@@ -883,10 +883,7 @@ const Tasks: React.FC = () => {
               checked={assignedToMeFilter}
               onChange={async (e) => {
                 setAssignedToMeFilter(e.target.checked);
-                // When enabling "Assigned to Me", clear the date filter to show all assigned tasks
-                if (e.target.checked) {
-                  setDateFilter("");
-                }
+                // Allow "Assigned to Me" to work with other filters
                 await refreshTasks();
               }}
               className="h-4 w-4 text-[#2D8028] focus:ring-[#2D8028] border-gray-300 rounded"
