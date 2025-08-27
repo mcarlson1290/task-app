@@ -182,9 +182,15 @@ const StaffTableRow: React.FC<{
       </td>
       <td>
         <div className="roles-list">
-          {person.rolesAssigned.map((role: string) => (
-            <span key={role} className="role-badge">{role}</span>
-          ))}
+          {person.rolesAssigned && person.rolesAssigned.length > 0 ? (
+            person.rolesAssigned.map((role: string) => (
+              <span key={role} className={`role-badge role-${role.toLowerCase().replace(/\s+/g, '-')}`}>
+                {getRoleIcon(role)} {role}
+              </span>
+            ))
+          ) : (
+            <span className="no-roles">No roles assigned</span>
+          )}
         </div>
       </td>
       <td>{formatDate(person.dateHired)}</td>
@@ -434,13 +440,18 @@ const StaffEditModal: React.FC<{
   const [isDeleting, setIsDeleting] = useState(false);
   
   const availableRoles = [
-    'General Staff',
-    'Seeding Tech',
-    'Harvest Tech',
+    'Microgreens Seeder',
+    'Leafy Greens Seeder',
+    'Microgreens Harvester',
+    'Leafy Greens Harvester',
+    'Blackout Specialist',
+    'Moving Tech',
+    'Packing Tech',
     'Cleaning Crew',
+    'Inventory Tech',
     'Equipment Tech',
-    'Packing',
-    'Manager'
+    'Manager',
+    'General Staff'
   ];
   
   const validateForm = () => {
@@ -775,7 +786,7 @@ const StaffEditModal: React.FC<{
                         }
                       }}
                     />
-                    <span>{role}</span>
+                    <span>{getRoleIcon(role)} {role}</span>
                   </label>
                 ))}
               </div>
@@ -1227,6 +1238,25 @@ const StaffAnalyticsView: React.FC<{
       <TrainingOverview staff={filteredStaff} />
     </div>
   );
+};
+
+// Helper function for role icons
+const getRoleIcon = (role: string) => {
+  const roleIcons: Record<string, string> = {
+    'Microgreens Seeder': '🌱',
+    'Leafy Greens Seeder': '🥬',
+    'Microgreens Harvester': '✂️',
+    'Leafy Greens Harvester': '🥗',
+    'Blackout Specialist': '🌑',
+    'Moving Tech': '📦',
+    'Packing Tech': '📋',
+    'Cleaning Crew': '🧹',
+    'Inventory Tech': '📊',
+    'Equipment Tech': '🔧',
+    'Manager': '👔',
+    'General Staff': '👥'
+  };
+  return roleIcons[role] || '👤';
 };
 
 const StaffData: React.FC = () => {
