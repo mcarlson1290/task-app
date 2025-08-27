@@ -419,14 +419,14 @@ const Tasks: React.FC = () => {
         if (isViewingToday && isOverdue(task)) {
           // Completed or skipped overdue tasks should stay on their completion date, not flow
           if (task.status === 'completed' || task.status === 'skipped') {
-            // Only show completed/skipped tasks on the date they were completed
-            const completedDate = task.completedAt ? 
-              new Date(task.completedAt).toISOString().split('T')[0] : 
+            // Get the appropriate completion date based on status
+            const completionDate = task.status === 'completed' ? task.completedAt : task.skippedAt;
+            const completedDate = completionDate ? 
+              new Date(completionDate).toISOString().split('T')[0] : 
               null;
             
-            // If task was completed on a different date, don't show it on today
+            // If task was completed/skipped on a different date, don't show it on today
             if (completedDate && completedDate !== dateFilter) {
-              console.log(`🚫 Preventing overdue task flow: ${task.title} (status: ${task.status}, completed: ${completedDate}, viewing: ${dateFilter})`);
               return false;
             }
           }
@@ -480,8 +480,9 @@ const Tasks: React.FC = () => {
         
         // Show completed/skipped tasks on the date they were completed, regardless of original due date
         if (task.status === 'completed' || task.status === 'skipped') {
-          const completedDate = task.completedAt ? 
-            new Date(task.completedAt).toISOString().split('T')[0] : 
+          const completionDate = task.status === 'completed' ? task.completedAt : task.skippedAt;
+          const completedDate = completionDate ? 
+            new Date(completionDate).toISOString().split('T')[0] : 
             null;
           
           if (completedDate === dateFilter) {
