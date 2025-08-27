@@ -25,6 +25,7 @@ import TrayTracking from "@/pages/TrayTracking";
 import NotFound from "@/pages/not-found";
 import Confetti from "@/components/Confetti";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { CurrentUserProvider } from "@/contexts/CurrentUserContext";
 import { initializeProductionData } from "@/data/initialData";
 import { initializeCleanState } from "@/utils/dataCleanup";
 import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaff } from "@/services/staffService";
@@ -38,7 +39,9 @@ const msalInstance = new PublicClientApplication(msalConfig);
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
     <LocationProvider>
-      <Layout>{children}</Layout>
+      <CurrentUserProvider>
+        <Layout>{children}</Layout>
+      </CurrentUserProvider>
     </LocationProvider>
   );
 }

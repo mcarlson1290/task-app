@@ -13,9 +13,10 @@ interface TaskCardProps {
   onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume') => void;
   currentUser?: any;
   staff?: StaffMember[];
+  isAssignedToMe?: boolean;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, staff = [] }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, staff = [], isAssignedToMe = false }) => {
   // Safety check for task object
   if (!task) {
     return (
@@ -163,12 +164,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
   const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
   const dayDisplay = getTaskDayDisplay(task);
 
-  // Check if task is assigned to current user
-  const isAssignedToMe = isTaskAssignedToUser(task, currentUser, staff);
+  // Check if task is assigned to current user (use prop if available, fallback to legacy)
+  const isAssignedToCurrentUser = isAssignedToMe || isTaskAssignedToUser(task, currentUser, staff);
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
-      isAssignedToMe && !isInProgress && !isPaused && !isSkipped && !isCurrentlyOverdue ? 'assigned-to-me' : ''
+      isAssignedToCurrentUser && !isInProgress && !isPaused && !isSkipped && !isCurrentlyOverdue ? 'assigned-to-me' : ''
     } ${
       isInProgress ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
     } ${isCompleted ? 'opacity-75' : ''} ${
@@ -180,7 +181,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
     }`} data-status={task.status}>
       <CardContent className="p-6">
         {/* Assigned to Me Badge */}
-        {isAssignedToMe && (
+        {isAssignedToCurrentUser && (
           <div className="assigned-to-me-badge">
             📌 Your Task
           </div>
@@ -323,9 +324,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
             }
             
             if (task.dueDate) {
-              const dueDateStr = typeof task.dueDate === 'string' ? 
-                task.dueDate.split('T')[0] : 
-                task.dueDate.toISOString().split('T')[0];
+              const dueDateStr = task.dueDate instanceof Date ? 
+                task.dueDate.toISOString().split('T')[0] : 
+                String(task.dueDate).split('T')[0];
               
               if (dueDateStr < today && (task.status === 'pending' || task.status === 'in_progress')) {
                 const overdueDays = Math.floor(

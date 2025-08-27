@@ -19,6 +19,8 @@ import confetti from "canvas-confetti";
 import { TrayService } from "@/services/trayService";
 import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
+import { useCurrentUser } from "@/contexts/CurrentUserContext";
+import { isTaskAssignedToCurrentUser } from "@/utils/taskAssignmentUtils";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -53,6 +55,7 @@ const Tasks: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentLocation, isViewingAllLocations } = useLocation();
+  const { currentUser, loading: userLoading } = useCurrentUser();
   
   // Add refresh state for loading indicator
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -378,34 +381,11 @@ const Tasks: React.FC = () => {
     }
 
     // Assigned to Me filter
-    if (assignedToMeFilter) {
+    if (assignedToMeFilter && currentUser) {
       filtered = filtered.filter(task => {
-        if (!auth?.user) return false;
-        
-        const userId = auth.user.id?.toString();
-        
-        // Check new assignTo field first
-        if (task.assignTo) {
-          // Direct user assignment
-          if (task.assignTo === `user_${userId}`) return true;
-          
-          // All staff assignment
-          if (task.assignTo === 'all_staff') return true;
-          
-          // Role assignment - check if user has the role
-          if (task.assignTo.startsWith('role_')) {
-            const roleName = task.assignTo.replace('role_', '');
-            const currentStaff = staffData.find((s: any) => s.id === userId);
-            return currentStaff?.rolesAssigned.includes(roleName) || false;
-          }
-        }
-        
-        // Fallback to legacy assignedTo field
-        if (task.assignedTo && task.assignedTo.toString() === userId) {
-          return true;
-        }
-        
-        return false;
+        const isAssigned = isTaskAssignedToCurrentUser(task, currentUser, staffData);
+        console.log(`🔍 Task "${task.title}" assignment check:`, isAssigned);
+        return isAssigned;
       });
     }
 
@@ -1094,15 +1074,21 @@ const Tasks: React.FC = () => {
         ) : (
           <div className="task-list">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onTaskAction={handleTaskAction}
-                  currentUser={auth?.user}
-                  staff={staffData}
-                />
-              ))}
+              {filteredTasks.map((task) => {
+                const isAssigned = currentUser ? 
+                  isTaskAssignedToCurrentUser(task, currentUser, staffData) : 
+                  false;
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskAction={handleTaskAction}
+                    currentUser={currentUser}
+                    staff={staffData}
+                    isAssignedToMe={isAssigned}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

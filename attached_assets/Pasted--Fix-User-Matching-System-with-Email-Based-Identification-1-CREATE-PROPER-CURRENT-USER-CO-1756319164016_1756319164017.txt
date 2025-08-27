@@ -1,0 +1,328 @@
+# 🔧 Fix User Matching System with Email-Based Identification
+
+## 1. CREATE PROPER CURRENT USER CONTEXT
+
+First, establish the current user from your authentication system:
+
+```javascript
+// In your App.js or main layout component
+import React, { useState, useEffect, createContext, useContext } from 'react';
+
+// Create a context for current user
+export const CurrentUserContext = createContext(null);
+
+export const useCurrentUser = () => {
+  const context = useContext(CurrentUserContext);
+  if (!context) {
+    throw new Error('useCurrentUser must be used within CurrentUserProvider');
+  }
+  return context;
+};
+
+export const CurrentUserProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+  
+  const loadCurrentUser = async () => {
+    try {
+      // Get the logged-in user's email from your auth system
+      // This depends on your authentication implementation:
+      
+      // Option A: If using Microsoft auth
+      const authUser = await getUserFromMicrosoftAuth(); // Your auth method
+      const userEmail = authUser.email || authUser.userPrincipalName;
+      
+      // Option B: If using mock auth
+      // const userEmail = localStorage.getItem('mockUserEmail') || 'robert@growspace.farm';
+      
+      // Now find this user in staff data
+      const staffResponse = await fetch('/api/staff');
+      const staffData = await staffResponse.json();
+      
+      // Find staff member by email
+      const staffMember = staffData.find(s => 
+        s.email?.toLowerCase() === userEmail?.toLowerCase()
+      );
+      
+      if (staffMember) {
+        setCurrentUser({
+          id: staffMember.id,
+          email: staffMember.email,
+          fullName: staffMember.fullName,
+          rolesAssigned: staffMember.rolesAssigned || []
+        });
+      } else {
+        console.warn('Current user not found in staff data:', userEmail);
+        // Create a basic user object
+        setCurrentUser({
+          id: null,
+          email: userEmail,
+          fullName: authUser.displayName || userEmail,
+          rolesAssigned: []
+        });
+      }
+    } catch (error) {
+      console.error('Error loading current user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <CurrentUserContext.Provider value={{ currentUser, loading, refresh: loadCurrentUser }}>
+      {children}
+    </CurrentUserContext.Provider>
+  );
+};
+```
+
+## 2. WRAP YOUR APP WITH THE PROVIDER
+
+```javascript
+// In your main App component
+import { CurrentUserProvider } from './contexts/CurrentUserContext';
+
+function App() {
+  return (
+    <CurrentUserProvider>
+      {/* Your app components */}
+      <Router>
+        <Routes>
+          <Route path="/tasks" element={<TasksPage />} />
+          {/* Other routes */}
+        </Routes>
+      </Router>
+    </CurrentUserProvider>
+  );
+}
+```
+
+## 3. UPDATE TASK ASSIGNMENT CHECK LOGIC
+
+Update the logic to properly check if a task is assigned to the current user:
+
+```javascript
+// Utility function to check task assignment
+export const isTaskAssignedToUser = (task, currentUser, allStaff) => {
+  if (!currentUser || !task.assignTo) return false;
+  
+  console.log('Checking assignment:', { 
+    taskAssignTo: task.assignTo, 
+    currentUser, 
+    currentUserId: currentUser.id 
+  });
+  
+  // Handle direct user assignment
+  if (task.assignTo.startsWith('user_')) {
+    const assignedUserId = parseInt(task.assignTo.replace('user_', ''));
+    return assignedUserId === currentUser.id;
+  }
+  
+  // Handle all staff assignment
+  if (task.assignTo === 'all_staff') {
+    // User must be in staff to be included
+    return currentUser.id !== null;
+  }
+  
+  // Handle role assignment
+  if (task.assignTo.startsWith('role_')) {
+    const roleName = task.assignTo.replace('role_', '');
+    return currentUser.rolesAssigned?.includes(roleName) || false;
+  }
+  
+  return false;
+};
+```
+
+## 4. UPDATE TASKS PAGE TO USE CURRENT USER
+
+```javascript
+// In your TasksPage component
+import { useCurrentUser } from './contexts/CurrentUserContext';
+
+const TasksPage = () => {
+  const { currentUser, loading: userLoading } = useCurrentUser();
+  const [tasks, setTasks] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [filters, setFilters] = useState({
+    category: 'All',
+    status: 'All',
+    priority: 'All',
+    assignedToMe: false,
+    date: new Date().toISOString().split('T')[0]
+  });
+  
+  useEffect(() => {
+    loadTasks();
+    loadStaff();
+  }, []);
+  
+  // Filter tasks including "Assigned to Me"
+  const filteredTasks = tasks.filter(task => {
+    // Other filters...
+    
+    // Assigned to Me filter
+    if (filters.assignedToMe) {
+      if (!isTaskAssignedToUser(task, currentUser, staff)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+  
+  if (userLoading) {
+    return <div>Loading user...</div>;
+  }
+  
+  return (
+    <div className="tasks-page">
+      {/* Debug info - remove after testing */}
+      <div style={{ background: '#f3f4f6', padding: '10px', marginBottom: '10px' }}>
+        Current User: {currentUser?.fullName} ({currentUser?.email}) 
+        - Roles: {currentUser?.rolesAssigned?.join(', ') || 'None'}
+      </div>
+      
+      {/* Filters */}
+      <div className="filters-bar">
+        {/* Other filters... */}
+        
+        <label className="assigned-to-me-toggle">
+          <input
+            type="checkbox"
+            checked={filters.assignedToMe}
+            onChange={(e) => setFilters({ ...filters, assignedToMe: e.target.checked })}
+          />
+          <span className="toggle-slider"></span>
+          <span className="toggle-label">📌 Assigned to Me</span>
+        </label>
+      </div>
+      
+      {/* Task Grid */}
+      <div className="task-grid">
+        {filteredTasks.map(task => (
+          <TaskCard 
+            key={task.id} 
+            task={task}
+            currentUser={currentUser}
+            staff={staff}
+            isAssignedToMe={isTaskAssignedToUser(task, currentUser, staff)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+## 5. UPDATE TASK CARD WITH HIGHLIGHT
+
+```javascript
+// In TaskCard component
+const TaskCard = ({ task, currentUser, staff, isAssignedToMe }) => {
+  return (
+    <div className={`task-card ${isAssignedToMe ? 'assigned-to-me' : ''}`}>
+      {isAssignedToMe && (
+        <div className="assigned-to-me-badge">
+          📌 Your Task
+        </div>
+      )}
+      
+      {/* Rest of task card */}
+    </div>
+  );
+};
+```
+
+## 6. ADD MOCK USER SELECTOR FOR TESTING
+
+Add a temporary user selector to test different users:
+
+```javascript
+// Add this component for testing
+const MockUserSelector = () => {
+  const { refresh } = useCurrentUser();
+  const [staff, setStaff] = useState([]);
+  
+  useEffect(() => {
+    fetch('/api/staff')
+      .then(res => res.json())
+      .then(setStaff);
+  }, []);
+  
+  const switchUser = (email) => {
+    localStorage.setItem('mockUserEmail', email);
+    refresh(); // Reload current user
+    window.location.reload(); // Refresh page
+  };
+  
+  return (
+    <div style={{ 
+      position: 'fixed', 
+      bottom: 20, 
+      right: 20, 
+      background: 'white', 
+      padding: '10px',
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }}>
+      <label>Test as user:</label>
+      <select onChange={(e) => switchUser(e.target.value)}>
+        <option value="">Select user...</option>
+        {staff.map(s => (
+          <option key={s.id} value={s.email}>
+            {s.fullName} - {s.rolesAssigned.join(', ')}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+```
+
+## 7. DEBUG HELPERS
+
+Add these to help debug the issue:
+
+```javascript
+// In your console, run these to check data:
+
+// Check all staff emails and IDs
+fetch('/api/staff').then(r => r.json()).then(staff => {
+  console.table(staff.map(s => ({
+    id: s.id,
+    email: s.email,
+    name: s.fullName,
+    roles: s.rolesAssigned.join(', ')
+  })));
+});
+
+// Check task assignments
+fetch('/api/tasks').then(r => r.json()).then(tasks => {
+  console.table(tasks.map(t => ({
+    title: t.title,
+    assignTo: t.assignTo,
+    status: t.status
+  })));
+});
+
+// Test assignment matching
+const testAssignment = (taskAssignTo, userEmail) => {
+  // Your test logic here
+  console.log(`Testing ${taskAssignTo} against ${userEmail}`);
+};
+```
+
+## The key fixes:
+
+1. **Email-based matching**: Find current user in staff by email, not ID
+2. **Context provider**: Centralized current user management
+3. **Proper staff lookup**: Ensures current user has roles from staff data
+4. **Debug visibility**: Shows current user info to verify matching
+
+This creates a proper connection between your authentication system and the staff data using email as the common identifier.
