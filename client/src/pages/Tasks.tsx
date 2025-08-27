@@ -106,14 +106,14 @@ const Tasks: React.FC = () => {
   }, [activeFilter, statusFilter, priorityFilter, dateFilter]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.name }],
+    queryKey: ["/api/tasks", { userId: auth.user?.id, location: currentLocation.code }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (auth.user?.role === 'technician') {
         params.append('userId', auth.user.id.toString());
       }
       if (!isViewingAllLocations) {
-        params.append('location', currentLocation.name);
+        params.append('location', currentLocation.code);
       }
       const url = `/api/tasks?${params.toString()}`;
       const response = await fetch(url);
@@ -145,11 +145,11 @@ const Tasks: React.FC = () => {
   }, [refetch, queryClient]);
 
   const { data: recurringTasks = [] } = useQuery({
-    queryKey: ["/api/recurring-tasks", { location: currentLocation.name }],
+    queryKey: ["/api/recurring-tasks", { location: currentLocation.code }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (!isViewingAllLocations) {
-        params.append('location', currentLocation.name);
+        params.append('location', currentLocation.code);
       }
       const url = `/api/recurring-tasks?${params.toString()}`;
       const response = await fetch(url);
@@ -346,7 +346,7 @@ const Tasks: React.FC = () => {
     
     // Location filter
     if (!isViewingAllLocations) {
-      filtered = filtered.filter(task => task.location === currentLocation.name);
+      filtered = filtered.filter(task => task.location === currentLocation.code);
     }
 
     // Search filter
@@ -445,7 +445,7 @@ const Tasks: React.FC = () => {
     console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
     return uniqueFiltered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.name, isViewingAllLocations, staffData]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.code, isViewingAllLocations, staffData]);
 
   // Clear all filters function
   const clearAllFilters = async () => {
