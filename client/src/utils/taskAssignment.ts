@@ -1,7 +1,7 @@
 import { Task } from '@shared/schema';
 
 interface CurrentUser {
-  id: number | string;
+  id: number | null;
   email: string;
   fullName: string;
   rolesAssigned: string[];
@@ -11,7 +11,7 @@ interface CurrentUser {
  * Centralized function to check if a task is assigned to the current user
  */
 export const isTaskAssignedToUser = (task: Task | any, currentUser: CurrentUser | null): boolean => {
-  if (!currentUser) {
+  if (!currentUser || !currentUser.id) {
     return false;
   }
   

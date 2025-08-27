@@ -96,7 +96,7 @@ export const CurrentUserProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setCurrentUser({
           id: null,
           email: userEmail,
-          fullName: auth.user.name || userEmail,
+          fullName: auth?.user?.name || userEmail,
           rolesAssigned: []
         });
       }
