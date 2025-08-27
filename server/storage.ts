@@ -62,6 +62,8 @@ export interface IStorage {
   updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
   deleteRecurringTask(id: number): Promise<boolean>;
   resetRecurringTasks(): Promise<boolean>;
+  regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }>;
+  regenerateTaskInstances(recurringTaskId: number): Promise<boolean>;
 
   // Growing systems
   getGrowingSystem(id: number): Promise<GrowingSystem | undefined>;
@@ -1972,6 +1974,26 @@ export class MemStorage implements IStorage {
       return false;
     }
   }
+
+  // Add missing methods for recurring task instance management
+  async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> {
+    return this.regenerateTaskInstances();
+  }
+
+  async regenerateTaskInstances(recurringTaskId?: number): Promise<boolean | { totalTasksCreated: number; recurringTasksProcessed: number }> {
+    if (recurringTaskId) {
+      // Single recurring task regeneration
+      const recurringTask = this.recurringTasks.get(recurringTaskId);
+      if (!recurringTask) return false;
+      
+      await this.generateTaskInstances(recurringTask);
+      return true;
+    } else {
+      // All recurring tasks regeneration
+      const result = await this.regenerateTaskInstances();
+      return result;
+    }
+  }
 }
 
 // Database Storage Implementation (switching from MemStorage to use database)
@@ -2489,6 +2511,15 @@ class HybridStorage implements IStorage {
 
   async clearAllData(): Promise<boolean> {
     return this.memStorage.clearAllData();
+  }
+
+  async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> {
+    return this.memStorage.regenerateAllTaskInstances();
+  }
+
+  async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> {
+    const result = await this.memStorage.regenerateTaskInstances(recurringTaskId);
+    return typeof result === 'boolean' ? result : false;
   }
 }
 
