@@ -7,6 +7,11 @@ interface GamifiedProgressBarsProps {
 }
 
 const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, currentUser, selectedDate }) => {
+  // Safety check - don't render if we don't have tasks or current user
+  if (!tasks || !Array.isArray(tasks) || !currentUser) {
+    return null;
+  }
+
   const today = new Date().toISOString().split('T')[0];
   const [currentAffirmation, setCurrentAffirmation] = useState(0);
   
@@ -56,50 +61,75 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
     return () => clearInterval(interval);
   }, []);
   
-  // Calculate task stats for all tasks
+  // Calculate task stats for all tasks - with error handling
   const teamStats = {
     overdue: tasks.filter(t => {
-      const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
-      return taskDate < today && t.status === 'pending';
+      try {
+        const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
+        return taskDate < today && t?.status === 'pending';
+      } catch (error) {
+        return false;
+      }
     }).length,
     pending: tasks.filter(t => {
-      const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
-      return t.status === 'pending' && taskDate >= today;
+      try {
+        const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
+        return t?.status === 'pending' && taskDate >= today;
+      } catch (error) {
+        return false;
+      }
     }).length,
-    inProgress: tasks.filter(t => t.status === 'in_progress').length,
-    paused: tasks.filter(t => t.status === 'paused').length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    skipped: tasks.filter(t => t.status === 'skipped').length,
+    inProgress: tasks.filter(t => t?.status === 'in_progress').length,
+    paused: tasks.filter(t => t?.status === 'paused').length,
+    completed: tasks.filter(t => t?.status === 'completed').length,
+    skipped: tasks.filter(t => t?.status === 'skipped').length,
   };
   
-  // Calculate stats for user's tasks only
+  // Calculate stats for user's tasks only - with error handling
   const myTasks = tasks.filter(task => {
-    if (!currentUser || !task.assignTo) return false;
-    
-    if (task.assignTo === `user_${currentUser.id}`) return true;
-    if (task.assignTo === 'all_staff' && currentUser.id) return true;
-    
-    if (task.assignTo?.startsWith('role_')) {
-      const roleName = task.assignTo.replace('role_', '');
-      return currentUser.rolesAssigned?.includes(roleName) || false;
+    try {
+      if (!currentUser || !task) return false;
+      
+      // Check both assignTo and assignedTo fields
+      const assignment = task.assignTo || task.assignedTo;
+      if (!assignment) return false;
+      
+      if (assignment === `user_${currentUser.id}`) return true;
+      if (assignment === 'all_staff' && currentUser.id) return true;
+      
+      if (assignment.startsWith && assignment.startsWith('role_')) {
+        const roleName = assignment.replace('role_', '');
+        return currentUser.rolesAssigned?.includes(roleName) || false;
+      }
+      
+      return false;
+    } catch (error) {
+      console.warn('Error filtering task:', task, error);
+      return false;
     }
-    
-    return false;
   });
   
   const myStats = {
     overdue: myTasks.filter(t => {
-      const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
-      return taskDate < today && t.status === 'pending';
+      try {
+        const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
+        return taskDate < today && t?.status === 'pending';
+      } catch (error) {
+        return false;
+      }
     }).length,
     pending: myTasks.filter(t => {
-      const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
-      return t.status === 'pending' && taskDate >= today;
+      try {
+        const taskDate = t?.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : '';
+        return t?.status === 'pending' && taskDate >= today;
+      } catch (error) {
+        return false;
+      }
     }).length,
-    inProgress: myTasks.filter(t => t.status === 'in_progress').length,
-    paused: myTasks.filter(t => t.status === 'paused').length,
-    completed: myTasks.filter(t => t.status === 'completed').length,
-    skipped: myTasks.filter(t => t.status === 'skipped').length,
+    inProgress: myTasks.filter(t => t?.status === 'in_progress').length,
+    paused: myTasks.filter(t => t?.status === 'paused').length,
+    completed: myTasks.filter(t => t?.status === 'completed').length,
+    skipped: myTasks.filter(t => t?.status === 'skipped').length,
   };
   
   const teamTotal = Object.values(teamStats).reduce((a, b) => a + b, 0);
