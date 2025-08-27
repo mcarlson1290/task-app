@@ -201,6 +201,7 @@ export const inventoryItems = pgTable("inventory_items", {
   supplier: text("supplier"),
   ozPerTray: real("oz_per_tray"), // Amount needed per tray for seeds
   cropId: integer("crop_id"), // Links to crop configuration
+  location: text("location").notNull().default('K'), // Location code (K, R, MKE, etc.)
   
   // Cost tracking fields
   totalValue: real("total_value").default(0), // Total value of current stock

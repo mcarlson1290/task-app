@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertTriangle, Package, Search, Plus, TrendingDown, Mail, Edit, DollarSign } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
 import { useUser } from "@/contexts/UserContext";
+import { useLocation } from "@/contexts/LocationContext";
+import { locations } from "@/data/locationsData";
 import { apiRequest } from "@/lib/queryClient";
 import InventoryModal from "@/components/InventoryModal";
 import AddInventoryModal, { AddInventoryData } from "@/components/AddInventoryModal";
@@ -25,15 +27,43 @@ const Inventory: React.FC = () => {
   const [modalMode, setModalMode] = React.useState<'add' | 'edit'>('add');
   const [isCostBreakdownOpen, setIsCostBreakdownOpen] = React.useState(true);
   const { currentUser } = useUser();
+  const { currentLocation, isViewingAllLocations } = useLocation();
   const isManager = currentUser?.role === 'Manager' || currentUser?.role === 'Corporate';
   const queryClient = useQueryClient();
 
+  // Use location code for API filtering (K, R, MKE)
+  const locationCode = currentLocation.code;
+  
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
-    queryKey: ["/api/inventory"],
+    queryKey: ["/api/inventory", locationCode, isViewingAllLocations],
+    queryFn: async () => {
+      try {
+        const url = isViewingAllLocations 
+          ? "/api/inventory" 
+          : `/api/inventory?location=${locationCode}`;
+        const result = await apiRequest("GET", url);
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Failed to fetch inventory:', error);
+        return [];
+      }
+    },
   });
 
   const { data: lowStockItems = [] } = useQuery<InventoryItem[]>({
-    queryKey: ["/api/inventory/low-stock"],
+    queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations],
+    queryFn: async () => {
+      try {
+        const url = isViewingAllLocations 
+          ? "/api/inventory/low-stock" 
+          : `/api/inventory/low-stock?location=${locationCode}`;
+        const result = await apiRequest("GET", url);
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        console.error('Failed to fetch low stock items:', error);
+        return [];
+      }
+    },
   });
 
   const createItemMutation = useMutation({
@@ -136,6 +166,11 @@ const Inventory: React.FC = () => {
 
   const getTotalInventoryValue = (): number => {
     return inventory.reduce((total, item) => total + getItemTotalValue(item), 0);
+  };
+
+  const getLocationName = (locationCode: string): string => {
+    const location = locations.find(l => l.code === locationCode);
+    return location ? location.name : locationCode;
   };
 
   const filteredInventory = React.useMemo(() => {
@@ -348,6 +383,17 @@ Please process this reorder request at your earliest convenience.`;
           />
         </div>
         
+        {/* Location display/selector */}
+        {isViewingAllLocations ? (
+          <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-sm font-medium text-blue-700">
+            📍 All Locations
+          </div>
+        ) : (
+          <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm font-medium text-green-700">
+            📍 {currentLocation.name}
+          </div>
+        )}
+        
         {/* Category filter */}
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[140px] bg-white">
@@ -428,6 +474,9 @@ Please process this reorder request at your earliest convenience.`;
                     <p className="text-sm text-red-700">
                       {item.currentStock} {item.unit} remaining • Reorder at {item.minimumStock} {item.unit}
                     </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Location: {getLocationName(item.location || 'K')} ({item.location || 'K'})
+                    </p>
                   </div>
                 </div>
                 <button
@@ -446,7 +495,7 @@ Please process this reorder request at your earliest convenience.`;
       {/* Main Inventory Items Section */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-          📦 All Inventory Items ({filteredInventory.length})
+          📦 {isViewingAllLocations ? 'All Locations' : `${currentLocation.name}`} Inventory ({filteredInventory.length} items)
         </h3>
 
 
@@ -509,6 +558,13 @@ Please process this reorder request at your earliest convenience.`;
                         <span className="font-medium text-gray-900">{item.supplier}</span>
                       </div>
                     )}
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Location</span>
+                      <span className="font-medium text-blue-600">
+                        {getLocationName(item.location || 'K')} ({item.location || 'K'})
+                      </span>
+                    </div>
 
                     {item.lastRestocked && (
                       <div className="flex justify-between items-center">

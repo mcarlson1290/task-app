@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 import { InventoryItem } from "@shared/schema";
+import { useLocation } from "@/contexts/LocationContext";
+import { locations } from "@/data/locationsData";
 
 interface InventoryModalProps {
   item: InventoryItem | null;
@@ -24,6 +26,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
   onDelete,
   onClose
 }) => {
+  const { currentLocation } = useLocation();
   const [formData, setFormData] = useState(() => {
     if (mode === 'edit' && item) {
       // Handle null values properly - convert null to number or use 0 as fallback
@@ -38,6 +41,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         minimumStock: minimumStock,
         category: item.category,
         supplier: item.supplier || '',
+        location: item.location || currentLocation.code,
         estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
       };
     }
@@ -49,6 +53,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       minimumStock: 0,
       category: 'other-supplies',
       supplier: '',
+      location: currentLocation.code,
       estimatedTotalValue: ''
     };
   });
@@ -73,6 +78,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         minimumStock: minimumStock,
         category: item.category,
         supplier: item.supplier || '',
+        location: item.location || currentLocation.code,
         estimatedTotalValue: '' // Not used in edit mode
       };
       
@@ -327,6 +333,22 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
               onChange={(e) => setFormData({...formData, supplier: e.target.value})}
               placeholder="e.g., Green Thumb Seeds"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Select value={formData.location} onValueChange={(value) => setFormData({...formData, location: value})}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem key={location.code} value={location.code}>
+                    {location.name} ({location.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-between pt-4">

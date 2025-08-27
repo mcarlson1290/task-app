@@ -2049,9 +2049,7 @@ class DatabaseStorage implements IStorage {
   }
 
   async getInventoryItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    // Note: Current schema doesn't have location field for inventory items
-    // Return all items for now - location filtering can be added later if needed
-    return db.select().from(inventoryItems);
+    return db.select().from(inventoryItems).where(eq(inventoryItems.location, locationId));
   }
 
   async createInventoryItem(itemData: InsertInventoryItem): Promise<InventoryItem> {
@@ -2074,9 +2072,10 @@ class DatabaseStorage implements IStorage {
   }
 
   async getLowStockItemsByLocation(locationId: string): Promise<InventoryItem[]> {
-    // Note: Current schema doesn't have location field for inventory items
-    // Return all low stock items for now - location filtering can be added later if needed
-    return db.select().from(inventoryItems).where(sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`);
+    return db.select().from(inventoryItems).where(and(
+      eq(inventoryItems.location, locationId),
+      sql`${inventoryItems.currentStock} <= ${inventoryItems.minimumStock}`
+    ));
   }
 
   async addInventoryStock(data: { itemId: number; quantity: number; unitCost: number; supplier?: string; notes?: string }): Promise<InventoryItem> {
