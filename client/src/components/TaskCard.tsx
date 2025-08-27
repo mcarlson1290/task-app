@@ -2,16 +2,20 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, Info } from "lucide-react";
+import { Clock, CheckCircle, Info, Users } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
+import { isTaskAssignedToUser, getAssignmentText } from "../services/taskAssignmentService";
+import { StaffMember } from "../services/staffService";
 
 interface TaskCardProps {
   task: Task;
   onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume') => void;
+  currentUser?: any;
+  staff?: StaffMember[];
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, staff = [] }) => {
   // Safety check for task object
   if (!task) {
     return (
@@ -229,6 +233,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction }) => {
               ⏱️ Est. {formatTime(task.estimatedTime)}
             </p>
           )}
+          
+          {/* Assignment information */}
+          <div className="assignment-info text-sm text-gray-600 mb-1 flex items-center">
+            <Users className="h-4 w-4 mr-1" />
+            <span>{getAssignmentText(task, staff)}</span>
+            {isTaskAssignedToUser(task, currentUser, staff) && (
+              <span className="assigned-to-me-badge ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                📌 Assigned to You
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar (for in-progress tasks) */}

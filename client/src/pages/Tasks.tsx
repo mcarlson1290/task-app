@@ -153,6 +153,17 @@ const Tasks: React.FC = () => {
     enabled: !!auth.user,
   });
 
+  // Fetch staff data for assignment display
+  const { data: staffData = [] } = useQuery({
+    queryKey: ["/api/staff"],
+    queryFn: async () => {
+      const response = await fetch('/api/staff');
+      if (!response.ok) throw new Error('Failed to fetch staff');
+      return response.json();
+    },
+    enabled: !!auth.user,
+  });
+
 
 
   // Automatic overdue task skipping
@@ -1011,6 +1022,8 @@ const Tasks: React.FC = () => {
                   key={task.id}
                   task={task}
                   onTaskAction={handleTaskAction}
+                  currentUser={auth?.user}
+                  staff={staffData}
                 />
               ))}
             </div>
@@ -1031,6 +1044,7 @@ const Tasks: React.FC = () => {
         open={addTaskModalOpen}
         onClose={() => setAddTaskModalOpen(false)}
         onSave={handleAddTask}
+        currentUser={auth?.user}
       />
 
       {/* Task Action Modal */}

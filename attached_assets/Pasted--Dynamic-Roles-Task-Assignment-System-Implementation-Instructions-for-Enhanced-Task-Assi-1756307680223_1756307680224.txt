@@ -1,0 +1,747 @@
+# 🎭 Dynamic Roles & Task Assignment System
+
+## Implementation Instructions for Enhanced Task Assignment
+
+### 1. CREATE ROLE-TO-TASK-TYPE MAPPING
+
+Create a new file `src/data/roleTaskMapping.ts`:
+
+```typescript
+// Direct mapping of task types to their corresponding roles
+export const taskTypeToRoleMapping = {
+  'Seeding - Microgreens': 'Microgreens Seeder',
+  'Seeding - Leafy Greens': 'Leafy Greens Seeder',
+  'Harvest - Microgreens': 'Microgreens Harvester',
+  'Harvest - Leafy Greens': 'Leafy Greens Harvester',
+  'Blackout Tasks': 'Blackout Specialist',
+  'Moving': 'Moving Tech',
+  'Packing': 'Packing Tech',
+  'Cleaning': 'Cleaning Crew',
+  'Inventory': 'Inventory Tech',
+  'Equipment Maintenance': 'Equipment Tech',
+  'Other': 'All Staff' // Special case - assigns to everyone
+};
+
+// Get the primary role for a task type
+export const getPrimaryRole = (taskType: string): string => {
+  return taskTypeToRoleMapping[taskType] || 'General Staff';
+};
+
+// Get all available roles from the mapping
+export const getAllRoles = (): string[] => {
+  const roles = [...new Set(Object.values(taskTypeToRoleMapping))];
+  // Add Manager role which can do everything
+  roles.push('Manager');
+  // Remove 'All Staff' as it's not a real role
+  return roles.filter(role => role !== 'All Staff').sort();
+};
+
+// Check if a role can handle a task type
+export const canRoleHandleTaskType = (role: string, taskType: string): boolean => {
+  // Managers can handle all task types
+  if (role === 'Manager') return true;
+  
+  // Direct role match
+  const primaryRole = getPrimaryRole(taskType);
+  if (role === primaryRole) return true;
+  
+  // 'Other' tasks can be done by anyone
+  if (taskType === 'Other') return true;
+  
+  return false;
+};
+```
+
+### 2. UPDATE TASK SERVICE - Add Dynamic Assignment Data
+
+Update your task service to fetch staff and build assignment options:
+
+```javascript
+// Get dynamic assignment options
+export const getAssignmentOptions = async (currentUser, taskType) => {
+  try {
+    // Fetch all staff
+    const response = await fetch('/api/staff');
+    const staff = await response.json();
+    
+    // Filter active staff only
+    const activeStaff = staff.filter(s => s.activeStatus === 'active');
+    
+    // Get the primary role for this task type
+    const primaryRole = getPrimaryRole(taskType);
+    
+    // Build roles list with staff counts
+    const rolesWithStaff = {};
+    activeStaff.forEach(member => {
+      member.rolesAssigned.forEach(role => {
+        if (!rolesWithStaff[role]) {
+          rolesWithStaff[role] = [];
+        }
+        rolesWithStaff[role].push(member);
+      });
+    });
+    
+    // Build final assignment options
+    const assignmentOptions = {
+      roles: [],
+      users: [],
+      special: []
+    };
+    
+    // For "Other" tasks, add "All Staff" as the primary option
+    if (taskType === 'Other') {
+      assignmentOptions.special.push({
+        value: 'all_staff',
+        label: '👥 All Staff (Recommended)',
+        type: 'special',
+        staffCount: activeStaff.length,
+        isPrimary: true
+      });
+    }
+    
+    // Add the primary role first if it has staff
+    if (primaryRole && primaryRole !== 'All Staff' && rolesWithStaff[primaryRole]) {
+      assignmentOptions.roles.push({
+        value: `role_${primaryRole}`,
+        label: `👤 ${primaryRole} (Recommended)`,
+        type: 'role',
+        staffCount: rolesWithStaff[primaryRole].length,
+        staffIds: rolesWithStaff[primaryRole].map(s => s.id),
+        isPrimary: true
+      });
+    }
+    
+    // Add Manager role if there are managers (they can do any task)
+    if (rolesWithStaff['Manager']) {
+      assignmentOptions.roles.push({
+        value: 'role_Manager',
+        label: '👤 Manager',
+        type: 'role',
+        staffCount: rolesWithStaff['Manager'].length,
+        staffIds: rolesWithStaff['Manager'].map(s => s.id),
+        isPrimary: false
+      });
+    }
+    
+    // Add all other roles (sorted alphabetically)
+    const otherRoles = Object.keys(rolesWithStaff)
+      .filter(role => 
+        role !== primaryRole && 
+        role !== 'Manager' &&
+        rolesWithStaff[role].length > 0
+      )
+      .sort();
+    
+    otherRoles.forEach(role => {
+      assignmentOptions.roles.push({
+        value: `role_${role}`,
+        label: `👤 ${role}`,
+        type: 'role',
+        staffCount: rolesWithStaff[role].length,
+        staffIds: rolesWithStaff[role].map(s => s.id),
+        isPrimary: false
+      });
+    });
+    
+    // Add individual users (sorted by name)
+    const sortedStaff = [...activeStaff].sort((a, b) => 
+      a.fullName.localeCompare(b.fullName)
+    );
+    
+    sortedStaff.forEach(member => {
+      // Check if this user has the primary role
+      const hasPrimaryRole = member.rolesAssigned.includes(primaryRole);
+      
+      assignmentOptions.users.push({
+        value: `user_${member.id}`,
+        label: member.fullName,
+        type: 'user',
+        userId: member.id,
+        roles: member.rolesAssigned,
+        isCurrentUser: member.id === currentUser?.id,
+        hasPrimaryRole: hasPrimaryRole
+      });
+    });
+    
+    return assignmentOptions;
+    
+  } catch (error) {
+    console.error('Error fetching assignment options:', error);
+    return { roles: [], users: [], special: [] };
+  }
+};
+```
+
+### 3. UPDATE ADD TASK MODAL - Dynamic Assign To Dropdown
+
+Update your Add Task modal component:
+
+```javascript
+const AddTaskModal = ({ onSave, onClose, currentUser }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    taskType: '',
+    priority: 'Medium',
+    assignTo: '',
+    dueDate: new Date().toISOString().split('T')[0]
+  });
+  
+  const [assignmentOptions, setAssignmentOptions] = useState({
+    roles: [],
+    users: [],
+    special: []
+  });
+  
+  // Fetch assignment options when task type changes
+  useEffect(() => {
+    const loadAssignmentOptions = async () => {
+      if (formData.taskType) {
+        const options = await getAssignmentOptions(currentUser, formData.taskType);
+        setAssignmentOptions(options);
+      }
+    };
+    
+    loadAssignmentOptions();
+  }, [formData.taskType, currentUser]);
+  
+  // Render assignment dropdown with groups
+  const renderAssignmentDropdown = () => {
+    // Check if this is an "Other" task type
+    const isOtherTask = formData.taskType === 'Other';
+    
+    return (
+      <div className="form-group">
+        <label>Assign To *</label>
+        <select
+          value={formData.assignTo}
+          onChange={(e) => setFormData({ ...formData, assignTo: e.target.value })}
+          required
+          className="assignment-select"
+        >
+          <option value="">Select Assignee</option>
+          
+          {/* Special Options (All Staff for "Other" tasks) */}
+          {assignmentOptions.special.map(option => (
+            <option 
+              key={option.value} 
+              value={option.value}
+              className={option.isPrimary ? 'primary-assignment' : ''}
+            >
+              {option.label} ({option.staffCount} people)
+            </option>
+          ))}
+          
+          {/* Only show role separator if we have roles to show */}
+          {assignmentOptions.roles.length > 0 && (
+            <option disabled>──────── Roles ────────</option>
+          )}
+          
+          {/* Roles (with primary/recommended indicator) */}
+          {assignmentOptions.roles.map(role => (
+            <option 
+              key={role.value} 
+              value={role.value}
+              className={role.isPrimary ? 'primary-assignment' : ''}
+            >
+              {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
+            </option>
+          ))}
+          
+          {/* Separator */}
+          <option disabled>──────── People ────────</option>
+          
+          {/* Individual Users */}
+          {assignmentOptions.users.map(user => (
+            <option 
+              key={user.value} 
+              value={user.value}
+              className={user.isCurrentUser ? 'current-user' : user.hasPrimaryRole ? 'has-primary-role' : ''}
+            >
+              {user.label} 
+              {user.isCurrentUser && ' (You)'}
+              {user.roles.length > 0 && ` - ${user.roles.join(', ')}`}
+            </option>
+          ))}
+        </select>
+        
+        {/* Show who this will assign to */}
+        {formData.assignTo && formData.assignTo.startsWith('role_') && (
+          <div className="assignment-preview">
+            <small>
+              This will assign to: {
+                assignmentOptions.roles
+                  .find(r => r.value === formData.assignTo)
+                  ?.staffIds
+                  .map(id => assignmentOptions.users.find(u => u.userId === id)?.label)
+                  .join(', ')
+              }
+            </small>
+          </div>
+        )}
+        
+        {/* Show note for "Other" tasks */}
+        {isOtherTask && !formData.assignTo && (
+          <div className="assignment-note">
+            <small>💡 "Other" tasks are typically assigned to All Staff</small>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // ... rest of modal code
+};
+```
+
+### 4. UPDATE TASK DISPLAY - Show Assignment Indicator
+
+Update your task card component to show if assigned to current user:
+
+```javascript
+const TaskCard = ({ task, currentUser, staff }) => {
+  // Determine if task is assigned to current user
+  const isAssignedToMe = () => {
+    if (!currentUser) return false;
+    
+    // Direct user assignment
+    if (task.assignTo === `user_${currentUser.id}`) return true;
+    
+    // All staff assignment
+    if (task.assignTo === 'all_staff') return true;
+    
+    // Role assignment - check if user has the role
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      const currentStaff = staff.find(s => s.id === currentUser.id);
+      return currentStaff?.rolesAssigned.includes(roleName);
+    }
+    
+    return false;
+  };
+  
+  // Get assignment display text
+  const getAssignmentText = () => {
+    if (task.assignTo?.startsWith('user_')) {
+      const userId = parseInt(task.assignTo.replace('user_', ''));
+      const assignedUser = staff.find(s => s.id === userId);
+      return assignedUser?.fullName || 'Unknown User';
+    }
+    
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      return `👤 ${roleName}`;
+    }
+    
+    if (task.assignTo === 'all_staff') {
+      return '👥 All Staff';
+    }
+    
+    return 'Unassigned';
+  };
+  
+  return (
+    <div className={`task-card ${isAssignedToMe() ? 'assigned-to-me' : ''}`}>
+      {isAssignedToMe() && (
+        <div className="assigned-indicator">
+          <span className="assigned-badge">📌 Assigned to You</span>
+        </div>
+      )}
+      
+      <div className="task-header">
+        <h3>{task.title}</h3>
+        <span className="task-category">{task.taskType}</span>
+      </div>
+      
+      <div className="task-assignment">
+        <span className="assignment-label">Assigned to:</span>
+        <span className="assignment-value">{getAssignmentText()}</span>
+      </div>
+      
+      {/* Rest of task card content */}
+    </div>
+  );
+};
+```
+
+### 5. ADD "ASSIGNED TO ME" FILTER
+
+Update your Tasks page filters:
+
+```javascript
+const TasksPage = ({ currentUser }) => {
+  const [filters, setFilters] = useState({
+    category: 'all',
+    status: 'all',
+    priority: 'all',
+    assignedToMe: false,
+    date: new Date().toISOString().split('T')[0]
+  });
+  
+  // Filter tasks
+  const filterTasks = (tasks) => {
+    return tasks.filter(task => {
+      // Category filter
+      if (filters.category !== 'all' && task.taskType !== filters.category) {
+        return false;
+      }
+      
+      // Status filter
+      if (filters.status !== 'all' && task.status !== filters.status) {
+        return false;
+      }
+      
+      // Priority filter
+      if (filters.priority !== 'all' && task.priority !== filters.priority) {
+        return false;
+      }
+      
+      // Assigned to me filter
+      if (filters.assignedToMe) {
+        if (!isTaskAssignedToUser(task, currentUser, staff)) {
+          return false;
+        }
+      }
+      
+      // Date filter
+      if (task.dueDate !== filters.date) {
+        return false;
+      }
+      
+      return true;
+    });
+  };
+  
+  // Helper function to check assignment
+  const isTaskAssignedToUser = (task, user, allStaff) => {
+    if (!user) return false;
+    
+    if (task.assignTo === `user_${user.id}`) return true;
+    if (task.assignTo === 'all_staff') return true;
+    
+    if (task.assignTo?.startsWith('role_')) {
+      const roleName = task.assignTo.replace('role_', '');
+      const userStaff = allStaff.find(s => s.id === user.id);
+      return userStaff?.rolesAssigned.includes(roleName);
+    }
+    
+    return false;
+  };
+  
+  return (
+    <div className="tasks-page">
+      <div className="filters-bar">
+        {/* Other filters... */}
+        
+        {/* Assigned to Me Toggle */}
+        <div className="filter-toggle">
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              checked={filters.assignedToMe}
+              onChange={(e) => setFilters({
+                ...filters,
+                assignedToMe: e.target.checked
+              })}
+            />
+            <span className="toggle-slider"></span>
+            <span className="toggle-text">📌 Assigned to Me</span>
+          </label>
+        </div>
+        
+        {/* Clear Filters button */}
+        <button 
+          className="clear-filters"
+          onClick={() => setFilters({
+            category: 'all',
+            status: 'all',
+            priority: 'all',
+            assignedToMe: false,
+            date: new Date().toISOString().split('T')[0]
+          })}
+        >
+          × Clear Filters
+        </button>
+      </div>
+      
+      {/* Task list */}
+      <div className="task-list">
+        {filteredTasks.map(task => (
+          <TaskCard 
+            key={task.id} 
+            task={task} 
+            currentUser={currentUser}
+            staff={staff}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+### 6. ADD STYLES FOR NEW FEATURES
+
+Add these CSS styles:
+
+```css
+/* Assignment Dropdown Styling */
+.assignment-select option.primary-assignment {
+  background: #e0f2fe;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.assignment-select option.has-primary-role {
+  background: #fef3c7;
+}
+
+.assignment-select option.current-user {
+  background: #dbeafe;
+  font-weight: 600;
+}
+
+.assignment-select option:disabled {
+  color: #9ca3af;
+  font-size: 12px;
+  text-align: center;
+}
+
+.assignment-preview {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.assignment-note {
+  margin-top: 8px;
+  padding: 8px;
+  background: #fef3c7;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Task Card Assignment Indicator */
+.task-card.assigned-to-me {
+  border-left: 4px solid #2D8028;
+  background: linear-gradient(to right, rgba(45, 128, 40, 0.05), transparent);
+}
+
+.assigned-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.assigned-badge {
+  background: #2D8028;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-assignment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.assignment-label {
+  color: #6b7280;
+}
+
+.assignment-value {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Filter Toggle */
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.toggle-label input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  width: 44px;
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-label input:checked + .toggle-slider {
+  background: #2D8028;
+}
+
+.toggle-label input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  font-weight: 500;
+  color: #374151;
+}
+```
+
+### 7. UPDATE BACKEND TO HANDLE NEW ASSIGNMENT FORMAT
+
+Update your task creation endpoint to handle the new assignment format:
+
+```javascript
+// In your task creation/update endpoint
+app.post('/api/tasks', async (req, res) => {
+  const taskData = req.body;
+  
+  // Parse assignment to determine actual assignees
+  let assignedUsers = [];
+  
+  if (taskData.assignTo.startsWith('user_')) {
+    // Single user assignment
+    const userId = parseInt(taskData.assignTo.replace('user_', ''));
+    assignedUsers = [userId];
+    
+  } else if (taskData.assignTo.startsWith('role_')) {
+    // Role assignment - find all users with this role
+    const roleName = taskData.assignTo.replace('role_', '');
+    const staff = await readData('staff.json');
+    assignedUsers = staff
+      .filter(s => s.activeStatus === 'active' && s.rolesAssigned.includes(roleName))
+      .map(s => s.id);
+      
+  } else if (taskData.assignTo === 'all_staff') {
+    // All staff assignment
+    const staff = await readData('staff.json');
+    assignedUsers = staff
+      .filter(s => s.activeStatus === 'active')
+      .map(s => s.id);
+  }
+  
+  // Store both the assignment type and the resolved users
+  const task = {
+    ...taskData,
+    assignTo: taskData.assignTo, // Keep original assignment format
+    assignedUsers: assignedUsers, // Store resolved user IDs for filtering
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  // Save task
+  const tasks = await readData('tasks.json');
+  tasks.push(task);
+  await saveData('tasks.json', tasks);
+  
+  res.json(task);
+});
+```
+
+## Complete List of Roles
+
+Based on the task types, here are all the roles that should be available in your system:
+
+1. **Microgreens Seeder** - For "Seeding - Microgreens" tasks
+2. **Leafy Greens Seeder** - For "Seeding - Leafy Greens" tasks
+3. **Microgreens Harvester** - For "Harvest - Microgreens" tasks
+4. **Leafy Greens Harvester** - For "Harvest - Leafy Greens" tasks
+5. **Blackout Specialist** - For "Blackout Tasks"
+6. **Moving Tech** - For "Moving" tasks
+7. **Packing Tech** - For "Packing" tasks
+8. **Cleaning Crew** - For "Cleaning" tasks
+9. **Inventory Tech** - For "Inventory" tasks
+10. **Equipment Tech** - For "Equipment Maintenance" tasks
+11. **Manager** - Can handle all task types
+12. **General Staff** - Fallback role for flexibility
+
+## How the System Works
+
+1. **Task Type Selection**: When creating a task and selecting a task type (e.g., "Seeding - Microgreens")
+
+2. **Smart Assignment**: The system automatically:
+   - Shows the corresponding role first (e.g., "Microgreens Seeder (Recommended)")
+   - Shows "Manager" next (since managers can do any task)
+   - Shows all other roles below
+   - Shows individual staff members at the bottom
+
+3. **Special Case - "Other" Tasks**: 
+   - Shows "All Staff (Recommended)" as the primary option
+   - Allows selection of specific roles or individuals if needed
+
+4. **Visual Indicators**:
+   - Primary/recommended assignments appear in blue
+   - Current user shows "(You)" indicator
+   - Staff with the primary role are highlighted
+
+## Backend Implementation Note
+
+When adding new staff members, make sure they're assigned appropriate roles from the list above. The system will automatically suggest the right people for each task type based on their assigned roles.
+
+### Update Staff Edit Modal Roles
+
+In your Staff Edit Modal, update the available roles to match the task types:
+
+```javascript
+const availableRoles = [
+  'Microgreens Seeder',
+  'Leafy Greens Seeder', 
+  'Microgreens Harvester',
+  'Leafy Greens Harvester',
+  'Blackout Specialist',
+  'Moving Tech',
+  'Packing Tech',
+  'Cleaning Crew',
+  'Inventory Tech',
+  'Equipment Tech',
+  'Manager',
+  'General Staff'
+];
+```
+
+### Handling Multi-Skilled Staff
+
+Staff members can have multiple roles. For example:
+- **Alex Martinez** might have: ['Microgreens Seeder', 'Microgreens Harvester']
+- **Sarah Johnson** might have: ['Moving Tech', 'Packing Tech', 'Cleaning Crew']
+
+This allows flexibility while maintaining the 1:1 task-to-role relationship. When a task is created:
+- The primary role (matching the task type) is recommended
+- But staff with other roles can still be individually assigned
+- Managers can always be assigned to any task

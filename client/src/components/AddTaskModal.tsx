@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,14 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { getTaskTypeOptions } from '../data/roleTaskMapping';
+import { getAssignmentOptions, AssignmentOptions } from '../services/taskAssignmentService';
 
 interface AddTaskModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (taskData: any) => void;
+  currentUser?: any;
 }
 
-export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSave }) => {
+export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSave, currentUser }) => {
   const { toast } = useToast();
   
   const [taskData, setTaskData] = useState({
@@ -21,35 +24,44 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     description: '',
     type: '',
     priority: 'medium',
-    assignedTo: '',
+    assignTo: '',
     dueDate: new Date().toISOString().split('T')[0],
     estimatedTime: ''
   });
 
-  const taskTypes = [
-    { value: 'seeding-microgreens', label: 'Seeding - Microgreens' },
-    { value: 'seeding-leafy-greens', label: 'Seeding - Leafy Greens' },
-    { value: 'harvest-microgreens', label: 'Harvest - Microgreens' },
-    { value: 'harvest-leafy-greens', label: 'Harvest - Leafy Greens' },
-    { value: 'blackout-tasks', label: 'Blackout Tasks' },
-    { value: 'moving', label: 'Moving' },
-    { value: 'packing', label: 'Packing' },
-    { value: 'cleaning', label: 'Cleaning' },
-    { value: 'inventory', label: 'Inventory' },
-    { value: 'equipment-maintenance', label: 'Equipment Maintenance' },
-    { value: 'other', label: 'Other' }
-  ];
+  const [assignmentOptions, setAssignmentOptions] = useState<AssignmentOptions>({
+    roles: [],
+    users: [],
+    special: []
+  });
 
-  const assigneeOptions = [
-    { value: '1', label: 'User 1' },
-    { value: '2', label: 'User 2' },
-    { value: '3', label: 'User 3' },
-    { value: 'all-staff', label: 'All Staff' },
-    { value: 'seeding-tech', label: 'Seeding Tech' },
-    { value: 'harvest-team', label: 'Harvest Team' },
-    { value: 'cleaning-crew', label: 'Cleaning Crew' },
-    { value: 'manager', label: 'Manager' }
-  ];
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
+
+  const taskTypes = getTaskTypeOptions();
+
+  // Fetch assignment options when task type changes
+  useEffect(() => {
+    const loadAssignmentOptions = async () => {
+      if (taskData.type) {
+        setIsLoadingAssignments(true);
+        try {
+          const options = await getAssignmentOptions(currentUser, taskData.type);
+          setAssignmentOptions(options);
+        } catch (error) {
+          console.error('Error loading assignment options:', error);
+          toast({
+            title: "Error Loading Assignments",
+            description: "Could not load assignment options. Please try again.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoadingAssignments(false);
+        }
+      }
+    };
+    
+    loadAssignmentOptions();
+  }, [taskData.type, currentUser, toast]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +69,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     console.log('Form submitted with data:', taskData);
     
     // Validate required fields
-    if (!taskData.title || !taskData.type || !taskData.assignedTo || !taskData.dueDate || !taskData.estimatedTime) {
+    if (!taskData.title || !taskData.type || !taskData.assignTo || !taskData.dueDate || !taskData.estimatedTime) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields marked with *",
@@ -80,14 +92,15 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
 
     const newTask = {
       ...taskData,
-      assignedTo: parseInt(taskData.assignedTo) || 1,
+      assignTo: taskData.assignTo, // New dynamic assignment field
+      assignedTo: taskData.assignTo.startsWith('user_') ? parseInt(taskData.assignTo.replace('user_', '')) : null, // Legacy compatibility
       estimatedTime: estimatedMinutes,
       status: 'pending' as const,
       progress: 0,
       checklist: [],
       startedAt: null,
       completedAt: null,
-      createdBy: 1, // Current user
+      createdBy: currentUser?.id || 1,
       data: {}
     };
 
@@ -129,7 +142,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
       description: '',
       type: '',
       priority: 'medium',
-      assignedTo: '',
+      assignTo: '',
       dueDate: new Date().toISOString().split('T')[0],
       estimatedTime: ''
     });
@@ -204,19 +217,84 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assignedTo">Assign To *</Label>
-            <Select value={taskData.assignedTo} onValueChange={(value) => setTaskData({ ...taskData, assignedTo: value })}>
+            <Label htmlFor="assignTo">Assign To *</Label>
+            <Select value={taskData.assignTo} onValueChange={(value) => setTaskData({ ...taskData, assignTo: value })}>
               <SelectTrigger>
-                <SelectValue placeholder="Select Assignee" />
+                <SelectValue placeholder={isLoadingAssignments ? "Loading..." : "Select Assignee"} />
               </SelectTrigger>
               <SelectContent>
-                {assigneeOptions.map((assignee) => (
-                  <SelectItem key={assignee.value} value={assignee.value}>
-                    {assignee.label}
-                  </SelectItem>
-                ))}
+                {isLoadingAssignments ? (
+                  <SelectItem value="" disabled>Loading assignments...</SelectItem>
+                ) : (
+                  <>
+                    {/* Special Options (All Staff for "Other" tasks) */}
+                    {assignmentOptions.special.map(option => (
+                      <SelectItem 
+                        key={option.value} 
+                        value={option.value}
+                        className={option.isPrimary ? 'font-semibold text-green-700' : ''}
+                      >
+                        {option.label} ({option.staffCount} {option.staffCount === 1 ? 'person' : 'people'})
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Role Separator */}
+                    {assignmentOptions.roles.length > 0 && assignmentOptions.special.length > 0 && (
+                      <SelectItem value="" disabled>──────── Roles ────────</SelectItem>
+                    )}
+                    
+                    {/* Roles (with primary/recommended indicator) */}
+                    {assignmentOptions.roles.map(role => (
+                      <SelectItem 
+                        key={role.value} 
+                        value={role.value}
+                        className={role.isPrimary ? 'font-semibold text-green-700' : ''}
+                      >
+                        {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
+                      </SelectItem>
+                    ))}
+                    
+                    {/* People Separator */}
+                    {assignmentOptions.users.length > 0 && (assignmentOptions.roles.length > 0 || assignmentOptions.special.length > 0) && (
+                      <SelectItem value="" disabled>──────── People ────────</SelectItem>
+                    )}
+                    
+                    {/* Individual Users */}
+                    {assignmentOptions.users.map(user => (
+                      <SelectItem 
+                        key={user.value} 
+                        value={user.value}
+                        className={user.isCurrentUser ? 'bg-blue-50' : user.hasPrimaryRole ? 'text-green-700' : ''}
+                      >
+                        {user.label} 
+                        {user.isCurrentUser && ' (You)'}
+                        {user.roles && user.roles.length > 0 && ` - ${user.roles.join(', ')}`}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
+            
+            {/* Show assignment preview */}
+            {taskData.assignTo && taskData.assignTo.startsWith('role_') && (
+              <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                <strong>Will assign to:</strong> {
+                  assignmentOptions.roles
+                    .find(r => r.value === taskData.assignTo)
+                    ?.staffIds
+                    ?.map(id => assignmentOptions.users.find(u => u.userId === id)?.label)
+                    .join(', ') || 'Loading...'
+                }
+              </div>
+            )}
+            
+            {/* Show note for "Other" tasks */}
+            {taskData.type === 'Other' && !taskData.assignTo && (
+              <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                💡 "Other" tasks are typically assigned to All Staff
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

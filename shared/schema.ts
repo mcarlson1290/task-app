@@ -36,7 +36,8 @@ export const tasks = pgTable("tasks", {
   type: text("type").notNull(), // 'seeding-microgreens', 'seeding-leafy-greens', 'harvest-microgreens', 'harvest-leafy-greens', 'blackout-tasks', 'moving', 'packing', 'cleaning', 'inventory', 'equipment-maintenance', 'other'
   status: text("status").notNull().default('pending'), // 'pending', 'in_progress', 'completed', 'approved', 'paused', 'skipped'
   priority: text("priority").default('medium'), // 'low', 'medium', 'high'
-  assignedTo: integer("assigned_to").references(() => users.id),
+  assignedTo: integer("assigned_to").references(() => users.id), // Legacy single user assignment
+  assignTo: text("assign_to"), // New dynamic assignment: 'user_123', 'role_Manager', 'all_staff'
   createdBy: integer("created_by").references(() => users.id),
   location: text("location"), // e.g., "Section A - Towers 1-5"
   estimatedTime: integer("estimated_time"), // in minutes
