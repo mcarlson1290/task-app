@@ -78,7 +78,8 @@
     },
     "checklistTemplate": {
       "steps": []
-    }
+    },
+    "assignTo": "role_Microgreens Seeder"
   },
   {
     "title": "Soak Pea Microgreens",

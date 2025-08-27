@@ -180,52 +180,47 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
       isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
     }`} data-status={task.status}>
       <CardContent className="p-6">
-        {/* Assigned to Me Badge */}
-        {isAssignedToCurrentUser && (
-          <div className="assigned-to-me-badge">
-            📌 Your Task
-          </div>
-        )}
-        
-        {/* Header Section */}
-        <div className="task-header flex justify-between items-start mb-4">
-          {/* Title with proper spacing */}
-          <h3 className="task-title flex-1 pr-3 text-lg font-semibold text-gray-800 word-wrap break-word" 
-              style={{ maxWidth: '60%' }}>
-            {getTaskEmoji(task.type || 'other')} {task.title || 'Untitled Task'}
-          </h3>
-          
-          {/* Right side badges container */}
-          <div className="task-badges flex flex-col items-end gap-1 flex-shrink-0">
-            {/* Day/Frequency Badge */}
+        {/* Top badges row - better organized */}
+        <div className="task-badges-row flex justify-between items-start mb-4">
+          {/* Left badges: Day and Priority */}
+          <div className="left-badges flex gap-2">
             <span 
-              className="day-badge px-2 py-1 rounded text-xs font-bold text-white text-center"
-              style={{ 
-                backgroundColor: dayDisplay.color,
-                minWidth: '70px'
-              }}
+              className="day-badge px-2 py-1 rounded text-xs font-bold text-white"
+              style={{ backgroundColor: dayDisplay.color }}
             >
               {dayDisplay.text}
             </span>
-            
-            {/* Priority Badge */}
-            <span className={`priority-badge px-2 py-1 rounded text-xs font-bold text-center ${
+            <span className={`priority-badge px-2 py-1 rounded text-xs font-bold ${
               task.priority === 'high' ? 'bg-red-500 text-white' :
               task.priority === 'medium' ? 'bg-yellow-500 text-white' :
               'bg-green-500 text-white'
-            }`} style={{ minWidth: '70px' }}>
+            }`}>
               {task.priority?.toUpperCase() || 'LOW'}
             </span>
           </div>
+          
+          {/* Right badge: Your Task (only when assigned) */}
+          {isAssignedToCurrentUser && (
+            <div className="your-task-badge bg-[#2D8028] text-white px-3 py-1 rounded-full text-xs font-semibold">
+              📌 Your Task
+            </div>
+          )}
         </div>
         
-        {/* Task Details - with proper spacing */}
-        <div className="task-details mb-4" style={{ paddingRight: '90px' }}>
+        {/* Title Section */}
+        <div className="task-header mb-4">
+          <h3 className="task-title text-lg font-semibold text-gray-800 mb-2">
+            {getTaskEmoji(task.type || 'other')} {task.title || 'Untitled Task'}
+          </h3>
+          
           {/* Task type */}
           <p className="text-sm text-gray-600 mb-2">
             {task.type ? task.type.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown Type'}
           </p>
-          
+        </div>
+        
+        {/* Task Details - clean single display */}
+        <div className="task-details mb-4">
           {/* Overdue warning if applicable */}
           {isCurrentlyOverdue && !isCompleted && (
             <p className="overdue-warning text-red-600 font-medium mb-2">
@@ -233,29 +228,27 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
             </p>
           )}
           
-          {/* Due date */}
-          {task.dueDate && (
-            <p className="due-date text-sm text-gray-600 mb-1">
-              📅 {isCurrentlyOverdue ? 'Was due' : 'Due'} {formatDueDate(task.dueDate)}
-            </p>
-          )}
+          {/* Single task info row - due date and assignment */}
+          <div className="task-info-row flex gap-4 text-sm text-gray-600 mb-2">
+            {/* Due date */}
+            {task.dueDate && (
+              <span className="due-date">
+                📅 {isCurrentlyOverdue ? 'Was due' : 'Due'} {formatDueDate(task.dueDate)}
+              </span>
+            )}
+            
+            {/* Time estimate */}
+            {task.estimatedTime && (
+              <span className="time-estimate">
+                ⏱️ {formatTime(task.estimatedTime)}
+              </span>
+            )}
+          </div>
           
-          {/* Time estimate */}
-          {task.estimatedTime && (
-            <p className="time-estimate text-sm text-gray-600">
-              ⏱️ Est. {formatTime(task.estimatedTime)}
-            </p>
-          )}
-          
-          {/* Assignment information */}
+          {/* Assignment information - simplified */}
           <div className="assignment-info text-sm text-gray-600 mb-1 flex items-center">
             <Users className="h-4 w-4 mr-1" />
             <span>{getAssignmentText(task, staff)}</span>
-            {isTaskAssignedToUser(task, currentUser, staff) && (
-              <span className="assigned-to-me-badge ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                📌 Assigned to You
-              </span>
-            )}
           </div>
         </div>
 
@@ -308,38 +301,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
           </div>
         )}
 
-        {/* Task Date Info - Shows completion date, overdue status, or due date */}
-        <div className="task-date-info text-xs text-gray-500 mb-3">
-          {(() => {
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (task.status === 'completed' && task.completedAt) {
-              const completedDate = new Date(task.completedAt);
-              return `✅ Completed ${completedDate.toLocaleDateString()}`;
-            }
-            
-            if (task.status === 'skipped' && task.skippedAt) {
-              const skippedDate = new Date(task.skippedAt);
-              return `⏭️ Skipped ${skippedDate.toLocaleDateString()}`;
-            }
-            
-            if (task.dueDate) {
-              const dueDateStr = task.dueDate instanceof Date ? 
-                task.dueDate.toISOString().split('T')[0] : 
-                String(task.dueDate).split('T')[0];
-              
-              if (dueDateStr < today && (task.status === 'pending' || task.status === 'in_progress')) {
-                const overdueDays = Math.floor(
-                  (new Date(today).getTime() - new Date(dueDateStr).getTime()) / (1000 * 60 * 60 * 24)
-                );
-                return `⚠️ ${overdueDays} day${overdueDays === 1 ? '' : 's'} overdue`;
+        {/* Task Status Info - Shows only completion/skip status, not duplicate due dates */}
+        {(task.status === 'completed' || task.status === 'skipped') && (
+          <div className="task-status-info text-xs text-gray-500 mb-3 text-center bg-gray-50 rounded p-2">
+            {(() => {
+              if (task.status === 'completed' && task.completedAt) {
+                const completedDate = new Date(task.completedAt);
+                return `✅ Completed ${completedDate.toLocaleDateString()}`;
               }
-              return `📅 Due ${new Date(dueDateStr).toLocaleDateString()}`;
-            }
-            
-            return '';
-          })()}
-        </div>
+              
+              if (task.status === 'skipped' && task.skippedAt) {
+                const skippedDate = new Date(task.skippedAt);
+                return `⏭️ Skipped ${skippedDate.toLocaleDateString()}`;
+              }
+              
+              return '';
+            })()}
+          </div>
+        )}
 
         {/* Action button - centered */}
         <div className="task-actions flex justify-center mt-4">

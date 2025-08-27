@@ -1,0 +1,304 @@
+# 🎨 Fix Task Card UI Issues
+
+## 1. FIX "YOUR TASK" BADGE POSITION
+
+The badge is conflicting with the day/priority badges. Here's the fix:
+
+```css
+/* Fix the assigned badge positioning */
+.task-card {
+  position: relative;
+  /* Add padding-top to make room for badges */
+  padding-top: 40px; /* Increase if you have the day badge */
+}
+
+/* Day/Priority badges (THU, MEDIUM) - top left */
+.task-header-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.day-badge, .priority-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* "Your Task" badge - top right */
+.assigned-to-me-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #2D8028;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+/* Alternative layout - put "Your Task" as a banner */
+.assigned-to-me-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #2D8028;
+  color: white;
+  padding: 2px;
+  font-size: 10px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Then offset the content */
+.task-card.assigned-to-me .task-content {
+  margin-top: 20px; /* Space for banner */
+}
+```
+
+## 2. REMOVE DUPLICATE DATE AT BOTTOM
+
+Find where the extra date is being rendered and remove it. Look for something like:
+
+```javascript
+// In your TaskCard component, find and remove the duplicate date
+const TaskCard = ({ task, ...props }) => {
+  return (
+    <div className="task-card">
+      {/* Header section with badges */}
+      <div className="task-header-badges">
+        <span className="day-badge">THU</span>
+        <span className="priority-badge medium">MEDIUM</span>
+      </div>
+      
+      {/* Your Task badge - separate from other badges */}
+      {isAssignedToMe && (
+        <div className="assigned-to-me-badge">
+          📌 Your Task
+        </div>
+      )}
+      
+      {/* Task content */}
+      <div className="task-content">
+        <h3>{task.title}</h3>
+        <p className="task-category">{task.taskType}</p>
+        
+        {/* Due date - ONLY ONE INSTANCE */}
+        <div className="task-meta">
+          <span className="due-date">
+            📅 Due {formatDate(task.dueDate)}
+          </span>
+          <span className="assigned-to">
+            👤 {getAssignmentDisplay()}
+          </span>
+        </div>
+      </div>
+      
+      {/* Remove this duplicate date if it exists: */}
+      {/* <div className="task-date">Due {task.dueDate}</div> */}
+      
+      <button className="start-task-btn">Start Task</button>
+    </div>
+  );
+};
+```
+
+## 3. IMPROVED TASK CARD LAYOUT
+
+Here's a cleaner structure that avoids conflicts:
+
+```javascript
+const TaskCard = ({ task, currentUser, staff }) => {
+  const isAssignedToMe = checkIfAssignedToMe(task, currentUser);
+  
+  return (
+    <div className={`task-card ${isAssignedToMe ? 'assigned-to-me' : ''}`}>
+      {/* Top badges row */}
+      <div className="task-badges-row">
+        <div className="left-badges">
+          <span className="day-badge">THU</span>
+          <span className={`priority-badge ${task.priority.toLowerCase()}`}>
+            {task.priority}
+          </span>
+        </div>
+        {isAssignedToMe && (
+          <div className="right-badges">
+            <span className="your-task-badge">📌 Your Task</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Main content */}
+      <div className="task-main">
+        <h3 className="task-title">{task.title}</h3>
+        <p className="task-type">{task.taskType}</p>
+        
+        {/* Single date display */}
+        <div className="task-info">
+          <span className="task-date">📅 Due {formatDate(task.dueDate)}</span>
+          <span className="task-assignee">{getAssignmentDisplay()}</span>
+        </div>
+        
+        {/* Task specific details */}
+        {task.description && (
+          <p className="task-description">{task.description}</p>
+        )}
+      </div>
+      
+      <button className="start-task-btn">Start Task</button>
+    </div>
+  );
+};
+```
+
+## 4. UPDATED CSS FOR BETTER LAYOUT
+
+```css
+.task-card {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  padding: 16explosive px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Badge row at top */
+.task-badges-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.left-badges {
+  display: flex;
+  gap: 4px;
+}
+
+.right-badges {
+  display: flex;
+  gap: 4px;
+}
+
+/* Badge styles */
+.day-badge {
+  background: #10b981;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-badge.high {
+  background: #ef4444;
+  color: white;
+}
+
+.priority-badge.medium {
+  background: #f59e0b;
+  color: white;
+}
+
+.priority-badge.low {
+  background: #3b82f6;
+  color: white;
+}
+
+.your-task-badge {
+  background: #2D8028;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Task content */
+.task-main {
+  margin-bottom: 16px;
+}
+
+.task-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #111827;
+}
+
+.task-type {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+}
+
+.task-info {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Remove any duplicate date displays */
+.task-date:not(:first-of-type) {
+  display: none;
+}
+
+/* Start button */
+.start-task-btn {
+  width: 100%;
+  padding: 10px;
+  background: #2D8028;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+```
+
+## 5. QUICK FIXES
+
+If you just want minimal changes:
+
+```css
+/* Quick fix for badge overlap */
+.assigned-to-me-badge {
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+}
+
+/* Hide duplicate dates - use more specific selector */
+.task-card .task-date:last-child {
+  display: none;
+}
+
+/* Or if the duplicate has a specific class */
+.task-footer-date {
+  display: none;
+}
+```
+
+The main issues are:
+1. The "Your Task" badge needs its own space separate from the day/priority badges
+2. There's likely a duplicate date rendering in your component - search for where dates are displayed and remove the extra one

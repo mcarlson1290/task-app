@@ -16,31 +16,45 @@
   border-left-color: #236622 !important;
 }
 
-/* Assigned to Me Badge */
-.assigned-to-me-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #2D8028;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
+/* Task badges row layout */
+.task-badges-row {
+  min-height: 28px; /* Ensure consistent height */
+}
+
+.left-badges {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 4px;
-  z-index: 10;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.your-task-badge {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Badge styling improvements */
+.day-badge, .priority-badge {
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.025em;
+  min-width: 60px;
+  text-align: center;
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 640px) {
-  .assigned-to-me-badge {
+  .your-task-badge {
     font-size: 10px;
-    padding: 3px 8px;
-    top: 6px;
-    right: 6px;
+    padding: 2px 6px;
+  }
+  
+  .left-badges {
+    gap: 4px;
+  }
+  
+  .day-badge, .priority-badge {
+    min-width: 50px;
+    font-size: 10px;
+    padding: 2px 6px;
   }
   
   .task-card.assigned-to-me {
