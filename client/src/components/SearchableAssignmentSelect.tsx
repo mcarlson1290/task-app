@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 
 interface AssignmentOption {
   value: string;
@@ -34,49 +33,20 @@ const SearchableAssignmentSelect: React.FC<SearchableAssignmentSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, flip: false });
-  const selectRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Calculate dropdown position when opening
-  useEffect(() => {
-    if (isOpen && selectRef.current) {
-      const rect = selectRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const dropdownHeight = 400; // max height of dropdown
-      
-      // Determine if dropdown should appear above or below
-      const shouldFlip = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
-      
-      setDropdownPosition({
-        top: shouldFlip ? rect.top - dropdownHeight : rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-        flip: shouldFlip
-      });
-    }
-  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        selectRef.current && 
-        !selectRef.current.contains(event.target as Node) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-    
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Get all options in a flat list
   const getAllOptions = (): AssignmentOption[] => {
@@ -204,114 +174,8 @@ const SearchableAssignmentSelect: React.FC<SearchableAssignmentSelectProps> = ({
     );
   }
 
-  // Render dropdown using portal
-  const renderDropdown = () => {
-    if (!isOpen) return null;
-    
-    return createPortal(
-      <div 
-        ref={dropdownRef}
-        className={`select-dropdown-portal ${dropdownPosition.flip ? 'flip' : ''}`}
-        style={{
-          position: 'fixed',
-          top: `${dropdownPosition.top}px`,
-          left: `${dropdownPosition.left}px`,
-          width: `${dropdownPosition.width}px`,
-          zIndex: 9999
-        }}
-      >
-        <div className="search-box">
-          <input
-            ref={inputRef}
-            type="text"
-            className="search-input"
-            placeholder="Type to search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-          />
-        </div>
-        
-        <div className="options-list">
-          {filteredOptions.length === 0 ? (
-            <div className="no-results">No matches found</div>
-          ) : (
-            <>
-              {/* No assignment option */}
-              {filteredOptions.filter(opt => opt.type === 'none').map((option, idx) => (
-                <div
-                  key={option.value}
-                  className={`option ${highlightedIndex === filteredOptions.indexOf(option) ? 'highlighted' : ''}`}
-                  onClick={() => selectOption(option)}
-                >
-                  {option.label}
-                </div>
-              ))}
-
-              {/* Special options */}
-              {filteredOptions.filter(opt => opt.type === 'special').length > 0 && (
-                <div className="option-group-header">All Staff</div>
-              )}
-              {filteredOptions.filter(opt => opt.type === 'special').map((option) => {
-                const actualIdx = filteredOptions.indexOf(option);
-                return (
-                  <div
-                    key={option.value}
-                    className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
-                    onClick={() => selectOption(option)}
-                  >
-                    {option.label} ({option.staffCount} people)
-                  </div>
-                );
-              })}
-
-              {/* Roles */}
-              {filteredOptions.filter(opt => opt.type === 'role').length > 0 && (
-                <div className="option-group-header">Roles</div>
-              )}
-              {filteredOptions.filter(opt => opt.type === 'role').map((option) => {
-                const actualIdx = filteredOptions.indexOf(option);
-                return (
-                  <div
-                    key={option.value}
-                    className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
-                    onClick={() => selectOption(option)}
-                  >
-                    {option.label} ({option.staffCount} {option.staffCount === 1 ? 'person' : 'people'})
-                  </div>
-                );
-              })}
-
-              {/* Individual Users */}
-              {filteredOptions.filter(opt => opt.type === 'user').length > 0 && (
-                <div className="option-group-header">People</div>
-              )}
-              {filteredOptions.filter(opt => opt.type === 'user').map((option) => {
-                const actualIdx = filteredOptions.indexOf(option);
-                return (
-                  <div
-                    key={option.value}
-                    className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
-                    onClick={() => selectOption(option)}
-                  >
-                    {option.label}
-                    {option.roles && option.roles.length > 0 && (
-                      <span className="option-roles"> - {option.roles.join(', ')}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </div>
-      </div>,
-      document.body
-    );
-  };
-
   return (
-    <div className="searchable-select" ref={selectRef}>
+    <div className="searchable-select" ref={dropdownRef}>
       <div
         className="select-input"
         onClick={() => {
@@ -327,8 +191,95 @@ const SearchableAssignmentSelect: React.FC<SearchableAssignmentSelectProps> = ({
         <div className="select-arrow">▼</div>
       </div>
 
-      
-      {renderDropdown()}
+      {isOpen && (
+        <div className="select-dropdown">
+          <div className="search-box">
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              placeholder="Type to search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+          </div>
+
+          <div className="options-list">
+            {filteredOptions.length === 0 ? (
+              <div className="no-results">No matches found</div>
+            ) : (
+              <>
+                {/* No assignment option */}
+                {filteredOptions.filter(opt => opt.type === 'none').map((option, idx) => (
+                  <div
+                    key={option.value}
+                    className={`option ${highlightedIndex === filteredOptions.indexOf(option) ? 'highlighted' : ''}`}
+                    onClick={() => selectOption(option)}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+
+                {/* Special options */}
+                {filteredOptions.filter(opt => opt.type === 'special').length > 0 && (
+                  <div className="option-group-header">All Staff</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'special').map((option) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label} ({option.staffCount} people)
+                    </div>
+                  );
+                })}
+
+                {/* Roles */}
+                {filteredOptions.filter(opt => opt.type === 'role').length > 0 && (
+                  <div className="option-group-header">Roles</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'role').map((option) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label} ({option.staffCount} {option.staffCount === 1 ? 'person' : 'people'})
+                    </div>
+                  );
+                })}
+
+                {/* Users */}
+                {filteredOptions.filter(opt => opt.type === 'user').length > 0 && (
+                  <div className="option-group-header">People</div>
+                )}
+                {filteredOptions.filter(opt => opt.type === 'user').map((option) => {
+                  const actualIdx = filteredOptions.indexOf(option);
+                  return (
+                    <div
+                      key={option.value}
+                      className={`option ${highlightedIndex === actualIdx ? 'highlighted' : ''}`}
+                      onClick={() => selectOption(option)}
+                    >
+                      {option.label}
+                      {option.roles && option.roles.length > 0 && (
+                        <span className="option-roles"> - {option.roles.join(', ')}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
