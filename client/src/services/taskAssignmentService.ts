@@ -185,11 +185,11 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
     
     if (task.assignTo.startsWith('role_')) {
       const roleName = task.assignTo.replace('role_', '');
-      return `👤 ${roleName}`;
+      return roleName; // Remove emoji since it's already in the dropdown
     }
     
     if (task.assignTo === 'all_staff') {
-      return '👥 All Staff';
+      return 'All Staff'; // Remove emoji since it's already in the dropdown
     }
     
     // Handle malformed assignTo values
@@ -205,7 +205,13 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
     if (typeof task.assignedTo === 'string' && task.assignedTo.startsWith('role_')) {
       const roleName = task.assignedTo.replace('role_', '');
       console.log('Legacy role assignment:', roleName);
-      return `👤 ${roleName}`;
+      return roleName; // Remove emoji since it's already in the dropdown
+    }
+    
+    // Handle legacy "all_staff" assignment
+    if (task.assignedTo === 'all_staff') {
+      console.log('Legacy all_staff assignment');
+      return 'All Staff'; // Remove emoji since it's already in the dropdown
     }
     
     // Handle direct user ID assignment

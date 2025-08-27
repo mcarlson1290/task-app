@@ -276,7 +276,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, currentUser, st
                   
                   // Fallback to checking individual item completion status
                   const completedFromItems = task.checklist.filter(item => 
-                    item.completed === true || item.isCompleted === true
+                    item.completed === true
                   ).length;
                   return `✓ ${completedFromItems}/${task.checklist.length} checklist items`;
                 })()}
