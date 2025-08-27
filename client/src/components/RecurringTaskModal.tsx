@@ -421,7 +421,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                     {/* Roles Section */}
                     {assignmentOptions.roles.length > 0 && (
                       <>
-                        <SelectItem value="" disabled className="text-center text-gray-500 font-medium">
+                        <SelectItem value="roles-separator" disabled className="text-center text-gray-500 font-medium">
                           ──────── Roles ────────
                         </SelectItem>
                         {assignmentOptions.roles.map(role => (
@@ -435,7 +435,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                     {/* Individual Users Section */}
                     {assignmentOptions.users.length > 0 && (
                       <>
-                        <SelectItem value="" disabled className="text-center text-gray-500 font-medium">
+                        <SelectItem value="people-separator" disabled className="text-center text-gray-500 font-medium">
                           ──────── People ────────
                         </SelectItem>
                         {assignmentOptions.users.map(user => (
