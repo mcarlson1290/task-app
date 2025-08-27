@@ -2,8 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CRITICAL: Green border must appear on ALL assigned tasks at ALL times */
 .task-card.assigned-to-me {
-  border-left: 4px solid #2D8028 !important;
+  border-left: 6px solid #2D8028 !important;
+  border-color: #2D8028 !important;
+  box-shadow: -2px 0 0 #2D8028 inset !important;
 }
 
 /* Hover effect for assigned tasks */

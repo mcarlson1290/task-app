@@ -2260,37 +2260,37 @@ class HybridStorage implements IStorage {
     return this.dbStorage.getAllUsers();
   }
 
-  // All other methods - use MEMORY storage to maintain current functionality
+  // Task methods - use DATABASE storage for persistence and assignment tracking
   async getTask(id: number): Promise<Task | undefined> {
-    return this.memStorage.getTask(id);
+    return this.dbStorage.getTask(id);
   }
 
   async getTasksByUser(userId: number): Promise<Task[]> {
-    return this.memStorage.getTasksByUser(userId);
+    return this.dbStorage.getTasksByUser(userId);
   }
 
   async getAllTasks(): Promise<Task[]> {
-    return this.memStorage.getAllTasks();
+    return this.dbStorage.getAllTasks();
   }
 
   async getTasksByLocation(locationId: string): Promise<Task[]> {
-    return this.memStorage.getTasksByLocation(locationId);
+    return this.dbStorage.getTasksByLocation(locationId);
   }
 
   async createTask(taskData: InsertTask): Promise<Task> {
-    return this.memStorage.createTask(taskData);
+    return this.dbStorage.createTask(taskData);
   }
 
   async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
-    return this.memStorage.updateTask(id, updates);
+    return this.dbStorage.updateTask(id, updates);
   }
 
   async deleteTask(id: number): Promise<boolean> {
-    return this.memStorage.deleteTask(id);
+    return this.dbStorage.deleteTask(id);
   }
 
   async resetTasks(): Promise<boolean> {
-    return this.memStorage.resetTasks();
+    return this.dbStorage.resetTasks();
   }
 
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
