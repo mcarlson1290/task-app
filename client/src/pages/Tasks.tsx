@@ -383,15 +383,18 @@ const Tasks: React.FC = () => {
 
     // Assigned to Me filter
     if (assignedToMeFilter && currentUser) {
+      console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - Before: ${filtered.length} tasks`);
       filtered = filtered.filter(task => {
         const isAssigned = isTaskAssignedToCurrentUser(task, currentUser, staffData);
         console.log(`🔍 Task "${task.title}" assignment check:`, isAssigned);
         return isAssigned;
       });
+      console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);
     }
 
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
+      console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
       const today = new Date().toISOString().split('T')[0];
       const isViewingToday = dateFilter === today;
       
@@ -474,6 +477,7 @@ const Tasks: React.FC = () => {
         return false;
       });
       
+      console.log(`📅 DATE FILTER ACTIVE - After: ${filtered.length} tasks`);
       // Log for testing
       console.log(`Filtered ${filtered.length} tasks from ${tasks.length} total`);
       if (dateFilter) {
@@ -504,7 +508,7 @@ const Tasks: React.FC = () => {
     setStatusFilter("all");
     setPriorityFilter("all");
     setAssignedToMeFilter(false);
-    setDateFilter("");
+    setDateFilter(getTodayString()); // Reset to today's date
     setSearchTerm("");
     // Refresh tasks to ensure immediate UI update
     await refreshTasks();
@@ -935,6 +939,10 @@ const Tasks: React.FC = () => {
               checked={assignedToMeFilter}
               onChange={async (e) => {
                 setAssignedToMeFilter(e.target.checked);
+                // When enabling "Assigned to Me", clear the date filter to show all assigned tasks
+                if (e.target.checked) {
+                  setDateFilter("");
+                }
                 await refreshTasks();
               }}
               className="h-4 w-4 text-[#2D8028] focus:ring-[#2D8028] border-gray-300 rounded"

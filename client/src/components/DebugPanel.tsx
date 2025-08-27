@@ -126,14 +126,28 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ tasks, filteredTasks, staff, fi
           background: '#f9fafb', 
           padding: '6px', 
           borderRadius: '4px',
-          maxHeight: '80px',
+          maxHeight: '120px',
           overflow: 'auto'
         }}>
-          {tasks.slice(0, 5).map(task => (
-            <div key={task.id} style={{ fontSize: '10px', marginBottom: '2px' }}>
-              {task.title?.substring(0, 30)}...: {task.assignTo || task.assignedTo || 'No assignment'}
-            </div>
-          ))}
+          {tasks.slice(0, 8).map(task => {
+            const assignment = task.assignTo || task.assignedTo;
+            const isMatch = currentUser ? 
+              (assignment === 'all_staff' && currentUser.id !== null) ||
+              (assignment?.startsWith('role_') && currentUser.rolesAssigned?.includes(assignment.replace('role_', ''))) ||
+              (assignment?.startsWith('user_') && parseInt(assignment.replace('user_', '')) === currentUser.id)
+              : false;
+            
+            return (
+              <div key={task.id} style={{ 
+                fontSize: '10px', 
+                marginBottom: '2px',
+                color: isMatch ? '#059669' : '#374151',
+                fontWeight: isMatch ? 'bold' : 'normal'
+              }}>
+                {isMatch ? '✅' : '❌'} {task.title?.substring(0, 25)}... → {assignment || 'No assignment'}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -142,9 +156,12 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ tasks, filteredTasks, staff, fi
           onClick={() => {
             console.log('=== DEBUG DATA DUMP ===');
             console.log('Current User:', currentUser);
-            console.log('All tasks:', tasks);
-            console.log('All staff:', staff);
             console.log('Assignment counts:', assignmentCounts);
+            console.log('First 10 tasks with assignments:');
+            tasks.slice(0, 10).forEach((task, i) => {
+              console.log(`${i+1}. "${task.title}" -> assignTo: "${task.assignTo}" | assignedTo: "${task.assignedTo}"`);
+            });
+            console.log('Staff roles available:', staff.map(s => ({ name: s.fullName, roles: s.rolesAssigned })));
           }}
           style={{
             padding: '6px 12px',
