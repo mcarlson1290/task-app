@@ -8,6 +8,7 @@ import { TaskType, TaskStatus } from "@/types";
 import { isMyTask } from "../utils/taskHelpers";
 import { useCurrentUser } from "../contexts/CurrentUserContext";
 import { StaffMember } from "../services/staffService";
+import { getAssignmentDisplay } from "../utils/taskAssignment";
 
 interface TaskCardProps {
   task: Task;
@@ -248,7 +249,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
           {/* Assignment information - simplified */}
           <div className="assignment-info text-sm text-gray-600 mb-1 flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            <span>{task.assignTo || task.assignedTo || 'Unassigned'}</span>
+            <span>{getAssignmentDisplay(task.assignTo || task.assignedTo)}</span>
           </div>
         </div>
 

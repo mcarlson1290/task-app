@@ -212,7 +212,7 @@ export const RecurringTaskAnalytics: React.FC = () => {
               <div className="pt-2 border-t">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Assigned to</span>
-                  <Badge variant="outline">{task.assignedTo}</Badge>
+                  <Badge variant="outline">{task.assignedTo?.replace?.('role_', '') || task.assignedTo}</Badge>
                 </div>
               </div>
             </div>
