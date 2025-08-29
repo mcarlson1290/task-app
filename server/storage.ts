@@ -1788,6 +1788,7 @@ export class MemStorage implements IStorage {
       skippedAt: null,
       skipReason: null,
       isRecurring: true,
+      frequency: recurringTask.frequency,
       recurringTaskId: recurringTask.id,
       createdAt: new Date()
     };
