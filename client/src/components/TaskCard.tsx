@@ -55,6 +55,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     return `${mins}m`;
   };
 
+  const getDayAbbreviation = (dateString: string): string => {
+    // Parse the date string manually to avoid timezone conversion
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)); // month is 0-indexed
+    
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    return days[date.getDay()];
+  };
+
   const getTaskDayDisplay = (task: Task) => {
     // Safety check for task object
     if (!task) {
@@ -75,8 +84,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     }
     
     try {
-      const dueDate = new Date(task.dueDate);
-      const dayName = dueDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      const dayName = getDayAbbreviation(task.dueDate);
       return { text: dayName, color: '#059669' }; // Green
     } catch (error) {
       return { text: 'INVALID DATE', color: '#ef4444' }; // Red

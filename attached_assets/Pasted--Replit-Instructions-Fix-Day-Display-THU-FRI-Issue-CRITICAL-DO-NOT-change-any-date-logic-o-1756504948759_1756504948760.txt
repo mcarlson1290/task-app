@@ -1,0 +1,106 @@
+# Replit Instructions: Fix Day Display (THU/FRI Issue)
+
+**CRITICAL: DO NOT change any date logic or calculations. ONLY fix the display of the day abbreviation.**
+
+## The Issue
+The day abbreviation (THU, FRI, etc.) shown on tasks doesn't match the actual date. This is purely a display issue.
+
+## Step 1: Find the Day Display Code
+
+Look for where the day abbreviation is displayed on tasks. It will likely look something like:
+
+```javascript
+// WRONG CODE - This is probably what's causing the issue
+const dayAbbr = date.toLocaleDateString('en-US', { weekday: 'short' });
+// OR
+const dayAbbr = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getDay()];
+```
+
+## Step 2: Fix the Day Display
+
+Replace the day display logic with this corrected version:
+
+```javascript
+// CORRECT CODE - Ensures the day matches the date
+const getDayAbbreviation = (dateString) => {
+  // Create date object ensuring correct timezone
+  const date = new Date(dateString);
+  
+  // Force the date to be interpreted in local timezone
+  const localDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    12, 0, 0 // Set to noon to avoid timezone issues
+  );
+  
+  // Get the correct day abbreviation
+  const dayAbbr = localDate.toLocaleDateString('en-US', { 
+    weekday: 'short',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  }).toUpperCase();
+  
+  return dayAbbr;
+};
+```
+
+## Step 3: Update Task Display Component
+
+Find where tasks display the day and update it:
+
+```javascript
+// In the task component (likely TaskItem or similar)
+// REPLACE any existing day display logic with:
+<span className="text-sm font-medium">
+  {getDayAbbreviation(task.dueDate || task.completionDate)}
+</span>
+```
+
+## Step 4: Alternative Simple Fix
+
+If the above doesn't work, try this simpler approach:
+
+```javascript
+// Simple fix that avoids timezone issues
+const getDayAbbreviation = (dateString) => {
+  // Parse the date string manually to avoid timezone conversion
+  const [year, month, day] = dateString.split('T')[0].split('-');
+  const date = new Date(year, month - 1, day); // month is 0-indexed
+  
+  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  return days[date.getDay()];
+};
+```
+
+## Step 5: Debug Helper (Optional)
+
+Add this temporary debug code to verify the fix:
+
+```javascript
+// Add this next to where the day is displayed
+console.log('Date string:', task.dueDate);
+console.log('Parsed date:', new Date(task.dueDate));
+console.log('Day index:', new Date(task.dueDate).getDay());
+console.log('Day name:', getDayAbbreviation(task.dueDate));
+```
+
+## Common Causes of This Issue
+
+1. **Timezone Conversion**: JavaScript Date objects can shift dates when converting between timezones
+2. **ISO String Parsing**: Dates in format "2024-08-30" might be interpreted as UTC midnight, causing day shift
+3. **Off-by-one errors**: Using getDay() incorrectly or with wrong array indices
+
+## What NOT to Change
+
+- ❌ DO NOT modify any date calculation logic
+- ❌ DO NOT change how dates are stored in the database
+- ❌ DO NOT alter due date calculations
+- ❌ DO NOT modify task generation timing
+- ✅ ONLY fix the visual display of the day abbreviation
+
+## Testing
+
+1. Create a task due on a Friday
+2. Verify it shows "FRI" not "THU"
+3. Check tasks for each day of the week
+4. Ensure the day abbreviation matches the actual date shown
