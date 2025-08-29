@@ -1044,36 +1044,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual task generation endpoint (for testing)
-  app.post("/api/generate-daily-tasks", async (req, res) => {
-    try {
-      console.log('Running manual daily task generation...');
-      
-      // Get all recurring tasks
-      const recurringTasks = await storage.getAllRecurringTasks();
-      
-      // Generate tasks for today
-      let totalGenerated = 0;
-      for (const recurringTask of recurringTasks) {
-        if (recurringTask.isActive) {
-          const beforeCount = (await storage.getAllTasks()).length;
-          await (storage as any).generateTaskInstances(recurringTask);
-          const afterCount = (await storage.getAllTasks()).length;
-          totalGenerated += (afterCount - beforeCount);
-        }
-      }
-      
-      res.json({ 
-        message: "Daily task generation completed",
-        totalGenerated,
-        recurringTasksProcessed: recurringTasks.filter(rt => rt.isActive).length
-      });
-    } catch (error) {
-      console.error('Manual task generation failed:', error);
-      res.status(500).json({ message: "Failed to generate tasks" });
-    }
-  });
-
   // Regenerate tasks with fixed dates endpoint
   app.post("/api/regenerate-tasks", async (req, res) => {
     try {

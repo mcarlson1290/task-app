@@ -1634,7 +1634,7 @@ export class MemStorage implements IStorage {
           console.log(`❌ SKIPPING - Task exists or past due`);
         }
       }
-    } else if (recurringTask.frequency === 'biweekly') {
+    } else if (recurringTask.frequency === 'bi-weekly') {
       // Bi-weekly tasks: generate for current and next 2 months
       for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
         const targetYear = today.getFullYear();
@@ -1665,39 +1665,6 @@ export class MemStorage implements IStorage {
           const instance2 = await this.createTaskInstanceWithDates(recurringTask, secondVisibleDate, secondDueDate);
           instances.push(instance2);
           this.tasks.set(instance2.id, instance2);
-        }
-      }
-    } else if (recurringTask.frequency === 'quarterly') {
-      // Quarterly tasks: generate for current and next 3 quarters
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-      const currentQuarter = Math.floor(currentMonth / 3);
-      
-      for (let quarterOffset = 0; quarterOffset < 4; quarterOffset++) {
-        const targetQuarter = currentQuarter + quarterOffset;
-        const targetYear = currentYear + Math.floor(targetQuarter / 4);
-        const actualQuarter = targetQuarter % 4;
-        
-        // Quarter start months: Q1=0(Jan), Q2=3(Apr), Q3=6(Jul), Q4=9(Oct)
-        const quarterStartMonth = actualQuarter * 3;
-        const quarterEndMonth = quarterStartMonth + 2;
-        
-        // Task appears on first day of quarter
-        const visibleDate = new Date(Date.UTC(targetYear, quarterStartMonth, 1, 12, 0, 0));
-        
-        // Task due on last day of quarter
-        const lastDayOfQuarter = new Date(targetYear, quarterEndMonth + 1, 0).getDate();
-        const dueDate = new Date(Date.UTC(targetYear, quarterEndMonth, lastDayOfQuarter, 12, 0, 0));
-        
-        console.log(`Checking quarterly task Q${actualQuarter + 1} ${targetYear}: visible ${visibleDate.toISOString()}, due ${dueDate.toISOString()}`);
-        
-        if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
-          console.log(`✅ CREATING - Quarterly task Q${actualQuarter + 1} for ${dueDate.toISOString()}`);
-          const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
-          instances.push(instance);
-          this.tasks.set(instance.id, instance);
-        } else {
-          console.log(`❌ SKIPPING - Task exists or past due`);
         }
       }
     } else {
