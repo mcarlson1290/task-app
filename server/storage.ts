@@ -1409,6 +1409,7 @@ export class MemStorage implements IStorage {
           title: updatedTask.title || instance.title,
           description: updatedTask.description || instance.description,
           type: updatedTask.type || instance.type,
+          frequency: updatedTask.frequency || instance.frequency,
           checklist: updatedChecklist
         };
         this.tasks.set(instance.id, updatedInstance);
