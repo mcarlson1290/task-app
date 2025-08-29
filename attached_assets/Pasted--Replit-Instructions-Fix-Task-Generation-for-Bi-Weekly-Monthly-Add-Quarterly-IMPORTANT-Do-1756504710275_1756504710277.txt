@@ -1,0 +1,299 @@
+# Replit Instructions: Fix Task Generation for Bi-Weekly, Monthly & Add Quarterly
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+Fix the recurring task generation system to properly handle Bi-Weekly and Monthly tasks, and add new Quarterly task functionality.
+
+## Step 1: Add Quarterly to Frequency Options
+
+Find where task frequencies are defined and add 'quarterly':
+
+```javascript
+// In the recurring task frequency options
+const frequencyOptions = [
+  { value: 'daily', label: 'Weekly' }, // Already renamed from Daily
+  { value: 'biweekly', label: 'Bi-Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' } // ADD THIS
+];
+```
+
+## Step 2: Fix the Task Generation Logic
+
+Find the `generateTasksFromRecurring` or similar function and replace with:
+
+```javascript
+const generateTasksFromRecurring = (recurringTasks, viewedDate = new Date()) => {
+  const generatedTasks = [];
+  const today = new Date(viewedDate);
+  today.setHours(0, 0, 0, 0);
+  
+  recurringTasks.forEach(recurring => {
+    // Skip if disabled
+    if (recurring.disabled) return;
+    
+    const tasksToGenerate = getTasksForFrequency(recurring, today);
+    
+    tasksToGenerate.forEach(taskData => {
+      const taskId = `${recurring.id}-${taskData.visibleFrom.toISOString().split('T')[0]}`;
+      
+      // Check if task already exists
+      if (!taskExists(taskId)) {
+        const task = {
+          id: taskId,
+          title: recurring.title,
+          type: recurring.type,
+          priority: recurring.priority,
+          status: 'pending',
+          dueDate: taskData.dueDate.toISOString().split('T')[0],
+          visibleFromDate: taskData.visibleFrom.toISOString().split('T')[0],
+          recurringTaskId: recurring.id,
+          isRecurring: true,
+          frequency: recurring.frequency,
+          periodLabel: taskData.periodLabel,
+          assignedTo: recurring.assignedTo,
+          checklistTemplate: recurring.checklistTemplate,
+          estimatedTime: recurring.estimatedTime,
+          createdAt: new Date().toISOString()
+        };
+        
+        generatedTasks.push(task);
+      }
+    });
+  });
+  
+  return generatedTasks;
+};
+```
+
+## Step 3: Implement Frequency-Specific Logic
+
+Add this helper function:
+
+```javascript
+const getTasksForFrequency = (recurring, currentDate) => {
+  const tasks = [];
+  const dayOfMonth = currentDate.getDate();
+  const month = currentDate.getMonth();
+  const year = currentDate.getFullYear();
+  
+  switch (recurring.frequency) {
+    case 'daily': // Weekly tasks
+      // Check if today matches selected days
+      const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+      if (recurring.selectedDays?.includes(dayOfWeek)) {
+        tasks.push({
+          visibleFrom: new Date(currentDate),
+          dueDate: new Date(currentDate),
+          periodLabel: ''
+        });
+      }
+      break;
+      
+    case 'biweekly':
+      // First half: Generate on 1st, due on 14th
+      if (dayOfMonth === 1) {
+        tasks.push({
+          visibleFrom: new Date(year, month, 1),
+          dueDate: new Date(year, month, 14),
+          periodLabel: '1st-14th'
+        });
+      }
+      // Second half: Generate on 15th, due on last day
+      if (dayOfMonth === 15) {
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        tasks.push({
+          visibleFrom: new Date(year, month, 15),
+          dueDate: new Date(year, month, lastDay),
+          periodLabel: '15th-' + lastDay + getOrdinalSuffix(lastDay)
+        });
+      }
+      break;
+      
+    case 'monthly':
+      // Generate on 1st, due on last day
+      if (dayOfMonth === 1) {
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        tasks.push({
+          visibleFrom: new Date(year, month, 1),
+          dueDate: new Date(year, month, lastDay),
+          periodLabel: 'Monthly'
+        });
+      }
+      break;
+      
+    case 'quarterly':
+      // Generate on first day of quarter, due on last day of quarter
+      const quarterStartMonths = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+      if (quarterStartMonths.includes(month) && dayOfMonth === 1) {
+        const quarterEndMonth = month + 2;
+        const lastDayOfQuarter = new Date(year, quarterEndMonth + 1, 0);
+        
+        tasks.push({
+          visibleFrom: new Date(year, month, 1),
+          dueDate: lastDayOfQuarter,
+          periodLabel: `Q${Math.floor(month / 3) + 1}`
+        });
+      }
+      break;
+  }
+  
+  return tasks;
+};
+
+const getOrdinalSuffix = (day) => {
+  const j = day % 10;
+  const k = day % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
+};
+```
+
+## Step 4: Fix Task Visibility Filtering
+
+Update the task filtering to respect `visibleFromDate`:
+
+```javascript
+const getVisibleTasks = (allTasks, currentDate = new Date()) => {
+  const today = new Date(currentDate);
+  today.setHours(0, 0, 0, 0);
+  
+  return allTasks.filter(task => {
+    // If task has visibleFromDate, check if we're past it
+    if (task.visibleFromDate) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      visibleFrom.setHours(0, 0, 0, 0);
+      return today >= visibleFrom;
+    }
+    
+    // For tasks without visibleFromDate, show if due date is today or future
+    const dueDate = new Date(task.dueDate || task.completionDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate >= today || task.status === 'completed';
+  });
+};
+```
+
+## Step 5: Add Scheduled Task Generation Service
+
+Add a service that runs daily to generate tasks:
+
+```javascript
+const runDailyTaskGeneration = async () => {
+  console.log('Running daily task generation...');
+  
+  try {
+    // Get all recurring tasks
+    const recurringTasks = await getRecurringTasks();
+    
+    // Generate tasks for today
+    const newTasks = generateTasksFromRecurring(recurringTasks, new Date());
+    
+    // Save new tasks to database
+    for (const task of newTasks) {
+      await saveTask(task);
+    }
+    
+    console.log(`Generated ${newTasks.length} new tasks`);
+  } catch (error) {
+    console.error('Task generation failed:', error);
+  }
+};
+
+// Run on app startup and schedule for midnight
+runDailyTaskGeneration();
+setInterval(runDailyTaskGeneration, 24 * 60 * 60 * 1000); // Run daily
+```
+
+## Step 6: Update Recurring Task Editor UI
+
+Add quarterly option to the frequency dropdown and update the preview:
+
+```javascript
+// In the recurring task editor component
+const getFrequencyPreview = (frequency) => {
+  const today = new Date();
+  
+  switch (frequency) {
+    case 'biweekly':
+      return 'Tasks will appear on the 1st (due 14th) and 15th (due end of month)';
+      
+    case 'monthly':
+      return 'Task will appear on the 1st and be due on the last day of the month';
+      
+    case 'quarterly':
+      const quarter = Math.floor(today.getMonth() / 3) + 1;
+      return `Task will appear on the first day of each quarter (Jan 1, Apr 1, Jul 1, Oct 1) and be due on the last day of the quarter`;
+      
+    default:
+      return '';
+  }
+};
+```
+
+## Step 7: Add Manual Task Generation Button (for testing)
+
+Add a button to manually trigger task generation:
+
+```javascript
+// In the Task Manager component
+<button 
+  onClick={async () => {
+    await runDailyTaskGeneration();
+    // Refresh the task list
+    loadTasks();
+  }}
+  className="bg-blue-600 text-white px-4 py-2 rounded"
+>
+  Generate Today's Tasks
+</button>
+```
+
+## Step 8: Database Migration for Existing Tasks
+
+Add `visibleFromDate` to existing tasks:
+
+```javascript
+const migrateExistingTasks = async () => {
+  const tasks = await getAllTasks();
+  
+  for (const task of tasks) {
+    if (!task.visibleFromDate && task.dueDate) {
+      // For existing tasks, make them visible from creation or due date
+      task.visibleFromDate = task.createdAt || task.dueDate;
+      await updateTask(task);
+    }
+  }
+};
+```
+
+## Testing Checklist
+
+1. **Monthly Tasks:**
+   - Set date to 1st of month → Monthly task should appear
+   - Task should show "Due in X days" (where X = days until end of month)
+   - Task remains visible every day of the month
+
+2. **Bi-Weekly Tasks:**
+   - Set date to 1st → First task appears "Due in 13 days"
+   - Set date to 15th → Second task appears "Due in X days"
+   - Each shows period label (1st-14th or 15th-31st)
+
+3. **Quarterly Tasks:**
+   - Set date to Jan 1, Apr 1, Jul 1, or Oct 1
+   - Task appears with "Due in ~90 days"
+   - Shows quarter label (Q1, Q2, Q3, Q4)
+
+4. **Weekly Tasks:**
+   - Only appear on selected days
+   - Due same day as they appear
+
+## Important Notes
+
+- Tasks are generated and stored in the database, not calculated on-the-fly
+- The `visibleFromDate` field controls when tasks appear in the UI
+- All date comparisons should use midnight (00:00:00) to avoid timezone issues
+- The system should check for and generate missing tasks on startup

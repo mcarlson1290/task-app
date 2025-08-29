@@ -209,8 +209,9 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
 
   const frequencies = [
     { value: 'daily', label: 'Weekly' },  // Keep value as 'daily' for compatibility
-    { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
-    { value: 'monthly', label: 'Monthly (Last Day)' }
+    { value: 'biweekly', label: 'Bi-Weekly' },
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'quarterly', label: 'Quarterly' }
   ];
 
   const daysOfWeek = [
@@ -230,9 +231,10 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   };
 
   const handleDayToggle = (day: string) => {
-    const newDays = formData.daysOfWeek.includes(day)
-      ? formData.daysOfWeek.filter(d => d !== day)
-      : [...formData.daysOfWeek, day];
+    const currentDays = formData.daysOfWeek || [];
+    const newDays = currentDays.includes(day)
+      ? currentDays.filter(d => d !== day)
+      : [...currentDays, day];
     
     updateFormData({ daysOfWeek: newDays });
   };
@@ -452,7 +454,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                       <div key={day.value} className="flex items-center space-x-2">
                         <Checkbox
                           id={day.value}
-                          checked={formData.daysOfWeek.includes(day.value)}
+                          checked={(formData.daysOfWeek || []).includes(day.value)}
                           onCheckedChange={() => handleDayToggle(day.value)}
                         />
                         <Label htmlFor={day.value} className="text-sm">
@@ -465,7 +467,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
               )}
 
               {/* Show explanation for bi-weekly tasks */}
-              {formData.frequency === 'bi-weekly' && (
+              {formData.frequency === 'biweekly' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                   <h4 className="font-medium text-blue-900">📅 Bi-Weekly Schedule</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
@@ -487,6 +489,19 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                   </p>
                   <p className="text-xs text-green-600 mt-2">
                     Full month to complete the task with early visibility.
+                  </p>
+                </div>
+              )}
+
+              {/* Show explanation for quarterly tasks */}
+              {formData.frequency === 'quarterly' && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-purple-900">📅 Quarterly Schedule</h4>
+                  <p className="text-sm text-purple-800">
+                    Task appears on the <strong>first day of each quarter</strong> (Jan 1, Apr 1, Jul 1, Oct 1) and is due on the <strong>last day of the quarter</strong>.
+                  </p>
+                  <p className="text-xs text-purple-600 mt-2">
+                    Full quarter (~90 days) to complete the task with early visibility.
                   </p>
                 </div>
               )}
