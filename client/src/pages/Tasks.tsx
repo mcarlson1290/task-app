@@ -417,8 +417,17 @@ const Tasks: React.FC = () => {
           // Overdue tasks show ONLY on today
           return dateFilter === today;
         } else {
-          // Non-overdue tasks show on their due date
-          return taskDateStr === dateFilter;
+          // For bi-weekly and monthly tasks, check if the selected date falls within the visibility period
+          if (task.visibleFromDate && task.isRecurring) {
+            const visibleFromStr = formatDateForComparison(task.visibleFromDate);
+            const dueDateStr = formatDateForComparison(task.dueDate);
+            
+            // Task is visible from visibleFromDate through dueDate (inclusive)
+            return dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
+          } else {
+            // Regular tasks show on their due date
+            return taskDateStr === dateFilter;
+          }
         }
       });
       

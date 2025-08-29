@@ -62,8 +62,18 @@ export const formatDateForComparison = (date: Date | string): string => {
 export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean => {
   if (!task || !targetDate) return false;
   
-  // ALL tasks should appear based on their due date, regardless of status
-  // This is the key fix - completed tasks should still show on their due date, not completion date
+  // For bi-weekly and monthly recurring tasks, check visibility period
+  if (task.visibleFromDate && task.isRecurring && task.dueDate) {
+    const visibleFromStr = formatDateForComparison(task.visibleFromDate);
+    const dueDateStr = formatDateForComparison(task.dueDate);
+    
+    // Task is visible from visibleFromDate through dueDate (inclusive)
+    const isVisible = targetDate >= visibleFromStr && targetDate <= dueDateStr;
+    console.log(`🔍 Recurring task "${task.title}" visible ${visibleFromStr} to ${dueDateStr}, checking ${targetDate} = ${isVisible ? 'MATCH' : 'NO MATCH'}`);
+    return isVisible;
+  }
+  
+  // Regular tasks appear based on their due date
   if (task.dueDate) {
     const matches = isSameDay(task.dueDate, targetDate);
     console.log(`🔍 Task "${task.title}" due ${task.dueDate} vs filter ${targetDate} = ${matches ? 'MATCH' : 'NO MATCH'}`);
