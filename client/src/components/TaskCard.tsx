@@ -64,21 +64,62 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     return days[date.getDay()];
   };
 
+  const getFrequencyLabel = (frequency: string): string => {
+    switch (frequency) {
+      case 'daily':
+        return 'DAILY';
+      case 'weekly':
+        return 'WEEKLY';
+      case 'biweekly':
+        return 'BI-WEEKLY';
+      case 'monthly': 
+        return 'MONTHLY';
+      case 'quarterly':
+        return 'QUARTERLY';
+      default:
+        return frequency ? frequency.toUpperCase() : '';
+    }
+  };
+
   const getTaskDayDisplay = (task: Task) => {
     // Safety check for task object
     if (!task) {
       return { text: 'NO DATA', color: '#6b7280' }; // Gray
     }
     
-    // Check for monthly or bi-weekly patterns
-    if (task.description?.toLowerCase().includes('monthly') || task.title?.toLowerCase().includes('monthly')) {
-      return { text: 'MONTHLY', color: '#7c3aed' }; // Purple
-    }
-    if (task.description?.toLowerCase().includes('bi-weekly') || task.description?.toLowerCase().includes('biweekly') || task.title?.toLowerCase().includes('bi-weekly')) {
-      return { text: 'BI-WEEKLY', color: '#0891b2' }; // Cyan
+    // For recurring tasks, show frequency with day
+    if (task.isRecurring && task.frequency) {
+      const frequencyLabel = getFrequencyLabel(task.frequency);
+      
+      if (!task.dueDate) {
+        return { 
+          text: frequencyLabel, 
+          color: task.frequency === 'daily' ? '#059669' : // Green
+                 task.frequency === 'weekly' ? '#059669' : // Green  
+                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan
+                 task.frequency === 'monthly' ? '#7c3aed' : // Purple
+                 task.frequency === 'quarterly' ? '#ea580c' : // Orange
+                 '#6b7280' // Gray
+        };
+      }
+      
+      try {
+        const dayName = getDayAbbreviation(task.dueDate);
+        return { 
+          text: `${frequencyLabel} • ${dayName}`,
+          color: task.frequency === 'daily' ? '#059669' : // Green
+                 task.frequency === 'weekly' ? '#059669' : // Green
+                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan  
+                 task.frequency === 'monthly' ? '#7c3aed' : // Purple
+                 task.frequency === 'quarterly' ? '#ea580c' : // Orange
+                 '#6b7280' // Gray
+        };
+      } catch (error) {
+        return { text: frequencyLabel, color: '#ef4444' }; // Red
+      }
     }
     
-    // For regular tasks, show the day
+    // For one-time tasks, show the day only
     if (!task.dueDate) {
       return { text: 'NO DATE', color: '#6b7280' }; // Gray
     }

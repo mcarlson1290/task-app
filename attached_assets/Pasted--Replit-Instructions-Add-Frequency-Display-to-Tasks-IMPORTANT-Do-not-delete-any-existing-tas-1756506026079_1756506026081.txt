@@ -1,0 +1,135 @@
+# Replit Instructions: Add Frequency Display to Tasks
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.**
+
+## Overview
+Add frequency labels (Weekly, Bi-Weekly, Monthly, Quarterly) to recurring tasks for better clarity.
+
+## Option 1: Replace Day with Frequency (Your Original Request)
+
+Find where the day abbreviation is displayed and replace it:
+
+```javascript
+// In the task display component, replace the day display with:
+<span className="text-sm font-medium text-gray-600">
+  {task.isRecurring && task.frequency ? 
+    getFrequencyLabel(task.frequency) : 
+    getDayAbbreviation(task.dueDate)
+  }
+</span>
+```
+
+## Option 2: Show Both Frequency and Day (Recommended)
+
+Display frequency type with the day for maximum clarity:
+
+```javascript
+// In the task display component
+<div className="flex flex-col items-end">
+  {task.isRecurring && task.frequency && (
+    <span className="text-xs font-semibold text-blue-600 uppercase">
+      {getFrequencyLabel(task.frequency)}
+    </span>
+  )}
+  <span className="text-sm font-medium text-gray-600">
+    {getDayAbbreviation(task.dueDate)}
+  </span>
+</div>
+```
+
+## Option 3: Combined Single Line Display
+
+Show frequency and day on the same line:
+
+```javascript
+// In the task display component
+<span className="text-sm font-medium text-gray-600">
+  {task.isRecurring && task.frequency ? 
+    `${getFrequencyLabel(task.frequency)} • ${getDayAbbreviation(task.dueDate)}` : 
+    getDayAbbreviation(task.dueDate)
+  }
+</span>
+```
+
+## Add the Frequency Label Helper Function
+
+```javascript
+const getFrequencyLabel = (frequency) => {
+  switch (frequency) {
+    case 'daily':
+      return 'WEEKLY';
+    case 'biweekly':
+      return 'BI-WEEKLY';
+    case 'monthly': 
+      return 'MONTHLY';
+    case 'quarterly':
+      return 'QUARTERLY';
+    default:
+      return frequency.toUpperCase();
+  }
+};
+```
+
+## Option 4: Include Period Information for Bi-Weekly
+
+For bi-weekly tasks, show which period it covers:
+
+```javascript
+const getFrequencyLabel = (frequency, task) => {
+  switch (frequency) {
+    case 'daily':
+      return 'WEEKLY';
+    case 'biweekly':
+      // If task has periodLabel, use it
+      return task.periodLabel ? 
+        `BI-WEEKLY (${task.periodLabel})` : 
+        'BI-WEEKLY';
+    case 'monthly': 
+      return 'MONTHLY';
+    case 'quarterly':
+      return task.periodLabel || 'QUARTERLY';
+    default:
+      return frequency.toUpperCase();
+  }
+};
+```
+
+## Styling Variations
+
+### A. Badge Style
+```javascript
+<span className={`
+  px-2 py-1 text-xs font-bold rounded-full
+  ${task.frequency === 'daily' ? 'bg-green-100 text-green-800' : ''}
+  ${task.frequency === 'biweekly' ? 'bg-blue-100 text-blue-800' : ''}
+  ${task.frequency === 'monthly' ? 'bg-purple-100 text-purple-800' : ''}
+  ${task.frequency === 'quarterly' ? 'bg-orange-100 text-orange-800' : ''}
+`}>
+  {getFrequencyLabel(task.frequency)}
+</span>
+```
+
+### B. Simple Text with Icon
+```javascript
+<div className="flex items-center gap-1">
+  <span className="text-lg">🔄</span>
+  <span className="text-sm font-medium text-gray-600">
+    {getFrequencyLabel(task.frequency)}
+  </span>
+</div>
+```
+
+## Implementation Notes
+
+1. **For One-Time Tasks**: Continue showing the day abbreviation only
+2. **For Recurring Tasks**: Show the frequency label (and optionally the day)
+3. **Color Coding**: Consider using different colors for different frequencies
+4. **Mobile View**: Ensure the display works well on smaller screens
+
+## Example Results
+
+- One-time task: `FRI`
+- Weekly task: `WEEKLY • FRI` or just `WEEKLY`
+- Bi-weekly task: `BI-WEEKLY (1st-14th) • FRI`
+- Monthly task: `MONTHLY • FRI`
+- Quarterly task: `QUARTERLY (Q3) • FRI`
