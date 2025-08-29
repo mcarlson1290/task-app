@@ -1634,6 +1634,37 @@ export class MemStorage implements IStorage {
           console.log(`❌ SKIPPING - Task exists or past due`);
         }
       }
+    } else if (recurringTask.frequency === 'quarterly') {
+      // Quarterly tasks: generate for current and next 3 quarters
+      for (let quarterOffset = 0; quarterOffset < 4; quarterOffset++) {
+        const targetYear = today.getFullYear();
+        const currentQuarter = Math.floor(today.getMonth() / 3);
+        const targetQuarter = currentQuarter + quarterOffset;
+        
+        // Handle year rollover
+        const actualYear = targetYear + Math.floor(targetQuarter / 4);
+        const actualQuarter = targetQuarter % 4;
+        
+        // Quarter start months: Q1=0 (Jan), Q2=3 (Apr), Q3=6 (Jul), Q4=9 (Oct)
+        const quarterStartMonth = actualQuarter * 3;
+        const quarterEndMonth = quarterStartMonth + 2;
+        
+        // Quarterly task visible from first day of quarter, due on last day of quarter
+        const visibleDate = new Date(Date.UTC(actualYear, quarterStartMonth, 1, 12, 0, 0));
+        const lastDayOfQuarter = new Date(actualYear, quarterEndMonth + 1, 0).getDate();
+        const dueDate = new Date(Date.UTC(actualYear, quarterEndMonth, lastDayOfQuarter, 12, 0, 0));
+        
+        console.log(`Checking quarterly task for Q${actualQuarter + 1} ${actualYear}: due ${dueDate.toISOString()}`);
+        
+        if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
+          console.log(`✅ CREATING - Quarterly task for Q${actualQuarter + 1} ${actualYear}`);
+          const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
+          instances.push(instance);
+          this.tasks.set(instance.id, instance);
+        } else {
+          console.log(`❌ SKIPPING - Task exists or past due`);
+        }
+      }
     } else if (recurringTask.frequency === 'bi-weekly') {
       // Bi-weekly tasks: generate for current and next 2 months
       for (let monthOffset = 0; monthOffset < 3; monthOffset++) {

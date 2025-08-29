@@ -210,7 +210,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   const frequencies = [
     { value: 'daily', label: 'Weekly' },  // Keep value as 'daily' for compatibility
     { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
-    { value: 'monthly', label: 'Monthly (Last Day)' }
+    { value: 'monthly', label: 'Monthly (Last Day)' },
+    { value: 'quarterly', label: 'Quarterly' }
   ];
 
   const daysOfWeek = [
@@ -487,6 +488,22 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                   </p>
                   <p className="text-xs text-green-600 mt-2">
                     Full month to complete the task with early visibility.
+                  </p>
+                </div>
+              )}
+
+              {/* Show explanation for quarterly tasks */}
+              {formData.frequency === 'quarterly' && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-purple-900">📅 Quarterly Schedule</h4>
+                  <ul className="text-sm text-purple-800 space-y-1">
+                    <li>• <strong>Q1:</strong> Appears Jan 1st → Due Mar 31st</li>
+                    <li>• <strong>Q2:</strong> Appears Apr 1st → Due Jun 30th</li>
+                    <li>• <strong>Q3:</strong> Appears Jul 1st → Due Sep 30th</li>
+                    <li>• <strong>Q4:</strong> Appears Oct 1st → Due Dec 31st</li>
+                  </ul>
+                  <p className="text-xs text-purple-600 mt-2">
+                    Full quarter (3 months) to complete each task with maximum planning time.
                   </p>
                 </div>
               )}
