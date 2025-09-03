@@ -846,7 +846,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
   // Course assignment routes
   app.get("/api/course-assignments", async (req, res) => {
     try {

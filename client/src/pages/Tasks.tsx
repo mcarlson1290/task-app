@@ -63,9 +63,8 @@ const Tasks: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   
-  // Debug toggle to show all tasks (bypass filter)
-  const [showAllTasks, setShowAllTasks] = React.useState(false);
-  
+  // DEBUG: Add temporary show all recurring tasks for testing
+  const [showAllRecurring, setShowAllRecurring] = React.useState(false);
 
 
 
@@ -130,46 +129,6 @@ const Tasks: React.FC = () => {
     },
     enabled: !!auth.user,
   });
-
-  // STEP 1: DEEP DEBUG - Verify tasks actually exist in memory
-  React.useEffect(() => {
-    if (tasks && tasks.length > 0) {
-      console.log('=== DEEP TASK DEBUG ===');
-      console.log('Total tasks in memory:', tasks.length);
-      
-      const monthlyTasks = tasks.filter(t => t.frequency === 'monthly');
-      const biweeklyTasks = tasks.filter(t => t.frequency === 'biweekly' || t.frequency === 'bi-weekly');
-      
-      console.log('📊 Monthly tasks found:', monthlyTasks.length);
-      console.log('📊 Bi-weekly tasks found:', biweeklyTasks.length);
-      
-      if (monthlyTasks.length > 0) {
-        console.log('Example monthly task:', monthlyTasks[0]);
-      }
-      if (biweeklyTasks.length > 0) {
-        console.log('Example bi-weekly task:', biweeklyTasks[0]);
-      }
-      
-      // Check specific tasks mentioned
-      const inventory = tasks.find(t => t.title && t.title.includes('Inventory'));
-      const filter = tasks.find(t => t.title && t.title.includes('Fan and Furnace Filter'));
-      
-      console.log('🔍 Found Inventory task?', inventory?.title || 'NOT FOUND');
-      console.log('🔍 Found Filter task?', filter?.title || 'NOT FOUND');
-      
-      // Check ALL recurring tasks
-      const allRecurring = tasks.filter(t => t.recurringTaskId);
-      console.log('📋 Total recurring tasks:', allRecurring.length);
-      
-      // Group by frequency
-      const byFrequency = {};
-      allRecurring.forEach(task => {
-        const freq = task.frequency || 'no-frequency';
-        byFrequency[freq] = (byFrequency[freq] || 0) + 1;
-      });
-      console.log('📊 Tasks by frequency:', byFrequency);
-    }
-  }, [tasks]);
   
   // Refresh function to update tasks immediately
   const refreshTasks = React.useCallback(async () => {
@@ -389,6 +348,11 @@ const Tasks: React.FC = () => {
     let filtered = tasks;
     
     // DEBUG: Show all recurring tasks option
+    if (showAllRecurring) {
+      const recurringOnly = tasks.filter(t => t.recurringTaskId);
+      console.log(`🧪 DEBUG MODE: Showing ${recurringOnly.length} recurring tasks (bypassing filters)`);
+      return recurringOnly;
+    }
     
     // Location filter
     if (!isViewingAllLocations) {
@@ -438,30 +402,31 @@ const Tasks: React.FC = () => {
       console.log(`🎯 ASSIGNED TO ME FILTER ACTIVE - After: ${filtered.length} tasks`);
     }
 
-    // IMPROVED DATE FILTER LOGIC - Show tasks based on visibility rules
-    if (dateFilter && !showAllTasks) {
+    // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
+    if (dateFilter) {
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
+      console.log('=== TASK VISIBILITY DEBUG ===');
+      console.log('Current Date:', dateFilter);
+      console.log('Total Tasks Before Filter:', filtered.length);
       
-      const viewDate = new Date(dateFilter);
-      viewDate.setHours(0, 0, 0, 0);
+      // Log recurring tasks specifically
+      const recurringTasks = filtered.filter(t => t.recurringTaskId);
+      console.log('Recurring Tasks Found:', recurringTasks.length);
+      recurringTasks.slice(0, 5).forEach(task => {
+        console.log(`🔍 Recurring Task: "${task.title}"`, {
+          frequency: task.frequency,
+          recurringTaskId: task.recurringTaskId,
+          isRecurring: task.isRecurring,
+          visibleFrom: task.visibleFromDate,
+          dueDate: task.dueDate,
+          willShow: 'CHECK BELOW'
+        });
+      });
+      
       const today = new Date().toISOString().split('T')[0];
+      const isViewingToday = dateFilter === today;
       
       filtered = filtered.filter(task => {
-        // NUCLEAR OPTION: ALWAYS show monthly and bi-weekly tasks for testing
-        if (task.frequency === 'monthly' || task.frequency === 'biweekly' || task.frequency === 'bi-weekly') {
-          console.log(`🚀 NUCLEAR OPTION - FORCE SHOWING ${task.frequency} task: ${task.title}`);
-          console.log(`   - Task details:`, {
-            id: task.id,
-            title: task.title,
-            frequency: task.frequency,
-            recurringTaskId: task.recurringTaskId,
-            status: task.status,
-            visibleFromDate: task.visibleFromDate,
-            dueDate: task.dueDate
-          });
-          return true;
-        }
-        
         // Handle completed/skipped tasks - they ONLY show on their action date
         if (task.status === 'completed' || task.status === 'skipped') {
           const actionDate = (task.completedAt || task.skippedAt || task.dueDate);
@@ -469,50 +434,40 @@ const Tasks: React.FC = () => {
           return actionDateStr === dateFilter;
         }
         
-        // Check 1: Does this task have a visibility date range?
-        if (task.visibleFromDate && task.dueDate) {
-          const visibleFrom = new Date(task.visibleFromDate);
-          const dueDate = new Date(task.dueDate);
-          
-          visibleFrom.setHours(0, 0, 0, 0);
-          dueDate.setHours(0, 0, 0, 0);
-          
-          // Is today within the task's visible range?
-          const inRange = viewDate >= visibleFrom && viewDate <= dueDate;
-          
-          // Debug log for range tasks
-          if (task.recurringTaskId) {
-            console.log(`Range check for ${task.title}:`, {
-              frequency: task.frequency,
-              visibleFrom: visibleFrom.toDateString(),
-              viewDate: viewDate.toDateString(),
-              dueDate: dueDate.toDateString(),
-              inRange: inRange
-            });
-          }
-          
-          return inRange;
-        }
+        // For pending/in-progress tasks
+        const taskDueDate = task.dueDate;
+        if (!taskDueDate) return false;
         
-        // Check 2: Handle overdue tasks
+        const taskDateStr = formatDateForComparison(taskDueDate);
         const isTaskOverdue = isOverdue(task) && (task.status === 'pending' || task.status === 'in_progress');
+        
         if (isTaskOverdue) {
-          return dateFilter === today; // Overdue tasks show only on today
+          // Overdue tasks show ONLY on today
+          return dateFilter === today;
+        } else {
+          // FIXED: Check for recurringTaskId instead of isRecurring for visibility periods
+          if (task.visibleFromDate && task.recurringTaskId && ['monthly', 'biweekly', 'bi-weekly', 'quarterly'].includes(task.frequency)) {
+            const visibleFromStr = formatDateForComparison(task.visibleFromDate);
+            const dueDateStr = formatDateForComparison(task.dueDate);
+            
+            const isVisible = dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
+            console.log(`🎯 ${task.title} (${task.frequency}): ${visibleFromStr} to ${dueDateStr} → ${isVisible ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
+            
+            // Task is visible from visibleFromDate through dueDate (inclusive)
+            return isVisible;
+          } else {
+            // Regular tasks and daily/weekly recurring tasks show on their due date
+            const matches = taskDateStr === dateFilter;
+            if (task.recurringTaskId) {
+              console.log(`📅 Daily/Weekly recurring "${task.title}": due ${taskDateStr} vs filter ${dateFilter} → ${matches ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
+            }
+            return matches;
+          }
         }
-        
-        // Check 3: For tasks without range, check exact date match  
-        const taskDate = new Date(task.dueDate || task.completionDate || task.createdAt);
-        if (taskDate) {
-          taskDate.setHours(0, 0, 0, 0);
-          return taskDate.getTime() === viewDate.getTime();
-        }
-        
-        return false;
       });
       
-      console.log(`📅 Filtered to ${filtered.length} tasks for ${dateFilter}`);
-    } else if (showAllTasks) {
-      console.log('🚫 SHOW ALL MODE - Bypassing date filter');
+      console.log(`📅 DATE FILTER RESULT: ${filtered.length} tasks visible for ${dateFilter}`);
+      console.log('=== END VISIBILITY DEBUG ===');
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
@@ -947,74 +902,6 @@ const Tasks: React.FC = () => {
             >
               Today
             </button>
-            
-            {/* Debug toggle for testing */}
-            <label className="flex items-center gap-2 ml-4">
-              <input
-                type="checkbox"
-                checked={showAllTasks}
-                onChange={(e) => setShowAllTasks(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-600">Show All (Debug)</span>
-            </label>
-            
-            {/* Check Tasks Button */}
-            <button
-              onClick={() => {
-                console.log('🔥 DETAILED TASK ANALYSIS...');
-                console.log('Current tasks length:', tasks.length);
-                
-                // Check monthly/bi-weekly by frequency field
-                const monthlyExists = tasks.filter(t => t.frequency === 'monthly');
-                const biweeklyExists = tasks.filter(t => t.frequency === 'biweekly' || t.frequency === 'bi-weekly');
-                
-                // Check the specific tasks we know exist
-                const inventoryTask = tasks.find(t => t.title && t.title.includes('Inventory'));
-                const filterTask = tasks.find(t => t.title && t.title.includes('Fan and Furnace Filter'));
-                
-                console.log('📊 Monthly by frequency:', monthlyExists.length);
-                console.log('📊 Bi-weekly by frequency:', biweeklyExists.length);
-                console.log('🔍 Inventory task details:', inventoryTask);
-                console.log('🔍 Filter task details:', filterTask);
-                
-                if (inventoryTask) {
-                  console.log('Inventory task frequency field:', inventoryTask.frequency, typeof inventoryTask.frequency);
-                }
-                if (filterTask) {
-                  console.log('Filter task frequency field:', filterTask.frequency, typeof filterTask.frequency);
-                }
-                
-                alert(`Found ${monthlyExists.length} monthly and ${biweeklyExists.length} bi-weekly tasks. Check console for details.`);
-              }}
-              className="px-3 py-1 bg-red-600 text-white rounded text-sm ml-2"
-            >
-              Check Tasks
-            </button>
-
-            {/* Fix Frequency Button */}
-            <button
-              onClick={async () => {
-                console.log('🛠️ FIXING FREQUENCY FIELDS...');
-                try {
-                  // Force regenerate all tasks to fix frequency copying
-                  const response = await fetch('/api/recurring-tasks/regenerate-all', { method: 'POST' });
-                  const result = await response.json();
-                  console.log('Regeneration result:', result);
-                  
-                  // Refresh tasks
-                  await refetch();
-                  
-                  alert('Regenerated all tasks! Check if monthly/bi-weekly now appear.');
-                } catch (error) {
-                  console.error('Regeneration failed:', error);
-                  alert('Regeneration failed - check console');
-                }
-              }}
-              className="px-3 py-1 bg-green-600 text-white rounded text-sm ml-2"
-            >
-              Fix Frequency
-            </button>
           </div>
 
           {/* Clear Filters Button */}
@@ -1053,10 +940,6 @@ const Tasks: React.FC = () => {
           >
             <Plus size={16} /> New Task
           </button>
-          
-          {/* DEBUG BUTTONS - TEMPORARY */}
-
-
 
           {/* Refresh Tasks Button */}
           <button 
