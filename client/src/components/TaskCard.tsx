@@ -232,13 +232,38 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       <CardContent className="p-6">
         {/* Top badges row - better organized */}
         <div className="task-badges-row flex justify-between items-start mb-4">
-          {/* Left badges: Day and Priority */}
+          {/* Left badges: Recurring, Frequency, Day, and Priority */}
           <div className="left-badges flex gap-2">
-            <span 
-              className="day-badge px-2 py-1 rounded text-xs font-bold text-white"
-              style={{ backgroundColor: dayDisplay.color }}
-            >
-              {dayDisplay.text}
+            {/* Blue Recurring Badge - Shows for ALL recurring tasks */}
+            {task.recurringTaskId && (
+              <span className="px-2 py-1 rounded bg-blue-600 text-white font-bold uppercase text-xs">
+                RECURRING
+              </span>
+            )}
+            
+            {/* Frequency Type Badge - Different color for each type */}
+            {task.recurringTaskId && task.frequency && (
+              <span className={`
+                px-2 py-1 rounded text-white font-bold uppercase text-xs
+                ${task.frequency === 'daily' ? 'bg-green-500' : 
+                  task.frequency === 'weekly' ? 'bg-green-500' :
+                  task.frequency === 'biweekly' ? 'bg-cyan-500' : 
+                  task.frequency === 'monthly' ? 'bg-purple-500' : 
+                  task.frequency === 'quarterly' ? 'bg-orange-500' : 
+                  'bg-gray-500'}
+              `}>
+                {task.frequency === 'daily' ? 'DAILY' :
+                 task.frequency === 'weekly' ? 'WEEKLY' :
+                 task.frequency === 'biweekly' ? 'BI-WK' :
+                 task.frequency === 'monthly' ? 'MONTHLY' :
+                 task.frequency === 'quarterly' ? 'QTLY' : 
+                 'CUSTOM'}
+              </span>
+            )}
+            
+            {/* Original Day Badge - Keep exactly as it is */}
+            <span className="px-3 py-1 rounded bg-teal-500 text-white font-bold">
+              {task.dueDate ? getDayAbbreviation(task.dueDate) : 'NO DATE'}
             </span>
             <span className={`priority-badge px-2 py-1 rounded text-xs font-bold ${
               task.priority === 'high' ? 'bg-red-500 text-white' :

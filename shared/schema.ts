@@ -55,6 +55,7 @@ export const tasks = pgTable("tasks", {
   skipReason: text("skip_reason"),
   isRecurring: boolean("is_recurring").default(false),
   recurringTaskId: integer("recurring_task_id").references(() => recurringTasks.id),
+  frequency: text("frequency"), // Copied from parent recurring task: 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly'
   
   // Fields for orphaned tasks from deleted recurring tasks
   isFromDeletedRecurring: boolean("is_from_deleted_recurring").default(false),
