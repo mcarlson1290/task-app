@@ -230,55 +230,53 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
     }`} data-status={task.status}>
       <CardContent className="p-6">
-        {/* Top badges row - better organized */}
-        <div className="task-badges-row flex justify-between items-start mb-4">
-          {/* Left badges: Recurring, Frequency, Day, and Priority */}
-          <div className="left-badges flex gap-2">
-            {/* Blue Recurring Badge - Shows for ALL recurring tasks */}
-            {task.recurringTaskId && (
-              <span className="px-2 py-1 rounded bg-blue-600 text-white font-bold uppercase text-xs">
-                RECURRING
-              </span>
-            )}
-            
-            {/* Frequency Type Badge - Different color for each type */}
-            {task.recurringTaskId && task.frequency && (
-              <span className={`
-                px-2 py-1 rounded text-white font-bold uppercase text-xs
-                ${task.frequency === 'daily' ? 'bg-green-500' : 
-                  task.frequency === 'weekly' ? 'bg-green-500' :
-                  task.frequency === 'biweekly' ? 'bg-cyan-500' : 
-                  task.frequency === 'monthly' ? 'bg-purple-500' : 
-                  task.frequency === 'quarterly' ? 'bg-orange-500' : 
-                  'bg-gray-500'}
-              `}>
-                {task.frequency === 'daily' ? 'DAILY' :
-                 task.frequency === 'weekly' ? 'WEEKLY' :
-                 task.frequency === 'biweekly' ? 'BI-WK' :
-                 task.frequency === 'monthly' ? 'MONTHLY' :
-                 task.frequency === 'quarterly' ? 'QTLY' : 
-                 'CUSTOM'}
-              </span>
-            )}
-            
-            {/* Original Day Badge - Keep exactly as it is */}
-            <span className="px-3 py-1 rounded bg-teal-500 text-white font-bold">
-              {task.dueDate ? getDayAbbreviation(task.dueDate) : 'NO DATE'}
+        {/* Badge Container - Modular system handles 2-4 badges flexibly */}
+        <div className="flex flex-wrap items-center gap-1 mb-3">
+          {/* RECURRING Badge - Only for recurring tasks */}
+          {task.recurringTaskId && (
+            <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-blue-600 text-white">
+              RECURRING
             </span>
-            <span className={`priority-badge px-2 py-1 rounded text-xs font-bold ${
-              task.priority === 'high' ? 'bg-red-500 text-white' :
-              task.priority === 'medium' ? 'bg-yellow-500 text-white' :
-              'bg-green-500 text-white'
-            }`}>
-              {task.priority?.toUpperCase() || 'LOW'}
-            </span>
-          </div>
+          )}
           
-          {/* Right badge: Your Task (only when assigned) */}
+          {/* Day Badge - Always present */}
+          <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-teal-500 text-white">
+            {task.dueDate ? getDayAbbreviation(task.dueDate) : 'NO DATE'}
+          </span>
+          
+          {/* Priority Badge - Show when priority exists */}
+          {task.priority && (
+            <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
+              ${task.priority === 'high' ? 'bg-red-500' : 
+                task.priority === 'medium' ? 'bg-yellow-500' : 
+                'bg-green-500'}
+            `}>
+              {task.priority}
+            </span>
+          )}
+          
+          {/* Frequency Badge - Only for recurring tasks with frequency */}
+          {task.recurringTaskId && task.frequency && (
+            <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
+              ${task.frequency === 'daily' ? 'bg-green-600' : 
+                task.frequency === 'biweekly' ? 'bg-cyan-600' : 
+                task.frequency === 'monthly' ? 'bg-purple-600' : 
+                task.frequency === 'quarterly' ? 'bg-orange-600' : 
+                'bg-gray-600'}
+            `}>
+              {task.frequency === 'daily' ? 'DAILY' :
+               task.frequency === 'biweekly' ? 'BI-WK' :
+               task.frequency === 'monthly' ? 'MONTHLY' :
+               task.frequency === 'quarterly' ? 'QTLY' : 
+               'CUSTOM'}
+            </span>
+          )}
+          
+          {/* Your Task indicator (only when assigned) */}
           {assignedToMe && (
-            <div className="your-task-badge">
-              📌 Your Task
-            </div>
+            <span className="inline-flex px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-800">
+              📌 YOUR TASK
+            </span>
           )}
         </div>
         
