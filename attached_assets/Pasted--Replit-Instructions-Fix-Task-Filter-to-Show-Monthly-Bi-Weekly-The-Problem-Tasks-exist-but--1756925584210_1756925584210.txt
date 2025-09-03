@@ -1,0 +1,165 @@
+# Replit Instructions: Fix Task Filter to Show Monthly/Bi-Weekly
+
+## The Problem: Tasks exist but the filter is hiding them
+
+## Step 1: Find Your Current Filter Function
+
+Look for where tasks are filtered. Search for:
+- `filterTasksByDate`
+- `filter(task =>`
+- `selectedDate`
+- Where you set displayed tasks
+
+## Step 2: Replace Filter with This Working Version
+
+```javascript
+const filterTasksByDate = (tasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(0, 0, 0, 0);
+  
+  console.log(`Filtering ${tasks.length} tasks for ${viewDate.toDateString()}`);
+  
+  const filtered = tasks.filter(task => {
+    // Check 1: Does this task have date range fields?
+    if (task.visibleFromDate && task.dueDate) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      const dueDate = new Date(task.dueDate);
+      
+      visibleFrom.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      // Is today within the task's visible range?
+      const inRange = viewDate >= visibleFrom && viewDate <= dueDate;
+      
+      // Debug log for monthly/bi-weekly
+      if (task.frequency === 'monthly' || task.frequency === 'biweekly') {
+        console.log(`Range check for ${task.title}:`, {
+          frequency: task.frequency,
+          visibleFrom: visibleFrom.toDateString(),
+          viewDate: viewDate.toDateString(),
+          dueDate: dueDate.toDateString(),
+          inRange: inRange
+        });
+      }
+      
+      return inRange;
+    }
+    
+    // Check 2: For tasks without range, check exact date match
+    const taskDate = new Date(task.dueDate || task.completionDate || task.date);
+    taskDate.setHours(0, 0, 0, 0);
+    
+    return taskDate.getTime() === viewDate.getTime();
+  });
+  
+  console.log(`Filtered to ${filtered.length} tasks`);
+  return filtered;
+};
+```
+
+## Step 3: Check Where Filter is Called
+
+Make sure the filter is actually being used. Look for where you set displayed tasks:
+
+```javascript
+// It might look like this:
+useEffect(() => {
+  const filtered = filterTasksByDate(allTasks, selectedDate);
+  setDisplayedTasks(filtered);
+}, [allTasks, selectedDate]);
+
+// OR like this:
+const handleDateChange = (date) => {
+  setSelectedDate(date);
+  const filtered = filterTasksByDate(tasks, date);
+  setTasks(filtered);
+};
+```
+
+## Step 4: Add a "Show All" Toggle for Testing
+
+Add this toggle to bypass the filter:
+
+```javascript
+// Add state
+const [showAll, setShowAll] = useState(false);
+
+// Add checkbox
+<label className="flex items-center gap-2 ml-4">
+  <input
+    type="checkbox"
+    checked={showAll}
+    onChange={(e) => setShowAll(e.target.checked)}
+  />
+  <span>Show All Tasks (Debug)</span>
+</label>
+
+// Update display logic
+const displayedTasks = showAll 
+  ? allTasks 
+  : filterTasksByDate(allTasks, selectedDate);
+```
+
+## Step 5: Common Filter Mistakes to Fix
+
+Look for these common issues:
+
+```javascript
+// WRONG: Only checking dueDate
+if (task.dueDate === selectedDate) // ❌
+
+// WRONG: String comparison
+if (task.visibleFromDate <= selectedDate) // ❌ Comparing strings
+
+// WRONG: Not setting hours
+const viewDate = new Date(selectedDate); // ❌ May have time component
+
+// RIGHT: Date range check with proper date objects
+const viewDate = new Date(selectedDate);
+viewDate.setHours(0, 0, 0, 0);
+const visibleFrom = new Date(task.visibleFromDate);
+visibleFrom.setHours(0, 0, 0, 0);
+return viewDate >= visibleFrom && viewDate <= dueDate; // ✅
+```
+
+## Step 6: Nuclear Option - Show Monthly/Bi-Weekly Always
+
+If nothing else works, force them to show:
+
+```javascript
+const filterTasksByDate = (tasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(0, 0, 0, 0);
+  
+  return tasks.filter(task => {
+    // ALWAYS show monthly and bi-weekly tasks for testing
+    if (task.frequency === 'monthly' || task.frequency === 'biweekly') {
+      console.log(`Force showing ${task.frequency} task: ${task.title}`);
+      return true;
+    }
+    
+    // Normal filtering for other tasks
+    if (task.visibleFromDate && task.dueDate) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      const dueDate = new Date(task.dueDate);
+      visibleFrom.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      return viewDate >= visibleFrom && viewDate <= dueDate;
+    }
+    
+    const taskDate = new Date(task.dueDate || task.completionDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === viewDate.getTime();
+  });
+};
+```
+
+## What to Look For
+
+After implementing:
+1. Check console for the debug logs
+2. Do monthly/bi-weekly tasks show "inRange: true"?
+3. Try the "Show All" toggle - do they appear?
+4. Are the visibleFromDate and dueDate in correct format?
+
+The console logs will show exactly why tasks are being filtered out!
