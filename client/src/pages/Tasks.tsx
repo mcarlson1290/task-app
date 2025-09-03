@@ -444,14 +444,16 @@ const Tasks: React.FC = () => {
             
             // Debug ALL recurring tasks with date ranges
             if (task.recurringTaskId) {
-              console.log(`🗓️ RECURRING TASK: "${task.title}" (${task.frequency}) | View: ${dateFilter} | Visible: ${task.visibleFromDate?.split('T')[0] || 'none'} to ${task.dueDate?.split('T')[0] || 'none'} | HasRecurringId: ${!!task.recurringTaskId} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
+              const visibleFromStr = task.visibleFromDate ? (task.visibleFromDate instanceof Date ? task.visibleFromDate.toISOString().split('T')[0] : (typeof task.visibleFromDate === 'string' ? task.visibleFromDate.split('T')[0] : 'none')) : 'none';
+              const dueDateStr = task.dueDate ? (task.dueDate instanceof Date ? task.dueDate.toISOString().split('T')[0] : (typeof task.dueDate === 'string' ? task.dueDate.split('T')[0] : 'none')) : 'none';
+              console.log(`🗓️ RECURRING TASK: "${task.title}" (${task.frequency}) | View: ${dateFilter} | Visible: ${visibleFromStr} to ${dueDateStr} | HasRecurringId: ${!!task.recurringTaskId} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
             }
             
             return isVisible;
           }
           
           // For single-day tasks (daily/weekly)
-          const taskDate = new Date(task.dueDate || task.completionDate);
+          const taskDate = new Date(task.dueDate || task.completedAt || new Date());
           const viewDate = new Date(dateFilter);
           
           taskDate.setHours(0, 0, 0, 0);

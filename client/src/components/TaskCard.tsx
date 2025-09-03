@@ -104,7 +104,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       }
       
       try {
-        const dayName = getDayAbbreviation(task.dueDate);
+        const dayName = getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
         return { 
           text: `${frequencyLabel} • ${dayName}`,
           color: task.frequency === 'daily' ? '#059669' : // Green
@@ -125,7 +125,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     }
     
     try {
-      const dayName = getDayAbbreviation(task.dueDate);
+      const dayName = getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
       return { text: dayName, color: '#059669' }; // Green
     } catch (error) {
       return { text: 'INVALID DATE', color: '#ef4444' }; // Red
@@ -241,7 +241,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
           
           {/* Day Badge - Always present */}
           <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-teal-500 text-white">
-            {task.dueDate ? getDayAbbreviation(task.dueDate) : 'NO DATE'}
+            {task.dueDate ? getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate.toISOString()) : 'NO DATE'}
           </span>
           
           {/* Priority Badge - Show when priority exists */}

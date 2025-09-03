@@ -1,5 +1,11 @@
-// @ts-nocheck
-export function isMyTask(task, currentUser) {
+import { Task } from "@shared/schema";
+
+interface User {
+  id: number;
+  rolesAssigned?: string[];
+}
+
+export function isMyTask(task: Task | null | undefined, currentUser: User | null | undefined): boolean {
   if (!task) {
     console.log('❌ No task provided');
     return false;
@@ -39,7 +45,7 @@ export function isMyTask(task, currentUser) {
   }
   
   // Check if task is assigned to my role
-  if (assignment && assignment.startsWith('role_')) {
+  if (assignment && typeof assignment === 'string' && assignment.startsWith('role_')) {
     const taskRole = assignment.replace('role_', '');
     if (currentUser.rolesAssigned && currentUser.rolesAssigned.includes(taskRole)) {
       console.log('✅ Role match:', `"${taskRole}" for task:`, task.title);
