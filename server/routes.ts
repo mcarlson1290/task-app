@@ -1289,6 +1289,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to fix frequency field in existing task instances
+  app.post("/api/admin/fix-task-frequencies", async (req, res) => {
+    try {
+      console.log('🔧 FIXING FREQUENCY FIELDS IN EXISTING TASKS');
+      
+      const allTasks = await storage.getAllTasks();
+      const allRecurringTasks = await storage.getAllRecurringTasks();
+      
+      // Create lookup map for recurring tasks
+      const recurringTaskMap = new Map();
+      allRecurringTasks.forEach(rt => {
+        recurringTaskMap.set(rt.id, rt);
+      });
+      
+      let updatedCount = 0;
+      
+      for (const task of allTasks) {
+        if (task.recurringTaskId && (task.frequency === null || task.frequency === undefined)) {
+          const recurringTask = recurringTaskMap.get(task.recurringTaskId);
+          if (recurringTask?.frequency) {
+            console.log(`🔧 Updating task ${task.id}: "${task.title}" with frequency: ${recurringTask.frequency}`);
+            
+            // Update the task with frequency and visibleFromDate if missing
+            const updates: any = {
+              frequency: recurringTask.frequency
+            };
+            
+            // If no visibleFromDate, set it to the due date for daily tasks or start of period for others
+            if (!task.visibleFromDate && task.dueDate) {
+              if (recurringTask.frequency === 'monthly') {
+                // Monthly tasks visible from 1st of month
+                const dueDate = new Date(task.dueDate);
+                const firstOfMonth = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
+                updates.visibleFromDate = firstOfMonth.toISOString().split('T')[0];
+              } else if (recurringTask.frequency === 'biweekly') {
+                // Bi-weekly tasks - check if it's first or second half
+                const dueDate = new Date(task.dueDate);
+                const dayOfMonth = dueDate.getDate();
+                if (dayOfMonth <= 14) {
+                  // First half
+                  const firstOfMonth = new Date(dueDate.getFullYear(), dueDate.getMonth(), 1);
+                  updates.visibleFromDate = firstOfMonth.toISOString().split('T')[0];
+                } else {
+                  // Second half
+                  const fifteenth = new Date(dueDate.getFullYear(), dueDate.getMonth(), 15);
+                  updates.visibleFromDate = fifteenth.toISOString().split('T')[0];
+                }
+              } else if (recurringTask.frequency === 'quarterly') {
+                // Quarterly tasks visible from start of quarter
+                const dueDate = new Date(task.dueDate);
+                const month = dueDate.getMonth();
+                const quarterStart = Math.floor(month / 3) * 3;
+                const quarterStartDate = new Date(dueDate.getFullYear(), quarterStart, 1);
+                updates.visibleFromDate = quarterStartDate.toISOString().split('T')[0];
+              } else {
+                // Daily/weekly tasks visible on their due date
+                updates.visibleFromDate = task.dueDate;
+              }
+            }
+            
+            await storage.updateTask(task.id, updates);
+            updatedCount++;
+            console.log(`✅ Updated task ${task.id}: ${task.title} with frequency: ${recurringTask.frequency}`);
+          }
+        }
+      }
+      
+      console.log(`🎉 FREQUENCY FIX COMPLETE: Updated ${updatedCount} tasks`);
+      
+      res.json({ 
+        success: true,
+        message: `Updated ${updatedCount} tasks with frequency data`,
+        updatedCount,
+        totalTasks: allTasks.length,
+        recurringTasks: allRecurringTasks.length
+      });
+    } catch (error) {
+      console.error('❌ Frequency fix failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fix task frequencies', 
+        error: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

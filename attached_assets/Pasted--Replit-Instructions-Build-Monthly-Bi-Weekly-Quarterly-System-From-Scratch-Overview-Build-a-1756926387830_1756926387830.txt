@@ -1,0 +1,329 @@
+# Replit Instructions: Build Monthly/Bi-Weekly/Quarterly System From Scratch
+
+## Overview
+Build a complete recurring task system that properly handles Monthly, Bi-Weekly, and Quarterly tasks with visibility ranges.
+
+## Step 1: Database Schema - Add Required Fields
+
+Ensure your task model/schema includes these fields:
+
+```javascript
+// Task Schema
+{
+  id: string,
+  title: string,
+  frequency: string, // 'daily', 'biweekly', 'monthly', 'quarterly'
+  visibleFromDate: string, // YYYY-MM-DD format
+  dueDate: string, // YYYY-MM-DD format
+  recurringTaskId: string, // Links to recurring task template
+  status: string,
+  priority: string,
+  type: string,
+  assignedTo: string,
+  createdAt: string
+}
+```
+
+## Step 2: Create the Task Generation System
+
+```javascript
+// Core task generation function
+const generateRecurringTasks = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to midnight
+  
+  const dayOfMonth = today.getDate();
+  const month = today.getMonth();
+  const year = today.getFullYear();
+  
+  // Only run on specific days
+  const isFirstOfMonth = dayOfMonth === 1;
+  const isFifteenth = dayOfMonth === 15;
+  const isQuarterStart = [0, 3, 6, 9].includes(month) && isFirstOfMonth;
+  
+  if (!isFirstOfMonth && !isFifteenth) {
+    return; // Only generate on 1st and 15th
+  }
+  
+  const recurringTasks = await getRecurringTasks();
+  const tasksToCreate = [];
+  
+  for (const template of recurringTasks) {
+    if (template.disabled) continue;
+    
+    switch (template.frequency) {
+      case 'monthly':
+        if (isFirstOfMonth) {
+          const lastDay = new Date(year, month + 1, 0); // Last day of current month
+          
+          const task = {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
+            title: template.title,
+            frequency: 'monthly',
+            visibleFromDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+            dueDate: `${year}-${String(month + 1).padStart(2, '0')}-${lastDay.getDate()}`,
+            recurringTaskId: template.id,
+            status: 'pending',
+            type: template.type,
+            priority: template.priority,
+            assignedTo: template.assignedTo,
+            createdAt: new Date().toISOString()
+          };
+          
+          tasksToCreate.push(task);
+        }
+        break;
+        
+      case 'biweekly':
+        if (isFirstOfMonth) {
+          // First half of month
+          const task = {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
+            title: template.title,
+            frequency: 'biweekly',
+            visibleFromDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+            dueDate: `${year}-${String(month + 1).padStart(2, '0')}-14`,
+            recurringTaskId: template.id,
+            status: 'pending',
+            type: template.type,
+            priority: template.priority,
+            assignedTo: template.assignedTo,
+            createdAt: new Date().toISOString()
+          };
+          
+          tasksToCreate.push(task);
+        }
+        
+        if (isFifteenth) {
+          // Second half of month
+          const lastDay = new Date(year, month + 1, 0);
+          
+          const task = {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
+            title: template.title,
+            frequency: 'biweekly',
+            visibleFromDate: `${year}-${String(month + 1).padStart(2, '0')}-15`,
+            dueDate: `${year}-${String(month + 1).padStart(2, '0')}-${lastDay.getDate()}`,
+            recurringTaskId: template.id,
+            status: 'pending',
+            type: template.type,
+            priority: template.priority,
+            assignedTo: template.assignedTo,
+            createdAt: new Date().toISOString()
+          };
+          
+          tasksToCreate.push(task);
+        }
+        break;
+        
+      case 'quarterly':
+        if (isQuarterStart) {
+          const quarterEndMonth = month + 2;
+          const lastDayOfQuarter = new Date(year, quarterEndMonth + 1, 0);
+          
+          const task = {
+            id: `${template.id}-${year}-Q${Math.floor(month / 3) + 1}`,
+            title: template.title,
+            frequency: 'quarterly',
+            visibleFromDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+            dueDate: `${lastDayOfQuarter.getFullYear()}-${String(lastDayOfQuarter.getMonth() + 1).padStart(2, '0')}-${lastDayOfQuarter.getDate()}`,
+            recurringTaskId: template.id,
+            status: 'pending',
+            type: template.type,
+            priority: template.priority,
+            assignedTo: template.assignedTo,
+            createdAt: new Date().toISOString()
+          };
+          
+          tasksToCreate.push(task);
+        }
+        break;
+        
+      case 'daily': // Weekly tasks
+        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+        if (template.selectedDays?.includes(dayName)) {
+          const task = {
+            id: `${template.id}-${today.toISOString().split('T')[0]}`,
+            title: template.title,
+            frequency: 'daily',
+            visibleFromDate: today.toISOString().split('T')[0],
+            dueDate: today.toISOString().split('T')[0],
+            recurringTaskId: template.id,
+            status: 'pending',
+            type: template.type,
+            priority: template.priority,
+            assignedTo: template.assignedTo,
+            createdAt: new Date().toISOString()
+          };
+          
+          tasksToCreate.push(task);
+        }
+        break;
+    }
+  }
+  
+  // Save all tasks to database
+  for (const task of tasksToCreate) {
+    const exists = await getTaskById(task.id);
+    if (!exists) {
+      await saveTask(task);
+      console.log(`Created ${task.frequency} task: ${task.title}`);
+    }
+  }
+  
+  return tasksToCreate;
+};
+```
+
+## Step 3: Implement the Visibility Filter
+
+```javascript
+// Filter tasks based on selected date
+const filterTasksByDate = (allTasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(0, 0, 0, 0);
+  
+  return allTasks.filter(task => {
+    // Handle tasks with visibility date range
+    if (task.visibleFromDate && task.dueDate) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      const due = new Date(task.dueDate);
+      
+      visibleFrom.setHours(0, 0, 0, 0);
+      due.setHours(0, 0, 0, 0);
+      
+      // Check if viewDate is within the visible range (inclusive)
+      return viewDate >= visibleFrom && viewDate <= due;
+    }
+    
+    // Handle single-day tasks (weekly/daily)
+    const taskDate = new Date(task.dueDate || task.completionDate);
+    taskDate.setHours(0, 0, 0, 0);
+    
+    return viewDate.getTime() === taskDate.getTime();
+  });
+};
+```
+
+## Step 4: Set Up Automatic Generation
+
+```javascript
+// Run task generation on app startup
+useEffect(() => {
+  const initializeTasks = async () => {
+    // Generate tasks for today if needed
+    await generateRecurringTasks();
+    
+    // Load all tasks
+    const allTasks = await loadAllTasks();
+    setTasks(allTasks);
+    
+    // Filter for current date
+    const filtered = filterTasksByDate(allTasks, new Date());
+    setDisplayedTasks(filtered);
+  };
+  
+  initializeTasks();
+  
+  // Schedule daily check at midnight
+  const scheduleNextGeneration = () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 1, 0); // 12:00:01 AM
+    
+    const msUntilMidnight = tomorrow - now;
+    
+    setTimeout(() => {
+      generateRecurringTasks();
+      scheduleNextGeneration(); // Reschedule for next day
+    }, msUntilMidnight);
+  };
+  
+  scheduleNextGeneration();
+}, []);
+```
+
+## Step 5: Update Task Display Component
+
+```javascript
+// When displaying tasks, use the filter
+const TaskManager = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [allTasks, setAllTasks] = useState([]);
+  const [displayedTasks, setDisplayedTasks] = useState([]);
+  
+  // Filter tasks whenever date changes
+  useEffect(() => {
+    const filtered = filterTasksByDate(allTasks, selectedDate);
+    setDisplayedTasks(filtered);
+  }, [selectedDate, allTasks]);
+  
+  return (
+    <div>
+      <DatePicker 
+        value={selectedDate} 
+        onChange={setSelectedDate}
+      />
+      
+      <TaskList tasks={displayedTasks} />
+    </div>
+  );
+};
+```
+
+## Step 6: Add Manual Generation Button (for testing)
+
+```javascript
+<button
+  onClick={async () => {
+    const created = await generateRecurringTasks();
+    console.log('Manual generation complete:', created);
+    
+    // Reload tasks
+    const allTasks = await loadAllTasks();
+    setTasks(allTasks);
+    
+    alert(`Generated ${created.length} tasks`);
+  }}
+  className="px-4 py-2 bg-green-600 text-white rounded"
+>
+  Generate Tasks Now
+</button>
+```
+
+## Step 7: Add Debug View
+
+```javascript
+// Add this temporary debug component
+const DebugTaskDates = ({ task }) => {
+  if (!task.visibleFromDate) return null;
+  
+  return (
+    <div className="text-xs text-gray-500 mt-1">
+      Visible: {new Date(task.visibleFromDate).toLocaleDateString()} - 
+      Due: {new Date(task.dueDate).toLocaleDateString()}
+    </div>
+  );
+};
+```
+
+## Key Points
+
+1. **Tasks are generated and stored** on specific days (1st, 15th)
+2. **visibleFromDate and dueDate** control when tasks appear
+3. **Date filtering** checks if current date is within the visibility range
+4. **All dates normalized** to midnight to avoid timezone issues
+5. **Task IDs** include dates to prevent duplicates
+
+## Testing
+
+1. Set date to September 1st
+2. Click "Generate Tasks Now"
+3. Should see:
+   - Monthly tasks visible, due Sept 30
+   - Bi-weekly tasks visible, due Sept 14
+4. Set date to September 15th
+5. Should see second bi-weekly task, due Sept 30
+
+This builds the complete system from scratch with proper date handling and visibility logic.
