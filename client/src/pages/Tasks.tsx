@@ -130,6 +130,46 @@ const Tasks: React.FC = () => {
     },
     enabled: !!auth.user,
   });
+
+  // STEP 1: DEEP DEBUG - Verify tasks actually exist in memory
+  React.useEffect(() => {
+    if (tasks && tasks.length > 0) {
+      console.log('=== DEEP TASK DEBUG ===');
+      console.log('Total tasks in memory:', tasks.length);
+      
+      const monthlyTasks = tasks.filter(t => t.frequency === 'monthly');
+      const biweeklyTasks = tasks.filter(t => t.frequency === 'biweekly' || t.frequency === 'bi-weekly');
+      
+      console.log('📊 Monthly tasks found:', monthlyTasks.length);
+      console.log('📊 Bi-weekly tasks found:', biweeklyTasks.length);
+      
+      if (monthlyTasks.length > 0) {
+        console.log('Example monthly task:', monthlyTasks[0]);
+      }
+      if (biweeklyTasks.length > 0) {
+        console.log('Example bi-weekly task:', biweeklyTasks[0]);
+      }
+      
+      // Check specific tasks mentioned
+      const inventory = tasks.find(t => t.title && t.title.includes('Inventory'));
+      const filter = tasks.find(t => t.title && t.title.includes('Fan and Furnace Filter'));
+      
+      console.log('🔍 Found Inventory task?', inventory?.title || 'NOT FOUND');
+      console.log('🔍 Found Filter task?', filter?.title || 'NOT FOUND');
+      
+      // Check ALL recurring tasks
+      const allRecurring = tasks.filter(t => t.recurringTaskId);
+      console.log('📋 Total recurring tasks:', allRecurring.length);
+      
+      // Group by frequency
+      const byFrequency = {};
+      allRecurring.forEach(task => {
+        const freq = task.frequency || 'no-frequency';
+        byFrequency[freq] = (byFrequency[freq] || 0) + 1;
+      });
+      console.log('📊 Tasks by frequency:', byFrequency);
+    }
+  }, [tasks]);
   
   // Refresh function to update tasks immediately
   const refreshTasks = React.useCallback(async () => {
@@ -409,7 +449,16 @@ const Tasks: React.FC = () => {
       filtered = filtered.filter(task => {
         // NUCLEAR OPTION: ALWAYS show monthly and bi-weekly tasks for testing
         if (task.frequency === 'monthly' || task.frequency === 'biweekly' || task.frequency === 'bi-weekly') {
-          console.log(`🚀 FORCE SHOWING ${task.frequency} task: ${task.title}`);
+          console.log(`🚀 NUCLEAR OPTION - FORCE SHOWING ${task.frequency} task: ${task.title}`);
+          console.log(`   - Task details:`, {
+            id: task.id,
+            title: task.title,
+            frequency: task.frequency,
+            recurringTaskId: task.recurringTaskId,
+            status: task.status,
+            visibleFromDate: task.visibleFromDate,
+            dueDate: task.dueDate
+          });
           return true;
         }
         
@@ -909,6 +958,63 @@ const Tasks: React.FC = () => {
               />
               <span className="text-sm text-gray-600">Show All (Debug)</span>
             </label>
+            
+            {/* Check Tasks Button */}
+            <button
+              onClick={() => {
+                console.log('🔥 DETAILED TASK ANALYSIS...');
+                console.log('Current tasks length:', tasks.length);
+                
+                // Check monthly/bi-weekly by frequency field
+                const monthlyExists = tasks.filter(t => t.frequency === 'monthly');
+                const biweeklyExists = tasks.filter(t => t.frequency === 'biweekly' || t.frequency === 'bi-weekly');
+                
+                // Check the specific tasks we know exist
+                const inventoryTask = tasks.find(t => t.title && t.title.includes('Inventory'));
+                const filterTask = tasks.find(t => t.title && t.title.includes('Fan and Furnace Filter'));
+                
+                console.log('📊 Monthly by frequency:', monthlyExists.length);
+                console.log('📊 Bi-weekly by frequency:', biweeklyExists.length);
+                console.log('🔍 Inventory task details:', inventoryTask);
+                console.log('🔍 Filter task details:', filterTask);
+                
+                if (inventoryTask) {
+                  console.log('Inventory task frequency field:', inventoryTask.frequency, typeof inventoryTask.frequency);
+                }
+                if (filterTask) {
+                  console.log('Filter task frequency field:', filterTask.frequency, typeof filterTask.frequency);
+                }
+                
+                alert(`Found ${monthlyExists.length} monthly and ${biweeklyExists.length} bi-weekly tasks. Check console for details.`);
+              }}
+              className="px-3 py-1 bg-red-600 text-white rounded text-sm ml-2"
+            >
+              Check Tasks
+            </button>
+
+            {/* Fix Frequency Button */}
+            <button
+              onClick={async () => {
+                console.log('🛠️ FIXING FREQUENCY FIELDS...');
+                try {
+                  // Force regenerate all tasks to fix frequency copying
+                  const response = await fetch('/api/recurring-tasks/regenerate-all', { method: 'POST' });
+                  const result = await response.json();
+                  console.log('Regeneration result:', result);
+                  
+                  // Refresh tasks
+                  await refetch();
+                  
+                  alert('Regenerated all tasks! Check if monthly/bi-weekly now appear.');
+                } catch (error) {
+                  console.error('Regeneration failed:', error);
+                  alert('Regeneration failed - check console');
+                }
+              }}
+              className="px-3 py-1 bg-green-600 text-white rounded text-sm ml-2"
+            >
+              Fix Frequency
+            </button>
           </div>
 
           {/* Clear Filters Button */}
