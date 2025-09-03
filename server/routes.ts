@@ -1741,10 +1741,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!exists) {
             console.log(`   Creating instance: ${required.label}`);
             
-            // Add period label to title for bi-weekly tasks
-            const taskTitle = frequency === 'bi-weekly' || frequency === 'biweekly' 
-              ? `${recurringTask.title} (${required.periodLabel || required.label})`
-              : recurringTask.title;
+            // CLEAN TITLE FORMAT: No period labels in title, use clean names
+            const taskTitle = recurringTask.title; // Keep original title clean
             
             const newInstance = {
               title: taskTitle,

@@ -1,0 +1,103 @@
+# Replit Instructions: Fix Bi-Weekly Task Duplicates and Formatting
+
+## Problems Identified
+1. **Duplicate bi-weekly tasks** (same task appearing multiple times)
+2. **Inconsistent titles** (some have "(1st-14th)", some don't)
+3. **Badge chaos** (some show CUSTOM, some missing frequency badges)
+4. **Too many tasks** (6 bi-weekly tasks when there should be ~2-3)
+
+## Step 1: Find and Remove Hardcoded Tasks
+
+Search for hardcoded task titles:
+```
+Search for: "Replace Fan and Furnace Filter"
+Search for: "Deep Floor Scrub"
+```
+
+Look for any place where these specific tasks are manually created or inserted. Remove any hardcoded test data.
+
+## Step 2: Check for Duplicate Task Generation
+
+The system might be creating tasks multiple times. Look for:
+- Multiple places calling task generation
+- Generation being called on every render
+- Missing checks for existing tasks before creating
+
+Add logging to see when/why tasks are created:
+```javascript
+console.log(`Creating bi-weekly task: ${title} for period ${period}`);
+```
+
+## Step 3: Fix Task ID Generation
+
+Bi-weekly tasks need unique IDs to prevent duplicates:
+- First half: `{recurringId}-{year}-{month}-01`
+- Second half: `{recurringId}-{year}-{month}-15`
+
+If IDs aren't unique, the system might create multiple instances.
+
+## Step 4: Standardize Title Format
+
+Decide on ONE format for bi-weekly task titles:
+
+**Option A**: Period in title
+- "Deep Floor Scrub (1st-14th)"
+- "Deep Floor Scrub (15th-30th)"
+
+**Option B**: Period in separate field
+- Title: "Deep Floor Scrub"
+- Period label: "1st-14th" (shown as badge or subtitle)
+
+Don't mix both approaches!
+
+## Step 5: Fix Frequency Field
+
+The "CUSTOM" badge appears when frequency doesn't match expected values. Ensure all bi-weekly tasks have:
+- frequency: 'biweekly' (NOT 'bi-weekly' or 'custom' or undefined)
+
+## Step 6: Clean Up Existing Bad Data
+
+Add a one-time cleanup function:
+```javascript
+// Remove duplicate bi-weekly tasks
+// Keep only one task per title per period
+// Ensure all have correct frequency field
+// Standardize title format
+```
+
+## Step 7: Prevent Future Duplicates
+
+Before creating any task:
+1. Check if a task with that ID already exists
+2. Check if a task with same title/period already exists
+3. Only create if truly new
+
+## Expected Result
+
+For bi-weekly tasks, you should see:
+- **Two tasks per recurring template per month** (1st-14th and 15th-end)
+- **Consistent titles** (all with or all without period labels)
+- **Proper badges** (RECURRING + BI-WK, not CUSTOM)
+- **No duplicates** (each task appears once)
+
+## Example of Correct Display
+
+If you have 2 bi-weekly recurring templates:
+- "Deep Floor Scrub"
+- "Replace Fan and Furnace Filter"
+
+On September 14th, you should see exactly 2 tasks:
+1. Deep Floor Scrub (1st-14th) - due today
+2. Replace Fan and Furnace Filter (1st-14th) - due today
+
+NOT 6 tasks with various formats!
+
+## The Root Cause
+
+This looks like a mix of:
+1. Hardcoded test data that wasn't removed
+2. Duplicate generation without checking for existing tasks
+3. Inconsistent data format between different code paths
+4. Missing or incorrect frequency field causing "CUSTOM" badges
+
+Clean up the data and standardize the generation process.
