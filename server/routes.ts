@@ -1375,6 +1375,224 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Direct fix for monthly/bi-weekly task frequencies
+  app.post("/api/admin/direct-frequency-fix", async (req, res) => {
+    try {
+      console.log('🔧 DIRECT FREQUENCY FIX FOR MONTHLY/BI-WEEKLY TASKS');
+      
+      const allTasks = await storage.getAllTasks();
+      let updateCount = 0;
+      
+      // Find tasks that match monthly patterns
+      const monthlyTitles = [
+        'Check the Inventory of Leafy Green Stock',
+        'Check General Inventory Stock', 
+        'Check Nutrient Inventory'
+      ];
+      
+      // Find tasks that match bi-weekly patterns
+      const biweeklyTitles = [
+        'Replace Fan and Furnace Filter'
+      ];
+      
+      for (const task of allTasks) {
+        let shouldUpdate = false;
+        let newFrequency = null;
+        
+        // Check if it's a monthly task
+        if (monthlyTitles.some(title => task.title === title) && task.frequency === null && task.recurringTaskId) {
+          newFrequency = 'monthly';
+          shouldUpdate = true;
+        }
+        
+        // Check if it's a bi-weekly task  
+        if (biweeklyTitles.some(title => task.title.includes(title)) && task.frequency === null && task.recurringTaskId) {
+          newFrequency = 'biweekly';
+          shouldUpdate = true;
+        }
+        
+        if (shouldUpdate) {
+          console.log(`✅ Updating frequency for: ${task.title} → ${newFrequency}`);
+          
+          await storage.updateTask(task.id, {
+            ...task,
+            frequency: newFrequency,
+            isRecurring: true
+          });
+          
+          updateCount++;
+        }
+      }
+      
+      console.log(`🎉 DIRECT FREQUENCY FIX COMPLETE: Updated ${updateCount} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Updated frequency for ${updateCount} tasks`,
+        updateCount
+      });
+      
+    } catch (error) {
+      console.error('❌ Direct frequency fix failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fix frequencies', 
+        error: error.message 
+      });
+    }
+  });
+
+  // Force generate monthly/bi-weekly/quarterly tasks for current period
+  app.post("/api/admin/force-generate-period-tasks", async (req, res) => {
+    try {
+      console.log('🚀 FORCE GENERATING MONTHLY/BI-WEEKLY/QUARTERLY TASKS');
+      
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const periodicTasks = recurringTasks.filter(rt => 
+        ['monthly', 'biweekly', 'quarterly'].includes(rt.frequency)
+      );
+      
+      console.log(`Found ${periodicTasks.length} periodic recurring tasks`);
+      
+      let createdCount = 0;
+      
+      for (const recurringTask of periodicTasks) {
+        console.log(`Processing: ${recurringTask.title} (${recurringTask.frequency})`);
+        
+        if (recurringTask.frequency === 'monthly') {
+          // Monthly task: visible Sept 1 - Sept 30, due Sept 30
+          const visibleFrom = new Date(year, month, 1);
+          const lastDay = new Date(year, month + 1, 0);
+          
+          const taskId = `${recurringTask.id}-${year}-${String(month + 1).padStart(2, '0')}`;
+          
+          const existingTask = await storage.getTask(parseInt(taskId)) || 
+                              (await storage.getAllTasks()).find(t => 
+                                t.title === recurringTask.title && 
+                                t.dueDate && new Date(t.dueDate).getMonth() === month
+                              );
+          
+          if (!existingTask) {
+            const newTask = {
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending' as const,
+              priority: 'medium' as const,
+              assignedTo: recurringTask.assignTo || null,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              dueDate: lastDay,
+              visibleFromDate: visibleFrom,
+              frequency: 'monthly',
+              recurringTaskId: recurringTask.id,
+              isRecurring: true,
+              createdAt: new Date()
+            };
+            
+            await storage.createTask(newTask);
+            createdCount++;
+            console.log(`✅ Created monthly task: ${recurringTask.title}`);
+          }
+        }
+        
+        if (recurringTask.frequency === 'biweekly') {
+          // Bi-weekly tasks: 1st-14th and 15th-end
+          const today = new Date();
+          const dayOfMonth = today.getDate();
+          
+          // First half (1st-14th)
+          const firstHalfVisible = new Date(year, month, 1);
+          const firstHalfDue = new Date(year, month, 14);
+          
+          const firstTaskId = `${recurringTask.id}-${year}-${String(month + 1).padStart(2, '0')}-01`;
+          const existingFirst = (await storage.getAllTasks()).find(t => 
+            t.title === recurringTask.title && 
+            t.dueDate && new Date(t.dueDate).getDate() <= 14 &&
+            new Date(t.dueDate).getMonth() === month
+          );
+          
+          if (!existingFirst) {
+            const firstTask = {
+              title: recurringTask.title + " (1st Half)",
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending' as const,
+              priority: 'medium' as const,
+              assignedTo: recurringTask.assignTo || null,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              dueDate: firstHalfDue,
+              visibleFromDate: firstHalfVisible,
+              frequency: 'biweekly',
+              recurringTaskId: recurringTask.id,
+              isRecurring: true,
+              createdAt: new Date()
+            };
+            
+            await storage.createTask(firstTask);
+            createdCount++;
+            console.log(`✅ Created bi-weekly task (1st half): ${recurringTask.title}`);
+          }
+          
+          // Second half (15th-end)
+          const secondHalfVisible = new Date(year, month, 15);
+          const lastDay = new Date(year, month + 1, 0);
+          
+          const existingSecond = (await storage.getAllTasks()).find(t => 
+            t.title.includes(recurringTask.title) && 
+            t.dueDate && new Date(t.dueDate).getDate() > 14 &&
+            new Date(t.dueDate).getMonth() === month
+          );
+          
+          if (!existingSecond) {
+            const secondTask = {
+              title: recurringTask.title + " (2nd Half)",
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending' as const,
+              priority: 'medium' as const,
+              assignedTo: recurringTask.assignTo || null,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              dueDate: lastDay,
+              visibleFromDate: secondHalfVisible,
+              frequency: 'biweekly',
+              recurringTaskId: recurringTask.id,
+              isRecurring: true,
+              createdAt: new Date()
+            };
+            
+            await storage.createTask(secondTask);
+            createdCount++;
+            console.log(`✅ Created bi-weekly task (2nd half): ${recurringTask.title}`);
+          }
+        }
+      }
+      
+      console.log(`🎉 PERIODIC TASK GENERATION COMPLETE: Created ${createdCount} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Generated ${createdCount} periodic tasks`,
+        createdCount,
+        periodicPatterns: periodicTasks.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Periodic task generation failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to generate periodic tasks', 
+        error: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
