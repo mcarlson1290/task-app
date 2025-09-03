@@ -239,20 +239,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
             </span>
           )}
           
-          {/* Frequency Type Badge - Right after RECURRING badge */}
-          {task.recurringTaskId && (
+          {/* Frequency Type Badge - Only show for valid frequencies */}
+          {task.recurringTaskId && task.frequency && ['daily', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency) && (
             <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
               ${task.frequency === 'daily' ? 'bg-green-600' : 
                 task.frequency === 'biweekly' ? 'bg-purple-600' : 
                 task.frequency === 'monthly' ? 'bg-orange-600' : 
-                task.frequency === 'quarterly' ? 'bg-pink-600' : 
-                'bg-gray-600'}
+                'bg-pink-600'}
             `}>
               {task.frequency === 'daily' ? 'WEEKLY' :
                task.frequency === 'biweekly' ? 'BI-WEEKLY' :
                task.frequency === 'monthly' ? 'MONTHLY' :
-               task.frequency === 'quarterly' ? 'QUARTERLY' : 
-               'CUSTOM'}
+               'QUARTERLY'}
             </span>
           )}
           
