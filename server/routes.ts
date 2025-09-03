@@ -1435,54 +1435,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SIMPLE BI-WEEKLY TASK GENERATOR - Create all missing bi-weekly tasks
-  app.post("/api/admin/create-all-biweekly-tasks", async (req, res) => {
+  // MANUAL BI-WEEKLY TASK CREATOR - Create missing tasks without foreign key issues
+  app.post("/api/admin/create-missing-biweekly", async (req, res) => {
     try {
-      console.log('🚀 CREATING ALL BI-WEEKLY TASKS FOR SEPTEMBER');
+      console.log('🚀 MANUALLY CREATING MISSING BI-WEEKLY TASKS');
       
-      const recurringTasks = await storage.getAllRecurringTasks();
-      const biweeklyTasks = recurringTasks.filter(rt => rt.frequency === 'bi-weekly');
+      const tasksToCreate = [
+        {
+          title: "Change Microgreen Reservoir Water and Clean Shelves",
+          description: "Change the water in the microgreen reservoir and clean all shelves",
+          type: "cleaning"
+        },
+        {
+          title: "Vacuum the Office and Lobby", 
+          description: "Vacuum all office areas and lobby spaces",
+          type: "cleaning"
+        },
+        {
+          title: "Clean Outside Facing Lobby Window",
+          description: "Clean the exterior windows facing the lobby",
+          type: "cleaning"
+        },
+        {
+          title: "Interior Window Cleaning",
+          description: "Clean all interior windows throughout the facility", 
+          type: "cleaning"
+        }
+      ];
       
       let totalCreated = 0;
-      const today = new Date();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
+      const currentYear = 2025;
+      const currentMonth = 8; // September (0-indexed)
       
-      for (const recurringTask of biweeklyTasks) {
-        console.log(`Creating instances for: ${recurringTask.title}`);
+      for (const taskTemplate of tasksToCreate) {
+        console.log(`Creating instances for: ${taskTemplate.title}`);
         
         // Create first half (Sept 1-15)
         const firstHalfTask = {
-          title: recurringTask.title,
-          description: recurringTask.description,
-          type: recurringTask.type,
+          title: taskTemplate.title,
+          description: taskTemplate.description,
+          type: taskTemplate.type,
           status: 'pending' as const,
           priority: 'medium' as const,
-          assignedTo: null, // Skip assignments for now
-          createdBy: recurringTask.createdBy,
-          location: recurringTask.location,
+          assignedTo: null,
+          createdBy: null,
+          location: 'K',
           dueDate: new Date(currentYear, currentMonth, 15),
           visibleFromDate: new Date(currentYear, currentMonth, 1),
           frequency: 'bi-weekly',
-          recurringTaskId: recurringTask.id,
+          recurringTaskId: null, // Skip foreign key to avoid constraint issues
           isRecurring: true,
           createdAt: new Date()
         };
         
         // Create second half (Sept 16-30)
         const secondHalfTask = {
-          title: recurringTask.title,
-          description: recurringTask.description,
-          type: recurringTask.type,
+          title: taskTemplate.title,
+          description: taskTemplate.description,
+          type: taskTemplate.type,
           status: 'pending' as const,
           priority: 'medium' as const,
-          assignedTo: null, // Skip assignments for now
-          createdBy: recurringTask.createdBy,
-          location: recurringTask.location,
-          dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
+          assignedTo: null,
+          createdBy: null,
+          location: 'K',
+          dueDate: new Date(currentYear, currentMonth, 30),
           visibleFromDate: new Date(currentYear, currentMonth, 16),
           frequency: 'bi-weekly',
-          recurringTaskId: recurringTask.id,
+          recurringTaskId: null, // Skip foreign key to avoid constraint issues
           isRecurring: true,
           createdAt: new Date()
         };
@@ -1491,9 +1510,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createTask(firstHalfTask);
           await storage.createTask(secondHalfTask);
           totalCreated += 2;
-          console.log(`✅ Created both halves for: ${recurringTask.title}`);
+          console.log(`✅ Created both halves for: ${taskTemplate.title}`);
         } catch (error) {
-          console.log(`⚠️ Skipping ${recurringTask.title}: ${error.message}`);
+          console.log(`⚠️ Failed ${taskTemplate.title}: ${error.message}`);
+        }
+      }
+      
+      console.log(`🎉 MANUAL BI-WEEKLY CREATION COMPLETE: Created ${totalCreated} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Manually created ${totalCreated} bi-weekly task instances`,
+        totalCreated
+      });
+      
+    } catch (error) {
+      console.error('❌ Manual bi-weekly creation failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to create bi-weekly tasks manually', 
+        error: error.message 
+      });
+    }
+  });
+
+  // SIMPLE BI-WEEKLY TASK GENERATOR - Create all missing bi-weekly tasks
+  app.post("/api/admin/create-all-biweekly-tasks", async (req, res) => {
+    try {
+      console.log('🚀 CREATING ALL BI-WEEKLY TASKS FOR SEPTEMBER');
+      
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const biweeklyTasks = recurringTasks.filter(rt => rt.frequency === 'bi-weekly');
+      const existingTasks = await storage.getAllTasks();
+      
+      let totalCreated = 0;
+      const currentYear = 2025;
+      const currentMonth = 8; // September (0-indexed)
+      
+      for (const recurringTask of biweeklyTasks) {
+        console.log(`Creating instances for: ${recurringTask.title}`);
+        
+        // Check if tasks already exist for this recurring pattern
+        const existingForPattern = existingTasks.filter(t => 
+          t.recurringTaskId === recurringTask.id && 
+          t.frequency === 'bi-weekly'
+        );
+        
+        if (existingForPattern.length >= 2) {
+          console.log(`   ⏭️  Already has ${existingForPattern.length} instances`);
+          continue;
+        }
+        
+        // Create first half (Sept 1-15) - only if doesn't exist
+        const hasFirstHalf = existingForPattern.some(t => 
+          new Date(t.visibleFromDate).getDate() === 1
+        );
+        
+        if (!hasFirstHalf) {
+          const firstHalfTask = {
+            title: recurringTask.title,
+            description: recurringTask.description,
+            type: recurringTask.type,
+            status: 'pending' as const,
+            priority: 'medium' as const,
+            assignedTo: null,
+            createdBy: recurringTask.createdBy,
+            location: recurringTask.location,
+            dueDate: new Date(currentYear, currentMonth, 15),
+            visibleFromDate: new Date(currentYear, currentMonth, 1),
+            frequency: 'bi-weekly',
+            recurringTaskId: recurringTask.id,
+            isRecurring: true,
+            createdAt: new Date()
+          };
+          
+          try {
+            await storage.createTask(firstHalfTask);
+            totalCreated++;
+            console.log(`✅ Created first half for: ${recurringTask.title}`);
+          } catch (error) {
+            console.log(`⚠️ Failed first half ${recurringTask.title}: ${error.message}`);
+          }
+        }
+        
+        // Create second half (Sept 16-30) - only if doesn't exist
+        const hasSecondHalf = existingForPattern.some(t => 
+          new Date(t.visibleFromDate).getDate() === 16
+        );
+        
+        if (!hasSecondHalf) {
+          const secondHalfTask = {
+            title: recurringTask.title,
+            description: recurringTask.description,
+            type: recurringTask.type,
+            status: 'pending' as const,
+            priority: 'medium' as const,
+            assignedTo: null,
+            createdBy: recurringTask.createdBy,
+            location: recurringTask.location,
+            dueDate: new Date(currentYear, currentMonth, 30), // Sept 30
+            visibleFromDate: new Date(currentYear, currentMonth, 16),
+            frequency: 'bi-weekly',
+            recurringTaskId: recurringTask.id,
+            isRecurring: true,
+            createdAt: new Date()
+          };
+          
+          try {
+            await storage.createTask(secondHalfTask);
+            totalCreated++;
+            console.log(`✅ Created second half for: ${recurringTask.title}`);
+          } catch (error) {
+            console.log(`⚠️ Failed second half ${recurringTask.title}: ${error.message}`);
+          }
         }
       }
       
