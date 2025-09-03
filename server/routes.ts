@@ -1652,6 +1652,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const recurringTasks = await storage.getAllRecurringTasks();
       const allTasks = await storage.getAllTasks();
       
+      console.log(`Found ${recurringTasks.length} recurring task patterns in database`);
+      console.log(`Current task instances: ${allTasks.length}`);
+      
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth(); // 0-indexed
@@ -1725,13 +1728,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!exists) {
             console.log(`   Creating instance: ${required.label}`);
             
+            // Handle assignment from recurring task pattern using NEW assignTo field for roles
+            let assignTo = null;
+            if (recurringTask.assignTo) {
+              assignTo = recurringTask.assignTo.startsWith('role_') ? recurringTask.assignTo : `role_${recurringTask.assignTo}`;
+            }
+            
             const newInstance = {
               title: recurringTask.title,
               description: recurringTask.description,
               type: recurringTask.type,
               status: 'pending' as const,
               priority: 'medium' as const,
-              assignedTo: null, // Will be handled by assignment logic
+              assignedTo: null, // Legacy field - keep null for role assignments
+              assignTo: assignTo, // New field - use for role assignments
               createdBy: recurringTask.createdBy,
               location: recurringTask.location,
               dueDate: required.dueDate,

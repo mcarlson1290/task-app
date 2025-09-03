@@ -232,10 +232,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       <CardContent className="p-6">
         {/* Badge Container - Modular system handles 2-4 badges flexibly */}
         <div className="flex flex-wrap items-center gap-1 mb-3">
-          {/* RECURRING Badge - Only for recurring tasks */}
+          {/* RECURRING Badge - Only for recurring tasks with frequency colors */}
           {task.recurringTaskId && (
-            <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-blue-600 text-white">
-              RECURRING
+            <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white ${
+              task.frequency === 'monthly' ? 'bg-purple-600' :
+              task.frequency === 'bi-weekly' || task.frequency === 'biweekly' ? 'bg-orange-600' :
+              task.frequency === 'quarterly' ? 'bg-green-600' :
+              task.frequency === 'weekly' ? 'bg-yellow-600' :
+              'bg-blue-600'
+            }`}>
+              {task.frequency === 'bi-weekly' || task.frequency === 'biweekly' ? 'BI-WEEKLY' :
+               task.frequency === 'monthly' ? 'MONTHLY' :
+               task.frequency === 'quarterly' ? 'QUARTERLY' :
+               task.frequency === 'weekly' ? 'WEEKLY' :
+               'RECURRING'}
             </span>
           )}
           
