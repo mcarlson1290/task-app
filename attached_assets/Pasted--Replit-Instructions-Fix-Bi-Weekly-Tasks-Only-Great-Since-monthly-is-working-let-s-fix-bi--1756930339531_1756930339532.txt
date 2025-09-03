@@ -1,0 +1,82 @@
+# Replit Instructions: Fix Bi-Weekly Tasks Only
+
+## Great! Since monthly is working, let's fix bi-weekly tasks specifically.
+
+## How Bi-Weekly Should Work
+
+Each month has TWO bi-weekly task instances:
+
+### First Half of Month
+- **Generated**: On the 1st of the month
+- **Visible**: From 1st through 14th (14 days total)
+- **Due**: On the 14th
+- **Example**: Task created Sept 1, visible Sept 1-14, due Sept 14
+
+### Second Half of Month  
+- **Generated**: On the 15th of the month
+- **Visible**: From 15th through last day of month (14-16 days total)
+- **Due**: On the last day of month
+- **Example**: Task created Sept 15, visible Sept 15-30, due Sept 30
+
+## Step 1: Check Bi-Weekly Task Generation
+
+Find where bi-weekly tasks are generated. It should create TWO separate tasks per month:
+
+```javascript
+// For bi-weekly tasks, you need:
+// 1. One task for days 1-14
+// 2. Another task for days 15-end
+```
+
+## Step 2: Verify Task IDs Are Unique
+
+Each bi-weekly task instance needs a unique ID:
+- First half: `{recurringId}-{year}-{month}-01`
+- Second half: `{recurringId}-{year}-{month}-15`
+
+## Step 3: Check the Frequency Field
+
+Make sure bi-weekly tasks have the correct frequency value:
+- Check if it's `'biweekly'` or `'bi-weekly'` (no space vs hyphen)
+- Be consistent throughout the system
+
+## Step 4: Fix Bi-Weekly Date Logic
+
+For the first half (generated on 1st):
+- visibleFromDate: 1st of current month
+- dueDate: 14th of current month
+
+For the second half (generated on 15th):
+- visibleFromDate: 15th of current month  
+- dueDate: Last day of current month (28th, 29th, 30th, or 31st)
+
+## Step 5: Add Period Labels
+
+Each bi-weekly task should indicate which half of the month:
+- First half: Add label "1st-14th"
+- Second half: Add label "15th-31st" (or 28th/29th/30th)
+
+## Common Issues with Bi-Weekly
+
+1. **Only creating one task per month** - Should be TWO
+2. **Wrong date ranges** - Each should cover ~14 days
+3. **Not generating on the 15th** - Need generation on both 1st AND 15th
+4. **Frequency mismatch** - 'biweekly' vs 'bi-weekly' inconsistency
+5. **ID conflicts** - Both halves having same ID prevents second from being created
+
+## Expected Behavior
+
+On September 3rd, you should see:
+- First bi-weekly task (visible since Sept 1, due Sept 14)
+- NOT the second bi-weekly task yet (that appears Sept 15)
+
+On September 20th, you should see:
+- Second bi-weekly task (visible since Sept 15, due Sept 30)
+- NOT the first bi-weekly task (that was due Sept 14)
+
+## The Key Difference from Monthly
+
+Monthly = ONE task visible all month
+Bi-Weekly = TWO tasks, each visible for half the month
+
+Let me know what specific issue you're seeing with bi-weekly tasks!

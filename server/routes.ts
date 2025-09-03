@@ -1647,10 +1647,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // PRODUCTION RECURRING TASK SYSTEM - Works for ANY frequency pattern in database
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
-      console.log('🚀 PRODUCTION RECURRING TASK GENERATION');
+      console.log('🚀 PRODUCTION RECURRING TASK GENERATION - FIX FOREIGN KEY ISSUE');
       
+      // Get recurring tasks from database storage (not memory)
       const recurringTasks = await storage.getAllRecurringTasks();
       const allTasks = await storage.getAllTasks();
+      
+      console.log(`📋 Found ${recurringTasks.length} recurring tasks in database`);
       
       const today = new Date();
       const currentYear = today.getFullYear();
@@ -1689,19 +1692,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             label: `${currentYear}-${currentMonth + 1}` // Sept = month 9
           }];
         } else if (frequency === 'bi-weekly' || frequency === 'biweekly') {
-          // Bi-weekly: Two instances per month (1st-15th, 16th-end)
-          requiredInstances = [
-            {
-              visibleFrom: new Date(currentYear, currentMonth, 1),
-              dueDate: new Date(currentYear, currentMonth, 15),
-              label: `${currentYear}-${currentMonth + 1}-first`
-            },
-            {
-              visibleFrom: new Date(currentYear, currentMonth, 16),
-              dueDate: new Date(currentYear, currentMonth + 1, 0),
-              label: `${currentYear}-${currentMonth + 1}-second`
-            }
-          ];
+          // BI-WEEKLY: Two separate tasks per month exactly as specified
+          const today = new Date();
+          const dayOfMonth = today.getDate();
+          
+          console.log(`   📅 Bi-weekly logic: Today is ${dayOfMonth}th of month`);
+          
+          // First Half: Days 1-14 (visible Sept 1-14, due Sept 14)
+          const firstHalf = {
+            visibleFrom: new Date(currentYear, currentMonth, 1),
+            dueDate: new Date(currentYear, currentMonth, 14), // Due on 14th as specified
+            label: `${currentYear}-${currentMonth + 1}-1st-14th`,
+            periodLabel: "1st-14th"
+          };
+          
+          // Second Half: Days 15-end (visible Sept 15-30, due last day)
+          const secondHalf = {
+            visibleFrom: new Date(currentYear, currentMonth, 15),
+            dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
+            label: `${currentYear}-${currentMonth + 1}-15th-end`,
+            periodLabel: "15th-31st"
+          };
+          
+          requiredInstances = [firstHalf, secondHalf];
+          
+          console.log(`   📅 First half: ${firstHalf.visibleFrom.toDateString()} - ${firstHalf.dueDate.toDateString()}`);
+          console.log(`   📅 Second half: ${secondHalf.visibleFrom.toDateString()} - ${secondHalf.dueDate.toDateString()}`);
         } else if (frequency === 'quarterly') {
           // Quarterly: One instance per quarter with full quarter visibility
           const quarterStart = Math.floor(currentMonth / 3) * 3;
@@ -1725,8 +1741,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!exists) {
             console.log(`   Creating instance: ${required.label}`);
             
+            // Add period label to title for bi-weekly tasks
+            const taskTitle = frequency === 'bi-weekly' || frequency === 'biweekly' 
+              ? `${recurringTask.title} (${required.periodLabel || required.label})`
+              : recurringTask.title;
+            
             const newInstance = {
-              title: recurringTask.title,
+              title: taskTitle,
               description: recurringTask.description,
               type: recurringTask.type,
               status: 'pending' as const,
