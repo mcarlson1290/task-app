@@ -10,7 +10,6 @@ import { MsalProvider, useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { msalConfig, isAuthorizedEmail, debugLog, detectIOSEnvironment, testStorageAvailability } from './config/authConfig';
 import { MicrosoftLogin } from './components/auth/MicrosoftLogin';
-import { DebugPanel, useDebugPanel } from './components/debug/DebugPanel';
 import { UserProvider } from './contexts/UserContext';
 import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
@@ -302,7 +301,6 @@ function App() {
             <AppContent />
             <Toaster />
             <Confetti />
-            <DebugPanel />
           </ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>

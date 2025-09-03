@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation as useWouterLocation } from 'wouter';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +6,8 @@ import { apiRequest } from '@/lib/queryClient';
 import type { Task } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, SkipForward, Trash2, ArrowLeft, Settings } from 'lucide-react';
+import { Shield, SkipForward, Trash2, ArrowLeft, Settings, Bug, Monitor } from 'lucide-react';
+import { detectIOSEnvironment, testStorageAvailability } from '@/config/authConfig';
 
 const DevTools = () => {
   const [, setLocation] = useWouterLocation();
@@ -14,6 +15,8 @@ const DevTools = () => {
     localStorage.getItem('devOverdueProtection') === 'true'
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<any[]>([]);
+  const [deviceInfo, setDeviceInfo] = useState<any>({});
   const { toast } = useToast();
   const { currentUser } = useUser();
 
@@ -23,6 +26,55 @@ const DevTools = () => {
   const hasAccess = currentUser && 
     currentUser.role === 'Corporate' && 
     (currentUser.email === 'robert@growspace.farm' || currentUser.email === 'matt@growspace.farm');
+
+  // Load debug information
+  useEffect(() => {
+    if (!hasAccess) return;
+    
+    // Get device info
+    const { isIOS, isTeamsApp, isWebView, isSafari } = detectIOSEnvironment();
+    const storageInfo = testStorageAvailability();
+    
+    setDeviceInfo({
+      isIOS,
+      isTeamsApp, 
+      isWebView,
+      isSafari,
+      userAgent: navigator.userAgent,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      cookies: navigator.cookieEnabled,
+      online: navigator.onLine,
+      storage: storageInfo,
+      language: navigator.language,
+      platform: navigator.platform
+    });
+    
+    // Load existing debug logs
+    const storedLogs = sessionStorage.getItem('authDebugLogs');
+    if (storedLogs) {
+      try {
+        setDebugLogs(JSON.parse(storedLogs));
+      } catch (e) {
+        console.warn('Failed to parse debug logs:', e);
+      }
+    }
+    
+    // Update logs every 5 seconds (less frequent than the corner debug panel)
+    const interval = setInterval(() => {
+      const storedLogs = sessionStorage.getItem('authDebugLogs');
+      if (storedLogs) {
+        try {
+          const logs = JSON.parse(storedLogs);
+          setDebugLogs(logs);
+        } catch (e) {
+          console.warn('Failed to parse debug logs:', e);
+        }
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [hasAccess]);
 
   if (!hasAccess) {
     return (
@@ -110,6 +162,17 @@ const DevTools = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Clear debug logs
+  const clearDebugLogs = () => {
+    sessionStorage.removeItem('authDebugLogs');
+    setDebugLogs([]);
+    
+    toast({
+      title: 'Debug Logs Cleared',
+      description: 'All authentication debug logs have been removed.',
+    });
   };
 
   // Clear all test data (this would need API endpoints to clear data safely)
@@ -267,6 +330,115 @@ const DevTools = () => {
                   </>
                 )}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Device Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="w-5 h-5" />
+                Device Information
+              </CardTitle>
+              <CardDescription>
+                Device and browser environment details
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Platform:</span>
+                  <span className="font-mono text-xs">{deviceInfo.platform || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Screen:</span>
+                  <span className="font-mono text-xs">{deviceInfo.screen || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Viewport:</span>
+                  <span className="font-mono text-xs">{deviceInfo.viewport || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>iOS:</span>
+                  <span>{deviceInfo.isIOS ? '✅' : '❌'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Teams App:</span>
+                  <span>{deviceInfo.isTeamsApp ? '✅' : '❌'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>WebView:</span>
+                  <span>{deviceInfo.isWebView ? '✅' : '❌'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Safari:</span>
+                  <span>{deviceInfo.isSafari ? '✅' : '❌'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Cookies:</span>
+                  <span>{deviceInfo.cookies ? '✅' : '❌'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Online:</span>
+                  <span>{deviceInfo.online ? '✅' : '❌'}</span>
+                </div>
+                {deviceInfo.storage && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Local Storage:</span>
+                      <span>{deviceInfo.storage.localStorage ? '✅' : '❌'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Session Storage:</span>
+                      <span>{deviceInfo.storage.sessionStorage ? '✅' : '❌'}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Debug Logs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bug className="w-5 h-5" />
+                Auth Debug Logs ({debugLogs.length})
+              </CardTitle>
+              <CardDescription>
+                Recent authentication debug information
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {debugLogs.length === 0 ? (
+                  <div className="text-sm text-gray-500 italic">No debug logs yet...</div>
+                ) : (
+                  debugLogs.slice(-10).reverse().map((log: any, i: number) => (
+                    <div key={i} className="text-xs p-2 bg-gray-100 rounded border-l-2 border-blue-400">
+                      <div className="text-gray-500 mb-1">
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </div>
+                      <div className="font-medium mb-1">{log.message}</div>
+                      {log.data && (
+                        <div className="text-gray-600 font-mono">
+                          {typeof log.data === 'object' ? JSON.stringify(log.data, null, 1) : log.data}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              {debugLogs.length > 0 && (
+                <Button
+                  onClick={clearDebugLogs}
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 w-full"
+                >
+                  Clear Debug Logs
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
