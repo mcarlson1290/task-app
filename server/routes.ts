@@ -1435,7 +1435,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DYNAMIC RECURRING TASK GENERATOR - Works for ANY frequency
+  // SIMPLE BI-WEEKLY TASK GENERATOR - Create all missing bi-weekly tasks
+  app.post("/api/admin/create-all-biweekly-tasks", async (req, res) => {
+    try {
+      console.log('🚀 CREATING ALL BI-WEEKLY TASKS FOR SEPTEMBER');
+      
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const biweeklyTasks = recurringTasks.filter(rt => rt.frequency === 'bi-weekly');
+      
+      let totalCreated = 0;
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      for (const recurringTask of biweeklyTasks) {
+        console.log(`Creating instances for: ${recurringTask.title}`);
+        
+        // Create first half (Sept 1-15)
+        const firstHalfTask = {
+          title: recurringTask.title,
+          description: recurringTask.description,
+          type: recurringTask.type,
+          status: 'pending' as const,
+          priority: 'medium' as const,
+          assignedTo: null, // Skip assignments for now
+          createdBy: recurringTask.createdBy,
+          location: recurringTask.location,
+          dueDate: new Date(currentYear, currentMonth, 15),
+          visibleFromDate: new Date(currentYear, currentMonth, 1),
+          frequency: 'bi-weekly',
+          recurringTaskId: recurringTask.id,
+          isRecurring: true,
+          createdAt: new Date()
+        };
+        
+        // Create second half (Sept 16-30)
+        const secondHalfTask = {
+          title: recurringTask.title,
+          description: recurringTask.description,
+          type: recurringTask.type,
+          status: 'pending' as const,
+          priority: 'medium' as const,
+          assignedTo: null, // Skip assignments for now
+          createdBy: recurringTask.createdBy,
+          location: recurringTask.location,
+          dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
+          visibleFromDate: new Date(currentYear, currentMonth, 16),
+          frequency: 'bi-weekly',
+          recurringTaskId: recurringTask.id,
+          isRecurring: true,
+          createdAt: new Date()
+        };
+        
+        try {
+          await storage.createTask(firstHalfTask);
+          await storage.createTask(secondHalfTask);
+          totalCreated += 2;
+          console.log(`✅ Created both halves for: ${recurringTask.title}`);
+        } catch (error) {
+          console.log(`⚠️ Skipping ${recurringTask.title}: ${error.message}`);
+        }
+      }
+      
+      console.log(`🎉 BI-WEEKLY TASK CREATION COMPLETE: Created ${totalCreated} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Created ${totalCreated} bi-weekly task instances`,
+        totalCreated
+      });
+      
+    } catch (error) {
+      console.error('❌ Bi-weekly task creation failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to create bi-weekly tasks', 
+        error: error.message 
+      });
+    }
+  });
+
+  // DYNAMIC RECURRING TASK GENERATOR - Works for ANY frequency  
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
       console.log('🚀 DYNAMIC RECURRING TASK GENERATION');

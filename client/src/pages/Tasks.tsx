@@ -440,6 +440,12 @@ const Tasks: React.FC = () => {
             
             // Show if current date is between visible and due dates
             const isVisible = viewDate >= visibleFrom && viewDate <= dueDate;
+            
+            // Debug monthly tasks specifically
+            if (task.frequency === 'monthly') {
+              console.log(`🗓️ MONTHLY TASK: "${task.title}" | View: ${dateFilter} | Visible: ${task.visibleFromDate.split('T')[0]} to ${task.dueDate.split('T')[0]} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
+            }
+            
             return isVisible;
           }
           
