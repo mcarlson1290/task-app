@@ -1477,17 +1477,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dueDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
           
         } else if (frequency === 'biweekly' || frequency === 'bi-weekly') {
-          // Bi-weekly: determine which half of month we're in
-          const dayOfMonth = today.getDate();
+          // Bi-weekly: create BOTH halves of the month for each pattern
+          // This ensures all bi-weekly tasks get proper instances
           
-          if (dayOfMonth <= 15) {
-            // First half: 1st-15th
-            visibleFromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-            dueDate = new Date(today.getFullYear(), today.getMonth(), 15);
+          // Create first half instance (1st-15th)
+          const firstHalfVisible = new Date(today.getFullYear(), today.getMonth(), 1);
+          const firstHalfDue = new Date(today.getFullYear(), today.getMonth(), 15);
+          
+          // Check if first half already exists
+          const existingFirstHalf = allTasks.find(t => 
+            t.recurringTaskId === recurringTask.id &&
+            t.frequency === frequency &&
+            new Date(t.visibleFromDate).getDate() === 1 &&
+            new Date(t.visibleFromDate).getMonth() === today.getMonth()
+          );
+          
+          if (!existingFirstHalf) {
+            visibleFromDate = firstHalfVisible;
+            dueDate = firstHalfDue;
+            console.log(`   📅 Creating first half (1st-15th)`);
           } else {
-            // Second half: 16th-end
-            visibleFromDate = new Date(today.getFullYear(), today.getMonth(), 16);
-            dueDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            // Create second half instance (16th-end)
+            const secondHalfVisible = new Date(today.getFullYear(), today.getMonth(), 16);
+            const secondHalfDue = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            // Check if second half already exists
+            const existingSecondHalf = allTasks.find(t => 
+              t.recurringTaskId === recurringTask.id &&
+              t.frequency === frequency &&
+              new Date(t.visibleFromDate).getDate() >= 16 &&
+              new Date(t.visibleFromDate).getMonth() === today.getMonth()
+            );
+            
+            if (!existingSecondHalf) {
+              visibleFromDate = secondHalfVisible;
+              dueDate = secondHalfDue;
+              console.log(`   📅 Creating second half (16th-end)`);
+            } else {
+              console.log(`   ⏭️  Both halves already exist for this month`);
+              continue;
+            }
           }
           
         } else if (frequency === 'quarterly') {
@@ -1503,14 +1532,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           continue;
         }
         
-        // Create the task instance
+        // Create the task instance - handle role assignments by leaving them unassigned
+        let assignedTo = null;
+        if (recurringTask.assignTo) {
+          // For now, skip role assignments to avoid database errors
+          // Only handle direct user ID assignments
+          if (typeof recurringTask.assignTo === 'string' && !recurringTask.assignTo.startsWith('role_')) {
+            if (!isNaN(parseInt(recurringTask.assignTo))) {
+              assignedTo = parseInt(recurringTask.assignTo);
+            }
+          }
+          // Role assignments will be handled after task creation
+        }
+
         const newTask = {
           title: recurringTask.title,
           description: recurringTask.description,
           type: recurringTask.type,
           status: 'pending' as const,
           priority: 'medium' as const,
-          assignedTo: recurringTask.assignTo || null,
+          assignedTo: assignedTo,
           createdBy: recurringTask.createdBy,
           location: recurringTask.location,
           dueDate,
