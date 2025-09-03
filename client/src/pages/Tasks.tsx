@@ -21,7 +21,6 @@ import { TaskCompletionService } from "@/services/taskCompletionService";
 import { useLocation } from "@/contexts/LocationContext";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import { isMyTask } from "../utils/taskHelpers";
-import DebugPanel from "@/components/DebugPanel";
 import GamifiedProgressBars from "@/components/GamifiedProgressBars";
 
 const Tasks: React.FC = () => {
@@ -1044,13 +1043,6 @@ const Tasks: React.FC = () => {
         onClose={() => setTaskActionModalOpen(false)}
       />
       
-      {/* Debug Panel */}
-      <DebugPanel 
-        tasks={tasks}
-        filteredTasks={filteredTasks}
-        staff={staffData}
-        filters={{ activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter }}
-      />
       </div>
     </div>
   );
