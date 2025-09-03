@@ -1644,10 +1644,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DYNAMIC RECURRING TASK GENERATOR - Works for ANY frequency  
+  // PRODUCTION RECURRING TASK SYSTEM - Works for ANY frequency pattern in database
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
-      console.log('🚀 DYNAMIC RECURRING TASK GENERATION');
+      console.log('🚀 PRODUCTION RECURRING TASK GENERATION');
+      
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const allTasks = await storage.getAllTasks();
+      
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth(); // 0-indexed
+      let totalCreated = 0;
+      
+      // Process EVERY recurring task pattern in the database
+      for (const recurringTask of recurringTasks) {
+        const { frequency, id: recurringId, title } = recurringTask;
+        
+        if (!frequency || frequency === 'daily' || frequency === 'weekly') {
+          continue; // Skip daily/weekly - handled by existing system
+        }
+        
+        console.log(`Processing: ${title} (${frequency}) - ID: ${recurringId}`);
+        
+        // VALIDATE: This recurring task already came from getAllRecurringTasks, so it exists
+        console.log(`   ✅ Processing verified recurring task: ${title}`);
+        
+        // Check existing instances for this recurring pattern
+        const existingInstances = allTasks.filter(t => 
+          t.recurringTaskId === recurringId &&
+          t.frequency === frequency
+        );
+        
+        console.log(`   Found ${existingInstances.length} existing instances`);
+        
+        // Determine what instances should exist for this frequency
+        let requiredInstances = [];
+        
+        if (frequency === 'monthly') {
+          // Monthly: One instance per month with full month visibility
+          requiredInstances = [{
+            visibleFrom: new Date(currentYear, currentMonth, 1),
+            dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
+            label: `${currentYear}-${currentMonth + 1}` // Sept = month 9
+          }];
+        } else if (frequency === 'bi-weekly' || frequency === 'biweekly') {
+          // Bi-weekly: Two instances per month (1st-15th, 16th-end)
+          requiredInstances = [
+            {
+              visibleFrom: new Date(currentYear, currentMonth, 1),
+              dueDate: new Date(currentYear, currentMonth, 15),
+              label: `${currentYear}-${currentMonth + 1}-first`
+            },
+            {
+              visibleFrom: new Date(currentYear, currentMonth, 16),
+              dueDate: new Date(currentYear, currentMonth + 1, 0),
+              label: `${currentYear}-${currentMonth + 1}-second`
+            }
+          ];
+        } else if (frequency === 'quarterly') {
+          // Quarterly: One instance per quarter with full quarter visibility
+          const quarterStart = Math.floor(currentMonth / 3) * 3;
+          requiredInstances = [{
+            visibleFrom: new Date(currentYear, quarterStart, 1),
+            dueDate: new Date(currentYear, quarterStart + 3, 0),
+            label: `${currentYear}-Q${Math.floor(currentMonth / 3) + 1}`
+          }];
+        }
+        
+        // Create missing instances
+        for (const required of requiredInstances) {
+          // Check if this specific instance already exists
+          const exists = existingInstances.some(existing => {
+            const existingVisible = new Date(existing.visibleFromDate);
+            const existingDue = new Date(existing.dueDate);
+            return existingVisible.getTime() === required.visibleFrom.getTime() &&
+                   existingDue.getTime() === required.dueDate.getTime();
+          });
+          
+          if (!exists) {
+            console.log(`   Creating instance: ${required.label}`);
+            
+            const newInstance = {
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending' as const,
+              priority: 'medium' as const,
+              assignedTo: null, // Will be handled by assignment logic
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              dueDate: required.dueDate,
+              visibleFromDate: required.visibleFrom,
+              frequency: frequency,
+              recurringTaskId: recurringId, // Proper foreign key reference
+              isRecurring: true,
+              createdAt: new Date()
+            };
+            
+            try {
+              await storage.createTask(newInstance);
+              totalCreated++;
+              console.log(`   ✅ Created: ${title} for ${required.label}`);
+            } catch (error) {
+              console.log(`   ❌ Failed to create ${title}: ${error.message}`);
+              // Continue processing other tasks even if one fails
+            }
+          } else {
+            console.log(`   ⏭️  Instance already exists for ${required.label}`);
+          }
+        }
+      }
+      
+      console.log(`🎉 PRODUCTION RECURRING GENERATION COMPLETE: Created ${totalCreated} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Generated ${totalCreated} recurring task instances`,
+        totalCreated
+      });
+      
+    } catch (error) {
+      console.error('❌ Production recurring generation failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to generate dynamic recurring tasks', 
+        error: error.message 
+      });
+    }
+  });
+
+  // OLD SYSTEM - DEPRECATED
+  app.post("/api/admin/old-generate-dynamic-recurring", async (req, res) => {
+    try {
+      console.log('🚀 OLD DYNAMIC RECURRING TASK GENERATION');
       
       const recurringTasks = await storage.getAllRecurringTasks();
       const allTasks = await storage.getAllTasks();

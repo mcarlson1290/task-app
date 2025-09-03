@@ -2210,6 +2210,11 @@ class DatabaseStorage implements IStorage {
     return db.select().from(recurringTasks);
   }
 
+  async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
+    const [task] = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id));
+    return task || undefined;
+  }
+
   async getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]> {
     return db.select().from(recurringTasks).where(eq(recurringTasks.location, locationId));
   }
