@@ -1375,68 +1375,173 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Direct fix for monthly/bi-weekly task frequencies
-  app.post("/api/admin/direct-frequency-fix", async (req, res) => {
+  // Fix monthly task date ranges to show all month
+  app.post("/api/admin/fix-monthly-date-ranges", async (req, res) => {
     try {
-      console.log('🔧 DIRECT FREQUENCY FIX FOR MONTHLY/BI-WEEKLY TASKS');
+      console.log('🔧 FIXING MONTHLY TASK DATE RANGES');
       
       const allTasks = await storage.getAllTasks();
       let updateCount = 0;
       
-      // Find tasks that match monthly patterns
-      const monthlyTitles = [
-        'Check the Inventory of Leafy Green Stock',
-        'Check General Inventory Stock', 
-        'Check Nutrient Inventory'
-      ];
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
       
-      // Find tasks that match bi-weekly patterns
-      const biweeklyTitles = [
-        'Replace Fan and Furnace Filter'
-      ];
+      // First day of current month
+      const monthStart = new Date(currentYear, currentMonth, 1);
+      // Last day of current month
+      const monthEnd = new Date(currentYear, currentMonth + 1, 0);
       
       for (const task of allTasks) {
-        let shouldUpdate = false;
-        let newFrequency = null;
-        
-        // Check if it's a monthly task
-        if (monthlyTitles.some(title => task.title === title) && task.frequency === null && task.recurringTaskId) {
-          newFrequency = 'monthly';
-          shouldUpdate = true;
-        }
-        
-        // Check if it's a bi-weekly task  
-        if (biweeklyTitles.some(title => task.title.includes(title)) && task.frequency === null && task.recurringTaskId) {
-          newFrequency = 'biweekly';
-          shouldUpdate = true;
-        }
-        
-        if (shouldUpdate) {
-          console.log(`✅ Updating frequency for: ${task.title} → ${newFrequency}`);
+        // Fix monthly tasks that have same visibleFromDate and dueDate
+        if (task.frequency === 'monthly' && task.recurringTaskId) {
+          const visibleDate = new Date(task.visibleFromDate);
+          const dueDate = new Date(task.dueDate);
           
-          await storage.updateTask(task.id, {
-            ...task,
-            frequency: newFrequency,
-            isRecurring: true
-          });
-          
-          updateCount++;
+          // Check if both dates are the same (indicating they need fixing)
+          if (visibleDate.getTime() === dueDate.getTime()) {
+            console.log(`✅ Fixing monthly date range for: ${task.title}`);
+            console.log(`   Before: ${task.visibleFromDate} to ${task.dueDate}`);
+            
+            await storage.updateTask(task.id, {
+              ...task,
+              visibleFromDate: monthStart,
+              dueDate: monthEnd,
+              frequency: 'monthly',
+              isRecurring: true
+            });
+            
+            console.log(`   After: ${monthStart.toISOString()} to ${monthEnd.toISOString()}`);
+            updateCount++;
+          }
         }
       }
       
-      console.log(`🎉 DIRECT FREQUENCY FIX COMPLETE: Updated ${updateCount} tasks`);
+      console.log(`🎉 MONTHLY DATE RANGE FIX COMPLETE: Updated ${updateCount} tasks`);
       
       res.json({
         success: true,
-        message: `Updated frequency for ${updateCount} tasks`,
+        message: `Fixed date ranges for ${updateCount} monthly tasks`,
         updateCount
       });
       
     } catch (error) {
-      console.error('❌ Direct frequency fix failed:', error);
+      console.error('❌ Monthly date range fix failed:', error);
       res.status(500).json({ 
         success: false,
-        message: 'Failed to fix frequencies', 
+        message: 'Failed to fix monthly date ranges', 
+        error: error.message 
+      });
+    }
+  });
+
+  // DYNAMIC RECURRING TASK GENERATOR - Works for ANY frequency
+  app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
+    try {
+      console.log('🚀 DYNAMIC RECURRING TASK GENERATION');
+      
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const allTasks = await storage.getAllTasks();
+      
+      const today = new Date();
+      let totalCreated = 0;
+      
+      for (const recurringTask of recurringTasks) {
+        const { frequency } = recurringTask;
+        
+        if (!frequency || frequency === 'daily' || frequency === 'weekly') {
+          continue; // Skip daily/weekly - they're handled by existing system
+        }
+        
+        console.log(`Processing: ${recurringTask.title} (${frequency})`);
+        
+        // Check if task instance already exists for this period
+        const existingTask = allTasks.find(t => 
+          t.recurringTaskId === recurringTask.id &&
+          t.frequency === frequency &&
+          new Date(t.visibleFromDate).getMonth() === today.getMonth() &&
+          new Date(t.visibleFromDate).getFullYear() === today.getFullYear()
+        );
+        
+        if (existingTask) {
+          console.log(`   ⏭️  Task already exists for this period`);
+          continue;
+        }
+        
+        let visibleFromDate, dueDate;
+        
+        // DYNAMIC FREQUENCY HANDLING
+        if (frequency === 'monthly') {
+          // Monthly: visible all month
+          visibleFromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+          dueDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+          
+        } else if (frequency === 'biweekly' || frequency === 'bi-weekly') {
+          // Bi-weekly: determine which half of month we're in
+          const dayOfMonth = today.getDate();
+          
+          if (dayOfMonth <= 15) {
+            // First half: 1st-15th
+            visibleFromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            dueDate = new Date(today.getFullYear(), today.getMonth(), 15);
+          } else {
+            // Second half: 16th-end
+            visibleFromDate = new Date(today.getFullYear(), today.getMonth(), 16);
+            dueDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+          }
+          
+        } else if (frequency === 'quarterly') {
+          // Quarterly: visible all quarter
+          const currentQuarter = Math.floor(today.getMonth() / 3);
+          const quarterStartMonth = currentQuarter * 3;
+          
+          visibleFromDate = new Date(today.getFullYear(), quarterStartMonth, 1);
+          dueDate = new Date(today.getFullYear(), quarterStartMonth + 3, 0);
+          
+        } else {
+          console.log(`   ⚠️  Unknown frequency: ${frequency}`);
+          continue;
+        }
+        
+        // Create the task instance
+        const newTask = {
+          title: recurringTask.title,
+          description: recurringTask.description,
+          type: recurringTask.type,
+          status: 'pending' as const,
+          priority: 'medium' as const,
+          assignedTo: recurringTask.assignTo || null,
+          createdBy: recurringTask.createdBy,
+          location: recurringTask.location,
+          dueDate,
+          visibleFromDate,
+          frequency,
+          recurringTaskId: recurringTask.id,
+          isRecurring: true,
+          createdAt: new Date()
+        };
+        
+        await storage.createTask(newTask);
+        totalCreated++;
+        
+        console.log(`   ✅ Created ${frequency} task: ${recurringTask.title}`);
+        console.log(`      Visible: ${visibleFromDate.toISOString().split('T')[0]} to ${dueDate.toISOString().split('T')[0]}`);
+      }
+      
+      console.log(`🎉 DYNAMIC GENERATION COMPLETE: Created ${totalCreated} tasks`);
+      
+      res.json({
+        success: true,
+        message: `Generated ${totalCreated} recurring tasks`,
+        totalCreated,
+        processedPatterns: recurringTasks.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Dynamic generation failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to generate dynamic recurring tasks', 
         error: error.message 
       });
     }
