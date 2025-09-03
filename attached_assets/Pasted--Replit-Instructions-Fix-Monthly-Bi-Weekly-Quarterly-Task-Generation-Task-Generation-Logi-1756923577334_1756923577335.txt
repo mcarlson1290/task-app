@@ -1,0 +1,270 @@
+# Replit Instructions: Fix Monthly, Bi-Weekly & Quarterly Task Generation
+
+## Task Generation Logic Reminder
+
+### Monthly Tasks
+- **Generate**: On the 1st of each month
+- **Visible**: From the 1st through the last day of month (entire month)
+- **Due**: Last day of the month
+- **Example**: Generate Jan 1 → Visible Jan 1-31 → Due Jan 31
+
+### Bi-Weekly Tasks  
+- **First Half**:
+  - Generate: 1st of month
+  - Visible: 1st through 14th
+  - Due: 14th of month
+- **Second Half**:
+  - Generate: 15th of month
+  - Visible: 15th through last day
+  - Due: Last day of month
+
+### Quarterly Tasks
+- **Generate**: 1st day of quarter (Jan 1, Apr 1, Jul 1, Oct 1)
+- **Visible**: Throughout entire quarter (3 months)
+- **Due**: Last day of quarter (Mar 31, Jun 30, Sep 30, Dec 31)
+
+### Weekly Tasks (formerly Daily)
+- **Generate**: Each selected day
+- **Visible**: Only on that day
+- **Due**: Same day
+
+## Step 1: Fix Task Generation Service
+
+Replace or update your task generation function:
+
+```javascript
+const generateRecurringTasks = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const dayOfMonth = today.getDate();
+  const month = today.getMonth();
+  const year = today.getFullYear();
+  
+  const recurringTasks = await getRecurringTasks();
+  const generatedTasks = [];
+  
+  for (const recurring of recurringTasks) {
+    if (recurring.disabled) continue;
+    
+    let shouldGenerate = false;
+    let taskData = null;
+    
+    switch (recurring.frequency) {
+      case 'daily': // Weekly tasks
+        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+        if (recurring.selectedDays?.includes(dayName)) {
+          shouldGenerate = true;
+          taskData = {
+            visibleFrom: today,
+            dueDate: today,
+            periodLabel: ''
+          };
+        }
+        break;
+        
+      case 'monthly':
+        if (dayOfMonth === 1) {
+          shouldGenerate = true;
+          const lastDay = new Date(year, month + 1, 0);
+          taskData = {
+            visibleFrom: new Date(year, month, 1),
+            dueDate: lastDay,
+            periodLabel: 'Monthly'
+          };
+        }
+        break;
+        
+      case 'biweekly':
+        if (dayOfMonth === 1 || dayOfMonth === 15) {
+          shouldGenerate = true;
+          if (dayOfMonth === 1) {
+            taskData = {
+              visibleFrom: new Date(year, month, 1),
+              dueDate: new Date(year, month, 14),
+              periodLabel: '1st-14th'
+            };
+          } else {
+            const lastDay = new Date(year, month + 1, 0);
+            taskData = {
+              visibleFrom: new Date(year, month, 15),
+              dueDate: lastDay,
+              periodLabel: '15th-' + lastDay.getDate()
+            };
+          }
+        }
+        break;
+        
+      case 'quarterly':
+        const quarterStarts = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+        if (quarterStarts.includes(month) && dayOfMonth === 1) {
+          shouldGenerate = true;
+          const quarterEnd = new Date(year, month + 3, 0); // Last day of quarter
+          taskData = {
+            visibleFrom: new Date(year, month, 1),
+            dueDate: quarterEnd,
+            periodLabel: `Q${Math.floor(month / 3) + 1}`
+          };
+        }
+        break;
+    }
+    
+    if (shouldGenerate && taskData) {
+      const taskId = `${recurring.id}-${taskData.visibleFrom.toISOString().split('T')[0]}`;
+      
+      // Check if task already exists
+      const existingTask = await getTaskById(taskId);
+      if (!existingTask) {
+        const newTask = {
+          id: taskId,
+          title: recurring.title,
+          type: recurring.type,
+          priority: recurring.priority,
+          status: 'pending',
+          dueDate: taskData.dueDate.toISOString().split('T')[0],
+          visibleFromDate: taskData.visibleFrom.toISOString().split('T')[0],
+          frequency: recurring.frequency,
+          periodLabel: taskData.periodLabel,
+          recurringTaskId: recurring.id,
+          isRecurring: true,
+          assignedTo: recurring.assignedTo,
+          checklistTemplate: recurring.checklistTemplate,
+          createdAt: new Date().toISOString()
+        };
+        
+        await saveTask(newTask);
+        generatedTasks.push(newTask);
+      }
+    }
+  }
+  
+  console.log(`Generated ${generatedTasks.length} new recurring tasks`);
+  return generatedTasks;
+};
+```
+
+## Step 2: Fix Task Visibility Filter
+
+Update how tasks are filtered for display:
+
+```javascript
+const getVisibleTasksForDate = (allTasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(0, 0, 0, 0);
+  
+  return allTasks.filter(task => {
+    // Handle recurring tasks with visibility windows
+    if (task.visibleFromDate && task.dueDate) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      const dueDate = new Date(task.dueDate);
+      
+      visibleFrom.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      // Task is visible if current date is between visible and due dates (inclusive)
+      return viewDate >= visibleFrom && viewDate <= dueDate;
+    }
+    
+    // Non-recurring tasks - only show on exact date
+    const taskDate = new Date(task.dueDate || task.completionDate);
+    taskDate.setHours(0, 0, 0, 0);
+    
+    return taskDate.getTime() === viewDate.getTime();
+  });
+};
+```
+
+## Step 3: Run Generation on App Load
+
+Ensure tasks are generated when the app loads:
+
+```javascript
+useEffect(() => {
+  const initializeTasks = async () => {
+    // Generate any missing tasks for today
+    await generateRecurringTasks();
+    
+    // Load and display tasks
+    const tasks = await loadAllTasks();
+    const visibleTasks = getVisibleTasksForDate(tasks, new Date());
+    setDisplayedTasks(visibleTasks);
+  };
+  
+  initializeTasks();
+  
+  // Set up daily generation
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  const msUntilMidnight = midnight - new Date();
+  
+  // Run at midnight, then every 24 hours
+  setTimeout(() => {
+    generateRecurringTasks();
+    setInterval(generateRecurringTasks, 24 * 60 * 60 * 1000);
+  }, msUntilMidnight);
+}, []);
+```
+
+## Step 4: Add Manual Generation Button (for testing)
+
+Add this button to manually trigger generation:
+
+```javascript
+<button
+  onClick={async () => {
+    const generated = await generateRecurringTasks();
+    alert(`Generated ${generated.length} tasks`);
+    // Refresh the display
+    window.location.reload();
+  }}
+  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+>
+  Generate Today's Tasks
+</button>
+```
+
+## Step 5: Debug Missing Tasks
+
+Add this debug function to see why tasks might not be showing:
+
+```javascript
+const debugTaskVisibility = () => {
+  const today = new Date();
+  const allTasks = getAllTasks();
+  
+  console.log('Today:', today.toDateString());
+  console.log('Day of month:', today.getDate());
+  
+  const recurringTasks = allTasks.filter(t => t.recurringTaskId);
+  console.log('Recurring tasks:', recurringTasks.map(t => ({
+    title: t.title,
+    frequency: t.frequency,
+    visibleFrom: t.visibleFromDate,
+    due: t.dueDate,
+    visible: new Date() >= new Date(t.visibleFromDate) && new Date() <= new Date(t.dueDate)
+  })));
+};
+```
+
+## Key Points to Verify
+
+1. **visibleFromDate** field is being saved with tasks
+2. **Date filtering** includes tasks where today is between visibleFrom and dueDate
+3. **Generation runs** on the 1st and 15th for bi-weekly, 1st for monthly/quarterly
+4. **Task IDs** are unique using date in the format `recurringId-YYYY-MM-DD`
+
+## Common Issues & Fixes
+
+**Tasks not generating:**
+- Check if generation runs on correct days (1st, 15th, etc.)
+- Verify recurring tasks have correct frequency field
+- Check console for errors in task creation
+
+**Tasks not visible:**
+- Verify visibleFromDate is set correctly
+- Check date filtering logic includes range checking
+- Ensure dates are normalized to midnight for comparison
+
+**Duplicate tasks:**
+- Task ID should include the visible-from date
+- Always check for existing task before creating
