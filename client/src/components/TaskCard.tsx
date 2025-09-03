@@ -88,41 +88,34 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     }
     
     // For recurring tasks, show frequency with day
-    // Use recurringTaskId instead of relying on frequency field
-    if (task.recurringTaskId) {
-      // Default to 'RECURRING' since frequency field is missing
-      const frequencyText = !task.frequency ? 'RECURRING' :
-                           task.frequency === 'daily' ? 'DAILY' :
-                           task.frequency === 'biweekly' ? 'BI-WK' :
-                           task.frequency === 'monthly' ? 'MONTHLY' :
-                           task.frequency === 'quarterly' ? 'QTLY' : 
-                           task.frequency.toUpperCase();
-      
-      const colorMap = {
-        'daily': '#059669',    // Green
-        'weekly': '#059669',   // Green  
-        'biweekly': '#0891b2', // Cyan
-        'monthly': '#7c3aed',  // Purple
-        'quarterly': '#ea580c' // Orange
-      };
-      
-      const badgeColor = colorMap[task.frequency] || '#6b7280'; // Gray default
+    if (task.isRecurring && task.frequency) {
+      const frequencyLabel = getFrequencyLabel(task.frequency);
       
       if (!task.dueDate) {
         return { 
-          text: frequencyText, 
-          color: badgeColor
+          text: frequencyLabel, 
+          color: task.frequency === 'daily' ? '#059669' : // Green
+                 task.frequency === 'weekly' ? '#059669' : // Green  
+                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan
+                 task.frequency === 'monthly' ? '#7c3aed' : // Purple
+                 task.frequency === 'quarterly' ? '#ea580c' : // Orange
+                 '#6b7280' // Gray
         };
       }
       
       try {
         const dayName = getDayAbbreviation(task.dueDate);
         return { 
-          text: `${frequencyText} • ${dayName}`,
-          color: badgeColor
+          text: `${frequencyLabel} • ${dayName}`,
+          color: task.frequency === 'daily' ? '#059669' : // Green
+                 task.frequency === 'weekly' ? '#059669' : // Green
+                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan  
+                 task.frequency === 'monthly' ? '#7c3aed' : // Purple
+                 task.frequency === 'quarterly' ? '#ea580c' : // Orange
+                 '#6b7280' // Gray
         };
       } catch (error) {
-        return { text: frequencyText, color: '#ef4444' }; // Red
+        return { text: frequencyLabel, color: '#ef4444' }; // Red
       }
     }
     
