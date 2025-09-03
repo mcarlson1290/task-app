@@ -239,6 +239,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
             </span>
           )}
           
+          {/* Frequency Type Badge - Right after RECURRING badge */}
+          {task.recurringTaskId && (
+            <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
+              ${task.frequency === 'daily' ? 'bg-green-600' : 
+                task.frequency === 'biweekly' ? 'bg-purple-600' : 
+                task.frequency === 'monthly' ? 'bg-orange-600' : 
+                task.frequency === 'quarterly' ? 'bg-pink-600' : 
+                'bg-gray-600'}
+            `}>
+              {task.frequency === 'daily' ? 'WEEKLY' :
+               task.frequency === 'biweekly' ? 'BI-WEEKLY' :
+               task.frequency === 'monthly' ? 'MONTHLY' :
+               task.frequency === 'quarterly' ? 'QUARTERLY' : 
+               'CUSTOM'}
+            </span>
+          )}
+          
           {/* Day Badge - Always present */}
           <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-teal-500 text-white">
             {task.dueDate ? getDayAbbreviation(task.dueDate) : 'NO DATE'}
@@ -252,23 +269,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
                 'bg-green-500'}
             `}>
               {task.priority}
-            </span>
-          )}
-          
-          {/* Frequency Badge - Only for recurring tasks with frequency */}
-          {task.recurringTaskId && task.frequency && (
-            <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
-              ${task.frequency === 'daily' ? 'bg-green-600' : 
-                task.frequency === 'biweekly' ? 'bg-cyan-600' : 
-                task.frequency === 'monthly' ? 'bg-purple-600' : 
-                task.frequency === 'quarterly' ? 'bg-orange-600' : 
-                'bg-gray-600'}
-            `}>
-              {task.frequency === 'daily' ? 'DAILY' :
-               task.frequency === 'biweekly' ? 'BI-WK' :
-               task.frequency === 'monthly' ? 'MONTHLY' :
-               task.frequency === 'quarterly' ? 'QTLY' : 
-               'CUSTOM'}
             </span>
           )}
           
