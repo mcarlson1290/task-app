@@ -1624,15 +1624,10 @@ export class MemStorage implements IStorage {
         const dueDate = new Date(Date.UTC(actualYear, actualMonth, lastDay, 12, 0, 0));
         const visibleDate = new Date(Date.UTC(actualYear, actualMonth, 1, 12, 0, 0));
         
-        console.log(`Checking monthly task for ${actualYear}-${actualMonth + 1}: due ${dueDate.toISOString()}`);
-        
         if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
-          console.log(`✅ CREATING - Monthly task for ${dueDate.toISOString()}`);
           const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
           instances.push(instance);
           this.tasks.set(instance.id, instance);
-        } else {
-          console.log(`❌ SKIPPING - Task exists or past due`);
         }
       }
     } else if (recurringTask.frequency === 'quarterly') {
@@ -1666,7 +1661,7 @@ export class MemStorage implements IStorage {
           console.log(`❌ SKIPPING - Task exists or past due`);
         }
       }
-    } else if (recurringTask.frequency === 'bi-weekly') {
+    } else if (recurringTask.frequency === 'biweekly' || recurringTask.frequency === 'bi-weekly') {
       // Bi-weekly tasks: generate for current and next 2 months
       for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
         const targetYear = today.getFullYear();
@@ -2022,9 +2017,21 @@ export class MemStorage implements IStorage {
       await this.generateTaskInstances(recurringTask);
       return true;
     } else {
-      // All recurring tasks regeneration
-      const result = await this.regenerateTaskInstances();
-      return result;
+      // All recurring tasks regeneration - FIXED: Implement proper logic instead of infinite recursion
+      const recurringTasks = Array.from(this.recurringTasks.values()).filter(rt => rt.isActive);
+      let totalTasksCreated = 0;
+      
+      for (const recurringTask of recurringTasks) {
+        const beforeCount = this.tasks.size;
+        await this.generateTaskInstances(recurringTask);
+        const afterCount = this.tasks.size;
+        totalTasksCreated += (afterCount - beforeCount);
+      }
+      
+      return {
+        totalTasksCreated,
+        recurringTasksProcessed: recurringTasks.length
+      };
     }
   }
 }
