@@ -1,0 +1,97 @@
+# Replit Instructions: Fix Filter Issue - Action Plan
+
+## Step 1: Find the Filter Function
+
+Search your codebase for one of these:
+- `filterTasksByDate`
+- `filter(task =>`  
+- `getVisibleTasks`
+- `tasksForDate`
+- Where you call `setDisplayedTasks` or similar
+
+## Step 2: Replace the Filter with This Working Version
+
+```javascript
+const filterTasksByDate = (allTasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(0, 0, 0, 0);
+  
+  return allTasks.filter(task => {
+    // For tasks with date ranges (monthly, bi-weekly, quarterly)
+    if (task.visibleFromDate && task.dueDate && task.recurringTaskId) {
+      const visibleFrom = new Date(task.visibleFromDate);
+      const dueDate = new Date(task.dueDate);
+      
+      visibleFrom.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      // Show if current date is between visible and due dates
+      return viewDate >= visibleFrom && viewDate <= dueDate;
+    }
+    
+    // For single-day tasks
+    const taskDate = new Date(task.dueDate || task.completionDate);
+    taskDate.setHours(0, 0, 0, 0);
+    
+    return viewDate.getTime() === taskDate.getTime();
+  });
+};
+```
+
+## Step 3: Update Where the Filter is Applied
+
+Find where you apply the filter and make sure it's using the date picker value:
+
+```javascript
+// In your useEffect or date change handler
+useEffect(() => {
+  const filtered = filterTasksByDate(allTasks, selectedDate);
+  setDisplayedTasks(filtered);
+}, [allTasks, selectedDate]);
+```
+
+## Step 4: Check for Additional Filters
+
+Look for and temporarily disable other filters:
+
+```javascript
+// Look for these and comment them out:
+// .filter(task => task.assignedTo === currentUser) // "Only My Tasks"
+// .filter(task => task.status !== 'completed') // Hide completed
+// .filter(task => task.category === selectedCategory) // Category filter
+```
+
+## Step 5: Ensure Tasks Have Correct Fields
+
+Make sure task generation includes these fields:
+
+```javascript
+// When creating monthly/bi-weekly tasks
+const task = {
+  // ... other fields
+  visibleFromDate: '2025-09-01', // First day of visibility
+  dueDate: '2025-09-30', // Due date
+  recurringTaskId: template.id, // MUST have this
+  frequency: 'monthly', // or 'biweekly'
+  // ... rest
+};
+```
+
+## Step 6: Remove Conflicting Logic
+
+Find and remove any code that:
+- Only shows tasks on their due date
+- Filters out tasks with future due dates
+- Has special logic that excludes recurring tasks
+
+## Expected Result
+
+After these changes:
+- Monthly tasks: Visible from 1st through last day of month
+- Bi-weekly (1st half): Visible from 1st through 14th
+- Bi-weekly (2nd half): Visible from 15th through last day
+- All show proper badges: RECURRING + MONTHLY/BI-WEEKLY + day + priority
+
+## That's It
+
+No debugging, just fix the filter function and make sure it's checking date ranges properly for tasks with `visibleFromDate` and `dueDate`.

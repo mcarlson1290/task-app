@@ -405,23 +405,6 @@ const Tasks: React.FC = () => {
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
-      console.log('=== TASK VISIBILITY DEBUG ===');
-      console.log('Current Date:', dateFilter);
-      console.log('Total Tasks Before Filter:', filtered.length);
-      
-      // Log recurring tasks specifically
-      const recurringTasks = filtered.filter(t => t.recurringTaskId);
-      console.log('Recurring Tasks Found:', recurringTasks.length);
-      recurringTasks.slice(0, 5).forEach(task => {
-        console.log(`🔍 Recurring Task: "${task.title}"`, {
-          frequency: task.frequency,
-          recurringTaskId: task.recurringTaskId,
-          isRecurring: task.isRecurring,
-          visibleFrom: task.visibleFromDate,
-          dueDate: task.dueDate,
-          willShow: 'CHECK BELOW'
-        });
-      });
       
       const today = new Date().toISOString().split('T')[0];
       const isViewingToday = dateFilter === today;
@@ -445,29 +428,34 @@ const Tasks: React.FC = () => {
           // Overdue tasks show ONLY on today
           return dateFilter === today;
         } else {
-          // FIXED: Check for recurringTaskId instead of isRecurring for visibility periods
-          if (task.visibleFromDate && task.recurringTaskId && ['monthly', 'biweekly', 'bi-weekly', 'quarterly'].includes(task.frequency)) {
-            const visibleFromStr = formatDateForComparison(task.visibleFromDate);
-            const dueDateStr = formatDateForComparison(task.dueDate);
+          // NEW CLEAN FILTER LOGIC: Check for date ranges (monthly, bi-weekly, quarterly)
+          if (task.visibleFromDate && task.dueDate && task.recurringTaskId) {
+            const visibleFrom = new Date(task.visibleFromDate);
+            const dueDate = new Date(task.dueDate);
+            const viewDate = new Date(dateFilter);
             
-            const isVisible = dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
-            console.log(`🎯 ${task.title} (${task.frequency}): ${visibleFromStr} to ${dueDateStr} → ${isVisible ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
+            visibleFrom.setHours(0, 0, 0, 0);
+            dueDate.setHours(0, 0, 0, 0);
+            viewDate.setHours(0, 0, 0, 0);
             
-            // Task is visible from visibleFromDate through dueDate (inclusive)
+            // Show if current date is between visible and due dates
+            const isVisible = viewDate >= visibleFrom && viewDate <= dueDate;
             return isVisible;
-          } else {
-            // Regular tasks and daily/weekly recurring tasks show on their due date
-            const matches = taskDateStr === dateFilter;
-            if (task.recurringTaskId) {
-              console.log(`📅 Daily/Weekly recurring "${task.title}": due ${taskDateStr} vs filter ${dateFilter} → ${matches ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
-            }
-            return matches;
           }
+          
+          // For single-day tasks (daily/weekly)
+          const taskDate = new Date(task.dueDate || task.completionDate);
+          const viewDate = new Date(dateFilter);
+          
+          taskDate.setHours(0, 0, 0, 0);
+          viewDate.setHours(0, 0, 0, 0);
+          
+          const matches = viewDate.getTime() === taskDate.getTime();
+          return matches;
         }
       });
       
-      console.log(`📅 DATE FILTER RESULT: ${filtered.length} tasks visible for ${dateFilter}`);
-      console.log('=== END VISIBILITY DEBUG ===');
+      console.log(`📅 Showing ${filtered.length} tasks for ${dateFilter}`);
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
