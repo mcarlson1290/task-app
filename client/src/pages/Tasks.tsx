@@ -404,7 +404,8 @@ const Tasks: React.FC = () => {
 
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
-      console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
+      const biweeklyTasks = filtered.filter(t => t.frequency === 'bi-weekly');
+      console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks (${biweeklyTasks.length} bi-weekly)`);
       
       const today = new Date().toISOString().split('T')[0];
       const isViewingToday = dateFilter === today;
@@ -461,7 +462,8 @@ const Tasks: React.FC = () => {
         }
       });
       
-      console.log(`📅 Showing ${filtered.length} tasks for ${dateFilter}`);
+      const biweeklyAfter = filtered.filter(t => t.frequency === 'bi-weekly');
+      console.log(`📅 Showing ${filtered.length} tasks for ${dateFilter} (${biweeklyAfter.length} bi-weekly after date filter)`);
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
