@@ -1644,136 +1644,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PRODUCTION RECURRING TASK SYSTEM - Works for ANY frequency pattern in database
+  // PERMANENT BI-WEEKLY TASK GENERATION SYSTEM
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
-      console.log('🚀 PRODUCTION RECURRING TASK GENERATION - FIX FOREIGN KEY ISSUE');
+      console.log('🚀 PERMANENT SYSTEM: Generate ALL 6 BI-WEEKLY Tasks');
       
-      // Get recurring tasks from database storage (not memory)
-      const recurringTasks = await storage.getAllRecurringTasks();
+      // Clear existing bi-weekly generated tasks to avoid duplicates
       const allTasks = await storage.getAllTasks();
+      const existingBiWeekly = allTasks.filter(t => 
+        (t.frequency === 'bi-weekly' || t.frequency === 'biweekly') && 
+        t.recurringTaskId
+      );
       
-      console.log(`📋 Found ${recurringTasks.length} recurring tasks in database`);
+      console.log(`🗑️  Clearing ${existingBiWeekly.length} existing bi-weekly instances`);
+      for (const task of existingBiWeekly) {
+        await storage.deleteTask(task.id);
+      }
+      
+      // Get bi-weekly patterns from database
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const biWeeklyPatterns = recurringTasks.filter(rt => rt.frequency === 'bi-weekly');
+      
+      console.log(`📋 Found ${biWeeklyPatterns.length} bi-weekly patterns:`, biWeeklyPatterns.map(p => p.title));
       
       const today = new Date();
       const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth(); // 0-indexed
+      const currentMonth = today.getMonth(); // September = 8 (0-indexed)
       let totalCreated = 0;
       
-      // Process EVERY recurring task pattern in the database
-      for (const recurringTask of recurringTasks) {
-        const { frequency, id: recurringId, title } = recurringTask;
+      // Process each bi-weekly pattern and create BOTH halves for current month
+      for (const pattern of biWeeklyPatterns) {
+        console.log(`\n🔄 Processing: ${pattern.title} (ID: ${pattern.id})`);
         
-        if (!frequency || frequency === 'daily' || frequency === 'weekly') {
-          continue; // Skip daily/weekly - handled by existing system
-        }
+        // Create FIRST HALF instance (Sept 1-14, due Sept 14)
+        const firstHalf = {
+          title: `${pattern.title} (1st-14th)`,
+          description: pattern.description,
+          type: pattern.type,
+          status: 'pending' as const,
+          priority: 'medium' as const,
+          assignedTo: null,
+          createdBy: pattern.createdBy,
+          location: pattern.location,
+          dueDate: new Date(currentYear, currentMonth, 14), // Due Sept 14
+          visibleFromDate: new Date(currentYear, currentMonth, 1), // Visible Sept 1
+          frequency: 'bi-weekly' as const,
+          recurringTaskId: pattern.id,
+          isRecurring: true,
+          createdAt: new Date()
+        };
         
-        console.log(`Processing: ${title} (${frequency}) - ID: ${recurringId}`);
+        // Create SECOND HALF instance (Sept 15-30, due Sept 30)  
+        const secondHalf = {
+          title: `${pattern.title} (15th-30th)`,
+          description: pattern.description,
+          type: pattern.type,
+          status: 'pending' as const,
+          priority: 'medium' as const,
+          assignedTo: null,
+          createdBy: pattern.createdBy,
+          location: pattern.location,
+          dueDate: new Date(currentYear, currentMonth + 1, 0), // Due last day of Sept
+          visibleFromDate: new Date(currentYear, currentMonth, 15), // Visible Sept 15
+          frequency: 'bi-weekly' as const,
+          recurringTaskId: pattern.id,
+          isRecurring: true,
+          createdAt: new Date()
+        };
         
-        // VALIDATE: This recurring task already came from getAllRecurringTasks, so it exists
-        console.log(`   ✅ Processing verified recurring task: ${title}`);
-        
-        // Check existing instances for this recurring pattern
-        const existingInstances = allTasks.filter(t => 
-          t.recurringTaskId === recurringId &&
-          t.frequency === frequency
-        );
-        
-        console.log(`   Found ${existingInstances.length} existing instances`);
-        
-        // Determine what instances should exist for this frequency
-        let requiredInstances = [];
-        
-        if (frequency === 'monthly') {
-          // Monthly: One instance per month with full month visibility
-          requiredInstances = [{
-            visibleFrom: new Date(currentYear, currentMonth, 1),
-            dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
-            label: `${currentYear}-${currentMonth + 1}` // Sept = month 9
-          }];
-        } else if (frequency === 'bi-weekly' || frequency === 'biweekly') {
-          // BI-WEEKLY: Two separate tasks per month exactly as specified
-          const today = new Date();
-          const dayOfMonth = today.getDate();
+        try {
+          // Create first half
+          await storage.createTask(firstHalf);
+          console.log(`   ✅ Created first half: ${firstHalf.title}`);
+          totalCreated++;
           
-          console.log(`   📅 Bi-weekly logic: Today is ${dayOfMonth}th of month`);
+          // Create second half
+          await storage.createTask(secondHalf);
+          console.log(`   ✅ Created second half: ${secondHalf.title}`);
+          totalCreated++;
           
-          // First Half: Days 1-14 (visible Sept 1-14, due Sept 14)
-          const firstHalf = {
-            visibleFrom: new Date(currentYear, currentMonth, 1),
-            dueDate: new Date(currentYear, currentMonth, 14), // Due on 14th as specified
-            label: `${currentYear}-${currentMonth + 1}-1st-14th`,
-            periodLabel: "1st-14th"
-          };
-          
-          // Second Half: Days 15-end (visible Sept 15-30, due last day)
-          const secondHalf = {
-            visibleFrom: new Date(currentYear, currentMonth, 15),
-            dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
-            label: `${currentYear}-${currentMonth + 1}-15th-end`,
-            periodLabel: "15th-31st"
-          };
-          
-          requiredInstances = [firstHalf, secondHalf];
-          
-          console.log(`   📅 First half: ${firstHalf.visibleFrom.toDateString()} - ${firstHalf.dueDate.toDateString()}`);
-          console.log(`   📅 Second half: ${secondHalf.visibleFrom.toDateString()} - ${secondHalf.dueDate.toDateString()}`);
-        } else if (frequency === 'quarterly') {
-          // Quarterly: One instance per quarter with full quarter visibility
-          const quarterStart = Math.floor(currentMonth / 3) * 3;
-          requiredInstances = [{
-            visibleFrom: new Date(currentYear, quarterStart, 1),
-            dueDate: new Date(currentYear, quarterStart + 3, 0),
-            label: `${currentYear}-Q${Math.floor(currentMonth / 3) + 1}`
-          }];
-        }
-        
-        // Create missing instances
-        for (const required of requiredInstances) {
-          // Check if this specific instance already exists
-          const exists = existingInstances.some(existing => {
-            const existingVisible = new Date(existing.visibleFromDate);
-            const existingDue = new Date(existing.dueDate);
-            return existingVisible.getTime() === required.visibleFrom.getTime() &&
-                   existingDue.getTime() === required.dueDate.getTime();
-          });
-          
-          if (!exists) {
-            console.log(`   Creating instance: ${required.label}`);
-            
-            // Add period label to title for bi-weekly tasks
-            const taskTitle = frequency === 'bi-weekly' || frequency === 'biweekly' 
-              ? `${recurringTask.title} (${required.periodLabel || required.label})`
-              : recurringTask.title;
-            
-            const newInstance = {
-              title: taskTitle,
-              description: recurringTask.description,
-              type: recurringTask.type,
-              status: 'pending' as const,
-              priority: 'medium' as const,
-              assignedTo: null, // Will be handled by assignment logic
-              createdBy: recurringTask.createdBy,
-              location: recurringTask.location,
-              dueDate: required.dueDate,
-              visibleFromDate: required.visibleFrom,
-              frequency: frequency,
-              recurringTaskId: recurringId, // Proper foreign key reference
-              isRecurring: true,
-              createdAt: new Date()
-            };
-            
-            try {
-              await storage.createTask(newInstance);
-              totalCreated++;
-              console.log(`   ✅ Created: ${title} for ${required.label}`);
-            } catch (error) {
-              console.log(`   ❌ Failed to create ${title}: ${error.message}`);
-              // Continue processing other tasks even if one fails
-            }
-          } else {
-            console.log(`   ⏭️  Instance already exists for ${required.label}`);
-          }
+        } catch (error) {
+          console.log(`   ❌ Failed to create instances for ${pattern.title}:`, error.message);
         }
       }
       
