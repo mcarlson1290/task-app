@@ -940,6 +940,99 @@ const Tasks: React.FC = () => {
           >
             <Plus size={16} /> New Task
           </button>
+          
+          {/* DEBUG BUTTONS - TEMPORARY */}
+          <button 
+            onClick={async () => {
+              console.log('=== RECURRING TASK TEMPLATES ===');
+              try {
+                const response = await fetch('/api/recurring-tasks');
+                const recurring = await response.json();
+                console.table(recurring.map((r: any) => ({
+                  title: r.title,
+                  frequency: r.frequency,
+                  id: r.id,
+                  isActive: r.isActive
+                })));
+                console.log('Total recurring tasks:', recurring.length);
+              } catch (error) {
+                console.error('Failed to get recurring tasks:', error);
+              }
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded text-sm"
+          >
+            Debug Recurring
+          </button>
+
+          <button 
+            onClick={() => {
+              const recurring = tasks.filter(t => t.recurringTaskId);
+              
+              console.log('=== TASK INSTANCES ===');
+              console.log('Total tasks:', tasks.length);
+              console.log('Recurring task instances:', recurring.length);
+              
+              // Group by frequency
+              const byFreq: any = {};
+              recurring.forEach(t => {
+                byFreq[t.frequency || 'none'] = (byFreq[t.frequency || 'none'] || 0) + 1;
+              });
+              console.log('Tasks by frequency:', byFreq);
+              
+              // Show examples
+              const monthly = recurring.filter(t => t.frequency === 'monthly');
+              const biweekly = recurring.filter(t => t.frequency === 'biweekly');
+              
+              console.log('Monthly tasks:', monthly.slice(0, 3));
+              console.log('Bi-weekly tasks:', biweekly.slice(0, 3));
+              
+              // Check for tasks with visibility dates
+              const withVisibility = recurring.filter(t => t.visibleFromDate);
+              console.log('Tasks with visibility dates:', withVisibility.length);
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+          >
+            Debug Instances
+          </button>
+
+          <button 
+            onClick={async () => {
+              console.log('Generating September tasks...');
+              
+              try {
+                const response = await fetch('/api/recurring-tasks');
+                const recurringTasks = await response.json();
+                let generated = 0;
+                
+                for (const recurring of recurringTasks) {
+                  if (recurring.frequency === 'monthly') {
+                    console.log('Found monthly task to generate:', recurring.title);
+                    generated++;
+                  }
+                  
+                  if (recurring.frequency === 'biweekly') {
+                    console.log('Found bi-weekly task to generate:', recurring.title);
+                    generated++;
+                  }
+                }
+                
+                // Trigger the generation endpoint
+                const genResponse = await fetch('/api/admin/generate-todays-tasks', {
+                  method: 'POST'
+                });
+                const result = await genResponse.json();
+                
+                alert(`Found ${generated} monthly/bi-weekly templates. Generated ${result.generatedCount} tasks total. Refresh to see them.`);
+                await refetch();
+              } catch (error) {
+                console.error('Generation failed:', error);
+                alert('Generation failed - see console');
+              }
+            }}
+            className="px-4 py-2 bg-green-600 text-white rounded text-sm"
+          >
+            Generate Sept Tasks
+          </button>
 
           {/* Refresh Tasks Button */}
           <button 
