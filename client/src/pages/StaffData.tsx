@@ -258,8 +258,17 @@ const StaffEditView: React.FC<{
     person.rolesAssigned.some((role: string) => role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
-  // Sort staff
+  // Sort staff - inactive/deleted items go to bottom
   const sortedStaff = [...filteredStaff].sort((a, b) => {
+    // First sort by active status (active first, then inactive)
+    const aActive = a.activeStatus === 'active' ? 0 : 1;
+    const bActive = b.activeStatus === 'active' ? 0 : 1;
+    
+    if (aActive !== bActive) {
+      return aActive - bActive;
+    }
+    
+    // Then sort by the selected criteria within each group
     switch (sortBy) {
       case 'name':
         return a.fullName.localeCompare(b.fullName);
