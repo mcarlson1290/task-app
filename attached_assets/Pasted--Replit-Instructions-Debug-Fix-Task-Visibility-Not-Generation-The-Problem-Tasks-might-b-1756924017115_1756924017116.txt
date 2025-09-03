@@ -1,0 +1,198 @@
+# Replit Instructions: Debug & Fix Task Visibility (Not Generation)
+
+## The Problem
+Tasks might be generating correctly but not SHOWING due to filtering issues.
+
+## Step 1: Add Debug Console Logging
+
+First, let's see what's actually happening. Add this debug code where tasks are filtered:
+
+```javascript
+// Add this where tasks are filtered/displayed
+console.log('=== TASK VISIBILITY DEBUG ===');
+console.log('Current Date:', new Date().toDateString());
+console.log('Total Tasks Before Filter:', allTasks.length);
+
+// Log recurring tasks specifically
+const recurringTasks = allTasks.filter(t => t.recurringTaskId);
+console.log('Recurring Tasks:', recurringTasks.map(t => ({
+  title: t.title,
+  frequency: t.frequency,
+  visibleFrom: t.visibleFromDate,
+  dueDate: t.dueDate,
+  isVisible: 'CHECK NEXT'
+})));
+
+console.log('Tasks After Filter:', filteredTasks.length);
+```
+
+## Step 2: Check the Filter Function
+
+Find where tasks are filtered for display. It might be called something like:
+- `filterTasksByDate`
+- `getTasksForDate`
+- `filterTasks`
+- In a `useEffect` that sets displayed tasks
+
+Look for code that does date comparison.
+
+## Step 3: Replace the Filter Logic
+
+Find the filter function and replace it with this visibility-aware version:
+
+```javascript
+const filterTasksByDate = (tasks, selectedDate) => {
+  const viewDate = new Date(selectedDate);
+  viewDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+  
+  console.log('Filtering for date:', viewDate.toDateString());
+  
+  return tasks.filter(task => {
+    // Special handling for recurring tasks with visibility windows
+    if (task.recurringTaskId && task.frequency) {
+      console.log(`Checking ${task.title}:`, {
+        frequency: task.frequency,
+        visibleFrom: task.visibleFromDate,
+        due: task.dueDate
+      });
+      
+      // For monthly, bi-weekly, and quarterly - check if we're in the visibility window
+      if (['monthly', 'biweekly', 'quarterly'].includes(task.frequency)) {
+        if (task.visibleFromDate && task.dueDate) {
+          const visibleFrom = new Date(task.visibleFromDate);
+          const dueDate = new Date(task.dueDate);
+          
+          // Set to noon to avoid timezone issues
+          visibleFrom.setHours(12, 0, 0, 0);
+          dueDate.setHours(12, 0, 0, 0);
+          
+          const isVisible = viewDate >= visibleFrom && viewDate <= dueDate;
+          console.log(`${task.title} visible:`, isVisible, 
+            `(${visibleFrom.toDateString()} to ${dueDate.toDateString()})`);
+          
+          return isVisible;
+        }
+      }
+    }
+    
+    // For daily/weekly tasks or non-recurring - exact date match
+    const taskDate = new Date(task.dueDate || task.completionDate);
+    taskDate.setHours(12, 0, 0, 0);
+    
+    return taskDate.getTime() === viewDate.getTime();
+  });
+};
+```
+
+## Step 4: Force Visibility for Testing
+
+Add a temporary "Show All Recurring" checkbox to bypass filters:
+
+```javascript
+// Add this checkbox to your UI
+<label className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={showAllRecurring}
+    onChange={(e) => setShowAllRecurring(e.target.checked)}
+  />
+  <span>Show All Recurring Tasks (Debug)</span>
+</label>
+
+// Update your filter to use it
+const displayedTasks = showAllRecurring 
+  ? allTasks.filter(t => t.recurringTaskId)
+  : filterTasksByDate(allTasks, selectedDate);
+```
+
+## Step 5: Check for Common Issues
+
+Add these checks to identify problems:
+
+```javascript
+// Check 1: Are visibleFromDate/dueDate actually saved?
+const checkTaskDates = () => {
+  const recurring = allTasks.filter(t => t.recurringTaskId);
+  const missingDates = recurring.filter(t => !t.visibleFromDate || !t.dueDate);
+  
+  if (missingDates.length > 0) {
+    console.error('Tasks missing date fields:', missingDates);
+  }
+};
+
+// Check 2: Are dates in correct format?
+const checkDateFormats = () => {
+  const recurring = allTasks.filter(t => t.recurringTaskId);
+  recurring.forEach(task => {
+    if (task.visibleFromDate && isNaN(Date.parse(task.visibleFromDate))) {
+      console.error('Invalid visibleFromDate:', task.title, task.visibleFromDate);
+    }
+  });
+};
+
+// Check 3: Is filtering running too early?
+const checkFilterTiming = () => {
+  console.log('Filter called with:', {
+    taskCount: allTasks.length,
+    selectedDate: selectedDate,
+    isLoading: isLoading // if you have a loading state
+  });
+};
+```
+
+## Step 6: Nuclear Option - Regenerate All Tasks
+
+Add a button to regenerate ALL recurring tasks with correct dates:
+
+```javascript
+const regenerateAllRecurringTasks = async () => {
+  console.log('Starting regeneration...');
+  
+  // Clear existing recurring task instances
+  const existing = allTasks.filter(t => t.recurringTaskId);
+  for (const task of existing) {
+    await deleteTask(task.id);
+  }
+  
+  // Generate fresh tasks for current month
+  const today = new Date();
+  const recurringTasks = await getRecurringTasks();
+  
+  for (const recurring of recurringTasks) {
+    if (recurring.frequency === 'monthly') {
+      // Generate for current month
+      const task = {
+        id: `${recurring.id}-${today.getFullYear()}-${today.getMonth() + 1}`,
+        title: recurring.title,
+        frequency: 'monthly',
+        visibleFromDate: new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0],
+        dueDate: new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0],
+        recurringTaskId: recurring.id,
+        // ... other fields
+      };
+      await saveTask(task);
+      console.log('Generated monthly:', task);
+    }
+    // Similar for bi-weekly...
+  }
+  
+  window.location.reload();
+};
+```
+
+## Step 7: Common Fixes
+
+1. **Wrong date field names**: Check if it's `visibleFromDate` vs `visibleFrom` vs `startDate`
+2. **Missing frequency field**: Tasks might not have the frequency copied from recurring
+3. **Filter running before data loads**: Make sure tasks are loaded before filtering
+4. **Date comparison issues**: Using midnight vs noon can cause timezone problems
+
+## What to Look For
+
+After adding the debug logging, check the console for:
+1. Do recurring tasks have `visibleFromDate` and `dueDate`?
+2. Are the dates in the correct format?
+3. Is the filter function actually checking date ranges?
+4. Are monthly/bi-weekly tasks in the database at all?
+
+Let me know what the console shows!

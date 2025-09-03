@@ -62,6 +62,9 @@ const Tasks: React.FC = () => {
   // Add refresh state for loading indicator
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  // DEBUG: Add temporary show all recurring tasks for testing
+  const [showAllRecurring, setShowAllRecurring] = React.useState(false);
 
 
 
@@ -344,6 +347,13 @@ const Tasks: React.FC = () => {
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
     
+    // DEBUG: Show all recurring tasks option
+    if (showAllRecurring) {
+      const recurringOnly = tasks.filter(t => t.recurringTaskId);
+      console.log(`🧪 DEBUG MODE: Showing ${recurringOnly.length} recurring tasks (bypassing filters)`);
+      return recurringOnly;
+    }
+    
     // Location filter
     if (!isViewingAllLocations) {
       filtered = filtered.filter(task => task.location === currentLocation.code);
@@ -395,6 +405,24 @@ const Tasks: React.FC = () => {
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks`);
+      console.log('=== TASK VISIBILITY DEBUG ===');
+      console.log('Current Date:', dateFilter);
+      console.log('Total Tasks Before Filter:', filtered.length);
+      
+      // Log recurring tasks specifically
+      const recurringTasks = filtered.filter(t => t.recurringTaskId);
+      console.log('Recurring Tasks Found:', recurringTasks.length);
+      recurringTasks.slice(0, 5).forEach(task => {
+        console.log(`🔍 Recurring Task: "${task.title}"`, {
+          frequency: task.frequency,
+          recurringTaskId: task.recurringTaskId,
+          isRecurring: task.isRecurring,
+          visibleFrom: task.visibleFromDate,
+          dueDate: task.dueDate,
+          willShow: 'CHECK BELOW'
+        });
+      });
+      
       const today = new Date().toISOString().split('T')[0];
       const isViewingToday = dateFilter === today;
       
@@ -417,26 +445,29 @@ const Tasks: React.FC = () => {
           // Overdue tasks show ONLY on today
           return dateFilter === today;
         } else {
-          // For bi-weekly and monthly tasks, check if the selected date falls within the visibility period
-          if (task.visibleFromDate && task.isRecurring) {
+          // FIXED: Check for recurringTaskId instead of isRecurring for visibility periods
+          if (task.visibleFromDate && task.recurringTaskId && ['monthly', 'biweekly', 'bi-weekly', 'quarterly'].includes(task.frequency)) {
             const visibleFromStr = formatDateForComparison(task.visibleFromDate);
             const dueDateStr = formatDateForComparison(task.dueDate);
             
+            const isVisible = dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
+            console.log(`🎯 ${task.title} (${task.frequency}): ${visibleFromStr} to ${dueDateStr} → ${isVisible ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
+            
             // Task is visible from visibleFromDate through dueDate (inclusive)
-            return dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
+            return isVisible;
           } else {
-            // Regular tasks show on their due date
-            return taskDateStr === dateFilter;
+            // Regular tasks and daily/weekly recurring tasks show on their due date
+            const matches = taskDateStr === dateFilter;
+            if (task.recurringTaskId) {
+              console.log(`📅 Daily/Weekly recurring "${task.title}": due ${taskDateStr} vs filter ${dateFilter} → ${matches ? 'VISIBLE ✅' : 'HIDDEN ❌'}`);
+            }
+            return matches;
           }
         }
       });
       
-      console.log(`📅 DATE FILTER ACTIVE - After: ${filtered.length} tasks`);
-      // Log for testing
-      console.log(`Filtered ${filtered.length} tasks from ${tasks.length} total`);
-      if (dateFilter) {
-        console.log(`Showing tasks for date: ${dateFilter}`);
-      }
+      console.log(`📅 DATE FILTER RESULT: ${filtered.length} tasks visible for ${dateFilter}`);
+      console.log('=== END VISIBILITY DEBUG ===');
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates
@@ -466,6 +497,27 @@ const Tasks: React.FC = () => {
     setSearchTerm("");
     // Refresh tasks to ensure immediate UI update
     await refreshTasks();
+  };
+
+  // DEBUG: Force regenerate all recurring tasks
+  const regenerateAllRecurringTasks = async () => {
+    try {
+      const response = await fetch('/api/admin/generate-todays-tasks', {
+        method: 'POST'
+      });
+      const result = await response.json();
+      toast({
+        title: "Tasks Generated",
+        description: `Generated ${result.generatedCount} new tasks`,
+      });
+      await refetch();
+    } catch (error) {
+      toast({
+        title: "Generation Failed", 
+        description: "Failed to generate tasks",
+        variant: "destructive"
+      });
+    }
   };
 
   // Late task detection functions - fixed to avoid false positives
