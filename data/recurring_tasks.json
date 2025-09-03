@@ -331,7 +331,7 @@
   },
   {
     "title": "Opening",
-    "description": "Open the farm.",
+    "description": "If you are the first person in the farm complete this checklist!",
     "priority": "high",
     "frequency": "daily",
     "category": "Other",
@@ -376,21 +376,30 @@
     "checklistTemplate": {
       "steps": [
         {
-          "id": "1756163507086",
+          "id": "1756931744483",
           "type": "instruction",
-          "label": "Check the Lights are On",
+          "label": "Check all the lights are on in the farm",
           "required": true,
           "config": {
-            "text": ""
+            "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
           }
         },
         {
-          "id": "1756163528155",
+          "id": "1756931883233",
           "type": "instruction",
-          "label": "Make Sure no Breakers are Tripped",
+          "label": "Check for leaks",
           "required": true,
           "config": {
-            "text": ""
+            "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+          }
+        },
+        {
+          "id": "1756931923234",
+          "type": "instruction",
+          "label": "Check Plants",
+          "required": true,
+          "config": {
+            "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
           }
         }
       ]

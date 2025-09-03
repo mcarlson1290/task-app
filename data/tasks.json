@@ -15034,1087 +15034,6 @@
     "createdAt": "2025-08-27T17:50:06.250Z"
   },
   {
-    "id": 3611,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-04T12:00:00.000Z",
-    "visibleFromDate": "2025-09-04T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3612,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-05T12:00:00.000Z",
-    "visibleFromDate": "2025-09-05T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3613,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-06T12:00:00.000Z",
-    "visibleFromDate": "2025-09-06T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3614,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-07T12:00:00.000Z",
-    "visibleFromDate": "2025-09-07T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3615,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-08T12:00:00.000Z",
-    "visibleFromDate": "2025-09-08T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3616,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-09T12:00:00.000Z",
-    "visibleFromDate": "2025-09-09T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3617,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-10T12:00:00.000Z",
-    "visibleFromDate": "2025-09-10T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3618,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-11T12:00:00.000Z",
-    "visibleFromDate": "2025-09-11T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3619,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-12T12:00:00.000Z",
-    "visibleFromDate": "2025-09-12T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3620,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-13T12:00:00.000Z",
-    "visibleFromDate": "2025-09-13T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3621,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-14T12:00:00.000Z",
-    "visibleFromDate": "2025-09-14T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.250Z"
-  },
-  {
-    "id": 3622,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-15T12:00:00.000Z",
-    "visibleFromDate": "2025-09-15T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.251Z"
-  },
-  {
-    "id": 3623,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-16T12:00:00.000Z",
-    "visibleFromDate": "2025-09-16T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.251Z"
-  },
-  {
-    "id": 3624,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-17T12:00:00.000Z",
-    "visibleFromDate": "2025-09-17T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.251Z"
-  },
-  {
-    "id": 3625,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-18T12:00:00.000Z",
-    "visibleFromDate": "2025-09-18T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.251Z"
-  },
-  {
-    "id": 3626,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-19T12:00:00.000Z",
-    "visibleFromDate": "2025-09-19T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.251Z"
-  },
-  {
-    "id": 3627,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-20T12:00:00.000Z",
-    "visibleFromDate": "2025-09-20T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3628,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-21T12:00:00.000Z",
-    "visibleFromDate": "2025-09-21T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3629,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-22T12:00:00.000Z",
-    "visibleFromDate": "2025-09-22T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3630,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-23T12:00:00.000Z",
-    "visibleFromDate": "2025-09-23T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3631,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-24T12:00:00.000Z",
-    "visibleFromDate": "2025-09-24T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3632,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-25T12:00:00.000Z",
-    "visibleFromDate": "2025-09-25T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
-    "id": 3633,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-26T12:00:00.000Z",
-    "visibleFromDate": "2025-09-26T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-27T17:50:06.252Z"
-  },
-  {
     "id": 3634,
     "title": "Clean Tower Clips",
     "description": "Clean tower clips.",
@@ -26489,102 +25408,6 @@
     "createdAt": "2025-08-27T21:12:19.820Z"
   },
   {
-    "id": 4138,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-27T12:00:00.000Z",
-    "visibleFromDate": "2025-09-27T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "frequency": "daily",
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-29T22:24:22.499Z"
-  },
-  {
-    "id": 4139,
-    "title": "Opening",
-    "description": "Open the farm.",
-    "type": "other",
-    "status": "pending",
-    "priority": "medium",
-    "assignedTo": "all_staff",
-    "location": "Kenosha",
-    "estimatedTime": null,
-    "actualTime": null,
-    "progress": 0,
-    "checklist": [
-      {
-        "id": "1756163507086",
-        "text": "Check the Lights are On",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      },
-      {
-        "id": "1756163528155",
-        "text": "Make Sure no Breakers are Tripped",
-        "completed": false,
-        "required": true,
-        "type": "instruction",
-        "config": {
-          "text": ""
-        }
-      }
-    ],
-    "data": {},
-    "dueDate": "2025-09-28T12:00:00.000Z",
-    "visibleFromDate": "2025-09-28T12:00:00.000Z",
-    "startedAt": null,
-    "completedAt": null,
-    "pausedAt": null,
-    "resumedAt": null,
-    "skippedAt": null,
-    "skipReason": null,
-    "isRecurring": true,
-    "frequency": "daily",
-    "recurringTaskId": 9,
-    "createdAt": "2025-08-29T22:24:22.499Z"
-  },
-  {
     "id": 4140,
     "title": "Seed Radish Microgreens",
     "description": "Seed the Radish Microgreens",
@@ -27285,5 +26108,2582 @@
     "frequency": "daily",
     "recurringTaskId": 5,
     "createdAt": "2025-08-29T22:26:34.839Z"
+  },
+  {
+    "id": 4166,
+    "title": "Remove BO and Move Arugula Microgreens to Watering Rack",
+    "description": "Move to watering rack",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 1,
+    "createdAt": "2025-09-03T20:34:06.518Z"
+  },
+  {
+    "id": 4167,
+    "title": "Remove Weight/BO and Move Radish Microgreens to Watering Rack",
+    "description": "Remove Weight/BO and Move Radish Microgreens",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 4,
+    "createdAt": "2025-09-03T20:34:06.519Z"
+  },
+  {
+    "id": 4168,
+    "title": "Adjust Nutrients in Microgreen Reservoirs",
+    "description": "Check the nutrient and pH level and adjust",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Equipment Tech",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 5,
+    "createdAt": "2025-09-03T20:34:06.520Z"
+  },
+  {
+    "id": 4169,
+    "title": "Clean Bathroom",
+    "description": "Clean the Bathroom",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 7,
+    "createdAt": "2025-09-03T20:34:06.521Z"
+  },
+  {
+    "id": 4175,
+    "title": "Clean Tower Clips",
+    "description": "Clean tower clips.",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 10,
+    "createdAt": "2025-09-03T20:34:06.526Z"
+  },
+  {
+    "id": 4176,
+    "title": "Seed Pea Microgreens",
+    "description": "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 15,
+    "createdAt": "2025-09-03T20:34:06.527Z"
+  },
+  {
+    "id": 4177,
+    "title": "Remove Weight/BO and Move Broccoli Microgreens to Watering Rack",
+    "description": "Put in D watering rack on shelf with fan; After move",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 18,
+    "createdAt": "2025-09-03T20:34:06.528Z"
+  },
+  {
+    "id": 4178,
+    "title": "Remove Weight and BO for Pea Microgreens",
+    "description": "Remove Weight and dome for Pea Microgreens",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-03T12:00:00.000Z",
+    "visibleFromDate": "2025-10-03T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 19,
+    "createdAt": "2025-09-03T20:34:06.529Z"
+  },
+  {
+    "id": 4179,
+    "title": "Remove BO and Move Mustard Microgreens to Watering Rack",
+    "description": "Remove Dome and Move Mustard Microgreens to Watering Rack",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 20,
+    "createdAt": "2025-09-03T20:34:06.529Z"
+  },
+  {
+    "id": 4180,
+    "title": "Harvest Pea Microgreens",
+    "description": "Apis: 3 oz in 24 oz container; Others: 1 oz in 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 21,
+    "createdAt": "2025-09-03T20:34:06.530Z"
+  },
+  {
+    "id": 4181,
+    "title": "Harvest Broccoli Microgreens",
+    "description": "1 oz per 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 22,
+    "createdAt": "2025-09-03T20:34:06.530Z"
+  },
+  {
+    "id": 4182,
+    "title": "Harvest Radish Microgreens",
+    "description": "1 oz in 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 23,
+    "createdAt": "2025-09-03T20:34:06.530Z"
+  },
+  {
+    "id": 4183,
+    "title": "Harvest Mustard Microgreens",
+    "description": "0.7 oz in 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 24,
+    "createdAt": "2025-09-03T20:34:06.531Z"
+  },
+  {
+    "id": 4184,
+    "title": "Seed Arugula Microgreens",
+    "description": "Mucilagenous seeds; do not stack",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 25,
+    "createdAt": "2025-09-03T20:34:06.531Z"
+  },
+  {
+    "id": 4185,
+    "title": "Harvest Arugula Micogreens",
+    "description": "0.5 oz in 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 26,
+    "createdAt": "2025-09-03T20:34:06.532Z"
+  },
+  {
+    "id": 4186,
+    "title": "Check Paper Towel Levels",
+    "description": "This process ensures that the farm is secured",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 29,
+    "createdAt": "2025-09-03T20:34:06.536Z"
+  },
+  {
+    "id": 4187,
+    "title": "Remove Garbage from Non-Farm areas",
+    "description": "This process outlines the steps for collecting and disposing of trash from various locations outside of the main farm area",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 30,
+    "createdAt": "2025-09-03T20:34:06.537Z"
+  },
+  {
+    "id": 4188,
+    "title": "Washing Farm Towels and Filter Socks",
+    "description": "This process outlines the steps for staff to take farm towels and filter socks home for washing",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 33,
+    "createdAt": "2025-09-03T20:34:06.537Z"
+  },
+  {
+    "id": 4189,
+    "title": "Clean Farm Floor",
+    "description": "This process ensures the farm’s floors are cleaned thoroughly and sanitized using a power mop.",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 35,
+    "createdAt": "2025-09-03T20:34:06.538Z"
+  },
+  {
+    "id": 4190,
+    "title": "Check pH and Water Levels in Towers",
+    "description": "This process ensures the water pH and levels in all towers are within the optimal range for plant health. Adjustments are made as needed to maintain a target pH of 6.0 and adequate water levels using ATOs (Automatic Top Offs).",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Equipment Tech",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 37,
+    "createdAt": "2025-09-03T20:34:06.538Z"
+  },
+  {
+    "id": 4191,
+    "title": "Seed Leafy Greens",
+    "description": "Seed the leafy greens needed based off of the leafy green seedling planning spreadsheet.",
+    "type": "seeding-leafy-greens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Leafy Greens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 38,
+    "createdAt": "2025-09-03T20:34:06.538Z"
+  },
+  {
+    "id": 4192,
+    "title": "Replace NFT Channels and Manifolds",
+    "description": "This process ensures that NFT channels",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 42,
+    "createdAt": "2025-09-03T20:34:06.539Z"
+  },
+  {
+    "id": 4193,
+    "title": "Harvest Turnip Microgreens",
+    "description": "1 oz per 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 55,
+    "createdAt": "2025-09-03T20:34:06.539Z"
+  },
+  {
+    "id": 4194,
+    "title": "Harvest Spicy Mix Microgreens",
+    "description": "0.7 oz per 8 oz container",
+    "type": "harvest-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 56,
+    "createdAt": "2025-09-03T20:34:06.540Z"
+  },
+  {
+    "id": 4195,
+    "title": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
+    "description": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 57,
+    "createdAt": "2025-09-03T20:34:06.540Z"
+  },
+  {
+    "id": 4196,
+    "title": "Remove BO and Move Spicy Mix Microgreens to Watering Rack",
+    "description": "Remove BO and Move Spicy Mix Microgreens to Watering Rack",
+    "type": "blackout-tasks",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Blackout Specialist",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 58,
+    "createdAt": "2025-09-03T20:34:06.541Z"
+  },
+  {
+    "id": 4197,
+    "title": "Seed Turnip Microgreens",
+    "description": "Seed Turnip Microgreens",
+    "type": "seeding-microgreens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Microgreens Seeder",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 59,
+    "createdAt": "2025-09-03T20:34:06.541Z"
+  },
+  {
+    "id": 4198,
+    "title": "Clean Tower Garden Pots",
+    "description": "This task ensures Tower Garden pots and structural rods are thoroughly cleaned and prepped after soaking. Removing built-up grime supports plant health and extends the life of the towers.",
+    "type": "cleaning",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Cleaning Crew",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 66,
+    "createdAt": "2025-09-03T20:34:06.542Z"
+  },
+  {
+    "id": 4199,
+    "title": "Assemble Tower Gardens",
+    "description": "This task covers the full assembly of Tower Garden units",
+    "type": "equipment-maintenance",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Equipment Tech",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 67,
+    "createdAt": "2025-09-03T20:34:06.542Z"
+  },
+  {
+    "id": 4200,
+    "title": "Plant Towers",
+    "description": "Plant the needed towers for the week based on the checklist.",
+    "type": "moving",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Moving Tech",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 71,
+    "createdAt": "2025-09-03T20:34:06.544Z"
+  },
+  {
+    "id": 4201,
+    "title": "Harvest Towers",
+    "description": "Harvest the Towers in the checklist.",
+    "type": "harvest-leafy-greens",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "role_Leafy Greens Harvester",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 72,
+    "createdAt": "2025-09-03T20:34:06.544Z"
+  },
+  {
+    "id": 4232,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-04T12:00:00.000Z",
+    "visibleFromDate": "2025-09-04T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.656Z"
+  },
+  {
+    "id": 4233,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-05T12:00:00.000Z",
+    "visibleFromDate": "2025-09-05T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.656Z"
+  },
+  {
+    "id": 4234,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-06T12:00:00.000Z",
+    "visibleFromDate": "2025-09-06T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.656Z"
+  },
+  {
+    "id": 4235,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-07T12:00:00.000Z",
+    "visibleFromDate": "2025-09-07T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.656Z"
+  },
+  {
+    "id": 4236,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-08T12:00:00.000Z",
+    "visibleFromDate": "2025-09-08T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4237,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-09T12:00:00.000Z",
+    "visibleFromDate": "2025-09-09T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4238,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-10T12:00:00.000Z",
+    "visibleFromDate": "2025-09-10T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4239,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-11T12:00:00.000Z",
+    "visibleFromDate": "2025-09-11T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4240,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-12T12:00:00.000Z",
+    "visibleFromDate": "2025-09-12T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4241,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-13T12:00:00.000Z",
+    "visibleFromDate": "2025-09-13T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4242,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-14T12:00:00.000Z",
+    "visibleFromDate": "2025-09-14T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4243,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-15T12:00:00.000Z",
+    "visibleFromDate": "2025-09-15T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4244,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-16T12:00:00.000Z",
+    "visibleFromDate": "2025-09-16T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.657Z"
+  },
+  {
+    "id": 4245,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-17T12:00:00.000Z",
+    "visibleFromDate": "2025-09-17T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4246,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-18T12:00:00.000Z",
+    "visibleFromDate": "2025-09-18T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4247,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-19T12:00:00.000Z",
+    "visibleFromDate": "2025-09-19T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4248,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-20T12:00:00.000Z",
+    "visibleFromDate": "2025-09-20T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4249,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-21T12:00:00.000Z",
+    "visibleFromDate": "2025-09-21T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4250,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-22T12:00:00.000Z",
+    "visibleFromDate": "2025-09-22T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.658Z"
+  },
+  {
+    "id": 4251,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-23T12:00:00.000Z",
+    "visibleFromDate": "2025-09-23T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.659Z"
+  },
+  {
+    "id": 4252,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-24T12:00:00.000Z",
+    "visibleFromDate": "2025-09-24T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.659Z"
+  },
+  {
+    "id": 4253,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-25T12:00:00.000Z",
+    "visibleFromDate": "2025-09-25T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.659Z"
+  },
+  {
+    "id": 4254,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-26T12:00:00.000Z",
+    "visibleFromDate": "2025-09-26T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.659Z"
+  },
+  {
+    "id": 4255,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-27T12:00:00.000Z",
+    "visibleFromDate": "2025-09-27T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4256,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-28T12:00:00.000Z",
+    "visibleFromDate": "2025-09-28T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4257,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-29T12:00:00.000Z",
+    "visibleFromDate": "2025-09-29T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4258,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-09-30T12:00:00.000Z",
+    "visibleFromDate": "2025-09-30T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4259,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-10-01T12:00:00.000Z",
+    "visibleFromDate": "2025-10-01T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4260,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-10-02T12:00:00.000Z",
+    "visibleFromDate": "2025-10-02T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
+  },
+  {
+    "id": 4261,
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "type": "other",
+    "status": "pending",
+    "priority": "medium",
+    "assignedTo": "all_staff",
+    "location": "Kenosha",
+    "estimatedTime": null,
+    "actualTime": null,
+    "progress": 0,
+    "checklist": [
+      {
+        "id": "1756931744483",
+        "text": "Check all the lights are on in the farm",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+        }
+      },
+      {
+        "id": "1756931883233",
+        "text": "Check for leaks",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      },
+      {
+        "id": "1756931923234",
+        "text": "Check Plants",
+        "completed": false,
+        "required": true,
+        "type": "instruction",
+        "config": {
+          "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+        }
+      }
+    ],
+    "data": {},
+    "dueDate": "2025-10-03T12:00:00.000Z",
+    "visibleFromDate": "2025-10-03T12:00:00.000Z",
+    "startedAt": null,
+    "completedAt": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "isRecurring": true,
+    "frequency": "daily",
+    "recurringTaskId": 9,
+    "createdAt": "2025-09-03T20:45:18.660Z"
   }
 ]
