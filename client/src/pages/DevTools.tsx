@@ -6,7 +6,7 @@ import { apiRequest } from '@/lib/queryClient';
 import type { Task } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, SkipForward, Trash2, ArrowLeft, Settings, Bug, Monitor } from 'lucide-react';
+import { Shield, SkipForward, Trash2, ArrowLeft, Settings, Bug, Monitor, RotateCcw } from 'lucide-react';
 import { detectIOSEnvironment, testStorageAvailability } from '@/config/authConfig';
 
 const DevTools = () => {
@@ -74,6 +74,86 @@ const DevTools = () => {
     }, 5000);
     
     return () => clearInterval(interval);
+  }, [hasAccess]);
+
+  // Auto-generate missing tasks on load
+  useEffect(() => {
+    if (!hasAccess) return;
+
+    const checkAndGenerateMissingTasks = async () => {
+      try {
+        console.log('🔄 Checking for missing tasks...');
+        
+        // Get existing tasks and templates
+        const [tasksResponse, templatesResponse] = await Promise.all([
+          apiRequest('GET', '/api/tasks'),
+          apiRequest('GET', '/api/recurring-tasks')
+        ]);
+        
+        const existingTasks = await tasksResponse.json();
+        const templates = await templatesResponse.json();
+        
+        if (templates.length === 0) {
+          console.log('⚠️ No recurring task templates found');
+          return;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        let created = 0;
+        
+        // Check each day for the next 31 days
+        for (let day = 0; day < 31; day++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(today.getDate() + day);
+          
+          for (const template of templates) {
+            // Determine if this template should generate a task on this date
+            const shouldGenerate = shouldGenerateOnDate(template, checkDate);
+            
+            if (shouldGenerate) {
+              // Check if task already exists for this template and date
+              const dateStr = checkDate.toISOString().split('T')[0];
+              const existingTask = existingTasks.find((task: any) => 
+                task.recurringTaskId === template.id && 
+                task.dueDate?.startsWith(dateStr)
+              );
+              
+              if (!existingTask) {
+                const taskData = buildTaskFromTemplate(template, checkDate);
+                
+                try {
+                  await apiRequest('POST', '/api/tasks', taskData);
+                  created++;
+                  console.log(`🆕 Auto-created: ${taskData.title} - ${dateStr}`);
+                } catch (error) {
+                  console.error(`❌ Failed to auto-create task for template ${template.id}:`, error);
+                }
+              }
+            }
+          }
+        }
+        
+        if (created > 0) {
+          console.log(`✅ Auto-generated ${created} missing tasks`);
+          toast({
+            title: 'Auto-Generation Complete',
+            description: `Generated ${created} missing tasks from templates.`,
+          });
+        } else {
+          console.log('✅ All tasks up to date - no generation needed');
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to auto-generate missing tasks:', error);
+      }
+    };
+    
+    // Run auto-generation after a short delay to let the page load
+    const timeoutId = setTimeout(checkAndGenerateMissingTasks, 2000);
+    
+    return () => clearTimeout(timeoutId);
   }, [hasAccess]);
 
   if (!hasAccess) {
@@ -162,6 +242,183 @@ const DevTools = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Delete all tasks (but keep recurring templates)
+  const deleteAllTasks = async () => {
+    if (!window.confirm('⚠️ This will DELETE ALL TASKS. Recurring templates will remain. Continue?')) {
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      // Get all tasks
+      const response = await apiRequest('GET', '/api/tasks');
+      const allTasks = await response.json();
+      
+      console.log(`Deleting ${allTasks.length} tasks...`);
+      
+      let deleted = 0;
+      for (const task of allTasks) {
+        try {
+          await apiRequest('DELETE', `/api/tasks/${task.id}`);
+          deleted++;
+        } catch (error) {
+          console.error(`Failed to delete task ${task.id}:`, error);
+        }
+      }
+      
+      console.log(`Deleted ${deleted} tasks. Ready for fresh generation.`);
+      toast({
+        title: 'Tasks Deleted',
+        description: `Successfully deleted ${deleted} tasks. Recurring templates preserved.`,
+      });
+      
+      // Small delay before reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Failed to delete tasks:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete all tasks. See console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Generate tasks from recurring templates
+  const generateTasksFromTemplates = async () => {
+    setIsProcessing(true);
+    try {
+      console.log('Starting fresh task generation...');
+      
+      // Get all recurring task templates
+      const response = await apiRequest('GET', '/api/recurring-tasks');
+      const templates = await response.json();
+      console.log(`Found ${templates.length} recurring task templates`);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let created = 0;
+      
+      // Look at each day for the next 31 days
+      for (let day = 0; day < 31; day++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() + day);
+        
+        for (const template of templates) {
+          // Determine if this template should generate a task on this date
+          const shouldGenerate = shouldGenerateOnDate(template, checkDate);
+          
+          if (shouldGenerate) {
+            const taskData = buildTaskFromTemplate(template, checkDate);
+            
+            try {
+              // Create the task
+              await apiRequest('POST', '/api/tasks', taskData);
+              created++;
+              console.log(`Created: ${taskData.title} - ${taskData.dueDate}`);
+            } catch (error) {
+              console.error(`Failed to create task for template ${template.id}:`, error);
+            }
+          }
+        }
+      }
+      
+      console.log(`Generation complete. Created ${created} new tasks.`);
+      toast({
+        title: 'Tasks Generated',
+        description: `Successfully generated ${created} tasks for the next 31 days.`,
+      });
+      
+      // Small delay before reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Failed to generate tasks:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate tasks. See console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Helper function to determine if a template should generate a task on a given date
+  const shouldGenerateOnDate = (template: any, checkDate: Date): boolean => {
+    const frequency = template.frequency?.toLowerCase() || 'daily';
+    
+    switch (frequency) {
+      case 'daily':
+        // Generate every day
+        return true;
+        
+      case 'weekly':
+        // Generate based on selected days of week
+        const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const activeDays = template.activeDays || [0, 1, 2, 3, 4, 5, 6]; // Default to all days
+        return activeDays.includes(dayOfWeek);
+        
+      case 'biweekly':
+        // Generate on 1st and 15th of each month
+        const dayOfMonth = checkDate.getDate();
+        return dayOfMonth === 1 || dayOfMonth === 15;
+        
+      case 'monthly':
+        // Generate on 1st of each month
+        return checkDate.getDate() === 1;
+        
+      case 'quarterly':
+        // Generate on 1st of quarter months (Jan, Apr, Jul, Oct)
+        const month = checkDate.getMonth(); // 0 = January
+        const isQuarterStart = [0, 3, 6, 9].includes(month);
+        return checkDate.getDate() === 1 && isQuarterStart;
+        
+      default:
+        return false;
+    }
+  };
+
+  // Helper function to build a task from a template
+  const buildTaskFromTemplate = (template: any, dueDate: Date): any => {
+    const dateStr = dueDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    return {
+      title: template.title,
+      description: template.description || '',
+      type: template.type || 'general',
+      priority: template.priority || 'medium',
+      status: 'pending',
+      dueDate: dueDate.toISOString(),
+      location: template.location || 'Unknown',
+      assignTo: template.assignTo || null,
+      estimatedDuration: template.estimatedDuration || 30,
+      requiresApproval: template.requiresApproval || false,
+      checklist: template.checklist || [],
+      recurringTaskId: template.id,
+      completedBy: null,
+      completedAt: null,
+      approvedBy: null,
+      approvedAt: null,
+      notes: '',
+      timeTracking: {
+        startTime: null,
+        endTime: null,
+        totalMinutes: 0,
+        isPaused: false,
+        pausedTime: 0
+      }
+    };
   };
 
   // Clear debug logs
@@ -327,6 +584,67 @@ const DevTools = () => {
                   <>
                     <Trash2 className="w-4 h-4 mr-2" />
                     Clear Test Data
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Delete All Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                Delete All Tasks
+              </CardTitle>
+              <CardDescription>
+                Remove ALL task instances while preserving recurring templates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={deleteAllTasks}
+                disabled={isProcessing}
+                variant="destructive"
+                className="w-full bg-red-600 hover:bg-red-700"
+                data-testid="button-delete-all-tasks"
+              >
+                {isProcessing ? (
+                  'Deleting...'
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    🗑️ DELETE ALL TASKS (Start Fresh)
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Generate Tasks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RotateCcw className="w-5 h-5" />
+                Generate Tasks from Templates
+              </CardTitle>
+              <CardDescription>
+                Create task instances for the next 31 days from recurring templates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={generateTasksFromTemplates}
+                disabled={isProcessing}
+                className="w-full bg-green-600 hover:bg-green-700"
+                data-testid="button-generate-tasks"
+              >
+                {isProcessing ? (
+                  'Generating...'
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    🔄 Generate Tasks for Next 31 Days
                   </>
                 )}
               </Button>
