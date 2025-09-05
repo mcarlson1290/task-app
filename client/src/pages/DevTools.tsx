@@ -76,82 +76,72 @@ const DevTools = () => {
     return () => clearInterval(interval);
   }, [hasAccess]);
 
-  // Auto-generate missing tasks on load
+  // Auto-generate missing tasks on load (improved 31-day system)
   useEffect(() => {
     if (!hasAccess) return;
 
-    const checkAndGenerateMissingTasks = async () => {
+    const autoPopulateIfNeeded = async () => {
       try {
-        console.log('🔄 Checking for missing tasks...');
+        console.log('🔄 Checking if task auto-generation is needed...');
         
-        // Get existing tasks and templates
-        const [tasksResponse, templatesResponse] = await Promise.all([
-          apiRequest('GET', '/api/tasks'),
-          apiRequest('GET', '/api/recurring-tasks')
-        ]);
-        
+        // Get existing tasks
+        const tasksResponse = await apiRequest('GET', '/api/tasks');
         const existingTasks = await tasksResponse.json();
-        const templates = await templatesResponse.json();
         
-        if (templates.length === 0) {
-          console.log('⚠️ No recurring task templates found');
-          return;
-        }
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        let created = 0;
-        
-        // Check each day for the next 31 days
-        for (let day = 0; day < 31; day++) {
-          const checkDate = new Date(today);
-          checkDate.setDate(today.getDate() + day);
+        if (existingTasks.length === 0) {
+          console.log('📋 No existing tasks found - running full 31-day population');
           
-          for (const template of templates) {
-            // Determine if this template should generate a task on this date
-            const shouldGenerate = shouldGenerateOnDate(template, checkDate);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          let totalCreated = 0;
+          
+          // Generate for each of the next 31 days
+          for (let day = 0; day <= 31; day++) {
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + day);
             
-            if (shouldGenerate) {
-              // Check if task already exists for this template and date
-              const dateStr = checkDate.toISOString().split('T')[0];
-              const existingTask = existingTasks.find((task: any) => 
-                task.recurringTaskId === template.id && 
-                task.dueDate?.startsWith(dateStr)
-              );
-              
-              if (!existingTask) {
-                const taskData = buildTaskFromTemplate(template, checkDate);
-                
-                try {
-                  await apiRequest('POST', '/api/tasks', taskData);
-                  created++;
-                  console.log(`🆕 Auto-created: ${taskData.title} - ${dateStr}`);
-                } catch (error) {
-                  console.error(`❌ Failed to auto-create task for template ${template.id}:`, error);
-                }
-              }
-            }
+            const created = await generateTasksForFutureDate(targetDate);
+            totalCreated += created;
+          }
+          
+          if (totalCreated > 0) {
+            console.log(`✅ Auto-populated ${totalCreated} tasks for next 31 days`);
+            toast({
+              title: 'Auto-Population Complete',
+              description: `Generated ${totalCreated} tasks for the next 31 days.`,
+            });
+          }
+        } else {
+          console.log('📋 Existing tasks found - running daily generation check');
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // Just generate for today's future date (31 days from now)
+          const futureDate = new Date(today);
+          futureDate.setDate(today.getDate() + 31);
+          
+          const created = await generateTasksForFutureDate(futureDate);
+          
+          if (created > 0) {
+            console.log(`✅ Auto-generated ${created} tasks for ${futureDate.toDateString()}`);
+            toast({
+              title: 'Auto-Generation Complete',
+              description: `Generated ${created} missing tasks for future date.`,
+            });
+          } else {
+            console.log('✅ All tasks up to date - no generation needed');
           }
         }
         
-        if (created > 0) {
-          console.log(`✅ Auto-generated ${created} missing tasks`);
-          toast({
-            title: 'Auto-Generation Complete',
-            description: `Generated ${created} missing tasks from templates.`,
-          });
-        } else {
-          console.log('✅ All tasks up to date - no generation needed');
-        }
-        
       } catch (error) {
-        console.error('❌ Failed to auto-generate missing tasks:', error);
+        console.error('❌ Failed to auto-generate tasks:', error);
       }
     };
     
     // Run auto-generation after a short delay to let the page load
-    const timeoutId = setTimeout(checkAndGenerateMissingTasks, 2000);
+    const timeoutId = setTimeout(autoPopulateIfNeeded, 2000);
     
     return () => clearTimeout(timeoutId);
   }, [hasAccess]);
@@ -291,50 +281,173 @@ const DevTools = () => {
     }
   };
 
-  // Generate tasks from recurring templates
-  const generateTasksFromTemplates = async () => {
+  // Generate tasks for a specific future date (improved 31-day system)
+  const generateTasksForFutureDate = async (futureDate: Date) => {
+    const response = await apiRequest('GET', '/api/recurring-tasks');
+    const recurringTemplates = await response.json();
+    
+    const dayOfMonth = futureDate.getDate();
+    const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
+    const month = futureDate.getMonth();
+    const year = futureDate.getFullYear();
+    
+    let created = 0;
+    
+    for (const template of recurringTemplates) {
+      let shouldCreate = false;
+      let taskConfig: any = null;
+      
+      switch (template.frequency) {
+        case 'daily': // This is actually weekly tasks
+          // Check if template has selectedDays or activeDays
+          const activeDays = template.activeDays || template.selectedDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+          if (activeDays.includes(dayOfWeek)) {
+            shouldCreate = true;
+            taskConfig = {
+              id: `${template.id}-${futureDate.toISOString().split('T')[0]}`,
+              dueDate: futureDate.toISOString(),
+            };
+          }
+          break;
+          
+        case 'weekly': // Same as daily for now
+          const weeklyDays = template.activeDays || template.selectedDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+          if (weeklyDays.includes(dayOfWeek)) {
+            shouldCreate = true;
+            taskConfig = {
+              id: `${template.id}-${futureDate.toISOString().split('T')[0]}`,
+              dueDate: futureDate.toISOString(),
+            };
+          }
+          break;
+          
+        case 'biweekly':
+        case 'bi-weekly':
+          // First half: generate on 1st for days 1-14
+          if (dayOfMonth === 1) {
+            shouldCreate = true;
+            const midMonth = new Date(year, month, 14);
+            taskConfig = {
+              id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
+              dueDate: midMonth.toISOString(),
+              periodLabel: '1st-14th'
+            };
+          }
+          // Second half: generate on 15th for days 15-end
+          else if (dayOfMonth === 15) {
+            const lastDay = new Date(year, month + 1, 0);
+            shouldCreate = true;
+            taskConfig = {
+              id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
+              dueDate: lastDay.toISOString(),
+              periodLabel: `15th-${lastDay.getDate()}th`
+            };
+          }
+          break;
+          
+        case 'monthly':
+          if (dayOfMonth === 1) {
+            const lastDay = new Date(year, month + 1, 0);
+            shouldCreate = true;
+            taskConfig = {
+              id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
+              dueDate: lastDay.toISOString(),
+            };
+          }
+          break;
+          
+        case 'quarterly':
+          const quarterStartMonths = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+          if (quarterStartMonths.includes(month) && dayOfMonth === 1) {
+            const quarter = Math.floor(month / 3) + 1;
+            const quarterEndDate = new Date(year, month + 3, 0); // Last day of quarter
+            shouldCreate = true;
+            taskConfig = {
+              id: `${template.id}-${year}-Q${quarter}`,
+              dueDate: quarterEndDate.toISOString(),
+              periodLabel: `Q${quarter}`
+            };
+          }
+          break;
+      }
+      
+      if (shouldCreate && taskConfig) {
+        // Check if task already exists by checking for similar tasks
+        const existingTasksResponse = await apiRequest('GET', '/api/tasks');
+        const existingTasks = await existingTasksResponse.json();
+        
+        const dateStr = futureDate.toISOString().split('T')[0];
+        const exists = existingTasks.find((task: any) => 
+          task.recurringTaskId === template.id && 
+          task.dueDate?.startsWith(dateStr)
+        );
+        
+        if (!exists) {
+          const newTask = {
+            title: template.title,
+            description: template.description || '',
+            type: template.type || 'general',
+            priority: template.priority || 'medium',
+            status: 'pending',
+            dueDate: taskConfig.dueDate,
+            location: template.location || 'Unknown',
+            assignTo: template.assignTo || null,
+            estimatedDuration: template.estimatedDuration || 30,
+            requiresApproval: template.requiresApproval || false,
+            checklist: template.checklist || [],
+            recurringTaskId: template.id,
+            completedBy: null,
+            completedAt: null,
+            approvedBy: null,
+            approvedAt: null,
+            notes: '',
+            timeTracking: {
+              startTime: null,
+              endTime: null,
+              totalMinutes: 0,
+              isPaused: false,
+              pausedTime: 0
+            }
+          };
+          
+          try {
+            await apiRequest('POST', '/api/tasks', newTask);
+            created++;
+            console.log(`✅ Created: ${newTask.title} for ${dateStr}`);
+          } catch (error) {
+            console.error(`❌ Failed to create task for template ${template.id}:`, error);
+          }
+        }
+      }
+    }
+    
+    return created;
+  };
+
+  // Populate next 31 days (initial setup)
+  const populateNext31Days = async () => {
     setIsProcessing(true);
     try {
-      console.log('Starting fresh task generation...');
-      
-      // Get all recurring task templates
-      const response = await apiRequest('GET', '/api/recurring-tasks');
-      const templates = await response.json();
-      console.log(`Found ${templates.length} recurring task templates`);
+      console.log('🔄 Populating tasks for next 31 days...');
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      let created = 0;
+      let totalCreated = 0;
       
-      // Look at each day for the next 31 days
-      for (let day = 0; day < 31; day++) {
-        const checkDate = new Date(today);
-        checkDate.setDate(today.getDate() + day);
+      // Generate for each of the next 31 days
+      for (let day = 0; day <= 31; day++) {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + day);
         
-        for (const template of templates) {
-          // Determine if this template should generate a task on this date
-          const shouldGenerate = shouldGenerateOnDate(template, checkDate);
-          
-          if (shouldGenerate) {
-            const taskData = buildTaskFromTemplate(template, checkDate);
-            
-            try {
-              // Create the task
-              await apiRequest('POST', '/api/tasks', taskData);
-              created++;
-              console.log(`Created: ${taskData.title} - ${taskData.dueDate}`);
-            } catch (error) {
-              console.error(`Failed to create task for template ${template.id}:`, error);
-            }
-          }
-        }
+        const created = await generateTasksForFutureDate(targetDate);
+        totalCreated += created;
       }
       
-      console.log(`Generation complete. Created ${created} new tasks.`);
+      console.log(`✅ Population complete - created ${totalCreated} tasks`);
       toast({
         title: 'Tasks Generated',
-        description: `Successfully generated ${created} tasks for the next 31 days.`,
+        description: `Successfully generated ${totalCreated} tasks for the next 31 days.`,
       });
       
       // Small delay before reload
@@ -343,7 +456,7 @@ const DevTools = () => {
       }, 1000);
       
     } catch (error) {
-      console.error('Failed to generate tasks:', error);
+      console.error('❌ Failed to populate tasks:', error);
       toast({
         title: 'Error',
         description: 'Failed to generate tasks. See console for details.',
@@ -354,72 +467,46 @@ const DevTools = () => {
     }
   };
 
-  // Helper function to determine if a template should generate a task on a given date
-  const shouldGenerateOnDate = (template: any, checkDate: Date): boolean => {
-    const frequency = template.frequency?.toLowerCase() || 'daily';
-    
-    switch (frequency) {
-      case 'daily':
-        // Generate every day
-        return true;
-        
-      case 'weekly':
-        // Generate based on selected days of week
-        const dayOfWeek = checkDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const activeDays = template.activeDays || [0, 1, 2, 3, 4, 5, 6]; // Default to all days
-        return activeDays.includes(dayOfWeek);
-        
-      case 'biweekly':
-        // Generate on 1st and 15th of each month
-        const dayOfMonth = checkDate.getDate();
-        return dayOfMonth === 1 || dayOfMonth === 15;
-        
-      case 'monthly':
-        // Generate on 1st of each month
-        return checkDate.getDate() === 1;
-        
-      case 'quarterly':
-        // Generate on 1st of quarter months (Jan, Apr, Jul, Oct)
-        const month = checkDate.getMonth(); // 0 = January
-        const isQuarterStart = [0, 3, 6, 9].includes(month);
-        return checkDate.getDate() === 1 && isQuarterStart;
-        
-      default:
-        return false;
+  // Daily generation process (maintains 31-day buffer)
+  const runDailyGeneration = async () => {
+    setIsProcessing(true);
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Calculate the date 31 days from now
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 31);
+      
+      console.log(`🎯 Generating tasks for ${futureDate.toDateString()}`);
+      const created = await generateTasksForFutureDate(futureDate);
+      
+      if (created > 0) {
+        console.log(`✅ Daily generation complete - created ${created} tasks`);
+        toast({
+          title: 'Daily Generation Complete',
+          description: `Generated ${created} tasks for ${futureDate.toDateString()}.`,
+        });
+      } else {
+        console.log('✅ Daily generation complete - no new tasks needed');
+        toast({
+          title: 'Daily Generation Complete',
+          description: 'No new tasks needed for the future date.',
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Daily generation failed:', error);
+      toast({
+        title: 'Error',
+        description: 'Daily generation failed. See console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // Helper function to build a task from a template
-  const buildTaskFromTemplate = (template: any, dueDate: Date): any => {
-    const dateStr = dueDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    return {
-      title: template.title,
-      description: template.description || '',
-      type: template.type || 'general',
-      priority: template.priority || 'medium',
-      status: 'pending',
-      dueDate: dueDate.toISOString(),
-      location: template.location || 'Unknown',
-      assignTo: template.assignTo || null,
-      estimatedDuration: template.estimatedDuration || 30,
-      requiresApproval: template.requiresApproval || false,
-      checklist: template.checklist || [],
-      recurringTaskId: template.id,
-      completedBy: null,
-      completedAt: null,
-      approvedBy: null,
-      approvedAt: null,
-      notes: '',
-      timeTracking: {
-        startTime: null,
-        endTime: null,
-        totalMinutes: 0,
-        isPaused: false,
-        pausedTime: 0
-      }
-    };
-  };
 
   // Clear debug logs
   const clearDebugLogs = () => {
@@ -621,30 +708,60 @@ const DevTools = () => {
             </CardContent>
           </Card>
 
-          {/* Generate Tasks */}
+          {/* Populate 31 Days */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <RotateCcw className="w-5 h-5" />
-                Generate Tasks from Templates
+                Populate Next 31 Days
               </CardTitle>
               <CardDescription>
-                Create task instances for the next 31 days from recurring templates
+                Generate task instances for the entire next 31 days (initial setup)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button
-                onClick={generateTasksFromTemplates}
+                onClick={populateNext31Days}
                 disabled={isProcessing}
                 className="w-full bg-green-600 hover:bg-green-700"
-                data-testid="button-generate-tasks"
+                data-testid="button-populate-31-days"
               >
                 {isProcessing ? (
                   'Generating...'
                 ) : (
                   <>
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    🔄 Generate Tasks for Next 31 Days
+                    🔄 Generate All (Next 31 Days)
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Daily Generation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Daily Generation
+              </CardTitle>
+              <CardDescription>
+                Generate tasks for date 31 days from now (maintains rolling buffer)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={runDailyGeneration}
+                disabled={isProcessing}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                data-testid="button-daily-generation"
+              >
+                {isProcessing ? (
+                  'Generating...'
+                ) : (
+                  <>
+                    <Settings className="w-4 h-4 mr-2" />
+                    🎯 Generate Today's Future Tasks
                   </>
                 )}
               </Button>
