@@ -281,10 +281,123 @@ const DevTools = () => {
     }
   };
 
+  // Debug function to test what we're actually getting
+  const debugRecurringTasks = async () => {
+    console.log('=== GENERATION DEBUG ===');
+    
+    try {
+      console.log('Testing recurring tasks API...');
+      const response = await apiRequest('GET', '/api/recurring-tasks');
+      const templates = await response.json();
+      
+      console.log('📋 Recurring templates loaded:', templates.length);
+      console.log('📋 First few templates:', templates.slice(0, 3));
+      console.log('📋 Template IDs found:', templates.map((t: any) => t.id));
+      
+      toast({
+        title: 'Debug Complete',
+        description: `Found ${templates.length} templates. Check console for details.`,
+      });
+      
+    } catch (error) {
+      console.error('❌ Failed to load recurring tasks:', error);
+      toast({
+        title: 'Debug Failed', 
+        description: 'Could not load recurring tasks. Check console.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Test creating a single task
+  const testCreateSingleTask = async () => {
+    console.log('=== SINGLE TASK TEST ===');
+    
+    try {
+      // Get the first recurring task template
+      const response = await apiRequest('GET', '/api/recurring-tasks');
+      const templates = await response.json();
+      
+      if (templates.length === 0) {
+        console.error('❌ No recurring templates found!');
+        toast({
+          title: 'No Templates',
+          description: 'No recurring task templates found in database.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      const firstTemplate = templates[0];
+      console.log('🎯 Using template:', firstTemplate);
+      
+      const testTask = {
+        title: `🧪 TEST: ${firstTemplate.title}`,
+        description: firstTemplate.description || 'Test task generated',
+        type: firstTemplate.type || 'general',
+        priority: firstTemplate.priority || 'medium',
+        status: 'pending',
+        dueDate: new Date().toISOString(),
+        location: firstTemplate.location || 'Kenosha',
+        assignTo: firstTemplate.assignTo || null,
+        estimatedDuration: firstTemplate.estimatedDuration || 30,
+        requiresApproval: firstTemplate.requiresApproval || false,
+        checklist: firstTemplate.checklist || [],
+        recurringTaskId: firstTemplate.id,
+        completedBy: null,
+        completedAt: null,
+        approvedBy: null,
+        approvedAt: null,
+        notes: '',
+        timeTracking: {
+          startTime: null,
+          endTime: null,
+          totalMinutes: 0,
+          isPaused: false,
+          pausedTime: 0
+        }
+      };
+      
+      console.log('🎯 Creating test task:', testTask);
+      
+      const createResponse = await apiRequest('POST', '/api/tasks', testTask);
+      
+      if (createResponse.ok) {
+        console.log('✅ Test task created successfully!');
+        toast({
+          title: 'Test Success',
+          description: 'Single test task created successfully!',
+        });
+        
+        // Reload after success
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        const errorData = await createResponse.json();
+        console.error('❌ Test task creation failed:', errorData);
+        toast({
+          title: 'Test Failed',
+          description: 'Single task creation failed. Check console.',
+          variant: 'destructive',
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Test failed with error:', error);
+      toast({
+        title: 'Test Error',
+        description: 'Test failed with error. Check console.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Generate tasks for a specific future date (improved 31-day system)
   const generateTasksForFutureDate = async (futureDate: Date) => {
     const response = await apiRequest('GET', '/api/recurring-tasks');
     const recurringTemplates = await response.json();
+    
+    console.log(`🔍 DEBUG: Found ${recurringTemplates.length} templates`);
+    console.log(`🔍 DEBUG: Template IDs:`, recurringTemplates.map((t: any) => t.id));
     
     const dayOfMonth = futureDate.getDate();
     const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
@@ -704,6 +817,40 @@ const DevTools = () => {
                     🗑️ DELETE ALL TASKS (Start Fresh)
                   </>
                 )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Debug Tools */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Debug Generation Issues
+              </CardTitle>
+              <CardDescription>
+                Test what's causing the foreign key constraint errors
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                onClick={debugRecurringTasks}
+                disabled={isProcessing}
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                data-testid="button-debug-recurring"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                🔍 Debug Recurring Tasks API
+              </Button>
+              
+              <Button
+                onClick={testCreateSingleTask}
+                disabled={isProcessing}
+                className="w-full bg-red-600 hover:bg-red-700"
+                data-testid="button-test-single"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                🧪 Create ONE Test Task
               </Button>
             </CardContent>
           </Card>

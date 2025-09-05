@@ -2390,32 +2390,33 @@ class HybridStorage implements IStorage {
     return this.memStorage.getTaskLogs(taskId);
   }
 
+  // FIXED: Use database storage for recurring tasks instead of memory storage
   async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
-    return this.memStorage.getRecurringTask(id);
+    return this.dbStorage.getRecurringTask(id);
   }
 
   async getAllRecurringTasks(): Promise<RecurringTask[]> {
-    return this.memStorage.getAllRecurringTasks();
+    return this.dbStorage.getAllRecurringTasks();
   }
 
   async getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]> {
-    return this.memStorage.getRecurringTasksByLocation(locationId);
+    return this.dbStorage.getRecurringTasksByLocation(locationId);
   }
 
   async createRecurringTask(taskData: InsertRecurringTask): Promise<RecurringTask> {
-    return this.memStorage.createRecurringTask(taskData);
+    return this.dbStorage.createRecurringTask(taskData);
   }
 
   async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
-    return this.memStorage.updateRecurringTask(id, updates);
+    return this.dbStorage.updateRecurringTask(id, updates);
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
-    return this.memStorage.deleteRecurringTask(id);
+    return this.dbStorage.deleteRecurringTask(id);
   }
 
   async resetRecurringTasks(): Promise<boolean> {
-    return this.memStorage.resetRecurringTasks();
+    return this.dbStorage.resetRecurringTasks();
   }
 
   async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
