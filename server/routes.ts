@@ -1432,7 +1432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to fix task frequencies', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -1457,11 +1457,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const task of allTasks) {
         // Fix monthly tasks that have same visibleFromDate and dueDate
         if (task.frequency === 'monthly' && task.recurringTaskId) {
-          const visibleDate = new Date(task.visibleFromDate);
-          const dueDate = new Date(task.dueDate);
+          const visibleDate = task.visibleFromDate ? new Date(task.visibleFromDate) : null;
+          const dueDate = task.dueDate ? new Date(task.dueDate) : null;
           
           // Check if both dates are the same (indicating they need fixing)
-          if (visibleDate.getTime() === dueDate.getTime()) {
+          if (visibleDate && dueDate && visibleDate.getTime() === dueDate.getTime()) {
             console.log(`✅ Fixing monthly date range for: ${task.title}`);
             console.log(`   Before: ${task.visibleFromDate} to ${task.dueDate}`);
             
@@ -1492,7 +1492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to fix monthly date ranges', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -1574,7 +1574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalCreated += 2;
           console.log(`✅ Created both halves for: ${taskTemplate.title}`);
         } catch (error) {
-          console.log(`⚠️ Failed ${taskTemplate.title}: ${error.message}`);
+          console.log(`⚠️ Failed ${taskTemplate.title}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
       
@@ -1591,7 +1591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to create bi-weekly tasks manually', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -1625,7 +1625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Create first half (Sept 1-15) - only if doesn't exist
         const hasFirstHalf = existingForPattern.some(t => 
-          new Date(t.visibleFromDate).getDate() === 1
+          t.visibleFromDate ? new Date(t.visibleFromDate).getDate() === 1 : false
         );
         
         if (!hasFirstHalf) {
@@ -1651,13 +1651,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalCreated++;
             console.log(`✅ Created first half for: ${recurringTask.title}`);
           } catch (error) {
-            console.log(`⚠️ Failed first half ${recurringTask.title}: ${error.message}`);
+            console.log(`⚠️ Failed first half ${recurringTask.title}: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
         
         // Create second half (Sept 16-30) - only if doesn't exist
         const hasSecondHalf = existingForPattern.some(t => 
-          new Date(t.visibleFromDate).getDate() === 16
+          t.visibleFromDate ? new Date(t.visibleFromDate).getDate() === 16 : false
         );
         
         if (!hasSecondHalf) {
@@ -1683,7 +1683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalCreated++;
             console.log(`✅ Created second half for: ${recurringTask.title}`);
           } catch (error) {
-            console.log(`⚠️ Failed second half ${recurringTask.title}: ${error.message}`);
+            console.log(`⚠️ Failed second half ${recurringTask.title}: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
       }
@@ -1701,7 +1701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to create bi-weekly tasks', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -1744,7 +1744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`   Found ${existingInstances.length} existing instances`);
         
         // Determine what instances should exist for this frequency
-        let requiredInstances = [];
+        let requiredInstances: Array<{visibleFrom: Date, dueDate: Date, label: string, periodLabel?: string}> = [];
         
         if (frequency === 'monthly') {
           // Monthly: One instance per month with full month visibility
@@ -1794,9 +1794,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const required of requiredInstances) {
           // Check if this specific instance already exists
           const exists = existingInstances.some(existing => {
-            const existingVisible = new Date(existing.visibleFromDate);
-            const existingDue = new Date(existing.dueDate);
-            return existingVisible.getTime() === required.visibleFrom.getTime() &&
+            const existingVisible = existing.visibleFromDate ? new Date(existing.visibleFromDate) : null;
+            const existingDue = existing.dueDate ? new Date(existing.dueDate) : null;
+            return existingVisible && existingDue &&
+                   existingVisible.getTime() === required.visibleFrom.getTime() &&
                    existingDue.getTime() === required.dueDate.getTime();
           });
           
@@ -1828,7 +1829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               totalCreated++;
               console.log(`   ✅ Created: ${title} for ${required.label}`);
             } catch (error) {
-              console.log(`   ❌ Failed to create ${title}: ${error.message}`);
+              console.log(`   ❌ Failed to create ${title}: ${error instanceof Error ? error.message : 'Unknown error'}`);
               // Continue processing other tasks even if one fails
             }
           } else {
@@ -1850,7 +1851,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to generate dynamic recurring tasks', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -1879,8 +1880,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingTask = allTasks.find(t => 
           t.recurringTaskId === recurringTask.id &&
           t.frequency === frequency &&
-          new Date(t.visibleFromDate).getMonth() === today.getMonth() &&
-          new Date(t.visibleFromDate).getFullYear() === today.getFullYear()
+          t.visibleFromDate && new Date(t.visibleFromDate).getMonth() === today.getMonth() &&
+          t.visibleFromDate && new Date(t.visibleFromDate).getFullYear() === today.getFullYear()
         );
         
         if (existingTask) {
@@ -1908,8 +1909,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const existingFirstHalf = allTasks.find(t => 
             t.recurringTaskId === recurringTask.id &&
             t.frequency === frequency &&
-            new Date(t.visibleFromDate).getDate() === 1 &&
-            new Date(t.visibleFromDate).getMonth() === today.getMonth()
+            t.visibleFromDate && new Date(t.visibleFromDate).getDate() === 1 &&
+            t.visibleFromDate && new Date(t.visibleFromDate).getMonth() === today.getMonth()
           );
           
           if (!existingFirstHalf) {
@@ -1925,8 +1926,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const existingSecondHalf = allTasks.find(t => 
               t.recurringTaskId === recurringTask.id &&
               t.frequency === frequency &&
-              new Date(t.visibleFromDate).getDate() >= 16 &&
-              new Date(t.visibleFromDate).getMonth() === today.getMonth()
+              t.visibleFromDate && new Date(t.visibleFromDate).getDate() >= 16 &&
+              t.visibleFromDate && new Date(t.visibleFromDate).getMonth() === today.getMonth()
             );
             
             if (!existingSecondHalf) {
@@ -2003,7 +2004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to generate dynamic recurring tasks', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
@@ -2049,7 +2050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: recurringTask.type,
               status: 'pending' as const,
               priority: 'medium' as const,
-              assignedTo: recurringTask.assignTo || null,
+              assignedTo: recurringTask.assignTo ? parseInt(recurringTask.assignTo as string) || null : null,
               createdBy: recurringTask.createdBy,
               location: recurringTask.location,
               dueDate: lastDay,
@@ -2089,7 +2090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: recurringTask.type,
               status: 'pending' as const,
               priority: 'medium' as const,
-              assignedTo: recurringTask.assignTo || null,
+              assignedTo: recurringTask.assignTo ? parseInt(recurringTask.assignTo as string) || null : null,
               createdBy: recurringTask.createdBy,
               location: recurringTask.location,
               dueDate: firstHalfDue,
@@ -2122,7 +2123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: recurringTask.type,
               status: 'pending' as const,
               priority: 'medium' as const,
-              assignedTo: recurringTask.assignTo || null,
+              assignedTo: recurringTask.assignTo ? parseInt(recurringTask.assignTo as string) || null : null,
               createdBy: recurringTask.createdBy,
               location: recurringTask.location,
               dueDate: lastDay,
@@ -2154,7 +2155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: 'Failed to generate periodic tasks', 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
