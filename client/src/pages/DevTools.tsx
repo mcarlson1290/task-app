@@ -400,7 +400,8 @@ const DevTools = () => {
     console.log(`🔍 DEBUG: Template IDs:`, recurringTemplates.map((t: any) => t.id));
     
     const dayOfMonth = futureDate.getDate();
-    const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
+    // FIXED: Use UTC-aware day calculation to avoid timezone issues
+    const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][futureDate.getUTCDay()];
     const month = futureDate.getMonth();
     const year = futureDate.getFullYear();
     

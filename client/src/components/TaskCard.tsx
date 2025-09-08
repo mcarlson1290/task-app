@@ -55,13 +55,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     return `${mins}m`;
   };
 
+  // FIXED: Get day abbreviation using UTC to avoid timezone issues
   const getDayAbbreviation = (dateString: string): string => {
-    // Parse the date string manually to avoid timezone conversion
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)); // month is 0-indexed
+    // Parse YYYY-MM-DD format directly to avoid timezone conversion
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Use UTC with noon
     
     const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    return days[date.getDay()];
+    return days[date.getUTCDay()]; // Use getUTCDay() instead of getDay()
   };
 
   const getFrequencyLabel = (frequency: string): string => {

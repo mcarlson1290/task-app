@@ -1,0 +1,151 @@
+# Replit Instructions: Fix Three Critical Issues
+
+## Issue 1: Tasks Not Generated for Today
+
+When a new recurring task is added, the system needs to generate tasks starting from TODAY, not just future dates.
+
+### Fix the Generation Logic
+
+```javascript
+const generateTasksFromNewTemplate = async (template) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(today);
+  endDate.setDate(today.getDate() + 31);
+  
+  // Generate from TODAY through 31 days ahead
+  await generateTasksForDateRange(today, endDate, template);
+};
+
+// When a recurring task is created/saved:
+const handleRecurringTaskSave = async (template) => {
+  // Save the recurring template
+  await saveRecurringTemplate(template);
+  
+  // Immediately generate tasks starting TODAY
+  await generateTasksFromNewTemplate(template);
+};
+```
+
+### Check Today's Date for Generation
+
+For monthly/bi-weekly tasks, check if TODAY qualifies:
+
+```javascript
+const generateTodayTaskIfNeeded = (template, today) => {
+  const dayOfMonth = today.getDate();
+  
+  // Monthly: If today is the 1st or later in month, generate
+  if (template.frequency === 'monthly' && dayOfMonth >= 1) {
+    // Generate with visibleFrom = 1st of current month
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    return createMonthlyTask(template, firstOfMonth);
+  }
+  
+  // Bi-weekly: Check which period we're in
+  if (template.frequency === 'biweekly') {
+    if (dayOfMonth <= 14) {
+      // First period - generate from 1st
+      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      return createBiweeklyFirstTask(template, firstOfMonth);
+    } else {
+      // Second period - generate from 15th
+      const fifteenth = new Date(today.getFullYear(), today.getMonth(), 15);
+      return createBiweeklySecondTask(template, fifteenth);
+    }
+  }
+  
+  // Weekly tasks generate if today matches selected day
+  if (template.frequency === 'daily') {
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    if (template.selectedDays?.includes(dayName)) {
+      return createWeeklyTask(template, today);
+    }
+  }
+};
+```
+
+## Issue 2: Day Labels Don't Match Dates
+
+The day abbreviations (WED, THU, etc.) don't align with the actual dates shown.
+
+### Fix Day Display (Same as Earlier Issue)
+
+```javascript
+// Parse date string to avoid timezone issues
+const getCorrectDayAbbreviation = (dateString) => {
+  // Parse YYYY-MM-DD format directly
+  const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+  const date = new Date(year, month - 1, day); // month is 0-indexed
+  
+  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  return days[date.getDay()];
+};
+```
+
+## Issue 3: Recurring Tasks Page Shows Empty
+
+The recurring templates aren't loading on the Recurring Tasks page.
+
+### Debug Recurring Templates Loading
+
+```javascript
+// Check what's happening with recurring templates
+const loadRecurringTemplates = async () => {
+  console.log('Loading recurring templates...');
+  
+  try {
+    // Make sure you're querying the correct collection/table
+    const templates = await database.collection('recurring_templates').get(); // YOUR ACTUAL METHOD
+    
+    console.log(`Found ${templates.length} recurring templates`);
+    
+    if (templates.length === 0) {
+      console.log('No templates found. Check if:');
+      console.log('1. Templates are saved to correct collection');
+      console.log('2. User has permission to view templates');
+      console.log('3. Location filter is not hiding templates');
+    }
+    
+    return templates;
+  } catch (error) {
+    console.error('Failed to load recurring templates:', error);
+    return [];
+  }
+};
+```
+
+### Common Causes for Empty Recurring Tasks
+
+1. **Wrong Collection Name**: Tasks vs recurring_templates
+2. **Permission Issues**: User can't read templates
+3. **Location Filter**: Templates might be location-specific
+4. **Not Saved**: Templates only exist as generated tasks
+
+### Verify Template Creation
+
+When creating a recurring task, ensure it saves to BOTH places:
+1. The recurring_templates collection (for the template)
+2. Generate task instances in the tasks collection
+
+```javascript
+const createRecurringTask = async (templateData) => {
+  // 1. Save the template
+  const template = await saveToRecurringTemplates(templateData);
+  
+  // 2. Generate task instances
+  await generateTasksFromNewTemplate(template);
+  
+  console.log('Created recurring template:', template.id);
+  console.log('Generated task instances starting today');
+};
+```
+
+## Summary of Fixes
+
+1. **Generate from today** when new recurring task added, not just future
+2. **Fix day display** to match actual dates (timezone issue)
+3. **Load recurring templates** properly on the Recurring Tasks page
+
+The key insight: When a user creates a new monthly task on October 15th, they expect to see October's task immediately (visible from Oct 1-31), not wait until November 1st for the first task to appear.

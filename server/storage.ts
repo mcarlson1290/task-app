@@ -1634,13 +1634,22 @@ export class MemStorage implements IStorage {
         
         console.log(`Checking monthly task for ${actualYear}-${actualMonth + 1}: due ${dueDate.toISOString()}`);
         
-        if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
-          console.log(`✅ CREATING - Monthly task for ${dueDate.toISOString()}`);
-          const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
-          instances.push(instance);
-          this.tasks.set(instance.id, instance);
+        // FIXED: Generate for current period even if we're mid-period
+        if (!this.taskExistsForDate(recurringTask.id, dueDate)) {
+          // For monthly tasks, generate if we're IN the period (between visibleDate and dueDate)
+          const isInCurrentPeriod = todayUTC >= visibleDate && todayUTC <= dueDate;
+          const isFuturePeriod = dueDate > todayUTC;
+          
+          if (isInCurrentPeriod || isFuturePeriod) {
+            console.log(`✅ CREATING - Monthly task for ${dueDate.toISOString()} (period: ${visibleDate.toISOString()} to ${dueDate.toISOString()})`);
+            const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
+            instances.push(instance);
+            this.tasks.set(instance.id, instance);
+          } else {
+            console.log(`❌ SKIPPING - Past period (due: ${dueDate.toISOString()}, today: ${todayUTC.toISOString()})`);
+          }
         } else {
-          console.log(`❌ SKIPPING - Task exists or past due`);
+          console.log(`❌ SKIPPING - Task already exists`);
         }
       }
     } else if (recurringTask.frequency === 'quarterly') {
@@ -1665,13 +1674,21 @@ export class MemStorage implements IStorage {
         
         console.log(`Checking quarterly task for Q${actualQuarter + 1} ${actualYear}: due ${dueDate.toISOString()}`);
         
-        if (dueDate >= todayUTC && !this.taskExistsForDate(recurringTask.id, dueDate)) {
-          console.log(`✅ CREATING - Quarterly task for Q${actualQuarter + 1} ${actualYear}`);
-          const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
-          instances.push(instance);
-          this.tasks.set(instance.id, instance);
+        // FIXED: Generate for current period even if we're mid-period
+        if (!this.taskExistsForDate(recurringTask.id, dueDate)) {
+          const isInCurrentPeriod = todayUTC >= visibleDate && todayUTC <= dueDate;
+          const isFuturePeriod = dueDate > todayUTC;
+          
+          if (isInCurrentPeriod || isFuturePeriod) {
+            console.log(`✅ CREATING - Quarterly task for Q${actualQuarter + 1} ${actualYear}`);
+            const instance = await this.createTaskInstanceWithDates(recurringTask, visibleDate, dueDate);
+            instances.push(instance);
+            this.tasks.set(instance.id, instance);
+          } else {
+            console.log(`❌ SKIPPING - Past period`);
+          }
         } else {
-          console.log(`❌ SKIPPING - Task exists or past due`);
+          console.log(`❌ SKIPPING - Task already exists`);
         }
       }
     } else if (recurringTask.frequency === 'bi-weekly') {
@@ -2659,11 +2676,58 @@ class HybridStorage implements IStorage {
     return this.memStorage.clearAllData();
   }
 
+  // FIXED: Use DATABASE storage for task generation instead of memory storage
   async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> {
+    // Get recurring tasks from DATABASE, not memory
+    const recurringTasks = await this.dbStorage.getAllRecurringTasks();
+    console.log(`🔄 Found ${recurringTasks.length} recurring templates in DATABASE for task generation`);
+    
+    if (recurringTasks.length === 0) {
+      console.log('⚠️ No recurring tasks found in database - checking if migration needed');
+      // Check if MemStorage has templates that need to be migrated
+      const memTasks = await this.memStorage.getAllRecurringTasks();
+      if (memTasks.length > 0) {
+        console.log(`🔄 Migrating ${memTasks.length} recurring tasks from memory to database`);
+        for (const memTask of memTasks) {
+          try {
+            await this.dbStorage.createRecurringTask({
+              title: memTask.title,
+              description: memTask.description,
+              type: memTask.type,
+              frequency: memTask.frequency,
+              daysOfWeek: memTask.daysOfWeek,
+              dayOfMonth: memTask.dayOfMonth,
+              isActive: memTask.isActive,
+              location: memTask.location,
+              assignTo: memTask.assignTo,
+              createdBy: memTask.createdBy,
+              automation: memTask.automation,
+              checklistTemplate: memTask.checklistTemplate
+            });
+          } catch (error) {
+            console.error(`Failed to migrate recurring task ${memTask.id}:`, error);
+          }
+        }
+        console.log('✅ Migration complete - refetching from database');
+        const migratedTasks = await this.dbStorage.getAllRecurringTasks();
+        console.log(`📊 After migration: ${migratedTasks.length} tasks in database`);
+      }
+      return { totalTasksCreated: 0, recurringTasksProcessed: 0 };
+    }
+    
+    // Use memory storage's generation logic with DATABASE templates
     return this.memStorage.regenerateAllTaskInstances();
   }
 
   async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> {
+    // Get the recurring task from DATABASE
+    const recurringTask = await this.dbStorage.getRecurringTask(recurringTaskId);
+    if (!recurringTask) {
+      console.log(`❌ Recurring task ${recurringTaskId} not found in database`);
+      return false;
+    }
+    
+    // Use memory storage's generation logic  
     const result = await this.memStorage.regenerateTaskInstances(recurringTaskId);
     return typeof result === 'boolean' ? result : false;
   }
