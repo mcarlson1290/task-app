@@ -1108,6 +1108,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // System status and lock endpoints for task generation coordination
+  app.get("/api/system/status/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const status = await storage.getSystemStatus(id);
+      res.json(status);
+    } catch (error) {
+      console.error('Error fetching system status:', error);
+      res.status(500).json({ message: "Failed to fetch system status" });
+    }
+  });
+
+  app.post("/api/system/status", async (req, res) => {
+    try {
+      const statusData = req.body;
+      const status = await storage.setSystemStatus(statusData);
+      res.json(status);
+    } catch (error) {
+      console.error('Error setting system status:', error);
+      res.status(500).json({ message: "Failed to set system status" });
+    }
+  });
+
+  app.post("/api/system/lock/:lockId", async (req, res) => {
+    try {
+      const lockId = req.params.lockId;
+      const { userId, lockType, expirationMinutes } = req.body;
+      const lock = await storage.acquireLock(lockId, userId, lockType, expirationMinutes);
+      
+      if (!lock) {
+        return res.status(423).json({ message: "Lock already held by another user" });
+      }
+      
+      res.json(lock);
+    } catch (error) {
+      console.error('Error acquiring lock:', error);
+      res.status(500).json({ message: "Failed to acquire lock" });
+    }
+  });
+
+  app.delete("/api/system/lock/:lockId", async (req, res) => {
+    try {
+      const lockId = req.params.lockId;
+      const success = await storage.releaseLock(lockId);
+      res.json({ success, message: success ? "Lock released" : "Lock not found" });
+    } catch (error) {
+      console.error('Error releasing lock:', error);
+      res.status(500).json({ message: "Failed to release lock" });
+    }
+  });
+
+  app.get("/api/system/lock/:lockId", async (req, res) => {
+    try {
+      const lockId = req.params.lockId;
+      const lock = await storage.checkLock(lockId);
+      res.json(lock);
+    } catch (error) {
+      console.error('Error checking lock:', error);
+      res.status(500).json({ message: "Failed to check lock" });
+    }
+  });
+
   // Tray API endpoints (temporary localStorage bridge until database migration)
   app.get("/api/trays", async (req, res) => {
     try {
