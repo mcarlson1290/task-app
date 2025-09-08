@@ -248,6 +248,24 @@ export const userProgress = pgTable("user_progress", {
   score: integer("score"), // 0-100
 });
 
+// System status tracking for task generation
+export const systemStatus = pgTable("system_status", {
+  id: text("id").primaryKey(), // 'task-generation-status'
+  lastGenerationDate: text("last_generation_date"), // YYYY-MM-DD
+  generatedThrough: text("generated_through"), // YYYY-MM-DD (31 days ahead)
+  lastUpdateBy: integer("last_update_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// System locks for multi-user safety
+export const systemLocks = pgTable("system_locks", {
+  id: text("id").primaryKey(), // 'task-generation-lock'
+  lockedBy: integer("locked_by").notNull().references(() => users.id),
+  lockType: text("lock_type").notNull(), // 'task_generation', 'template_update'
+  acquiredAt: timestamp("acquired_at").defaultNow(),
+  expiresAt: timestamp("expires_at"), // Automatic lock expiration
+});
+
 export const courseAssignments = pgTable("course_assignments", {
   id: serial("id").primaryKey(),
   courseId: integer("course_id").notNull(), // Reference to course (stored in frontend)
@@ -382,3 +400,12 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+// System status and locks types
+export const insertSystemStatusSchema = createInsertSchema(systemStatus);
+export type SystemStatus = typeof systemStatus.$inferSelect;
+export type InsertSystemStatus = z.infer<typeof insertSystemStatusSchema>;
+
+export const insertSystemLockSchema = createInsertSchema(systemLocks);
+export type SystemLock = typeof systemLocks.$inferSelect;
+export type InsertSystemLock = z.infer<typeof insertSystemLockSchema>;

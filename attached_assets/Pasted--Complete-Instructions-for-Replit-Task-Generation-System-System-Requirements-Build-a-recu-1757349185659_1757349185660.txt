@@ -1,0 +1,152 @@
+# Complete Instructions for Replit: Task Generation System
+
+## System Requirements
+
+Build a recurring task generation system with these exact specifications:
+
+1. **31-Day Buffer**: Always maintain tasks for today + next 31 days
+2. **Multi-User**: All users see same tasks from shared database (no localStorage)
+3. **Smart Updates**: Template changes update ONLY pending tasks
+4. **Complete Data**: Every field from template transfers to task instance
+
+## Database Structure Required
+
+```
+Collections/Tables needed:
+- tasks (all generated task instances)
+- recurring_templates (source templates)
+- system_status (tracks generation state)
+- system_locks (prevents concurrent generation)
+```
+
+## Core Generation Function
+
+Create a function that generates tasks based on these exact rules:
+
+### Monthly Tasks
+- **Generate on**: 1st of each month
+- **Visible from**: 1st of month
+- **Due date**: Last day of month
+- **Task ID**: `{templateId}-{YYYY}-{MM}`
+
+### Bi-Weekly Tasks (TWO per month)
+- **First Half**:
+  - Generate on: 1st of month
+  - Visible from: 1st
+  - Due date: 14th
+  - Task ID: `{templateId}-{YYYY}-{MM}-01`
+- **Second Half**:
+  - Generate on: 15th of month
+  - Visible from: 15th
+  - Due date: Last day of month
+  - Task ID: `{templateId}-{YYYY}-{MM}-15`
+
+### Weekly Tasks (labeled as 'daily' frequency)
+- **Generate on**: Each selected weekday
+- **Visible from**: That day only
+- **Due date**: Same day
+- **Task ID**: `{templateId}-{YYYY}-{MM}-{DD}`
+
+### Quarterly Tasks
+- **Generate on**: 1st of Jan, Apr, Jul, Oct
+- **Visible from**: 1st of quarter
+- **Due date**: Last day of quarter
+- **Task ID**: `{templateId}-{YYYY}-Q{1-4}`
+
+## Task Generation Logic
+
+```javascript
+// For each template, create task with ALL fields:
+const generatedTask = {
+  // Unique identifier
+  id: generateTaskId(template, date),
+  
+  // Copy ALL fields from template
+  title: template.title,
+  description: template.description,
+  type: template.type,
+  priority: template.priority,
+  assignedTo: template.assignedTo,
+  estimatedTime: template.estimatedTime,
+  checklistTemplate: template.checklistTemplate,
+  location: template.location,
+  notes: template.notes,
+  // Include EVERY field from template
+  
+  // Task-specific fields
+  frequency: template.frequency,
+  recurringTaskId: template.id, // Links to template
+  visibleFromDate: calculateVisibleFrom(template, date),
+  dueDate: calculateDueDate(template, date),
+  status: 'pending',
+  createdAt: new Date().toISOString()
+};
+```
+
+## Status Protection Rules
+
+When a recurring template is updated, ONLY update tasks with status = 'pending'
+
+**Protected statuses (DO NOT UPDATE):**
+- completed
+- in_progress
+- paused
+- skipped
+- cancelled
+- Any status other than 'pending'
+
+## Daily Generation Process
+
+1. **On App Load**: Check if generation needed
+2. **Check Database**: Look for last generation date in system_status
+3. **Use Lock**: Prevent multiple users from generating simultaneously
+4. **Generate Missing**: Create any missing tasks for next 31 days
+5. **Daily Maintenance**: Each day, generate tasks for day 31
+
+## Multi-User Implementation
+
+1. **NO localStorage** - All state in shared database
+2. **Database Lock**: Prevent concurrent generation
+3. **System Status**: Track last generation in database:
+   ```javascript
+   {
+     id: 'task-generation-status',
+     lastGenerationDate: '2025-09-08',
+     generatedThrough: '2025-10-09'
+   }
+   ```
+4. **First User Triggers**: First user of the day triggers generation for all
+
+## Template Update Process
+
+When a recurring template is edited:
+
+1. Find all tasks with `recurringTaskId = templateId`
+2. Filter to only `status = 'pending'`
+3. Update ALL template fields (keep task dates and status)
+4. Save updated tasks to database
+
+## Critical Implementation Points
+
+1. **Check for Existing Tasks**: Before creating, check if task ID already exists
+2. **Date Format**: Use YYYY-MM-DD format for all dates
+3. **Time Zones**: Set all dates to midnight (00:00:00) to avoid issues
+4. **Error Handling**: If generation fails, system should retry
+5. **Visibility Filter**: Tasks display only when current date is between visibleFromDate and dueDate
+
+## Expected Behavior
+
+- **September 1st**: Generate monthly task (due Sept 30) and first bi-weekly (due Sept 14)
+- **September 15th**: Generate second bi-weekly task (due Sept 30)
+- **Daily**: Generate weekly tasks for selected days + maintain 31-day buffer
+- **Template Edit**: All pending future tasks update, others unchanged
+
+## Testing Checklist
+
+1. Delete all tasks and regenerate - should see 31 days of tasks
+2. Edit a template - only pending tasks should update
+3. Start a task and edit template - started task should NOT change
+4. Multiple users load app - generation should happen only once
+5. Tasks should be visible to all users immediately
+
+This creates a self-maintaining system where tasks are always ready, updates propagate correctly, and work in progress is protected.
