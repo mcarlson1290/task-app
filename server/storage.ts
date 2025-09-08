@@ -2035,6 +2035,41 @@ export class MemStorage implements IStorage {
       return result;
     }
   }
+
+  // System status and locks - stub implementations for MemStorage
+  async getSystemStatus(id: string): Promise<SystemStatus | undefined> {
+    return undefined;
+  }
+
+  async setSystemStatus(status: InsertSystemStatus): Promise<SystemStatus> {
+    const systemStatus: SystemStatus = {
+      id: status.id,
+      lastGenerationDate: status.lastGenerationDate || null,
+      generatedThrough: status.generatedThrough || null,
+      lastUpdateBy: status.lastUpdateBy || null,
+      updatedAt: new Date(),
+    };
+    return systemStatus;
+  }
+
+  async acquireLock(lockId: string, userId: number, lockType: string, expirationMinutes = 10): Promise<SystemLock | null> {
+    const systemLock: SystemLock = {
+      id: lockId,
+      lockedBy: userId,
+      lockType: lockType,
+      acquiredAt: new Date(),
+      expiresAt: new Date(Date.now() + expirationMinutes * 60 * 1000),
+    };
+    return systemLock;
+  }
+
+  async releaseLock(lockId: string): Promise<boolean> {
+    return true;
+  }
+
+  async checkLock(lockId: string): Promise<SystemLock | null> {
+    return null;
+  }
 }
 
 // Database Storage Implementation (switching from MemStorage to use database)
@@ -2273,6 +2308,75 @@ class DatabaseStorage implements IStorage {
   
   async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> { return false; }
   async clearAllData(): Promise<boolean> { return false; }
+
+  // System status and locks - real database implementations
+  async getSystemStatus(id: string): Promise<SystemStatus | undefined> {
+    const [status] = await db.select().from(systemStatus).where(eq(systemStatus.id, id));
+    return status || undefined;
+  }
+
+  async setSystemStatus(status: InsertSystemStatus): Promise<SystemStatus> {
+    const [result] = await db.insert(systemStatus).values(status)
+      .onConflictDoUpdate({
+        target: systemStatus.id,
+        set: {
+          lastGenerationDate: status.lastGenerationDate,
+          generatedThrough: status.generatedThrough,
+          lastUpdateBy: status.lastUpdateBy,
+          updatedAt: sql`NOW()`
+        }
+      }).returning();
+    return result;
+  }
+
+  async acquireLock(lockId: string, userId: number, lockType: string, expirationMinutes = 10): Promise<SystemLock | null> {
+    try {
+      // First check if lock exists and is expired
+      const [existingLock] = await db.select().from(systemLocks).where(eq(systemLocks.id, lockId));
+      
+      if (existingLock && existingLock.expiresAt && new Date() > existingLock.expiresAt) {
+        // Lock expired, remove it
+        await db.delete(systemLocks).where(eq(systemLocks.id, lockId));
+      } else if (existingLock) {
+        // Lock still active
+        return null;
+      }
+
+      // Try to acquire lock
+      const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
+      const [newLock] = await db.insert(systemLocks).values({
+        id: lockId,
+        lockedBy: userId,
+        lockType: lockType,
+        expiresAt: expiresAt
+      }).returning();
+      
+      return newLock;
+    } catch {
+      // Lock acquisition failed (someone else got it)
+      return null;
+    }
+  }
+
+  async releaseLock(lockId: string): Promise<boolean> {
+    const result = await db.delete(systemLocks).where(eq(systemLocks.id, lockId));
+    return result.rowCount > 0;
+  }
+
+  async checkLock(lockId: string): Promise<SystemLock | null> {
+    const [lock] = await db.select().from(systemLocks).where(eq(systemLocks.id, lockId));
+    
+    if (!lock) return null;
+    
+    // Check if expired
+    if (lock.expiresAt && new Date() > lock.expiresAt) {
+      // Auto-remove expired lock
+      await db.delete(systemLocks).where(eq(systemLocks.id, lockId));
+      return null;
+    }
+    
+    return lock;
+  }
 }
 
 // Hybrid Storage: Database for users/staff, Memory for other features
@@ -2562,6 +2666,27 @@ class HybridStorage implements IStorage {
   async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> {
     const result = await this.memStorage.regenerateTaskInstances(recurringTaskId);
     return typeof result === 'boolean' ? result : false;
+  }
+
+  // System status and locks - use DATABASE for multi-user coordination
+  async getSystemStatus(id: string): Promise<SystemStatus | undefined> {
+    return this.dbStorage.getSystemStatus(id);
+  }
+
+  async setSystemStatus(status: InsertSystemStatus): Promise<SystemStatus> {
+    return this.dbStorage.setSystemStatus(status);
+  }
+
+  async acquireLock(lockId: string, userId: number, lockType: string, expirationMinutes?: number): Promise<SystemLock | null> {
+    return this.dbStorage.acquireLock(lockId, userId, lockType, expirationMinutes);
+  }
+
+  async releaseLock(lockId: string): Promise<boolean> {
+    return this.dbStorage.releaseLock(lockId);
+  }
+
+  async checkLock(lockId: string): Promise<SystemLock | null> {
+    return this.dbStorage.checkLock(lockId);
   }
 }
 
