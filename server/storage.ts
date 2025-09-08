@@ -1,6 +1,6 @@
 import { 
   users, tasks, inventoryItems, trainingModules, userProgress, taskLogs,
-  recurringTasks, growingSystems, trays, trayMovements, inventoryTransactions, courseAssignments, notifications,
+  recurringTasks, growingSystems, trays, trayMovements, inventoryTransactions, courseAssignments, notifications, systemStatus, systemLocks,
   type User, type InsertUser, type Task, type InsertTask, 
   type InventoryItem, type InsertInventoryItem, type TrainingModule,
   type InsertTrainingModule, type UserProgress, type InsertUserProgress,
@@ -8,7 +8,8 @@ import {
   type InsertRecurringTask, type GrowingSystem, type InsertGrowingSystem,
   type Tray, type InsertTray, type TrayMovement, type InsertTrayMovement, type InventoryTransaction,
   type InsertInventoryTransaction, type CourseAssignment, type InsertCourseAssignment,
-  type Notification, type InsertNotification
+  type Notification, type InsertNotification, type SystemStatus, type InsertSystemStatus,
+  type SystemLock, type InsertSystemLock
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -106,6 +107,13 @@ export interface IStorage {
   
   // Clear all data
   clearAllData(): Promise<boolean>;
+  
+  // System status and locks for task generation
+  getSystemStatus(id: string): Promise<SystemStatus | undefined>;
+  setSystemStatus(status: InsertSystemStatus): Promise<SystemStatus>;
+  acquireLock(lockId: string, userId: number, lockType: string, expirationMinutes?: number): Promise<SystemLock | null>;
+  releaseLock(lockId: string): Promise<boolean>;
+  checkLock(lockId: string): Promise<SystemLock | null>;
 }
 
 export class MemStorage implements IStorage {
