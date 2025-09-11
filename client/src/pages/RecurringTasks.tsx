@@ -40,7 +40,7 @@ const RecurringTasks: React.FC = () => {
       console.log('🔍 Fetching recurring tasks for location:', currentLocation.name, 'viewing all:', isViewingAllLocations);
       const url = isViewingAllLocations 
         ? '/api/recurring-tasks' 
-        : `/api/recurring-tasks?location=${encodeURIComponent(currentLocation.name)}`;
+        : `/api/recurring-tasks?location=${encodeURIComponent(currentLocation.id)}`;
       
       console.log('🔍 Making API call to:', url);
       const response = await fetch(url, { cache: 'no-cache' });
