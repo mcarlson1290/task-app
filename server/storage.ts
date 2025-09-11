@@ -206,28 +206,22 @@ export class MemStorage implements IStorage {
 
   // Migration function to convert "weekly" frequency to "daily" for UI compatibility
   private async migrateWeeklyFrequencies() {
-    console.log('=== MIGRATING WEEKLY FREQUENCIES ===');
+    console.log('=== REVERSE MIGRATING DAILY BACK TO WEEKLY ===');
     let migratedCount = 0;
     
-    // Migrate recurring tasks
+    // Reverse migrate: Convert 'daily' back to 'weekly' if daysOfWeek is present
     for (const [id, recurringTask] of this.recurringTasks) {
-      if (recurringTask.frequency === 'weekly') {
-        recurringTask.frequency = 'daily';
+      if (recurringTask.frequency === 'daily' && recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+        recurringTask.frequency = 'weekly';
         migratedCount++;
-        console.log(`Migrated recurring task ${id} (${recurringTask.title}) from weekly to daily`);
+        console.log(`Restored recurring task ${id} (${recurringTask.title}) from daily to weekly with days: ${recurringTask.daysOfWeek.join(', ')}`);
       }
     }
     
-    // Migrate regular task instances
-    for (const [id, task] of this.tasks) {
-      if (task.frequency === 'weekly') {
-        task.frequency = 'daily';
-        console.log(`Migrated task ${id} (${task.title}) from weekly to daily`);
-      }
-    }
+    // Don't migrate regular task instances - they should be regenerated correctly
     
     if (migratedCount > 0) {
-      console.log(`Migration complete: ${migratedCount} recurring tasks migrated`);
+      console.log(`Reverse migration complete: ${migratedCount} recurring tasks restored to weekly`);
       // Save the migrated data
       await this.persistence.saveData({
         tasks: Array.from(this.tasks.values()),
@@ -240,7 +234,7 @@ export class MemStorage implements IStorage {
         }
       });
     } else {
-      console.log('No weekly frequencies found to migrate');
+      console.log('No daily frequencies with daysOfWeek found to restore');
     }
   }
 
@@ -259,7 +253,7 @@ export class MemStorage implements IStorage {
     while (currentDate <= endDate) {
       for (const template of templates) {
         const task = await this.shouldGenerateTask(template, currentDate);
-        if (task && !await this.taskExists(task.id)) {
+        if (task && !await this.taskExistsForDateComposite(template.id, currentDate)) {
           // CRITICAL FIX: Use the same storage singleton that the API reads from
           const createdTask = await storage.createTask(task);
           tasksCreated.push(createdTask);
@@ -310,7 +304,7 @@ export class MemStorage implements IStorage {
         }
         break;
         
-      case 'daily': // Weekly tasks - handle both string and array formats
+      case 'weekly': // Weekly tasks - handle both string and array formats
         const templateDays = Array.isArray(template.daysOfWeek) 
           ? template.daysOfWeek 
           : (template.daysOfWeek ? [template.daysOfWeek] : []);
@@ -323,6 +317,13 @@ export class MemStorage implements IStorage {
           });
         }
         break;
+        
+      case 'daily': // Daily tasks - generate every day
+        return this.buildTaskFromTemplate(template, {
+          id: `${template.id}-${this.formatDate(checkDate)}`,
+          visibleFromDate: checkDate,
+          dueDate: checkDate
+        });
         
       case 'quarterly':
         const quarterStarts = [0, 3, 6, 9];
@@ -447,6 +448,21 @@ export class MemStorage implements IStorage {
       if (!task.dueDate) return false;
       const dueDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
       return `${task.recurringTaskId}-${this.formatDate(dueDate)}` === taskId;
+    });
+  }
+
+  private async taskExistsForDateComposite(recurringTaskId: number, targetDate: Date): Promise<boolean> {
+    // Check if a task already exists for this recurring task ID and date
+    return Array.from(this.tasks.values()).some(task => {
+      if (!task.dueDate || task.recurringTaskId !== recurringTaskId) return false;
+      
+      const taskDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
+      const checkDate = new Date(targetDate);
+      
+      // Use UTC comparison to avoid timezone issues
+      return taskDate.getUTCFullYear() === checkDate.getUTCFullYear() &&
+             taskDate.getUTCMonth() === checkDate.getUTCMonth() &&
+             taskDate.getUTCDate() === checkDate.getUTCDate();
     });
   }
 
