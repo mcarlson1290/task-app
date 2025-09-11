@@ -34,7 +34,7 @@ const RecurringTasks: React.FC = () => {
   const [dayFilter, setDayFilter] = useState('all');
 
   const { data: recurringTasks = [], isLoading, refetch } = useQuery<RecurringTask[]>({
-    queryKey: ['/api/recurring-tasks', currentLocation.name, isViewingAllLocations],
+    queryKey: ['/api/recurring-tasks', currentLocation.id, isViewingAllLocations],
     queryFn: async () => {
       console.log('🔍 currentLocation object:', currentLocation);
       console.log('🔍 Fetching recurring tasks for location:', currentLocation.name, 'viewing all:', isViewingAllLocations);
