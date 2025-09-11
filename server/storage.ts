@@ -244,86 +244,208 @@ export class MemStorage implements IStorage {
     }
   }
 
-  // Ensure all active recurring tasks have proper task instances for current periods
-  private async ensureRecurringTaskInstances() {
-    console.log('=== ENSURING RECURRING TASK INSTANCES ===');
-    const recurringTasks = Array.from(this.recurringTasks.values()).filter(rt => rt.isActive);
-    console.log(`Found ${recurringTasks.length} active recurring tasks`);
+  // BLUEPRINT: Advanced Task Generation System - Main generation function
+  private async generateTasksForDateRange(startDate: Date, endDate: Date, specificTemplate: RecurringTask | null = null): Promise<Task[]> {
+    console.log(`🔄 GENERATING TASKS FOR DATE RANGE: ${this.formatDate(startDate)} to ${this.formatDate(endDate)}`);
     
-    for (const recurringTask of recurringTasks) {
-      console.log(`Checking instances for: ${recurringTask.title} (${recurringTask.frequency})`);
+    // Get templates to process
+    const templates = specificTemplate 
+      ? [specificTemplate] 
+      : Array.from(this.recurringTasks.values()).filter(rt => rt.isActive);
       
-      // Count existing instances for this recurring task
-      const existingInstances = Array.from(this.tasks.values()).filter(t => t.recurringTaskId === recurringTask.id);
-      console.log(`  - Found ${existingInstances.length} existing instances`);
-      
-      // Check if we need to generate instances for current time period
+    const tasksCreated: Task[] = [];
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      for (const template of templates) {
+        const task = await this.shouldGenerateTask(template, currentDate);
+        if (task && !await this.taskExists(task.id)) {
+          await this.saveTask(task);
+          tasksCreated.push(task);
+          console.log(`✅ Created task: ${task.title} for ${this.formatDate(currentDate)}`);
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    console.log(`🎉 Generated ${tasksCreated.length} tasks for date range`);
+    return tasksCreated;
+  }
+
+  // BLUEPRINT: Task Creation Logic - Determines when to generate tasks based on frequency
+  private async shouldGenerateTask(template: RecurringTask, checkDate: Date): Promise<Task | null> {
+    const dayOfMonth = checkDate.getDate();
+    const month = checkDate.getMonth();
+    const year = checkDate.getFullYear();
+    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    switch (template.frequency) {
+      case 'monthly':
+        if (dayOfMonth === 1) {
+          const lastDay = new Date(year, month + 1, 0);
+          return this.createTask(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
+            visibleFromDate: new Date(year, month, 1),
+            dueDate: lastDay
+          });
+        }
+        break;
+        
+      case 'biweekly':
+        if (dayOfMonth === 1) {
+          return this.createTask(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
+            visibleFromDate: new Date(year, month, 1),
+            dueDate: new Date(year, month, 14)
+          });
+        }
+        if (dayOfMonth === 15) {
+          const lastDay = new Date(year, month + 1, 0);
+          return this.createTask(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
+            visibleFromDate: new Date(year, month, 15),
+            dueDate: lastDay
+          });
+        }
+        break;
+        
+      case 'daily': // Weekly tasks
+        if (template.daysOfWeek?.includes(dayName)) {
+          return this.createTask(template, {
+            id: `${template.id}-${this.formatDate(checkDate)}`,
+            visibleFromDate: checkDate,
+            dueDate: checkDate
+          });
+        }
+        break;
+        
+      case 'quarterly':
+        const quarterStarts = [0, 3, 6, 9];
+        if (quarterStarts.includes(month) && dayOfMonth === 1) {
+          const quarterEnd = new Date(year, month + 3, 0);
+          return this.createTask(template, {
+            id: `${template.id}-${year}-Q${Math.floor(month / 3) + 1}`,
+            visibleFromDate: checkDate,
+            dueDate: quarterEnd
+          });
+        }
+        break;
+    }
+    
+    return null;
+  }
+
+  // BLUEPRINT: Task Creation Helper
+  private async createTask(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<Task> {
+    const newTask: Task = {
+      id: this.currentTaskId++,
+      title: template.title,
+      description: template.description,
+      type: template.type,
+      status: 'pending',
+      priority: 'medium',
+      assignedTo: template.assignTo ? null : null, // Will be handled by assignTo field
+      assignTo: template.assignTo || undefined,
+      createdBy: template.createdBy,
+      location: template.location,
+      estimatedTime: null,
+      actualTime: null,
+      progress: 0,
+      checklist: template.checklistTemplate?.steps?.map((step, index) => ({
+        id: step.id || `${index + 1}`,
+        text: step.label || '',
+        completed: false,
+        required: step.required || false,
+        type: step.type,
+        config: step.config,
+        dataCollection: step.type === 'data-capture' ? { 
+          type: step.config?.dataType || 'text', 
+          label: step.label || '' 
+        } : undefined
+      })) || [],
+      data: {},
+      dueDate: dateInfo.dueDate,
+      visibleFromDate: dateInfo.visibleFromDate,
+      startedAt: null,
+      completedAt: null,
+      pausedAt: null,
+      resumedAt: null,
+      skippedAt: null,
+      skipReason: null,
+      isRecurring: true,
+      frequency: template.frequency,
+      recurringTaskId: template.id,
+      isFromDeletedRecurring: false,
+      deletedRecurringTaskTitle: null,
+      createdAt: new Date()
+    };
+    
+    return newTask;
+  }
+
+  // BLUEPRINT: Daily Maintenance System with Locking
+  async initializeGeneration(userId: number = 1): Promise<void> {
+    console.log('🚀 INITIALIZING ADVANCED TASK GENERATION SYSTEM');
+    
+    const lock = await this.acquireLock('task-generation-lock', userId, 'task_generation', 10);
+    if (!lock) {
+      console.log('⏳ Another user is handling task generation');
+      return;
+    }
+    
+    try {
+      const status = await this.getSystemStatus('task-generation-status');
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      let needsGeneration = false;
+      const todayStr = this.formatDate(today);
+      const lastRunDate = status?.lastGenerationDate;
       
-      if (recurringTask.frequency === 'monthly' || recurringTask.frequency === 'bi-weekly') {
-        // For monthly/bi-weekly tasks, check if we have tasks for current month
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
+      if (!status || !lastRunDate || lastRunDate < todayStr) {
+        console.log(`🔄 Running generation - Last run: ${lastRunDate || 'never'}, Today: ${todayStr}`);
         
-        const currentMonthInstances = existingInstances.filter(task => {
-          if (!task.dueDate) return false;
-          const dueDate = new Date(task.dueDate);
-          return dueDate.getFullYear() === currentYear && dueDate.getMonth() === currentMonth && task.status === 'pending';
-        });
-        
-        console.log(`  - Found ${currentMonthInstances.length} instances for current month (${currentYear}-${currentMonth+1})`);
-        
-        if (recurringTask.frequency === 'monthly' && currentMonthInstances.length === 0) {
-          needsGeneration = true;
-        } else if (recurringTask.frequency === 'bi-weekly' && currentMonthInstances.length < 2) {
-          needsGeneration = true;
-        }
-      } else if (recurringTask.frequency === 'daily' && recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
-        // For daily tasks with specific days, check if we have enough future tasks (30 days ahead)
+        // Ensure we have 31 days ahead
         const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 30);
+        endDate.setDate(today.getDate() + 31);
         
-        let expectedTasks = 0;
-        let currentCheck = new Date(today);
+        await this.generateTasksForDateRange(today, endDate);
         
-        // Count how many tasks we should have in the next 30 days
-        while (currentCheck <= endDate) {
-          const dayOfWeek = currentCheck.getDay();
-          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const currentDayName = dayNames[dayOfWeek];
-          
-          if (recurringTask.daysOfWeek.includes(currentDayName)) {
-            expectedTasks++;
-          }
-          currentCheck.setDate(currentCheck.getDate() + 1);
-        }
-        
-        // Count existing future tasks
-        const futureInstances = existingInstances.filter(task => {
-          if (!task.dueDate) return false;
-          const dueDate = new Date(task.dueDate);
-          return dueDate >= today && dueDate <= endDate && task.status === 'pending';
+        await this.setSystemStatus({
+          id: 'task-generation-status',
+          lastGenerationDate: todayStr,
+          generatedThrough: this.formatDate(endDate),
+          lastUpdateBy: userId
         });
         
-        console.log(`  - Expected ${expectedTasks} tasks for next 30 days, found ${futureInstances.length} existing`);
-        
-        if (futureInstances.length < expectedTasks) {
-          needsGeneration = true;
-        }
-      }
-      
-      if (needsGeneration) {
-        console.log(`  - Generating missing instances for: ${recurringTask.title}`);
-        await this.generateTaskInstances(recurringTask);
+        console.log('✅ Task generation complete');
       } else {
-        console.log(`  - All instances up to date for: ${recurringTask.title}`);
+        console.log(`✅ Task generation up to date (last run: ${lastRunDate})`);
       }
+    } finally {
+      await this.releaseLock('task-generation-lock');
     }
-    
-    console.log('=== RECURRING TASK INSTANCES CHECK COMPLETE ===');
+  }
+
+  // Helper methods for the new system
+  private formatDate(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  private async taskExists(taskId: string): Promise<boolean> {
+    // For string-based IDs from the new system, we need to check differently
+    return Array.from(this.tasks.values()).some(task => 
+      `${task.recurringTaskId}-${this.formatDate(task.dueDate || new Date())}` === taskId
+    );
+  }
+
+  private async saveTask(task: Task): Promise<void> {
+    this.tasks.set(task.id, task);
+  }
+
+  // Legacy method for compatibility - now delegates to new system
+  private async ensureRecurringTaskInstances() {
+    console.log('=== LEGACY COMPATIBILITY: Delegating to new generation system ===');
+    await this.initializeGeneration();
   }
 
   private async persistData() {
