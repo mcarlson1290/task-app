@@ -260,8 +260,9 @@ export class MemStorage implements IStorage {
       for (const template of templates) {
         const task = await this.shouldGenerateTask(template, currentDate);
         if (task && !await this.taskExists(task.id)) {
-          await this.saveTask(task);
-          tasksCreated.push(task);
+          // CRITICAL FIX: Use the same storage singleton that the API reads from
+          const createdTask = await storage.createTask(task);
+          tasksCreated.push(createdTask);
           console.log(`✅ Created task: ${task.title} for ${this.formatDate(currentDate)}`);
         }
       }
@@ -283,7 +284,7 @@ export class MemStorage implements IStorage {
       case 'monthly':
         if (dayOfMonth === 1) {
           const lastDay = new Date(year, month + 1, 0);
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
             visibleFromDate: new Date(year, month, 1),
             dueDate: lastDay
@@ -293,7 +294,7 @@ export class MemStorage implements IStorage {
         
       case 'biweekly':
         if (dayOfMonth === 1) {
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
             visibleFromDate: new Date(year, month, 1),
             dueDate: new Date(year, month, 14)
@@ -301,7 +302,7 @@ export class MemStorage implements IStorage {
         }
         if (dayOfMonth === 15) {
           const lastDay = new Date(year, month + 1, 0);
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
             visibleFromDate: new Date(year, month, 15),
             dueDate: lastDay
@@ -309,9 +310,13 @@ export class MemStorage implements IStorage {
         }
         break;
         
-      case 'daily': // Weekly tasks
-        if (template.daysOfWeek?.includes(dayName)) {
-          return this.createTask(template, {
+      case 'daily': // Weekly tasks - handle both string and array formats
+        const templateDays = Array.isArray(template.daysOfWeek) 
+          ? template.daysOfWeek 
+          : (template.daysOfWeek ? [template.daysOfWeek] : []);
+        
+        if (templateDays.includes(dayName)) {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${this.formatDate(checkDate)}`,
             visibleFromDate: checkDate,
             dueDate: checkDate
@@ -323,7 +328,7 @@ export class MemStorage implements IStorage {
         const quarterStarts = [0, 3, 6, 9];
         if (quarterStarts.includes(month) && dayOfMonth === 1) {
           const quarterEnd = new Date(year, month + 3, 0);
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-Q${Math.floor(month / 3) + 1}`,
             visibleFromDate: checkDate,
             dueDate: quarterEnd
@@ -336,7 +341,7 @@ export class MemStorage implements IStorage {
   }
 
   // BLUEPRINT: Task Creation Helper
-  private async createTask(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<Task> {
+  private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<Task> {
     const newTask: Task = {
       id: this.currentTaskId++,
       title: template.title,
@@ -408,7 +413,12 @@ export class MemStorage implements IStorage {
         const endDate = new Date(today);
         endDate.setDate(today.getDate() + 31);
         
-        await this.generateTasksForDateRange(today, endDate);
+        const generatedTasks = await this.generateTasksForDateRange(today, endDate);
+        
+        // Tasks are now written directly to DatabaseStorage via createTask()
+        if (generatedTasks.length > 0) {
+          console.log(`✅ Successfully created ${generatedTasks.length} tasks in database`);
+        }
         
         await this.setSystemStatus({
           id: 'task-generation-status',
@@ -441,7 +451,9 @@ export class MemStorage implements IStorage {
   }
 
   private async saveTask(task: Task): Promise<void> {
+    console.log(`🔍 SAVE TASK DEBUG: Adding task ${task.id} (${task.title}) to in-memory cache. Cache size before: ${this.tasks.size}`);
     this.tasks.set(task.id, task);
+    console.log(`🔍 SAVE TASK DEBUG: Cache size after: ${this.tasks.size}`);
   }
 
   // BLUEPRINT: New Recurring Task Handling - Generate current period task immediately
@@ -451,10 +463,14 @@ export class MemStorage implements IStorage {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
+    let tasksCreated = 0;
+    
     // Check if we need to generate current period task
     const currentPeriodTask = await this.getCurrentPeriodTask(template, today);
     if (currentPeriodTask) {
-      await this.saveTask(currentPeriodTask);
+      // CRITICAL FIX: Use the same storage singleton that the API reads from
+      await storage.createTask(currentPeriodTask);
+      tasksCreated++;
       console.log(`✅ Created current period task for: ${template.title}`);
     }
     
@@ -464,8 +480,15 @@ export class MemStorage implements IStorage {
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + 31);
     
-    await this.generateTasksForDateRange(tomorrow, endDate, template);
-    console.log(`✅ Generated future tasks for: ${template.title}`);
+    const futureTasks = await this.generateTasksForDateRange(tomorrow, endDate, template);
+    tasksCreated += futureTasks.length;
+    
+    // Tasks are now written directly to DatabaseStorage via createTask()
+    if (tasksCreated > 0) {
+      console.log(`✅ Successfully created ${tasksCreated} tasks in database for: ${template.title}`);
+    }
+    
+    console.log(`✅ Generated ${tasksCreated} tasks for: ${template.title}`);
   }
 
   // BLUEPRINT: Get Current Period Task
@@ -478,7 +501,7 @@ export class MemStorage implements IStorage {
       case 'monthly':
         // If we're past the 1st, still create this month's task
         const lastDay = new Date(year, month + 1, 0);
-        return this.createTask(template, {
+        return this.buildTaskFromTemplate(template, {
           id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
           visibleFromDate: new Date(year, month, 1),
           dueDate: lastDay
@@ -487,7 +510,7 @@ export class MemStorage implements IStorage {
       case 'biweekly':
         if (dayOfMonth <= 14) {
           // First period
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
             visibleFromDate: new Date(year, month, 1),
             dueDate: new Date(year, month, 14)
@@ -495,7 +518,7 @@ export class MemStorage implements IStorage {
         } else {
           // Second period
           const lastDay = new Date(year, month + 1, 0);
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
             visibleFromDate: new Date(year, month, 15),
             dueDate: lastDay
@@ -505,7 +528,7 @@ export class MemStorage implements IStorage {
       case 'daily':
         const dayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         if (template.daysOfWeek?.includes(dayName)) {
-          return this.createTask(template, {
+          return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${this.formatDate(today)}`,
             visibleFromDate: today,
             dueDate: today
@@ -1933,11 +1956,16 @@ export class MemStorage implements IStorage {
         
         if (recurringTask.frequency === 'daily') {
           // For daily tasks, check if specific days are selected
-          if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+          // Handle both string and array formats for daysOfWeek
+          const selectedDays = Array.isArray(recurringTask.daysOfWeek) 
+            ? recurringTask.daysOfWeek 
+            : (recurringTask.daysOfWeek ? [recurringTask.daysOfWeek] : []);
+            
+          if (selectedDays.length > 0) {
             const dayOfWeek = currentDate.getUTCDay();
             const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const currentDayName = dayNames[dayOfWeek];
-            shouldCreate = recurringTask.daysOfWeek.includes(currentDayName);
+            shouldCreate = selectedDays.includes(currentDayName);
           } else {
             shouldCreate = true; // No specific days selected, create every day
           }
@@ -1946,7 +1974,11 @@ export class MemStorage implements IStorage {
           const dayOfWeek = currentDate.getUTCDay();
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           const currentDayName = dayNames[dayOfWeek];
-          const selectedDays = recurringTask.daysOfWeek || [];
+          
+          // Handle both string and array formats for daysOfWeek
+          const selectedDays = Array.isArray(recurringTask.daysOfWeek) 
+            ? recurringTask.daysOfWeek 
+            : (recurringTask.daysOfWeek ? [recurringTask.daysOfWeek] : []);
           shouldCreate = selectedDays.includes(currentDayName);
         }
         
