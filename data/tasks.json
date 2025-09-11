@@ -39898,5 +39898,430 @@
     "skipReason": null,
     "completedBy": null,
     "approvedBy": null
+  },
+  {
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "priority": "high",
+    "frequency": "daily",
+    "category": "Other",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "General Laborer",
+    "microgreensData": {
+      "weight": "Saturday",
+      "seedAmount": "Thursday]"
+    },
+    "isActive": true,
+    "oldTaskId": "Sunday",
+    "oldUniqueId": "Friday",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.264Z",
+    "instances": "Wednesday",
+    "daysOfWeek": [
+      "monday",
+      "monday",
+      "friday",
+      "tuesday",
+      "saturday",
+      "wednesday",
+      "thursday",
+      "sunday"
+    ],
+    "id": 4465,
+    "createdAt": "2025-09-11T22:22:49.364Z",
+    "location": "Kenosha",
+    "type": "other",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "1756931744483",
+          "type": "instruction",
+          "label": "Check all the lights are on in the farm",
+          "required": true,
+          "config": {
+            "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+          }
+        },
+        {
+          "id": "1756931883233",
+          "type": "instruction",
+          "label": "Check for leaks",
+          "required": true,
+          "config": {
+            "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+          }
+        },
+        {
+          "id": "1756931923234",
+          "type": "instruction",
+          "label": "Check Plants",
+          "required": true,
+          "config": {
+            "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+          }
+        }
+      ]
+    },
+    "assignTo": "all_staff",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Check pH and Water Levels in Towers",
+    "description": "This process ensures the water pH and levels in all towers are within the optimal range for plant health. Adjustments are made as needed to maintain a target pH of 6.0 and adequate water levels using ATOs (Automatic Top Offs).",
+    "priority": "medium",
+    "frequency": "daily",
+    "category": "Other",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "/sites/GrowSpaceEducation/SitePages/Checking-pH-and-Water-Levels-in-Towers.aspx",
+    "microgreensData": {
+      "weight": "N/A",
+      "seedAmount": ""
+    },
+    "isActive": true,
+    "oldTaskId": "General Maintenance",
+    "oldUniqueId": "PHWL1",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.265Z",
+    "instances": "1",
+    "daysOfWeek": [
+      "thursday",
+      "thursday",
+      "thursday"
+    ],
+    "id": 4466,
+    "createdAt": "2025-09-11T22:22:49.518Z",
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    },
+    "assignTo": "role_Equipment Tech",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
+    "description": "Remove Weight/BO and Move Turnip Microgreens to Watering Rack",
+    "priority": "high",
+    "frequency": "daily",
+    "category": "Moving",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "/:u:/r/sites/GrowSpaceEducation/SitePages/Remove-Blackout-and-Move-to-Watering-Rack.aspx?csf=1&web=1&share=EdD-j1_xQw5KhjDthuIYis4BuVk8w1u6nWkHFTunoyNVVQ&e=nWRlg1",
+    "microgreensData": {
+      "weight": "5 lbs",
+      "seedAmount": ""
+    },
+    "isActive": true,
+    "oldTaskId": "Dome Task",
+    "oldUniqueId": "RTM1",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.265Z",
+    "instances": "2",
+    "daysOfWeek": [
+      "thursday",
+      "thursday",
+      "thursday"
+    ],
+    "id": 4467,
+    "createdAt": "2025-09-11T22:22:49.539Z",
+    "location": "Kenosha",
+    "type": "blackout-tasks",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    },
+    "assignTo": "role_Blackout Specialist",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Clean Tower Garden Pots",
+    "description": "This task ensures Tower Garden pots and structural rods are thoroughly cleaned and prepped after soaking. Removing built-up grime supports plant health and extends the life of the towers.",
+    "priority": "medium",
+    "frequency": "daily",
+    "category": "Moving",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "/sites/GrowSpaceEducation/SitePages/Cleaning-Tower-Pot.aspx",
+    "microgreensData": {
+      "weight": "N/A",
+      "seedAmount": ""
+    },
+    "isActive": true,
+    "oldTaskId": "General Maintenance",
+    "oldUniqueId": "CTP1",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.265Z",
+    "instances": "1",
+    "daysOfWeek": [
+      "thursday",
+      "thursday",
+      "thursday"
+    ],
+    "id": 4468,
+    "createdAt": "2025-09-11T22:22:49.902Z",
+    "location": "Kenosha",
+    "type": "cleaning",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    },
+    "assignTo": "role_Cleaning Crew",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Assemble Tower Gardens",
+    "description": "This task covers the full assembly of Tower Garden units",
+    "priority": "medium",
+    "frequency": "daily",
+    "category": "Other",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "",
+    "microgreensData": null,
+    "isActive": true,
+    "oldTaskId": "",
+    "oldUniqueId": "",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.265Z",
+    "instances": "",
+    "id": 4469,
+    "createdAt": "2025-09-11T22:22:49.929Z",
+    "location": "Kenosha",
+    "type": "equipment-maintenance",
+    "daysOfWeek": [
+      "thursday"
+    ],
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    },
+    "assignTo": "role_Equipment Tech",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Plant Towers",
+    "description": "Plant the needed towers for the week based on the checklist.",
+    "priority": "low",
+    "frequency": "daily",
+    "category": "Other",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "/sites/GrowSpaceEducation/SitePages/Transferring-Seeds-to-Tower.aspx",
+    "microgreensData": {
+      "weight": "N/A",
+      "seedAmount": ""
+    },
+    "isActive": true,
+    "oldTaskId": "Moving",
+    "oldUniqueId": "PTT1",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.265Z",
+    "instances": "1",
+    "daysOfWeek": [
+      "thursday",
+      "thursday",
+      "thursday"
+    ],
+    "id": 4470,
+    "createdAt": "2025-09-11T22:22:49.998Z",
+    "location": "Kenosha",
+    "type": "moving",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": []
+    },
+    "assignTo": "role_Moving Tech",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
+  },
+  {
+    "title": "Opening",
+    "description": "If you are the first person in the farm complete this checklist!",
+    "priority": "high",
+    "frequency": "daily",
+    "category": "Other",
+    "assignedRole": "General Staff",
+    "estimatedTime": null,
+    "requiresPhotoProof": false,
+    "processLink": "General Laborer",
+    "microgreensData": {
+      "weight": "Saturday",
+      "seedAmount": "Thursday]"
+    },
+    "isActive": true,
+    "oldTaskId": "Sunday",
+    "oldUniqueId": "Friday",
+    "migratedFrom": "SharePoint",
+    "migrationDate": "2025-08-06T16:28:37.264Z",
+    "instances": "Wednesday",
+    "daysOfWeek": [
+      "monday",
+      "monday",
+      "friday",
+      "tuesday",
+      "saturday",
+      "wednesday",
+      "thursday",
+      "sunday"
+    ],
+    "id": 4471,
+    "createdAt": "2025-09-11T22:22:50.308Z",
+    "location": "Kenosha",
+    "type": "other",
+    "automation": {
+      "enabled": false,
+      "generateTrays": false,
+      "trayCount": 1,
+      "cropType": "microgreen",
+      "flow": {
+        "type": "microgreen",
+        "stages": []
+      }
+    },
+    "checklistTemplate": {
+      "steps": [
+        {
+          "id": "1756931744483",
+          "type": "instruction",
+          "label": "Check all the lights are on in the farm",
+          "required": true,
+          "config": {
+            "text": "1. Ensure the lights for the towers are on, if they are not on go to the breaker on the north east side of the farm and flip the lever back\n2. Check all the lights are on in the Microgreen racks.\n3. Check the NFT Upstairs"
+          }
+        },
+        {
+          "id": "1756931883233",
+          "type": "instruction",
+          "label": "Check for leaks",
+          "required": true,
+          "config": {
+            "text": "If there is water on the floor report it. Make sure to also check upstairs. Go to TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+          }
+        },
+        {
+          "id": "1756931923234",
+          "type": "instruction",
+          "label": "Check Plants",
+          "required": true,
+          "config": {
+            "text": "This only needs to be a basic analysis of the NFT, Towers, and Microgreen systems. Look for wilting, discolored leaves, drooping stems, pests, or generally weird things and report issues to: TEAMS -> CHAT -> GROW SPACE -> GENERAL"
+          }
+        }
+      ]
+    },
+    "assignTo": "all_staff",
+    "data": {},
+    "visibleFromDate": null,
+    "pausedAt": null,
+    "resumedAt": null,
+    "skippedAt": null,
+    "skipReason": null,
+    "completedBy": null,
+    "approvedBy": null
   }
 ]
