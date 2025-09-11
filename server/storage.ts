@@ -442,6 +442,79 @@ export class MemStorage implements IStorage {
     this.tasks.set(task.id, task);
   }
 
+  // BLUEPRINT: New Recurring Task Handling - Generate current period task immediately
+  async handleNewRecurringTask(template: RecurringTask): Promise<void> {
+    console.log(`🆕 HANDLING NEW RECURRING TASK: ${template.title}`);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Check if we need to generate current period task
+    const currentPeriodTask = await this.getCurrentPeriodTask(template, today);
+    if (currentPeriodTask) {
+      await this.saveTask(currentPeriodTask);
+      console.log(`✅ Created current period task for: ${template.title}`);
+    }
+    
+    // Generate future tasks (31 days ahead)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + 31);
+    
+    await this.generateTasksForDateRange(tomorrow, endDate, template);
+    console.log(`✅ Generated future tasks for: ${template.title}`);
+  }
+
+  // BLUEPRINT: Get Current Period Task
+  private async getCurrentPeriodTask(template: RecurringTask, today: Date): Promise<Task | null> {
+    const dayOfMonth = today.getDate();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+    
+    switch (template.frequency) {
+      case 'monthly':
+        // If we're past the 1st, still create this month's task
+        const lastDay = new Date(year, month + 1, 0);
+        return this.createTask(template, {
+          id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
+          visibleFromDate: new Date(year, month, 1),
+          dueDate: lastDay
+        });
+        
+      case 'biweekly':
+        if (dayOfMonth <= 14) {
+          // First period
+          return this.createTask(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
+            visibleFromDate: new Date(year, month, 1),
+            dueDate: new Date(year, month, 14)
+          });
+        } else {
+          // Second period
+          const lastDay = new Date(year, month + 1, 0);
+          return this.createTask(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
+            visibleFromDate: new Date(year, month, 15),
+            dueDate: lastDay
+          });
+        }
+        
+      case 'daily':
+        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        if (template.daysOfWeek?.includes(dayName)) {
+          return this.createTask(template, {
+            id: `${template.id}-${this.formatDate(today)}`,
+            visibleFromDate: today,
+            dueDate: today
+          });
+        }
+        break;
+    }
+    
+    return null;
+  }
+
   // Legacy method for compatibility - now delegates to new system
   private async ensureRecurringTaskInstances() {
     console.log('=== LEGACY COMPATIBILITY: Delegating to new generation system ===');
@@ -1472,8 +1545,8 @@ export class MemStorage implements IStorage {
     };
     this.recurringTasks.set(newTask.id, newTask);
     
-    // Generate task instances for the next 30 days
-    await this.generateTaskInstances(newTask);
+    // BLUEPRINT: Use new recurring task handling system
+    await this.handleNewRecurringTask(newTask);
     
     // Persist data after generating task instances
     await this.persistData();
