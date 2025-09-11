@@ -517,6 +517,64 @@ export class MemStorage implements IStorage {
     return null;
   }
 
+  // BLUEPRINT: Reset and Backfill System
+  async resetAndBackfillAllTasks(userId: number = 1, backfillDays: number = 30): Promise<{ deleted: number; generated: number; backfilled: number }> {
+    console.log('🔄 RESETTING AND BACKFILLING ALL TASKS');
+    
+    const lock = await this.acquireLock('reset-backfill-lock', userId, 'system_reset', 15);
+    if (!lock) {
+      throw new Error('Another reset operation is in progress');
+    }
+    
+    try {
+      // 1. Delete all task instances (preserve recurring tasks)
+      const taskCount = this.tasks.size;
+      this.tasks.clear();
+      console.log(`🗑️ DELETED ${taskCount} task instances (kept recurring tasks)`);
+      
+      // 2. Generate backfill tasks (historical)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const backfillStart = new Date(today);
+      backfillStart.setDate(today.getDate() - backfillDays);
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      
+      console.log(`📈 BACKFILLING from ${this.formatDate(backfillStart)} to ${this.formatDate(yesterday)}`);
+      const backfilledTasks = await this.generateTasksForDateRange(backfillStart, yesterday);
+      
+      // 3. Generate forward tasks (today + 31 days)
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + 31);
+      
+      console.log(`🔮 GENERATING FORWARD from ${this.formatDate(today)} to ${this.formatDate(endDate)}`);
+      const forwardTasks = await this.generateTasksForDateRange(today, endDate);
+      
+      // 4. Update system status
+      await this.setSystemStatus({
+        id: 'task-generation-status',
+        lastGenerationDate: this.formatDate(today),
+        generatedThrough: this.formatDate(endDate),
+        lastUpdateBy: userId
+      });
+      
+      // 5. Persist everything
+      await this.persistData();
+      
+      const result = {
+        deleted: taskCount,
+        generated: forwardTasks.length,
+        backfilled: backfilledTasks.length
+      };
+      
+      console.log(`🎉 RESET COMPLETE: Deleted ${result.deleted}, Generated ${result.generated}, Backfilled ${result.backfilled}`);
+      return result;
+      
+    } finally {
+      await this.releaseLock('reset-backfill-lock');
+    }
+  }
+
   // Legacy method for compatibility - now delegates to new system
   private async ensureRecurringTaskInstances() {
     console.log('=== LEGACY COMPATIBILITY: Delegating to new generation system ===');
