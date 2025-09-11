@@ -204,7 +204,7 @@ const RecurringTasks: React.FC = () => {
   React.useEffect(() => {
     console.log('🔍 Location changed, forcing refetch...');
     refetch();
-  }, [currentLocation.name, isViewingAllLocations, refetch]);
+  }, [currentLocation.id, isViewingAllLocations, refetch]);
 
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
