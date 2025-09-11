@@ -433,9 +433,11 @@ export class MemStorage implements IStorage {
 
   private async taskExists(taskId: string): Promise<boolean> {
     // For string-based IDs from the new system, we need to check differently
-    return Array.from(this.tasks.values()).some(task => 
-      `${task.recurringTaskId}-${this.formatDate(task.dueDate || new Date())}` === taskId
-    );
+    return Array.from(this.tasks.values()).some(task => {
+      if (!task.dueDate) return false;
+      const dueDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
+      return `${task.recurringTaskId}-${this.formatDate(dueDate)}` === taskId;
+    });
   }
 
   private async saveTask(task: Task): Promise<void> {
