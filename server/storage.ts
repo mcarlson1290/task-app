@@ -3131,7 +3131,15 @@ class HybridStorage implements IStorage {
 
   async getAllTasks(): Promise<Task[]> {
     console.log('🔄 HybridStorage.getAllTasks() - delegating to DatabaseStorage...');
-    return this.dbStorage.getAllTasks();
+    const dbTasks = await this.dbStorage.getAllTasks();
+    console.log(`🔍 HybridStorage received ${dbTasks.length} tasks from DatabaseStorage`);
+    if (dbTasks.length > 0) {
+      const firstTask = dbTasks[0];
+      const lastTask = dbTasks[dbTasks.length - 1]; 
+      console.log(`🔍 HybridStorage first task: ${firstTask.title} (dueDate: ${firstTask.dueDate})`);
+      console.log(`🔍 HybridStorage last task: ${lastTask.title} (dueDate: ${lastTask.dueDate})`);
+    }
+    return dbTasks;
   }
 
   async getTasksByLocation(locationId: string): Promise<Task[]> {

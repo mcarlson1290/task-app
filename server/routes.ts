@@ -380,17 +380,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/tasks", async (req, res) => {
     try {
       const { userId, location } = req.query;
+      console.log(`🔍 /api/tasks called with userId: ${userId}, location: "${location}"`);
       let tasks;
       
       if (location) {
-        tasks = await storage.getTasksByLocation(location as string);
+        // Normalize and sanitize location input
+        const rawLocation = String(location);
+        const cleanedLocation = rawLocation.trim().replace(/^['"]|['"]$/g, '');
+        const upperLocation = cleanedLocation.toUpperCase();
+        
+        // Map short location codes to full names for backwards compatibility  
+        const locationMap: { [key: string]: string } = {
+          'K': 'Kenosha'
+        };
+        const actualLocation = locationMap[upperLocation] || cleanedLocation;
+        
+        console.log(`🔍 Using location filtering for: "${cleanedLocation}" → "${actualLocation}"`);
+        tasks = await storage.getTasksByLocation(actualLocation);
+        
+        // Defensive retry if mapping exists but got 0 results
+        if (tasks.length === 0 && locationMap[upperLocation] && actualLocation !== cleanedLocation) {
+          console.log(`🔍 Retrying with mapped location: "${actualLocation}"`);
+          tasks = await storage.getTasksByLocation(actualLocation);
+        }
       } else if (userId) {
+        console.log(`🔍 Using user filtering for userId: ${userId}`);
         tasks = await storage.getTasksByUser(parseInt(userId as string));
       } else {
+        console.log(`🔍 Using getAllTasks() - no filters`);
         tasks = await storage.getAllTasks();
       }
       
-      res.json(tasks);
+      console.log(`🔍 Retrieved ${tasks.length} tasks from storage`);
+      if (tasks.length > 0) {
+        console.log(`🔍 First task: "${tasks[0].title}" (location: "${tasks[0].location}", dueDate: ${tasks[0].dueDate})`);
+      }
+      
+      // Transform tasks to include explicit visibleFromDate for client filtering
+      const transformedTasks = tasks.map(task => {
+        const dueDate = new Date(task.dueDate);
+        let visibleFromDate = null;
+        
+        // For biweekly/period tasks, calculate visibleFromDate (13 days before dueDate)
+        if (task.frequency === 'biweekly' || (task.frequency && task.frequency.toLowerCase().includes('biweekly'))) {
+          visibleFromDate = new Date(dueDate);
+          visibleFromDate.setDate(visibleFromDate.getDate() - 13);
+        }
+        
+        return {
+          ...task,
+          // Serialize dates as YYYY-MM-DD for consistent client parsing
+          taskDate: task.taskDate ? new Date(task.taskDate).toISOString().split('T')[0] : null,
+          dueDate: dueDate.toISOString().split('T')[0],
+          visibleFromDate: visibleFromDate ? visibleFromDate.toISOString().split('T')[0] : null
+        };
+      });
+      
+      // Log first 5 tasks for debugging
+      console.log('📋 Transformed tasks sample:');
+      transformedTasks.slice(0, 5).forEach(task => {
+        console.log(`  ${task.id}: "${task.title}" | taskDate: ${task.taskDate} | dueDate: ${task.dueDate} | visibleFromDate: ${task.visibleFromDate}`);
+      });
+      
+      res.json(transformedTasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tasks" });
     }
