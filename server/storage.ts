@@ -284,7 +284,7 @@ export class MemStorage implements IStorage {
           console.log(`✅ Created task: ${task.title} for ${this.formatDate(currentDate)}`);
         }
       }
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
     
     console.log(`🎉 Generated ${tasksCreated.length} tasks for date range`);
@@ -293,18 +293,18 @@ export class MemStorage implements IStorage {
 
   // BLUEPRINT: Task Creation Logic - Determines when to generate tasks based on frequency
   private async shouldGenerateTask(template: RecurringTask, checkDate: Date): Promise<InsertTask | null> {
-    const dayOfMonth = checkDate.getDate();
-    const month = checkDate.getMonth();
-    const year = checkDate.getFullYear();
-    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const dayOfMonth = checkDate.getUTCDate();
+    const month = checkDate.getUTCMonth();
+    const year = checkDate.getUTCFullYear();
+    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' }).toLowerCase();
     
     switch (template.frequency) {
       case 'monthly':
         if (dayOfMonth === 1) {
-          const lastDay = new Date(year, month + 1, 0);
+          const lastDay = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
-            visibleFromDate: new Date(year, month, 1),
+            visibleFromDate: new Date(Date.UTC(year, month, 1)),
             dueDate: lastDay
           });
         }
@@ -314,15 +314,15 @@ export class MemStorage implements IStorage {
         if (dayOfMonth === 1) {
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
-            visibleFromDate: new Date(year, month, 1),
-            dueDate: new Date(year, month, 14)
+            visibleFromDate: new Date(Date.UTC(year, month, 1)),
+            dueDate: new Date(Date.UTC(year, month, 14))
           });
         }
         if (dayOfMonth === 15) {
-          const lastDay = new Date(year, month + 1, 0);
+          const lastDay = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
-            visibleFromDate: new Date(year, month, 15),
+            visibleFromDate: new Date(Date.UTC(year, month, 15)),
             dueDate: lastDay
           });
         }
@@ -352,7 +352,7 @@ export class MemStorage implements IStorage {
       case 'quarterly':
         const quarterStarts = [0, 3, 6, 9];
         if (quarterStarts.includes(month) && dayOfMonth === 1) {
-          const quarterEnd = new Date(year, month + 3, 0);
+          const quarterEnd = new Date(Date.UTC(year, month + 3, 0));
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-Q${Math.floor(month / 3) + 1}`,
             visibleFromDate: checkDate,
@@ -434,7 +434,7 @@ export class MemStorage implements IStorage {
     try {
       const status = await this.getSystemStatus('task-generation-status');
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      today.setUTCHours(0, 0, 0, 0);
       
       const todayStr = this.formatDate(today);
       const lastRunDate = status?.lastGenerationDate;
@@ -444,7 +444,7 @@ export class MemStorage implements IStorage {
         
         // Ensure we have 31 days ahead
         const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 31);
+        endDate.setUTCDate(today.getUTCDate() + 31);
         
         const generatedTasks = await this.generateTasksForDateRange(today, endDate);
         
@@ -471,7 +471,7 @@ export class MemStorage implements IStorage {
 
   // Helper methods for the new system
   private formatDate(date: Date): string {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
   }
 
   private async taskExists(taskId: string): Promise<boolean> {
@@ -563,7 +563,12 @@ export class MemStorage implements IStorage {
               }
             } else if (existingTaskLive.status === 'pending') {
               // Task exists but might be outdated - verify it matches template
-              if (this.taskNeedsUpdate(existingTaskLive, template)) {
+              // IMPORTANT: Don't update tasks due today or in the past - users are working on them
+              const taskDueDate = new Date(existingTaskLive.dueDate!);
+              const isToday = this.isSameDate(taskDueDate, today);
+              const isPast = taskDueDate < today;
+              
+              if (!isToday && !isPast && this.taskNeedsUpdate(existingTaskLive, template)) {
                 try {
                   // Only pass updateable fields to avoid date serialization issues
                   const updateFields = this.extractTemplateFields(template);
@@ -579,6 +584,8 @@ export class MemStorage implements IStorage {
                   errors.push(errorMsg);
                   console.log(`❌ ${errorMsg}`);
                 }
+              } else if (isToday || isPast) {
+                console.log(`⚠️ Skipping update for current/past task: ${existingTaskLive.title} (due: ${this.formatDate(taskDueDate)})`);
               }
             }
           }
@@ -879,10 +886,10 @@ export class MemStorage implements IStorage {
     switch (template.frequency) {
       case 'monthly':
         // If we're past the 1st, still create this month's task
-        const lastDay = new Date(year, month + 1, 0);
+        const lastDay = new Date(Date.UTC(year, month + 1, 0));
         return this.buildTaskFromTemplate(template, {
           id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
-          visibleFromDate: new Date(year, month, 1),
+          visibleFromDate: new Date(Date.UTC(year, month, 1)),
           dueDate: lastDay
         });
         
@@ -891,15 +898,15 @@ export class MemStorage implements IStorage {
           // First period
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
-            visibleFromDate: new Date(year, month, 1),
-            dueDate: new Date(year, month, 14)
+            visibleFromDate: new Date(Date.UTC(year, month, 1)),
+            dueDate: new Date(Date.UTC(year, month, 14))
           });
         } else {
           // Second period
-          const lastDay = new Date(year, month + 1, 0);
+          const lastDay = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
-            visibleFromDate: new Date(year, month, 15),
+            visibleFromDate: new Date(Date.UTC(year, month, 15)),
             dueDate: lastDay
           });
         }
@@ -2218,7 +2225,7 @@ export class MemStorage implements IStorage {
     
     // Use UTC-aware date creation to avoid timezone issues
     const today = new Date();
-    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
     const instances: Task[] = [];
     
     if (recurringTask.frequency === 'monthly') {

@@ -430,35 +430,24 @@ const Tasks: React.FC = () => {
         } else {
           // NEW CLEAN FILTER LOGIC: Check for date ranges (monthly, bi-weekly, quarterly)
           if (task.visibleFromDate && task.dueDate && task.recurringTaskId) {
-            const visibleFrom = new Date(task.visibleFromDate);
-            const dueDate = new Date(task.dueDate);
-            const viewDate = new Date(dateFilter);
+            const visibleFromStr = formatDateForComparison(task.visibleFromDate);
+            const dueDateStr = formatDateForComparison(task.dueDate);
             
-            visibleFrom.setHours(0, 0, 0, 0);
-            dueDate.setHours(0, 0, 0, 0);
-            viewDate.setHours(0, 0, 0, 0);
-            
-            // Show if current date is between visible and due dates
-            const isVisible = viewDate >= visibleFrom && viewDate <= dueDate;
+            // Show if current date is between visible and due dates (inclusive)
+            const isVisible = dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
             
             // Debug ALL recurring tasks with date ranges
-            if (task.recurringTaskId) {
-              const visibleFromStr = task.visibleFromDate ? (task.visibleFromDate instanceof Date ? task.visibleFromDate.toISOString().split('T')[0] : (typeof task.visibleFromDate === 'string' ? task.visibleFromDate.split('T')[0] : 'none')) : 'none';
-              const dueDateStr = task.dueDate ? (task.dueDate instanceof Date ? task.dueDate.toISOString().split('T')[0] : (typeof task.dueDate === 'string' ? task.dueDate.split('T')[0] : 'none')) : 'none';
-              console.log(`🗓️ RECURRING TASK: "${task.title}" (${task.frequency}) | View: ${dateFilter} | Visible: ${visibleFromStr} to ${dueDateStr} | HasRecurringId: ${!!task.recurringTaskId} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
-            }
+            console.log(`🗓️ RECURRING TASK: "${task.title}" (${task.frequency}) | View: ${dateFilter} | Visible: ${visibleFromStr} to ${dueDateStr} | HasRecurringId: ${!!task.recurringTaskId} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
             
             return isVisible;
           }
           
-          // For single-day tasks (daily/weekly)
-          const taskDate = new Date(task.dueDate || task.completedAt || new Date());
-          const viewDate = new Date(dateFilter);
+          // For single-day tasks (daily/weekly) - use formatDateForComparison to avoid timezone issues
+          const taskDateStr = formatDateForComparison(task.dueDate || task.completedAt);
+          if (!taskDateStr) return false; // Skip tasks without dates
           
-          taskDate.setHours(0, 0, 0, 0);
-          viewDate.setHours(0, 0, 0, 0);
-          
-          const matches = viewDate.getTime() === taskDate.getTime();
+          const matches = taskDateStr === dateFilter;
+          console.log(`🗓️ SINGLE DAY TASK: "${task.title}" | TaskDate: ${taskDateStr} | ViewDate: ${dateFilter} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
           return matches;
         }
       });
