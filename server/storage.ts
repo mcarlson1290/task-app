@@ -32,6 +32,7 @@ export interface IStorage {
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   resetTasks(): Promise<boolean>;
+  resetTaskSequence(): Promise<void>;
 
   // Inventory methods
   getInventoryItem(id: number): Promise<InventoryItem | undefined>;
@@ -108,6 +109,9 @@ export interface IStorage {
   // Clear all data
   clearAllData(): Promise<boolean>;
   
+  // Task sequence management
+  resetTaskSequence(): Promise<void>;
+  
   // System status and locks for task generation
   getSystemStatus(id: string): Promise<SystemStatus | undefined>;
   setSystemStatus(status: InsertSystemStatus): Promise<SystemStatus>;
@@ -175,11 +179,30 @@ export class MemStorage implements IStorage {
       this.currentRecurringTaskId = persistedData.counters.currentRecurringTaskId; 
       this.currentInventoryId = persistedData.counters.currentInventoryId;
       
+      // CRITICAL: Reset Postgres sequence to align with existing data
+      try {
+        // This is handled by the DatabaseStorage when using HybridStorage
+        console.log('✅ Task sequence will be managed by DatabaseStorage');
+      } catch (error) {
+        console.log('⚠️ Failed to reset task sequence:', error);
+      }
+
       console.log('Persistence restored:', {
         tasks: persistedData.tasks.length,
         recurringTasks: persistedData.recurringTasks.length,
         inventoryItems: persistedData.inventoryItems.length
       });
+
+      // CRITICAL: Reset Postgres sequence to align with existing data
+      try {
+        await this.storage.resetTaskSequence();
+        console.log('✅ Reset PostgreSQL task ID sequence');
+      } catch (error) {
+        console.log('⚠️ Failed to reset task sequence:', error);
+      }
+
+      // Initialize continuous verification system
+      this.setupContinuousVerification();
       
       // Migrate any "weekly" frequency to "daily" for UI compatibility
       await this.migrateWeeklyFrequencies();
@@ -269,7 +292,7 @@ export class MemStorage implements IStorage {
   }
 
   // BLUEPRINT: Task Creation Logic - Determines when to generate tasks based on frequency
-  private async shouldGenerateTask(template: RecurringTask, checkDate: Date): Promise<Task | null> {
+  private async shouldGenerateTask(template: RecurringTask, checkDate: Date): Promise<InsertTask | null> {
     const dayOfMonth = checkDate.getDate();
     const month = checkDate.getMonth();
     const year = checkDate.getFullYear();
@@ -342,16 +365,15 @@ export class MemStorage implements IStorage {
     return null;
   }
 
-  // BLUEPRINT: Task Creation Helper
-  private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<Task> {
-    const newTask: Task = {
-      id: this.currentTaskId++,
+  // BLUEPRINT: Task Creation Helper (returns InsertTask without ID)
+  private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<InsertTask> {
+    const newTask: InsertTask = {
       title: template.title,
-      description: template.description,
+      description: template.description || '',
       type: template.type,
       status: 'pending',
       priority: 'medium',
-      assignedTo: template.assignTo ? null : null, // Will be handled by assignTo field
+      assignedTo: null, // Legacy field - use assignTo instead
       assignTo: template.assignTo || undefined,
       createdBy: template.createdBy,
       location: template.location,
@@ -359,14 +381,23 @@ export class MemStorage implements IStorage {
       actualTime: null,
       progress: 0,
       checklist: template.checklistTemplate?.steps?.map((step, index) => ({
-        id: step.id || `${index + 1}`,
-        text: step.label || '',
+        id: `${index + 1}`,
+        text: step.label || step.text || '',
         completed: false,
         required: step.required || false,
         type: step.type,
-        config: step.config,
+        config: {
+          inventoryCategory: step.inventoryCategory,
+          min: step.min,
+          max: step.max,
+          default: step.default,
+          systemType: step.systemType,
+          autoSuggest: step.autoSuggest,
+          dataType: step.dataType,
+          calculation: step.calculation
+        },
         dataCollection: step.type === 'data-capture' ? { 
-          type: step.config?.dataType || 'text', 
+          type: step.dataType || 'text', 
           label: step.label || '' 
         } : undefined
       })) || [],
@@ -383,8 +414,8 @@ export class MemStorage implements IStorage {
       frequency: template.frequency,
       recurringTaskId: template.id,
       isFromDeletedRecurring: false,
-      deletedRecurringTaskTitle: null,
-      createdAt: new Date()
+      deletedRecurringTaskTitle: null
+      // No createdAt - let database handle it
     };
     
     return newTask;
@@ -655,16 +686,36 @@ export class MemStorage implements IStorage {
       description: template.description || '',
       type: template.type,
       status: 'pending',
-      assignedTo: template.assignedTo,
+      priority: 'medium',
+      assignedTo: null, // Legacy field - use assignTo instead
+      assignTo: template.assignTo,
       createdBy: template.createdBy,
-      createdAt: new Date(),
-      dueDate: dueDate, // Ensure dates are proper Date objects
-      frequency: template.frequency,
       location: template.location,
-      estimatedTime: template.estimatedTime,
+      estimatedTime: null,
+      actualTime: null,
+      progress: 0,
+      checklist: template.checklistTemplate?.steps?.map((step, index) => ({
+        id: `${index + 1}`,
+        text: step.label || step.text || '',
+        completed: false,
+        required: step.required || false,
+        type: step.type
+      })) || [],
+      data: {},
+      dueDate: dueDate,
+      visibleFromDate: visibleDate,
+      startedAt: null,
+      completedAt: null,
+      pausedAt: null,
+      resumedAt: null,
+      skippedAt: null,
+      skipReason: null,
+      isRecurring: true,
+      frequency: template.frequency,
       recurringTaskId: template.id,
-      checklistTemplate: template.checklistTemplate,
-      isRecurring: true
+      isFromDeletedRecurring: false,
+      deletedRecurringTaskTitle: null,
+      createdAt: new Date()
     };
   }
 
@@ -673,8 +724,7 @@ export class MemStorage implements IStorage {
     return (
       existingTask.title !== template.title ||
       existingTask.description !== template.description ||
-      existingTask.assignedTo !== template.assignedTo ||
-      existingTask.estimatedTime !== template.estimatedTime
+      existingTask.assignTo !== template.assignTo
     );
   }
 
@@ -684,9 +734,7 @@ export class MemStorage implements IStorage {
       title: template.title,
       description: template.description || '',
       type: template.type,
-      assignedTo: template.assignedTo,
-      estimatedTime: template.estimatedTime,
-      checklistTemplate: template.checklistTemplate,
+      assignTo: template.assignTo,
       // Don't include dates in updates - preserve existing dates
       // Don't include IDs - preserve existing IDs
     };
@@ -697,6 +745,94 @@ export class MemStorage implements IStorage {
     return date1.getUTCFullYear() === date2.getUTCFullYear() &&
            date1.getUTCMonth() === date2.getUTCMonth() &&
            date1.getUTCDate() === date2.getUTCDate();
+  }
+
+  // ===== CONTINUOUS VERIFICATION SYSTEM =====
+  
+  private verificationTimer: NodeJS.Timeout | null = null;
+  private verificationLock: Map<string, { userId: number; expiresAt: Date }> = new Map();
+
+  // Setup continuous verification with all features from user document
+  setupContinuousVerification() {
+    console.log('🔧 Setting up continuous verification system...');
+    
+    // Run verification every 30 minutes as requested
+    this.verificationTimer = setInterval(async () => {
+      await this.initializeAppVerification();
+    }, 30 * 60 * 1000); // 30 minutes
+
+    // Run initial verification
+    setTimeout(() => this.initializeAppVerification(), 5000);
+    
+    console.log('✅ Continuous verification system initialized');
+  }
+
+  // Initialize app verification with locking (from user document)
+  private async initializeAppVerification(userId: number = 1): Promise<void> {
+    // Check if verification is needed (from user document logic)
+    const lastRun = await this.getLastVerificationRun();
+    const now = new Date();
+    
+    // Run if never run or more than 30 minutes old
+    if (!lastRun || (now.getTime() - lastRun.getTime()) > 30 * 60 * 1000) {
+      // Acquire lock to prevent concurrent runs
+      const lockAcquired = await this.acquireVerificationLock(userId);
+      
+      if (lockAcquired) {
+        try {
+          console.log('🔄 Running 30-minute verification check...');
+          await this.verifyAndHealTasks();
+          
+          // Update last run time
+          await this.setLastVerificationRun(now, userId);
+        } finally {
+          await this.releaseVerificationLock();
+        }
+      } else {
+        console.log('⏳ Another user is handling verification');
+      }
+    }
+  }
+
+  // Simple lock mechanism (from user document)
+  private async acquireVerificationLock(userId: number): Promise<boolean> {
+    const lockId = 'continuous-verification';
+    const now = new Date();
+    const existingLock = this.verificationLock.get(lockId);
+    
+    // Check if lock exists and hasn't expired
+    if (existingLock && existingLock.expiresAt > now) {
+      return false; // Lock is held by another user
+    }
+    
+    // Acquire lock with 5 minute expiry
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    this.verificationLock.set(lockId, { userId, expiresAt });
+    return true;
+  }
+
+  private async releaseVerificationLock(): Promise<void> {
+    this.verificationLock.delete('continuous-verification');
+  }
+
+  // Track last verification run
+  private lastVerificationRun: Date | null = null;
+  
+  private async getLastVerificationRun(): Promise<Date | null> {
+    return this.lastVerificationRun;
+  }
+  
+  private async setLastVerificationRun(date: Date, userId: number): Promise<void> {
+    this.lastVerificationRun = date;
+    console.log(`✅ Verification completed by user ${userId} at ${date.toISOString()}`);
+  }
+
+  // Cleanup method
+  cleanup() {
+    if (this.verificationTimer) {
+      clearInterval(this.verificationTimer);
+      this.verificationTimer = null;
+    }
   }
 
   // BLUEPRINT: New Recurring Task Handling - Generate current period task immediately
@@ -1613,6 +1749,11 @@ export class MemStorage implements IStorage {
     this.tasks.clear();
     this.currentTaskId = 1;
     return true;
+  }
+
+  async resetTaskSequence(): Promise<void> {
+    // For MemStorage, just reset the counter
+    this.currentTaskId = Math.max(...Array.from(this.tasks.keys()), 0) + 1;
   }
 
   // Inventory methods
@@ -2643,6 +2784,11 @@ class DatabaseStorage implements IStorage {
     return true;
   }
 
+  async resetTaskSequence(): Promise<void> {
+    // Reset PostgreSQL sequence to match current max ID
+    await db.execute(sql`SELECT setval(pg_get_serial_sequence('tasks','id'), COALESCE((SELECT MAX(id)+1 FROM tasks),1), false)`);
+  }
+
   // Inventory methods (stub implementation - keeping interface)
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
     const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
@@ -2943,6 +3089,10 @@ class HybridStorage implements IStorage {
 
   async resetTasks(): Promise<boolean> {
     return this.dbStorage.resetTasks();
+  }
+
+  async resetTaskSequence(): Promise<void> {
+    return this.dbStorage.resetTaskSequence();
   }
 
   async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
