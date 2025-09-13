@@ -80,16 +80,36 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (user: typeof testUsers[0]) => {
-    setFormData(prev => ({
-      ...prev,
-      username: user.username,
-      password: "password",
-    }));
-    loginMutation.mutate({
-      username: user.username,
-      password: "password",
+  const handleDevLogin = () => {
+    // Create a mock authenticated user for development
+    const mockUser: User = {
+      id: 999,
+      username: "dev",
+      password: "dev",
+      name: "Dev User",
+      role: "corporate",
+      approved: true,
+      location: "Kenosha",
+      payType: "salary",
+      payRate: 75000,
+      businessEmail: "dev@growspace.com",
+      personalEmail: "dev@email.com",
+      homePhone: null,
+      businessPhone: null,
+      mobilePhone: null,
+      emergencyContactName: null,
+      emergencyRelationship: null,
+      emergencyPhone: null,
+      lastActive: null,
+      createdAt: new Date(),
+    };
+    
+    setStoredAuth(mockUser);
+    toast({
+      title: "Dev Login successful!",
+      description: "Welcome to the development environment!",
     });
+    setLocation("/");
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -182,25 +202,19 @@ const Login: React.FC = () => {
               </Button>
             </form>
 
-            {isLogin && (
+            {isLogin && import.meta.env.DEV && (
               <div className="mt-6">
                 <div className="text-center text-sm text-gray-600 mb-4">
-                  Quick login for testing:
+                  Development mode:
                 </div>
-                <div className="space-y-2">
-                  {testUsers.map((user) => (
-                    <Button
-                      key={user.username}
-                      variant="outline"
-                      className="w-full justify-between"
-                      onClick={() => handleQuickLogin(user)}
-                      disabled={loginMutation.isPending}
-                    >
-                      <span>{user.name}</span>
-                      <span className="text-xs text-gray-500 capitalize">{user.role}</span>
-                    </Button>
-                  ))}
-                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleDevLogin}
+                  data-testid="button-dev-login"
+                >
+                  🚀 Dev Login (Skip Authentication)
+                </Button>
               </div>
             )}
 
