@@ -45,6 +45,7 @@ export const tasks = pgTable("tasks", {
   progress: integer("progress").default(0), // 0-100
   checklist: json("checklist").$type<ChecklistItem[]>(),
   data: json("data").$type<Record<string, any>>(), // for collected data
+  taskDate: timestamp("task_date"), // Primary date for task filtering (usually same as visibleFromDate)
   dueDate: timestamp("due_date"),
   visibleFromDate: timestamp("visible_from_date"), // When task becomes visible
   startedAt: timestamp("started_at"),

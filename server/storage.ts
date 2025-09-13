@@ -311,21 +311,24 @@ export class MemStorage implements IStorage {
         break;
         
       case 'biweekly':
-        // Generate for first half of month (1st-14th) if we're in that period
-        if (dayOfMonth >= 1 && dayOfMonth <= 14) {
+        // Create first half task on day 1 (due on 14th)
+        if (dayOfMonth === 1) {
+          const visibleDate = new Date(Date.UTC(year, month, 1));
+          const dueDate = new Date(Date.UTC(year, month, 14));
           return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
-            visibleFromDate: new Date(Date.UTC(year, month, 1)),
-            dueDate: new Date(Date.UTC(year, month, 14))
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`,
+            visibleFromDate: visibleDate,
+            dueDate: dueDate
           });
         }
-        // Generate for second half of month (15th-end) if we're in that period
-        if (dayOfMonth >= 15) {
-          const lastDay = new Date(Date.UTC(year, month + 1, 0));
+        // Create second half task on day 15 (due on last day of month)
+        if (dayOfMonth === 15) {
+          const visibleDate = new Date(Date.UTC(year, month, 15));
+          const dueDate = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
-            visibleFromDate: new Date(Date.UTC(year, month, 15)),
-            dueDate: lastDay
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`,
+            visibleFromDate: visibleDate,
+            dueDate: dueDate
           });
         }
         break;
@@ -404,6 +407,7 @@ export class MemStorage implements IStorage {
         } : undefined
       })) || [],
       data: {},
+      taskDate: dateInfo.visibleFromDate, // Set taskDate for frontend filtering
       dueDate: dateInfo.dueDate,
       visibleFromDate: dateInfo.visibleFromDate,
       startedAt: null,
@@ -444,11 +448,15 @@ export class MemStorage implements IStorage {
       if (!status || !lastRunDate || lastRunDate < todayStr) {
         console.log(`🔄 Running generation - Last run: ${lastRunDate || 'never'}, Today: ${todayStr}`);
         
-        // Ensure we have 31 days ahead
+        // Start from beginning of current biweekly period to catch current tasks
+        const startDate = new Date(today);
+        startDate.setUTCDate(1); // Start from 1st of current month
+        startDate.setUTCHours(0, 0, 0, 0);
+        
         const endDate = new Date(today);
         endDate.setUTCDate(today.getUTCDate() + 31);
         
-        const generatedTasks = await this.generateTasksForDateRange(today, endDate);
+        const generatedTasks = await this.generateTasksForDateRange(startDate, endDate);
         
         // Tasks are now written directly to DatabaseStorage via createTask()
         if (generatedTasks.length > 0) {
@@ -513,6 +521,11 @@ export class MemStorage implements IStorage {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     
+    // Start from beginning of current biweekly period to catch current tasks
+    const startDate = new Date(today);
+    startDate.setUTCDate(1); // Start from 1st of current month
+    startDate.setUTCHours(0, 0, 0, 0);
+    
     const endDate = new Date(today);
     endDate.setUTCDate(today.getUTCDate() + 31);
     
@@ -523,13 +536,14 @@ export class MemStorage implements IStorage {
     let updated = 0;
     const errors: string[] = [];
     
-    console.log(`🔍 Verifying tasks from ${this.formatDate(today)} to ${this.formatDate(endDate)}`);
+    console.log(`🔍 Verifying tasks from ${this.formatDate(startDate)} to ${this.formatDate(endDate)}`);
     console.log(`🔍 Found ${templates.length} active templates, ${existingTasks.length} existing tasks`);
     
     // Check each day in our window
-    for (let dayOffset = 0; dayOffset <= 31; dayOffset++) {
-      const checkDate = new Date(today);
-      checkDate.setUTCDate(today.getUTCDate() + dayOffset);
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+    for (let dayOffset = 0; dayOffset <= totalDays; dayOffset++) {
+      const checkDate = new Date(startDate);
+      checkDate.setUTCDate(startDate.getUTCDate() + dayOffset);
       
       for (const template of templates) {
         try {
@@ -2756,7 +2770,13 @@ class DatabaseStorage implements IStorage {
   }
 
   async createTask(taskData: InsertTask): Promise<Task> {
-    const [task] = await db.insert(tasks).values(taskData).returning();
+    // Ensure taskDate is set if missing - use visibleFromDate as fallback
+    const safeTaskData = {
+      ...taskData,
+      taskDate: taskData.taskDate || taskData.visibleFromDate || null
+    };
+    
+    const [task] = await db.insert(tasks).values(safeTaskData).returning();
     return task;
   }
 
