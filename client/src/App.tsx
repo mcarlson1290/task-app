@@ -69,6 +69,49 @@ function AppContent() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [setLocation, currentUser]);
 
+  // Window focus verification trigger - respects backend locking and timing
+  useEffect(() => {
+    if (!currentUser || !isAuthenticated) return;
+
+    let lastVerificationCall = 0;
+    const MIN_INTERVAL = 5 * 60 * 1000; // 5 minutes minimum between calls
+    
+    const handleWindowFocus = async () => {
+      const now = Date.now();
+      
+      // Client-side throttling - don't call more than once every 5 minutes
+      if (now - lastVerificationCall < MIN_INTERVAL) {
+        console.log(`⏳ Window focus verification skipped - last call was ${Math.round((now - lastVerificationCall) / 1000 / 60)} minutes ago`);
+        return;
+      }
+      
+      try {
+        lastVerificationCall = now;
+        console.log('🔄 Window focus detected - triggering verification check...');
+        
+        const response = await fetch('/api/system/verify-tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: currentUser.id }),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Window focus verification completed:', result.message);
+        } else {
+          console.log('⚠️ Window focus verification request failed:', response.status);
+        }
+      } catch (error) {
+        console.log('❌ Window focus verification error:', error);
+      }
+    };
+    
+    window.addEventListener('focus', handleWindowFocus);
+    return () => window.removeEventListener('focus', handleWindowFocus);
+  }, [currentUser, isAuthenticated]);
+
   useEffect(() => {
     const initializeUser = async () => {
       // If we already have a user, don't re-initialize

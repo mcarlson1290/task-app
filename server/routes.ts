@@ -1170,6 +1170,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Window focus verification trigger endpoint
+  app.post("/api/system/verify-tasks", async (req, res) => {
+    try {
+      const { userId = 1 } = req.body;
+      console.log(`🔄 Window focus triggered verification for user ${userId}`);
+      
+      // Call the existing verification method with all locking and timing logic
+      await (storage as any).initializeAppVerification(userId);
+      
+      res.json({ 
+        success: true, 
+        message: "Verification check triggered",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error triggering verification:', error);
+      res.status(500).json({ message: "Failed to trigger verification" });
+    }
+  });
+
   // Tray API endpoints (temporary localStorage bridge until database migration)
   app.get("/api/trays", async (req, res) => {
     try {

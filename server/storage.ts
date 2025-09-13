@@ -193,10 +193,10 @@ export class MemStorage implements IStorage {
         inventoryItems: persistedData.inventoryItems.length
       });
 
-      // CRITICAL: Reset Postgres sequence to align with existing data
+      // CRITICAL: Reset in-memory sequence to align with existing data
       try {
-        await this.storage.resetTaskSequence();
-        console.log('✅ Reset PostgreSQL task ID sequence');
+        await this.resetTaskSequence();
+        console.log('✅ Reset MemStorage task ID sequence');
       } catch (error) {
         console.log('⚠️ Failed to reset task sequence:', error);
       }
