@@ -353,8 +353,8 @@ const Tasks: React.FC = () => {
       return recurringOnly;
     }
     
-    // Location filtering is handled by server-side query parameter
-    // Removed redundant client-side location filter to avoid double-filtering
+    // Location filtering handled server-side to avoid double-filtering
+    // Server maps location codes (K → Kenosha) and filters appropriately
 
     // Search filter
     if (searchTerm) {
