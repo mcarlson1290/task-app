@@ -184,8 +184,9 @@ export class MemStorage implements IStorage {
       // Migrate any "weekly" frequency to "daily" for UI compatibility
       await this.migrateWeeklyFrequencies();
       
-      // CRITICAL: Ensure all recurring tasks have their instances generated
-      await this.ensureRecurringTaskInstances();
+      // Use new verification system instead of legacy generation
+      console.log('🔄 Starting continuous task verification system...');
+      await this.verifyAndHealTasks();
       
       // Initialize inventory if empty (even with persisted data)
       if (this.inventoryItems.size === 0) {
@@ -470,6 +471,232 @@ export class MemStorage implements IStorage {
     console.log(`🔍 SAVE TASK DEBUG: Adding task ${task.id} (${task.title}) to in-memory cache. Cache size before: ${this.tasks.size}`);
     this.tasks.set(task.id, task);
     console.log(`🔍 SAVE TASK DEBUG: Cache size after: ${this.tasks.size}`);
+  }
+
+  // CONTINUOUS VERIFICATION SYSTEM - Self-healing task management
+  public async verifyAndHealTasks(): Promise<{ created: number; updated: number; errors: string[] }> {
+    console.log('=== TASK VERIFICATION STARTING ===');
+    
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    
+    const endDate = new Date(today);
+    endDate.setUTCDate(today.getUTCDate() + 31);
+    
+    const templates = Array.from(this.recurringTasks.values()).filter(t => t.isActive);
+    const existingTasks = Array.from(this.tasks.values());
+    
+    let created = 0;
+    let updated = 0;
+    const errors: string[] = [];
+    
+    console.log(`🔍 Verifying tasks from ${this.formatDate(today)} to ${this.formatDate(endDate)}`);
+    console.log(`🔍 Found ${templates.length} active templates, ${existingTasks.length} existing tasks`);
+    
+    // Check each day in our window
+    for (let dayOffset = 0; dayOffset <= 31; dayOffset++) {
+      const checkDate = new Date(today);
+      checkDate.setUTCDate(today.getUTCDate() + dayOffset);
+      
+      for (const template of templates) {
+        try {
+          const expectedTasks = this.getExpectedTasksForDate(template, checkDate);
+          
+          for (const expected of expectedTasks) {
+            const existingTask = existingTasks.find(t => 
+              t.recurringTaskId === expected.recurringTaskId && 
+              t.dueDate && 
+              this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
+            );
+            
+            // Check LIVE task state, not snapshot, to avoid repeated creations
+            const existingTaskLive = Array.from(this.tasks.values()).find(t => 
+              t.recurringTaskId === expected.recurringTaskId && 
+              t.dueDate && 
+              this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
+            );
+            
+            if (!existingTaskLive) {
+              try {
+                // Task is missing - create it using proper storage layer
+                // Remove ID to let database generate it
+                const { id, ...taskWithoutId } = expected;
+                const createdTask = await storage.createTask(taskWithoutId);
+                this.tasks.set(createdTask.id, createdTask);
+                created++;
+                console.log(`✅ Created missing task: ${expected.title} for ${this.formatDate(checkDate)}`);
+              } catch (error) {
+                const errorMsg = `Failed to create task ${expected.title}: ${error}`;
+                errors.push(errorMsg);
+                console.log(`❌ ${errorMsg}`);
+              }
+            } else if (existingTaskLive.status === 'pending') {
+              // Task exists but might be outdated - verify it matches template
+              if (this.taskNeedsUpdate(existingTaskLive, template)) {
+                try {
+                  // Only pass updateable fields to avoid date serialization issues
+                  const updateFields = this.extractTemplateFields(template);
+                  await storage.updateTask(existingTaskLive.id, updateFields);
+                  
+                  // Update in-memory cache with merged data
+                  const updatedTask = { ...existingTaskLive, ...updateFields };
+                  this.tasks.set(existingTaskLive.id, updatedTask);
+                  updated++;
+                  console.log(`🔄 Updated outdated task: ${existingTaskLive.title}`);
+                } catch (error) {
+                  const errorMsg = `Failed to update task ${existingTaskLive.title}: ${error}`;
+                  errors.push(errorMsg);
+                  console.log(`❌ ${errorMsg}`);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          const errorMsg = `Error processing template ${template.title} for ${this.formatDate(checkDate)}: ${error}`;
+          errors.push(errorMsg);
+          console.log(`❌ ${errorMsg}`);
+        }
+      }
+    }
+    
+    console.log(`🎉 Verification complete: Created ${created}, Updated ${updated}, Errors: ${errors.length}`);
+    if (errors.length > 0) {
+      console.log(`❌ Errors encountered:`, errors.slice(0, 5));
+    }
+    
+    return { created, updated, errors };
+  }
+
+  // Expected task calculator - determines what tasks SHOULD exist for any given date
+  private getExpectedTasksForDate(template: RecurringTask, checkDate: Date): Task[] {
+    const tasks: Task[] = [];
+    const dayOfMonth = checkDate.getUTCDate();
+    const month = checkDate.getUTCMonth();
+    const year = checkDate.getUTCFullYear();
+    const dayOfWeek = checkDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek];
+    
+    // Daily tasks - check if should run on this day
+    if (template.frequency === 'daily') {
+      // For daily tasks, generate every day
+      tasks.push(this.createTaskFromTemplate(template, checkDate, checkDate));
+    }
+    
+    // Weekly tasks - only on specific days
+    else if (template.frequency === 'weekly') {
+      const daysOfWeek = Array.isArray(template.daysOfWeek) 
+        ? template.daysOfWeek 
+        : (template.daysOfWeek ? [template.daysOfWeek] : []);
+      
+      // Check if this day of week should have this task
+      const shouldGenerate = daysOfWeek.some(day => {
+        if (typeof day === 'string') {
+          return day.toLowerCase() === dayName;
+        } else if (typeof day === 'number') {
+          return day === dayOfWeek;
+        }
+        return false;
+      });
+      
+      if (shouldGenerate) {
+        tasks.push(this.createTaskFromTemplate(template, checkDate, checkDate));
+      }
+    }
+    
+    // Monthly: Should exist from 1st through end of month
+    else if (template.frequency === 'monthly') {
+      // If we're anywhere in the month, the monthly task should exist
+      if (dayOfMonth >= 1) {
+        const firstOfMonth = new Date(Date.UTC(year, month, 1, 12, 0, 0));
+        const lastOfMonth = new Date(Date.UTC(year, month + 1, 0, 12, 0, 0));
+        
+        tasks.push(this.createTaskFromTemplate(template, firstOfMonth, lastOfMonth));
+      }
+    }
+    
+    // Bi-Weekly: Two tasks per month
+    else if (template.frequency === 'biweekly') {
+      // First half task exists from 1st-14th
+      if (dayOfMonth >= 1 && dayOfMonth <= 14) {
+        const firstOfMonth = new Date(Date.UTC(year, month, 1, 12, 0, 0));
+        const midMonth = new Date(Date.UTC(year, month, 14, 12, 0, 0));
+        tasks.push(this.createTaskFromTemplate(template, firstOfMonth, midMonth));
+      }
+      
+      // Second half task exists from 15th-end
+      if (dayOfMonth >= 15) {
+        const midMonth = new Date(Date.UTC(year, month, 15, 12, 0, 0));
+        const lastDay = new Date(Date.UTC(year, month + 1, 0, 12, 0, 0));
+        tasks.push(this.createTaskFromTemplate(template, midMonth, lastDay));
+      }
+    }
+    
+    // Quarterly: Entire quarter
+    else if (template.frequency === 'quarterly') {
+      const currentQuarter = Math.floor(month / 3);
+      const quarterStart = new Date(Date.UTC(year, currentQuarter * 3, 1, 12, 0, 0));
+      const quarterEnd = new Date(Date.UTC(year, (currentQuarter + 1) * 3, 0, 12, 0, 0));
+      
+      // If we're in this quarter, task should exist
+      if (checkDate >= quarterStart && checkDate <= quarterEnd) {
+        tasks.push(this.createTaskFromTemplate(template, quarterStart, quarterEnd));
+      }
+    }
+    
+    return tasks;
+  }
+
+  // Helper to create a task from a template
+  private createTaskFromTemplate(template: RecurringTask, visibleDate: Date, dueDate: Date): Task {
+    // Don't assign ID here - let storage layer handle it to avoid conflicts
+    return {
+      id: 0, // Temporary ID, will be assigned by storage layer
+      title: template.title,
+      description: template.description || '',
+      type: template.type,
+      status: 'pending',
+      assignedTo: template.assignedTo,
+      createdBy: template.createdBy,
+      createdAt: new Date(),
+      dueDate: dueDate, // Ensure dates are proper Date objects
+      frequency: template.frequency,
+      location: template.location,
+      estimatedTime: template.estimatedTime,
+      recurringTaskId: template.id,
+      checklistTemplate: template.checklistTemplate,
+      isRecurring: true
+    };
+  }
+
+  // Check if a task needs updating based on template changes
+  private taskNeedsUpdate(existingTask: Task, template: RecurringTask): boolean {
+    return (
+      existingTask.title !== template.title ||
+      existingTask.description !== template.description ||
+      existingTask.assignedTo !== template.assignedTo ||
+      existingTask.estimatedTime !== template.estimatedTime
+    );
+  }
+
+  // Extract fields from template for updating (safe date handling)
+  private extractTemplateFields(template: RecurringTask) {
+    return {
+      title: template.title,
+      description: template.description || '',
+      type: template.type,
+      assignedTo: template.assignedTo,
+      estimatedTime: template.estimatedTime,
+      checklistTemplate: template.checklistTemplate,
+      // Don't include dates in updates - preserve existing dates
+      // Don't include IDs - preserve existing IDs
+    };
+  }
+
+  // Utility to check if two dates are the same day
+  private isSameDate(date1: Date, date2: Date): boolean {
+    return date1.getUTCFullYear() === date2.getUTCFullYear() &&
+           date1.getUTCMonth() === date2.getUTCMonth() &&
+           date1.getUTCDate() === date2.getUTCDate();
   }
 
   // BLUEPRINT: New Recurring Task Handling - Generate current period task immediately
@@ -2384,7 +2611,25 @@ class DatabaseStorage implements IStorage {
   }
 
   async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
-    const [task] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
+    // Safe date serialization - only convert known date fields when they're Date instances
+    const safeUpdates = { ...updates };
+    const dateFields = ['dueDate', 'createdAt', 'startedAt', 'completedAt', 'pausedAt', 'resumedAt', 'visibleFromDate'];
+    
+    for (const field of dateFields) {
+      if (field in safeUpdates) {
+        const value = safeUpdates[field];
+        if (value instanceof Date) {
+          // Keep as Date - Drizzle will handle it
+          safeUpdates[field] = value;
+        } else if (typeof value === 'string') {
+          // Convert string to Date if valid
+          safeUpdates[field] = new Date(value);
+        }
+        // null/undefined pass through unchanged
+      }
+    }
+    
+    const [task] = await db.update(tasks).set(safeUpdates).where(eq(tasks.id, id)).returning();
     return task || undefined;
   }
 
