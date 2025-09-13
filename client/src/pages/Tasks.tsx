@@ -403,8 +403,9 @@ const Tasks: React.FC = () => {
 
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
-      const biweeklyTasks = filtered.filter(t => t.frequency === 'bi-weekly');
-      console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks (${biweeklyTasks.length} bi-weekly)`);
+      const normalizeBiweekly = (freq) => (freq || '').toLowerCase().replace(/[^a-z]/g, '');
+      const biweeklyTasks = filtered.filter(t => normalizeBiweekly(t.frequency) === 'biweekly');
+      console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks (${biweeklyTasks.length} biweekly)`);
       
       const today = new Date().toISOString().split('T')[0];
       const isViewingToday = dateFilter === today;
@@ -428,32 +429,13 @@ const Tasks: React.FC = () => {
           // Overdue tasks show ONLY on today
           return dateFilter === today;
         } else {
-          // NEW CLEAN FILTER LOGIC: Check for date ranges (monthly, bi-weekly, quarterly)
-          if (task.visibleFromDate && task.dueDate && task.recurringTaskId) {
-            const visibleFromStr = formatDateForComparison(task.visibleFromDate);
-            const dueDateStr = formatDateForComparison(task.dueDate);
-            
-            // Show if current date is between visible and due dates (inclusive)
-            const isVisible = dateFilter >= visibleFromStr && dateFilter <= dueDateStr;
-            
-            // Debug ALL recurring tasks with date ranges
-            console.log(`🗓️ RECURRING TASK: "${task.title}" (${task.frequency}) | View: ${dateFilter} | Visible: ${visibleFromStr} to ${dueDateStr} | HasRecurringId: ${!!task.recurringTaskId} | Result: ${isVisible ? 'SHOW ✅' : 'HIDE ❌'}`);
-            
-            return isVisible;
-          }
-          
-          // For single-day tasks (daily/weekly) - use formatDateForComparison to avoid timezone issues
-          const taskDateStr = formatDateForComparison(task.dueDate || task.completedAt);
-          if (!taskDateStr) return false; // Skip tasks without dates
-          
-          const matches = taskDateStr === dateFilter;
-          console.log(`🗓️ SINGLE DAY TASK: "${task.title}" | TaskDate: ${taskDateStr} | ViewDate: ${dateFilter} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
-          return matches;
+          // Use shared date filtering logic from dateUtils
+          return shouldTaskAppearOnDate(task, dateFilter);
         }
       });
       
-      const biweeklyAfter = filtered.filter(t => t.frequency === 'bi-weekly');
-      console.log(`📅 Showing ${filtered.length} tasks for ${dateFilter} (${biweeklyAfter.length} bi-weekly after date filter)`);
+      const biweeklyAfter = filtered.filter(t => normalizeBiweekly(t.frequency) === 'biweekly');
+      console.log(`📅 Showing ${filtered.length} tasks for ${dateFilter} (${biweeklyAfter.length} biweekly after date filter)`);
     }
 
     // CRITICAL: Remove any duplicate tasks based on ID to prevent ghost duplicates

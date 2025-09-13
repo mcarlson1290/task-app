@@ -62,32 +62,44 @@ export const formatDateForComparison = (date: Date | string): string => {
 export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean => {
   if (!task || !targetDate) return false;
   
-  // For bi-weekly and monthly recurring tasks, check visibility period
-  if (task.visibleFromDate && task.isRecurring && task.dueDate) {
-    const visibleFromStr = formatDateForComparison(task.visibleFromDate);
-    const dueDateStr = formatDateForComparison(task.dueDate);
-    
-    // Task is visible from visibleFromDate through dueDate (inclusive)
-    const isVisible = targetDate >= visibleFromStr && targetDate <= dueDateStr;
-    console.log(`🔍 Recurring task "${task.title}" visible ${visibleFromStr} to ${dueDateStr}, checking ${targetDate} = ${isVisible ? 'MATCH' : 'NO MATCH'}`);
+  // Normalize frequency string to handle "bi-weekly" vs "biweekly" inconsistencies
+  const freq = (task.frequency || task.comment || '').toLowerCase().replace(/[^a-z]/g, '');
+  
+  // DEBUG: Log frequency processing for Replace Fan task
+  if (task.title?.includes('Replace Fan')) {
+    console.log(`[dateUtils] DEBUG Replace Fan: frequency="${task.frequency}" → normalized="${freq}" | visibleFromDate="${task.visibleFromDate}" | dueDate="${task.dueDate}"`);
+  }
+  
+  // Determine date range for the task
+  const start = formatDateForComparison(task.visibleFromDate || task.taskDate || task.dueDate);
+  const end = formatDateForComparison(task.dueDate || task.taskDate || task.visibleFromDate);
+  
+  // For bi-weekly and period tasks, use inclusive range filtering  
+  if ((start && end && start !== end) || freq === 'biweekly') {
+    const isVisible = targetDate >= start && targetDate <= end;
+    console.log(`[dateUtils] 🔍 PERIOD TASK: "${task.title}" | Freq: ${freq} | Range: ${start} → ${end} | Check: ${targetDate} | Match: ${isVisible ? 'YES ✅' : 'NO ❌'}`);
     return isVisible;
   }
   
-  // Regular tasks appear based on their due date
-  if (task.dueDate) {
-    const matches = isSameDay(task.dueDate, targetDate);
-    console.log(`🔍 Task "${task.title}" due ${task.dueDate} vs filter ${targetDate} = ${matches ? 'MATCH' : 'NO MATCH'}`);
+  // FALLBACK: For biweekly tasks missing visibleFromDate, calculate 14-day range
+  if (freq === 'biweekly' && start === end) {
+    const endDate = new Date(end);
+    endDate.setUTCDate(endDate.getUTCDate() - 13); // Go back 13 days to create 14-day range
+    const calculatedStart = formatDateForComparison(endDate);
+    const isVisible = targetDate >= calculatedStart && targetDate <= end;
+    console.log(`[dateUtils] 🔍 PERIOD TASK (fallback): "${task.title}" | Freq: ${freq} | Calculated Range: ${calculatedStart} → ${end} | Check: ${targetDate} | Match: ${isVisible ? 'YES ✅' : 'NO ❌'}`);
+    return isVisible;
+  }
+  
+  // For single-day tasks, check exact date match
+  const taskDate = start || end;
+  if (taskDate) {
+    const matches = isSameDay(taskDate, targetDate);
+    console.log(`[dateUtils] 🗓️ SINGLE DAY: "${task.title}" | TaskDate: ${taskDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
     return matches;
   }
   
-  // Tasks without due dates appear on their creation date
-  if (task.createdAt) {
-    const matches = isSameDay(task.createdAt, targetDate);
-    console.log(`🔍 Task "${task.title}" created ${task.createdAt} vs filter ${targetDate} = ${matches ? 'MATCH' : 'NO MATCH'}`);
-    return matches;
-  }
-  
-  console.log(`🔍 Task "${task.title}" has no due date or creation date - NO MATCH`);
+  console.log(`🔍 Task "${task.title}" has no valid dates - NO MATCH`);
   return false;
 };
 

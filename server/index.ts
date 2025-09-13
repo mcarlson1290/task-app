@@ -6,6 +6,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Disable ETag caching globally
+app.disable('etag');
+
+// Disable HTTP caching for all API routes to prevent 304 responses
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

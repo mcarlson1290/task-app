@@ -2,8 +2,8 @@ import { neon, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from "@shared/schema";
 
-// Enable connection caching for HTTP client
-neonConfig.fetchConnectionCache = true;
+// Disable connection caching to prevent stale data issues
+neonConfig.fetchConnectionCache = false;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

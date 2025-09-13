@@ -156,6 +156,21 @@ export class MemStorage implements IStorage {
 
   private async loadPersistedData() {
     console.log('Loading persisted data...');
+    
+    // Skip persistence restore AND seeding when using real database to prevent demo data pollution
+    if (process.env.DATABASE_URL) {
+      console.log('🚫 Database detected - skipping both persistence file restore AND demo data seeding');
+      console.log('MemStorage will NOT seed October demo data - DatabaseStorage will handle task storage');
+      
+      // Only initialize growing systems (they're not persisted yet)
+      if (this.growingSystems.size === 0) {
+        console.log('Initializing growing systems...');
+        this.initializeGrowingSystems();
+      }
+      
+      return;
+    }
+    
     const persistedData = await this.persistence.loadData();
     
     if (persistedData) {
@@ -372,12 +387,17 @@ export class MemStorage implements IStorage {
 
   // BLUEPRINT: Task Creation Helper (returns InsertTask without ID)
   private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<InsertTask> {
+    // Determine the correct frequency for the generated task
+    const isPeriodicTask = dateInfo.visibleFromDate.getTime() !== dateInfo.dueDate.getTime();
+    const taskFrequency = isPeriodicTask ? 'biweekly' : template.frequency;
+    
     const newTask: InsertTask = {
       title: template.title,
       description: template.description || '',
       type: template.type,
       status: 'pending',
       priority: 'medium',
+      frequency: taskFrequency, // Set correct frequency for filtering
       assignedTo: null, // Legacy field - use assignTo instead
       assignTo: template.assignTo || undefined,
       createdBy: template.createdBy,
@@ -417,7 +437,6 @@ export class MemStorage implements IStorage {
       skippedAt: null,
       skipReason: null,
       isRecurring: true,
-      frequency: template.frequency,
       recurringTaskId: template.id,
       isFromDeletedRecurring: false,
       deletedRecurringTaskTitle: null
@@ -454,7 +473,8 @@ export class MemStorage implements IStorage {
         startDate.setUTCHours(0, 0, 0, 0);
         
         const endDate = new Date(today);
-        endDate.setUTCDate(today.getUTCDate() + 31);
+        endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+        endDate.setUTCHours(23, 59, 59, 999);
         
         const generatedTasks = await this.generateTasksForDateRange(startDate, endDate);
         
@@ -527,7 +547,8 @@ export class MemStorage implements IStorage {
     startDate.setUTCHours(0, 0, 0, 0);
     
     const endDate = new Date(today);
-    endDate.setUTCDate(today.getUTCDate() + 31);
+    endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+    endDate.setUTCHours(23, 59, 59, 999);
     
     const templates = Array.from(this.recurringTasks.values()).filter(t => t.isActive);
     const existingTasks = Array.from(this.tasks.values());
@@ -539,11 +560,9 @@ export class MemStorage implements IStorage {
     console.log(`🔍 Verifying tasks from ${this.formatDate(startDate)} to ${this.formatDate(endDate)}`);
     console.log(`🔍 Found ${templates.length} active templates, ${existingTasks.length} existing tasks`);
     
-    // Check each day in our window
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
-    for (let dayOffset = 0; dayOffset <= totalDays; dayOffset++) {
-      const checkDate = new Date(startDate);
-      checkDate.setUTCDate(startDate.getUTCDate() + dayOffset);
+    // Check each day in our window - direct date iteration to avoid off-by-one
+    for (let checkDate = new Date(startDate); checkDate <= endDate; checkDate.setUTCDate(checkDate.getUTCDate() + 1)) {
+      checkDate = new Date(checkDate); // Create new instance for each iteration
       
       for (const template of templates) {
         try {
@@ -734,7 +753,6 @@ export class MemStorage implements IStorage {
       skippedAt: null,
       skipReason: null,
       isRecurring: true,
-      frequency: template.frequency,
       recurringTaskId: template.id,
       isFromDeletedRecurring: false,
       deletedRecurringTaskTitle: null,
@@ -876,11 +894,12 @@ export class MemStorage implements IStorage {
       console.log(`✅ Created current period task for: ${template.title}`);
     }
     
-    // Generate future tasks (31 days ahead)
+    // Generate future tasks until end of current month only
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     const endDate = new Date(today);
-    endDate.setDate(today.getDate() + 31);
+    endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+    endDate.setUTCHours(23, 59, 59, 999);
     
     const futureTasks = await this.generateTasksForDateRange(tomorrow, endDate, template);
     tasksCreated += futureTasks.length;
@@ -1712,6 +1731,11 @@ export class MemStorage implements IStorage {
 
   // Tasks methods
   async getAllTasks(): Promise<Task[]> {
+    if (process.env.DATABASE_URL) {
+      console.error('🚨 CRITICAL: MemStorage.getAllTasks() called despite DATABASE_URL being set!');
+      console.error('🚨 This should NOT happen - all task operations should go through DatabaseStorage');
+      return [];
+    }
     return Array.from(this.tasks.values());
   }
 
@@ -2352,9 +2376,10 @@ export class MemStorage implements IStorage {
         }
       }
     } else {
-      // Daily/weekly tasks - generate for next 30 days
+      // Daily/weekly tasks - generate until end of current month only
       const endDate = new Date(todayUTC);
-      endDate.setDate(endDate.getDate() + 30);
+      endDate.setUTCMonth(todayUTC.getUTCMonth() + 1, 0); // Last day of current month
+      endDate.setUTCHours(23, 59, 59, 999);
       
       let currentDate = new Date(todayUTC);
       
@@ -2762,7 +2787,15 @@ class DatabaseStorage implements IStorage {
   }
 
   async getAllTasks(): Promise<Task[]> {
-    return db.select().from(tasks);
+    const allTasks = await db.select().from(tasks);
+    console.log(`📊 DatabaseStorage.getAllTasks() served ${allTasks.length} tasks`);
+    if (allTasks.length > 0) {
+      const firstTask = allTasks[0];
+      const lastTask = allTasks[allTasks.length - 1];
+      console.log(`📅 First task: ${firstTask.title} (taskDate: ${firstTask.taskDate}, dueDate: ${firstTask.dueDate})`);
+      console.log(`📅 Last task: ${lastTask.title} (taskDate: ${lastTask.taskDate}, dueDate: ${lastTask.dueDate})`);
+    }
+    return allTasks;
   }
 
   async getTasksByLocation(locationId: string): Promise<Task[]> {
@@ -3097,6 +3130,7 @@ class HybridStorage implements IStorage {
   }
 
   async getAllTasks(): Promise<Task[]> {
+    console.log('🔄 HybridStorage.getAllTasks() - delegating to DatabaseStorage...');
     return this.dbStorage.getAllTasks();
   }
 
@@ -3420,6 +3454,12 @@ class HybridStorage implements IStorage {
 
   async checkLock(lockId: string): Promise<SystemLock | null> {
     return this.dbStorage.checkLock(lockId);
+  }
+
+  // Task verification system - delegate to MemStorage for verification logic
+  async initializeAppVerification(userId: number = 1): Promise<void> {
+    console.log('🔄 HybridStorage delegating task verification to MemStorage...');
+    return this.memStorage.initializeAppVerification(userId);
   }
 }
 

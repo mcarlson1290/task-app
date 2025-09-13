@@ -32,7 +32,7 @@ import { createStaffFromMicrosoftLogin, updateLastActive, initializeExpectedStaf
 import { useActivityTracking } from "@/hooks/useActivityTracking";
 import { teamsAuthService } from "./services/teamsAuthService";
 import { useLocation } from "wouter";
-import { setStoredAuth } from "@/lib/auth";
+import { setStoredAuth, getStoredAuth, clearStoredAuth } from "@/lib/auth";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -151,6 +151,67 @@ function AppContent() {
       if (isAuthenticated && accounts[0]) {
         await processUserLogin(accounts[0]);
       } else {
+        // Check for stored dev-login authentication
+        try {
+          const storedAuth = getStoredAuth();
+          if (storedAuth.isAuthenticated && storedAuth.user) {
+            console.log("Found stored dev-login authentication, restoring session...");
+            await processDevUserLogin(storedAuth.user);
+            return;
+          }
+        } catch (error) {
+          console.error("Failed to restore stored authentication:", error);
+        }
+        
+        setIsLoading(false);
+      }
+    };
+
+    const processDevUserLogin = async (storedUser: any) => {
+      try {
+        console.log('Processing dev-login user from localStorage:', storedUser.name, storedUser.businessEmail);
+        
+        // Create user object for context - convert from stored format
+        const user = {
+          id: storedUser.id.toString(),
+          name: storedUser.name,
+          email: storedUser.businessEmail || storedUser.username,
+          role: storedUser.role === 'corporate' ? 'Corporate' : storedUser.role === 'manager' ? 'Manager' : 'Staff',
+          isManager: storedUser.role === 'manager' || storedUser.role === 'corporate',
+          isCorporateManager: storedUser.role === 'corporate',
+          location: storedUser.location || 'Kenosha'
+        };
+
+        console.log('Initialized dev user:', user.name, user.email, user.role);
+        setCurrentUser(user);
+
+        // Initialize expected staff members if current user is corporate
+        if (user.role === 'Corporate') {
+          try {
+            await initializeExpectedStaff();
+          } catch (error) {
+            console.error('Failed to initialize expected staff:', error);
+          }
+        }
+
+        // Initialize data if needed (disabled to prevent October demo data pollution)
+        // Only initialize if explicitly enabled via environment variable
+        if (import.meta.env.VITE_ENABLE_DEV_SEED === 'true') {
+          try {
+            console.log('🌱 Dev seeding enabled - initializing demo data...');
+            await initializeProductionData();
+            await initializeCleanState();
+          } catch (error) {
+            console.error('Failed to initialize production data:', error);
+          }
+        } else {
+          console.log('🚫 Dev seeding disabled - skipping demo data initialization');
+        }
+      } catch (error) {
+        console.error('Error processing dev user login:', error);
+        // Clear invalid stored auth and show login screen
+        clearStoredAuth();
+      } finally {
         setIsLoading(false);
       }
     };
@@ -234,12 +295,18 @@ function AppContent() {
           }
         }
 
-        // Initialize data if needed
-        try {
-          await initializeProductionData();
-          await initializeCleanState();
-        } catch (error) {
-          console.error('Failed to initialize production data:', error);
+        // Initialize data if needed (disabled to prevent October demo data pollution)
+        // Only initialize if explicitly enabled via environment variable
+        if (import.meta.env.VITE_ENABLE_DEV_SEED === 'true') {
+          try {
+            console.log('🌱 Dev seeding enabled - initializing demo data...');
+            await initializeProductionData();
+            await initializeCleanState();
+          } catch (error) {
+            console.error('Failed to initialize production data:', error);
+          }
+        } else {
+          console.log('🚫 Dev seeding disabled - skipping demo data initialization');
         }
       } catch (error) {
         console.error('Error processing user login:', error);
