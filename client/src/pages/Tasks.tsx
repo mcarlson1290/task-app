@@ -353,10 +353,8 @@ const Tasks: React.FC = () => {
       return recurringOnly;
     }
     
-    // Location filter
-    if (!isViewingAllLocations) {
-      filtered = filtered.filter(task => task.location === currentLocation.code);
-    }
+    // Location filtering is handled by server-side query parameter
+    // Removed redundant client-side location filter to avoid double-filtering
 
     // Search filter
     if (searchTerm) {

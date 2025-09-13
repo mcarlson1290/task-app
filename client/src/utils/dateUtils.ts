@@ -71,8 +71,24 @@ export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean =
     return isVisible;
   }
   
-  // FALLBACK: Single-day comparison when visibleFromDate is absent
-  const taskDate = formatDateForComparison(task.taskDate || task.dueDate);
+  // FALLBACK: Show tasks that are due today or tomorrow when visibleFromDate is absent
+  const dueDate = formatDateForComparison(task.dueDate);
+  const taskDate = formatDateForComparison(task.taskDate);
+  
+  if (dueDate) {
+    // Show task if it's due on target date or up to 1 day before due date
+    const targetDateObj = new Date(targetDate);
+    const dueDateObj = new Date(dueDate);
+    const daysDiff = Math.floor((dueDateObj.getTime() - targetDateObj.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Show if due today (0 days) or tomorrow (1 day) 
+    const isInRange = daysDiff >= 0 && daysDiff <= 1;
+    
+    console.log(`[dateUtils] 📅 DUE DATE: "${task.title}" | TaskDate: ${taskDate} | DueDate: ${dueDate} | ViewDate: ${targetDate} | Days: ${daysDiff} | Match: ${isInRange ? 'YES ✅' : 'NO ❌'}`);
+    return isInRange;
+  }
+  
+  // Final fallback: exact day match on taskDate if no dueDate
   if (taskDate) {
     const matches = isSameDay(taskDate, targetDate);
     console.log(`[dateUtils] 🗓️ SINGLE DAY: "${task.title}" | TaskDate: ${taskDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
