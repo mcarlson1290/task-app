@@ -41,6 +41,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Development login endpoint - bypasses Microsoft authentication
+  app.post("/api/auth/dev-login", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Find user by email in the staff system
+      const users = await storage.getAllUsers();
+      const user = users.find(u => 
+        (u.username?.toLowerCase() === email.toLowerCase()) || 
+        (u.businessEmail?.toLowerCase() === email.toLowerCase())
+      );
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.approved) {
+        return res.status(403).json({ message: "Account pending approval" });
+      }
+
+      // Create auth response compatible with Microsoft login
+      const authUser = {
+        id: user.id,
+        name: user.name || 'User',
+        username: user.businessEmail || user.username,
+        businessEmail: user.businessEmail || user.username,
+        role: user.role || 'General Staff'
+      };
+
+      res.json({ 
+        user: authUser,
+        message: "Development login successful"
+      });
+    } catch (error) {
+      console.error('Dev login error:', error);
+      res.status(500).json({ message: "Development login failed" });
+    }
+  });
+
   // Staff routes (dedicated endpoints for staff management)
   app.get("/api/staff", async (req, res) => {
     try {

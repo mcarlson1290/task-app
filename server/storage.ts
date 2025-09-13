@@ -311,14 +311,16 @@ export class MemStorage implements IStorage {
         break;
         
       case 'biweekly':
-        if (dayOfMonth === 1) {
+        // Generate for first half of month (1st-14th) if we're in that period
+        if (dayOfMonth >= 1 && dayOfMonth <= 14) {
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
             visibleFromDate: new Date(Date.UTC(year, month, 1)),
             dueDate: new Date(Date.UTC(year, month, 14))
           });
         }
-        if (dayOfMonth === 15) {
+        // Generate for second half of month (15th-end) if we're in that period
+        if (dayOfMonth >= 15) {
           const lastDay = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,

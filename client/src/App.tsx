@@ -10,6 +10,7 @@ import { MsalProvider, useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { msalConfig, isAuthorizedEmail, debugLog, detectIOSEnvironment, testStorageAvailability } from './config/authConfig';
 import { MicrosoftLogin } from './components/auth/MicrosoftLogin';
+import { DevLogin } from './components/DevLogin';
 import { UserProvider } from './contexts/UserContext';
 import Tasks from "@/pages/Tasks";
 import Inventory from "@/pages/Inventory";
@@ -259,7 +260,34 @@ function AppContent() {
   }
 
   if (!isAuthenticated && !currentUser) {
-    return <MicrosoftLogin />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="space-y-6 w-full max-w-md">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🌱 Grow Space</h1>
+            <p className="text-gray-600 dark:text-gray-400">Farm Management System</p>
+          </div>
+          
+          {/* Development Login - Show first for easier access */}
+          <DevLogin onSuccess={() => {}} />
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+          
+          {/* Microsoft Login */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-center">Microsoft Authentication</h3>
+            <MicrosoftLogin />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!currentUser) {
