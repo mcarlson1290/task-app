@@ -315,10 +315,16 @@ export class MemStorage implements IStorage {
     
     switch (template.frequency) {
       case 'monthly':
-        if (dayOfMonth === 1) {
-          const lastDay = new Date(Date.UTC(year, month + 1, 0));
+        // Generate monthly task for any day in the month (not just the 1st)
+        // This ensures current period tasks are created even when added mid-month
+        const lastDay = new Date(Date.UTC(year, month + 1, 0));
+        const monthlyTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`;
+        
+        // Check if we already have a task for this month
+        const existingMonthlyTask = await this.taskExistsForPeriod(template.id, year, month, 'monthly');
+        if (!existingMonthlyTask) {
           return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
+            id: monthlyTaskId,
             visibleFromDate: new Date(Date.UTC(year, month, 1)),
             dueDate: lastDay
           });
@@ -326,25 +332,38 @@ export class MemStorage implements IStorage {
         break;
         
       case 'biweekly':
-        // Create first half task on day 1 (due on 14th)
-        if (dayOfMonth === 1) {
-          const visibleDate = new Date(Date.UTC(year, month, 1));
-          const dueDate = new Date(Date.UTC(year, month, 14));
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`,
-            visibleFromDate: visibleDate,
-            dueDate: dueDate
-          });
+        // Generate bi-weekly tasks based on current period (not just specific days)
+        
+        // First half of month (1st-14th)
+        if (dayOfMonth >= 1 && dayOfMonth <= 14) {
+          const firstHalfTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`;
+          const existingFirstHalf = await this.taskExistsForPeriod(template.id, year, month, 'biweekly-first');
+          
+          if (!existingFirstHalf) {
+            const visibleDate = new Date(Date.UTC(year, month, 1));
+            const dueDate = new Date(Date.UTC(year, month, 14));
+            return this.buildTaskFromTemplate(template, {
+              id: firstHalfTaskId,
+              visibleFromDate: visibleDate,
+              dueDate: dueDate
+            });
+          }
         }
-        // Create second half task on day 15 (due on last day of month)
-        if (dayOfMonth === 15) {
-          const visibleDate = new Date(Date.UTC(year, month, 15));
-          const dueDate = new Date(Date.UTC(year, month + 1, 0));
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`,
-            visibleFromDate: visibleDate,
-            dueDate: dueDate
-          });
+        
+        // Second half of month (15th-end)
+        if (dayOfMonth >= 15) {
+          const secondHalfTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`;
+          const existingSecondHalf = await this.taskExistsForPeriod(template.id, year, month, 'biweekly-second');
+          
+          if (!existingSecondHalf) {
+            const visibleDate = new Date(Date.UTC(year, month, 15));
+            const dueDate = new Date(Date.UTC(year, month + 1, 0));
+            return this.buildTaskFromTemplate(template, {
+              id: secondHalfTaskId,
+              visibleFromDate: visibleDate,
+              dueDate: dueDate
+            });
+          }
         }
         break;
         
@@ -404,9 +423,8 @@ export class MemStorage implements IStorage {
 
   // BLUEPRINT: Task Creation Helper (returns InsertTask without ID)
   private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<InsertTask> {
-    // Determine the correct frequency for the generated task
-    const isPeriodicTask = dateInfo.visibleFromDate.getTime() !== dateInfo.dueDate.getTime();
-    const taskFrequency = isPeriodicTask ? 'biweekly' : template.frequency;
+    // Always preserve the template's original frequency
+    const taskFrequency = template.frequency;
     
     const newTask: InsertTask = {
       title: template.title,
@@ -542,6 +560,42 @@ export class MemStorage implements IStorage {
       return taskDate.getUTCFullYear() === checkDate.getUTCFullYear() &&
              taskDate.getUTCMonth() === checkDate.getUTCMonth() &&
              taskDate.getUTCDate() === checkDate.getUTCDate();
+    });
+  }
+
+  private async taskExistsForPeriod(recurringTaskId: number, year: number, month: number, periodType: 'monthly' | 'biweekly-first' | 'biweekly-second'): Promise<boolean> {
+    // Check if a task already exists for this recurring task ID and specific period
+    return Array.from(this.tasks.values()).some(task => {
+      if (!task.dueDate || task.recurringTaskId !== recurringTaskId) return false;
+      
+      const taskDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
+      const visibleDate = task.visibleFromDate ? 
+        (task.visibleFromDate instanceof Date ? task.visibleFromDate : new Date(task.visibleFromDate)) :
+        taskDate;
+      
+      // Check if task is in the same year and month
+      if (taskDate.getUTCFullYear() !== year || taskDate.getUTCMonth() !== month) {
+        return false;
+      }
+      
+      switch (periodType) {
+        case 'monthly':
+          // For monthly tasks, check if due date is last day of month
+          const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
+          return taskDate.getUTCDate() === lastDayOfMonth.getUTCDate();
+          
+        case 'biweekly-first':
+          // For first half, check if due date is 14th and visible from 1st
+          return taskDate.getUTCDate() === 14 && visibleDate.getUTCDate() === 1;
+          
+        case 'biweekly-second':
+          // For second half, check if due date is last day and visible from 15th
+          const lastDay = new Date(Date.UTC(year, month + 1, 0));
+          return taskDate.getUTCDate() === lastDay.getUTCDate() && visibleDate.getUTCDate() === 15;
+          
+        default:
+          return false;
+      }
     });
   }
 
