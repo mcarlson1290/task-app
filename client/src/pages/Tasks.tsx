@@ -10,6 +10,8 @@ import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import { AddTaskModal } from "@/components/AddTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
+import RecurringTaskUpdateNotifications from "@/components/RecurringTaskUpdateNotifications";
+import ConflictResolutionDialog from "@/components/ConflictResolutionDialog";
 import { Task } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
@@ -28,6 +30,8 @@ const Tasks: React.FC = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = React.useState(false);
   const [taskActionModalOpen, setTaskActionModalOpen] = React.useState(false);
+  const [conflictResolutionOpen, setConflictResolutionOpen] = React.useState(false);
+  const [conflictTask, setConflictTask] = React.useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const [activeFilter, setActiveFilter] = React.useState<string>("all");
@@ -996,6 +1000,9 @@ const Tasks: React.FC = () => {
         selectedDate={dateFilter}
       />
 
+      {/* Recurring Task Update Notifications */}
+      <RecurringTaskUpdateNotifications />
+
       {/* Task Content */}
       <div className="task-content">
         {filteredTasks.length === 0 ? (
@@ -1041,6 +1048,13 @@ const Tasks: React.FC = () => {
         task={selectedTask}
         open={taskActionModalOpen}
         onClose={() => setTaskActionModalOpen(false)}
+      />
+
+      {/* Conflict Resolution Dialog */}
+      <ConflictResolutionDialog
+        task={conflictTask as any}
+        open={conflictResolutionOpen}
+        onOpenChange={setConflictResolutionOpen}
       />
       
       </div>

@@ -928,6 +928,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get audit log for a specific recurring task
+  app.get("/api/recurring-tasks/:id/changes", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const changes = await storage.getRecurringTaskChanges(id);
+      res.json(changes);
+    } catch (error) {
+      console.error('Error fetching recurring task changes:', error);
+      res.status(500).json({ message: "Failed to fetch change history" });
+    }
+  });
+
+  // Get all recent change notifications
+  app.get("/api/recurring-tasks/changes", async (req, res) => {
+    try {
+      const { limit = 50, sinceDate } = req.query;
+      const changes = await storage.getAllRecurringTaskChanges(
+        parseInt(limit as string), 
+        sinceDate ? new Date(sinceDate as string) : undefined
+      );
+      res.json(changes);
+    } catch (error) {
+      console.error('Error fetching recent changes:', error);
+      res.status(500).json({ message: "Failed to fetch recent changes" });
+    }
+  });
+
+  // Get tasks that have template updates available (conflicts)
+  app.get("/api/tasks/with-template-updates", async (req, res) => {
+    try {
+      const { userId, location } = req.query;
+      const tasks = await storage.getTasksWithTemplateUpdates(
+        userId ? parseInt(userId as string) : undefined,
+        location as string
+      );
+      res.json(tasks);
+    } catch (error) {
+      console.error('Error fetching tasks with template updates:', error);
+      res.status(500).json({ message: "Failed to fetch tasks with template updates" });
+    }
+  });
+
+  // Get statistics for recurring task update propagation
+  app.get("/api/recurring-tasks/:id/update-stats", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const stats = await storage.getRecurringTaskUpdateStats(id);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching update stats:', error);
+      res.status(500).json({ message: "Failed to fetch update statistics" });
+    }
+  });
+
   // Regenerate ALL task instances with corrected logic
   app.post("/api/recurring-tasks/regenerate-all", async (req, res) => {
     try {

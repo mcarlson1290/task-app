@@ -3029,8 +3029,219 @@ class DatabaseStorage implements IStorage {
   }
 
   async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
-    const [task] = await db.update(recurringTasks).set(updates).where(eq(recurringTasks.id, id)).returning();
-    return task || undefined;
+    console.log(`🔄 Starting comprehensive update propagation for recurring task ${id}...`);
+    
+    // Get the existing recurring task
+    const [existingTask] = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id));
+    if (!existingTask) {
+      console.log(`❌ Recurring task ${id} not found`);
+      return undefined;
+    }
+
+    // Track which fields are being changed for audit logging
+    const changedFields: Record<string, { oldValue: any; newValue: any }> = {};
+    const originalTask = { ...existingTask };
+    
+    for (const [field, newValue] of Object.entries(updates)) {
+      const oldValue = originalTask[field as keyof RecurringTask];
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        changedFields[field] = { oldValue, newValue };
+      }
+    }
+
+    if (Object.keys(changedFields).length === 0) {
+      console.log(`ℹ️ No changes detected for recurring task ${id}`);
+      return existingTask;
+    }
+
+    console.log(`📝 Detected changes to fields: ${Object.keys(changedFields).join(', ')}`);
+
+    // Prepare enhanced updates with version tracking
+    const enhancedUpdates = {
+      ...updates,
+      versionNumber: (existingTask.versionNumber || 1) + 1,
+      lastModifiedDate: new Date(),
+      lastModifiedBy: 1 // TODO: Get actual user ID from session
+    };
+
+    // Update the recurring task in database
+    const [updatedTask] = await db.update(recurringTasks)
+      .set(enhancedUpdates)
+      .where(eq(recurringTasks.id, id))
+      .returning();
+
+    if (!updatedTask) {
+      console.log(`❌ Failed to update recurring task ${id}`);
+      return undefined;
+    }
+
+    // Create audit log entry for the changes
+    try {
+      await db.insert(recurringTaskChanges).values({
+        recurringTaskId: id,
+        changedBy: 1, // TODO: Get actual user ID from session
+        changeType: 'update',
+        changedFields: Object.keys(changedFields),
+        oldValues: Object.fromEntries(
+          Object.entries(changedFields).map(([field, {oldValue}]) => [field, oldValue])
+        ),
+        newValues: Object.fromEntries(
+          Object.entries(changedFields).map(([field, {newValue}]) => [field, newValue])
+        ),
+        affectedTaskCount: 0, // Will be updated after task propagation
+        propagationStatus: 'pending',
+        changedAt: new Date()
+      });
+      console.log(`✅ Created audit log entry for recurring task ${id} changes`);
+    } catch (error) {
+      console.error(`⚠️ Failed to create audit log: ${error}`);
+    }
+
+    // Determine if this requires task instance regeneration vs. update propagation
+    const structuralFields = ['frequency', 'daysOfWeek', 'dayOfMonth', 'isActive'];
+    const needsRegeneration = structuralFields.some(field => field in changedFields);
+
+    if (needsRegeneration) {
+      console.log(`🔄 Structural changes detected, regenerating task instances...`);
+      await this.propagateStructuralChanges(id, updatedTask, changedFields);
+    } else {
+      console.log(`📋 Non-structural changes detected, updating existing task instances...`);
+      await this.propagateContentChanges(id, updatedTask, changedFields);
+    }
+
+    console.log(`✅ Comprehensive update propagation completed for recurring task ${id}`);
+    return updatedTask;
+  }
+
+  private async propagateStructuralChanges(recurringTaskId: number, updatedTask: RecurringTask, changedFields: Record<string, any>): Promise<void> {
+    console.log(`🗑️ Deleting future pending task instances for structural changes...`);
+    
+    // Delete ONLY future pending task instances (preserve completed/in-progress tasks)
+    const deletedResult = await db.delete(tasks).where(
+      and(
+        eq(tasks.recurringTaskId, recurringTaskId),
+        eq(tasks.status, 'pending'),
+        gte(tasks.dueDate, new Date())
+      )
+    );
+    
+    console.log(`🗑️ Deleted ${deletedResult.rowCount || 0} future pending task instances`);
+
+    // Generate new task instances with updated schedule
+    if (updatedTask.isActive) {
+      const currentDate = new Date();
+      const tasksCreated = await this.generateTaskInstancesForRecurringTask(updatedTask, currentDate);
+      console.log(`✨ Generated ${tasksCreated} new task instances with updated schedule`);
+    }
+  }
+
+  private async propagateContentChanges(recurringTaskId: number, updatedTask: RecurringTask, changedFields: Record<string, any>): Promise<void> {
+    console.log(`📋 Propagating content changes to existing task instances...`);
+    
+    // Get all pending and in-progress task instances
+    const taskInstances = await db.select().from(tasks).where(
+      and(
+        eq(tasks.recurringTaskId, recurringTaskId),
+        inArray(tasks.status, ['pending', 'in_progress']),
+        gte(tasks.dueDate, new Date())
+      )
+    );
+
+    console.log(`📋 Found ${taskInstances.length} task instances to update`);
+
+    let updatedCount = 0;
+    let conflictCount = 0;
+
+    for (const instance of taskInstances) {
+      try {
+        // Check if task has been modified after creation
+        const hasUserModifications = instance.isModifiedAfterCreation;
+        
+        if (hasUserModifications && instance.status === 'in_progress') {
+          // Handle conflict: task is in progress and has user modifications
+          console.log(`⚠️ Conflict detected for task ${instance.id}: in-progress with user modifications`);
+          conflictCount++;
+          
+          // Mark task as having a template update available but don't force update
+          await db.update(tasks).set({
+            modifiedFromTemplateAt: new Date(),
+            // Note: Could add a "hasTemplateUpdate" flag for UI indication
+          }).where(eq(tasks.id, instance.id));
+          
+          continue;
+        }
+
+        // Safe to update - prepare the updates
+        const taskUpdates: Partial<Task> = {
+          templateVersion: updatedTask.versionNumber || 1,
+          modifiedFromTemplateAt: new Date()
+        };
+
+        // Apply field-by-field updates based on changed fields
+        if ('title' in changedFields) {
+          taskUpdates.title = updatedTask.title;
+        }
+        if ('description' in changedFields) {
+          taskUpdates.description = updatedTask.description;
+        }
+        if ('type' in changedFields) {
+          taskUpdates.type = updatedTask.type;
+        }
+        if ('assignTo' in changedFields) {
+          taskUpdates.assignTo = updatedTask.assignTo;
+        }
+
+        // Handle checklist updates with user progress preservation
+        if ('checklistTemplate' in changedFields && updatedTask.checklistTemplate) {
+          const mergedChecklist = this.mergeChecklistWithUserProgress(
+            updatedTask.checklistTemplate.steps || [],
+            instance.checklist || []
+          );
+          taskUpdates.checklist = mergedChecklist;
+        }
+
+        // Update the task instance
+        await db.update(tasks).set(taskUpdates).where(eq(tasks.id, instance.id));
+        updatedCount++;
+
+      } catch (error) {
+        console.error(`❌ Error updating task instance ${instance.id}: ${error}`);
+      }
+    }
+
+    console.log(`✅ Successfully updated ${updatedCount} task instances (${conflictCount} conflicts detected)`);
+
+    // Update the audit log with propagation results
+    try {
+      await db.update(recurringTaskChanges).set({
+        affectedTaskCount: updatedCount,
+        propagationStatus: conflictCount > 0 ? 'completed_with_conflicts' : 'completed',
+        conflictCount: conflictCount
+      }).where(eq(recurringTaskChanges.recurringTaskId, recurringTaskId));
+    } catch (error) {
+      console.error(`⚠️ Failed to update audit log: ${error}`);
+    }
+  }
+
+  private mergeChecklistWithUserProgress(templateSteps: any[], existingChecklist: any[]): any[] {
+    return templateSteps.map((templateStep, index) => {
+      const existingStep = existingChecklist[index];
+      
+      return {
+        id: templateStep.id || `${index + 1}`,
+        text: templateStep.label || '',
+        completed: existingStep?.completed || false, // Preserve user progress
+        required: templateStep.required || false,
+        type: templateStep.type,
+        config: templateStep.config, // Always use latest config
+        dataCollection: templateStep.type === 'data-capture' ? {
+          type: templateStep.config?.dataType || 'text',
+          label: templateStep.label || ''
+        } : undefined,
+        // Preserve user data if it exists
+        data: existingStep?.data || undefined
+      };
+    });
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
@@ -3041,6 +3252,132 @@ class DatabaseStorage implements IStorage {
   async resetRecurringTasks(): Promise<boolean> {
     await db.delete(recurringTasks);
     return true;
+  }
+
+  // NEW METHODS FOR RECURRING TASK UPDATE PROPAGATION SYSTEM
+
+  async getRecurringTaskChanges(recurringTaskId: number): Promise<any[]> {
+    try {
+      const changes = await db.select().from(recurringTaskChanges)
+        .where(eq(recurringTaskChanges.recurringTaskId, recurringTaskId))
+        .orderBy(sql`${recurringTaskChanges.changedAt} DESC`);
+      return changes;
+    } catch (error) {
+      console.error(`Error fetching changes for recurring task ${recurringTaskId}:`, error);
+      return [];
+    }
+  }
+
+  async getAllRecurringTaskChanges(limit: number = 50, sinceDate?: Date): Promise<any[]> {
+    try {
+      let query = db.select().from(recurringTaskChanges);
+      
+      if (sinceDate) {
+        query = query.where(gte(recurringTaskChanges.changedAt, sinceDate));
+      }
+      
+      const changes = await query
+        .orderBy(sql`${recurringTaskChanges.changedAt} DESC`)
+        .limit(limit);
+      
+      return changes;
+    } catch (error) {
+      console.error('Error fetching all recurring task changes:', error);
+      return [];
+    }
+  }
+
+  async getTasksWithTemplateUpdates(userId?: number, location?: string): Promise<any[]> {
+    try {
+      let query = db.select().from(tasks)
+        .where(and(
+          isNotNull(tasks.modifiedFromTemplateAt),
+          eq(tasks.isModifiedAfterCreation, true),
+          inArray(tasks.status, ['pending', 'in_progress'])
+        ));
+
+      if (location) {
+        query = query.where(and(
+          isNotNull(tasks.modifiedFromTemplateAt),
+          eq(tasks.isModifiedAfterCreation, true),
+          inArray(tasks.status, ['pending', 'in_progress']),
+          eq(tasks.location, location)
+        ));
+      }
+
+      if (userId) {
+        query = query.where(and(
+          isNotNull(tasks.modifiedFromTemplateAt),
+          eq(tasks.isModifiedAfterCreation, true),
+          inArray(tasks.status, ['pending', 'in_progress']),
+          eq(tasks.assignedTo, userId),
+          location ? eq(tasks.location, location) : sql`1=1`
+        ));
+      }
+
+      const tasksWithUpdates = await query
+        .orderBy(sql`${tasks.modifiedFromTemplateAt} DESC`)
+        .limit(100);
+
+      return tasksWithUpdates;
+    } catch (error) {
+      console.error('Error fetching tasks with template updates:', error);
+      return [];
+    }
+  }
+
+  async getRecurringTaskUpdateStats(recurringTaskId: number): Promise<any> {
+    try {
+      // Get latest change for this recurring task
+      const [latestChange] = await db.select().from(recurringTaskChanges)
+        .where(eq(recurringTaskChanges.recurringTaskId, recurringTaskId))
+        .orderBy(sql`${recurringTaskChanges.changedAt} DESC`)
+        .limit(1);
+
+      if (!latestChange) {
+        return {
+          hasRecentChanges: false,
+          totalChanges: 0,
+          affectedTasks: 0,
+          conflictCount: 0,
+          propagationStatus: 'none'
+        };
+      }
+
+      // Count all changes for this recurring task
+      const [totalChangesResult] = await db.select({
+        count: sql`COUNT(*)`.as('count')
+      }).from(recurringTaskChanges)
+        .where(eq(recurringTaskChanges.recurringTaskId, recurringTaskId));
+
+      // Count tasks that have template updates from this recurring task
+      const [templatedTasksResult] = await db.select({
+        count: sql`COUNT(*)`.as('count')
+      }).from(tasks)
+        .where(and(
+          eq(tasks.recurringTaskId, recurringTaskId),
+          isNotNull(tasks.modifiedFromTemplateAt)
+        ));
+
+      return {
+        hasRecentChanges: true,
+        totalChanges: parseInt(totalChangesResult.count as string) || 0,
+        affectedTasks: latestChange.affectedTaskCount || 0,
+        conflictCount: latestChange.conflictCount || 0,
+        propagationStatus: latestChange.propagationStatus,
+        lastUpdateDate: latestChange.changedAt,
+        templatedTasks: parseInt(templatedTasksResult.count as string) || 0
+      };
+    } catch (error) {
+      console.error(`Error fetching update stats for recurring task ${recurringTaskId}:`, error);
+      return {
+        hasRecentChanges: false,
+        totalChanges: 0,
+        affectedTasks: 0,
+        conflictCount: 0,
+        propagationStatus: 'error'
+      };
+    }
   }
 
   // Other stub implementations to satisfy interface
@@ -3531,6 +3868,31 @@ class HybridStorage implements IStorage {
 
   async resetRecurringTasks(): Promise<boolean> {
     return this.dbStorage.resetRecurringTasks();
+  }
+
+  // Delegations for update propagation system
+  async getRecurringTaskChanges(recurringTaskId: number): Promise<any[]> {
+    return this.dbStorage.getRecurringTaskChanges(recurringTaskId);
+  }
+
+  async getAllRecurringTaskChanges(limit: number = 50, sinceDate?: Date): Promise<any[]> {
+    return this.dbStorage.getAllRecurringTaskChanges(limit, sinceDate);
+  }
+
+  async getTasksWithTemplateUpdates(userId?: number, location?: string): Promise<any[]> {
+    return this.dbStorage.getTasksWithTemplateUpdates(userId, location);
+  }
+
+  async getRecurringTaskUpdateStats(recurringTaskId: number): Promise<any> {
+    return this.dbStorage.getRecurringTaskUpdateStats(recurringTaskId);
+  }
+
+  async propagateRecurringTaskUpdate(recurringTaskId: number, changes: any, options: any): Promise<any> {
+    return this.dbStorage.propagateRecurringTaskUpdate(recurringTaskId, changes, options);
+  }
+
+  async logRecurringTaskChange(changeData: any): Promise<any> {
+    return this.dbStorage.logRecurringTaskChange(changeData);
   }
 
   async getGrowingSystem(id: number): Promise<GrowingSystem | undefined> {
