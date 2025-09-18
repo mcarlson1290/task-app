@@ -773,6 +773,7 @@ export class MemStorage implements IStorage {
         type: step.type
       })) || [],
       data: {},
+      taskDate: visibleDate, // Add required taskDate field
       dueDate: dueDate,
       visibleFromDate: visibleDate,
       startedAt: null,
@@ -783,6 +784,7 @@ export class MemStorage implements IStorage {
       skipReason: null,
       isRecurring: true,
       recurringTaskId: template.id,
+      frequency: template.frequency, // Add required frequency field
       isFromDeletedRecurring: false,
       deletedRecurringTaskTitle: null,
       createdAt: new Date()
@@ -2827,7 +2829,7 @@ class DatabaseStorage implements IStorage {
   }
 
   async getTasksByUser(userId: number): Promise<Task[]> {
-    return db.select().from(tasks).where(eq(tasks.userId, userId));
+    return db.select().from(tasks).where(eq(tasks.assignedTo, userId));
   }
 
   async getAllTasks(): Promise<Task[]> {
@@ -3062,11 +3064,42 @@ class DatabaseStorage implements IStorage {
   async getCourseAssignments(userId?: number): Promise<CourseAssignment[]> { return []; }
   async updateCourseAssignment(id: number, updates: Partial<CourseAssignment>): Promise<CourseAssignment | undefined> { return undefined; }
   
-  async createNotification(notificationData: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
-  async getUserNotifications(userId: number): Promise<Notification[]> { return []; }
-  async markNotificationAsRead(id: number): Promise<boolean> { return false; }
+  // Course Assignment methods (matching routes.ts expectations)
+  async getCourseAssignment(id: number): Promise<CourseAssignment | undefined> { return undefined; }
+  async getAllCourseAssignments(): Promise<CourseAssignment[]> { return []; }
+  async getCourseAssignmentsByUser(userId: number): Promise<CourseAssignment[]> { return []; }
+  async deleteCourseAssignment(id: number): Promise<boolean> { return false; }
   
+  // Notification methods (matching routes.ts expectations)
+  async getNotification(id: number): Promise<Notification | undefined> { return undefined; }
+  async getAllNotifications(): Promise<Notification[]> { return []; }
+  async getNotificationsByUser(userId: number): Promise<Notification[]> { return []; }
+  async createNotification(notificationData: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
+  async updateNotification(id: number, updates: Partial<Notification>): Promise<Notification | undefined> { return undefined; }
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> { return undefined; }
+  async markAllNotificationsAsRead(userId: number): Promise<void> { return; }
+  async deleteNotification(id: number): Promise<boolean> { return false; }
+  
+  // Training methods (matching interface)
+  async getTrainingModule(id: number): Promise<TrainingModule | undefined> { return undefined; }
+  async getAllTrainingModules(): Promise<TrainingModule[]> { return []; }
+  async createTrainingModule(moduleData: InsertTrainingModule): Promise<TrainingModule> { throw new Error('Not implemented'); }
+  async getUserProgress(userId: number): Promise<UserProgress[]> { return []; }
+  async updateUserProgress(progressData: InsertUserProgress): Promise<UserProgress> { throw new Error('Not implemented'); }
+  
+  // Task logs
+  async createTaskLog(logData: InsertTaskLog): Promise<TaskLog> { throw new Error('Not implemented'); }
+  async getTaskLogs(taskId: number): Promise<TaskLog[]> { return []; }
+  
+  // Missing task generation methods
+  async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> { 
+    return { totalTasksCreated: 0, recurringTasksProcessed: 0 }; 
+  }
   async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> { return false; }
+  
+  // Tray methods
+  async splitTray(originalTrayId: string, splitData: { splitCount: number; newTrayIds: string[] }): Promise<Tray[]> { return []; }
+  
   async clearAllData(): Promise<boolean> { return false; }
 
   // System status and locks - real database implementations
@@ -3546,4 +3579,5 @@ class HybridStorage implements IStorage {
   }
 }
 
-export const storage = new HybridStorage();
+// Export the appropriate storage implementation based on environment
+export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();

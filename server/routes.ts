@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Transform tasks to include explicit visibleFromDate for client filtering
       const transformedTasks = tasks.map(task => {
-        const dueDate = new Date(task.dueDate);
+        const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
         let visibleFromDate = null;
         
         // For biweekly/period tasks, calculate visibleFromDate (13 days before dueDate)
