@@ -814,7 +814,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let tasks;
       
       if (location) {
-        tasks = await storage.getRecurringTasksByLocation(location as string);
+        // Apply same location mapping as tasks route
+        const rawLocation = String(location);
+        const cleanedLocation = rawLocation.trim().replace(/^['"]|['"]$/g, '');
+        const upperLocation = cleanedLocation.toUpperCase();
+        
+        // Map short location codes to full names for backwards compatibility  
+        const locationMap: { [key: string]: string } = {
+          'K': 'Kenosha'
+        };
+        const actualLocation = locationMap[upperLocation] || cleanedLocation;
+        
+        console.log(`🔍 [RECURRING] Using location filtering for: "${cleanedLocation}" → "${actualLocation}"`);
+        tasks = await storage.getRecurringTasksByLocation(actualLocation);
+        
+        // Defensive retry if mapping exists but got 0 results
+        if (tasks.length === 0 && locationMap[upperLocation] && actualLocation !== cleanedLocation) {
+          console.log(`🔍 [RECURRING] Retrying with mapped location: "${actualLocation}"`);
+          tasks = await storage.getRecurringTasksByLocation(actualLocation);
+        }
       } else {
         tasks = await storage.getAllRecurringTasks();
       }
