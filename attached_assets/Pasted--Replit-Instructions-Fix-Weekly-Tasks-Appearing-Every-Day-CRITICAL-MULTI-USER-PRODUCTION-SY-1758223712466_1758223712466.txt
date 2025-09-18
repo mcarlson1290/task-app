@@ -1,0 +1,104 @@
+# Replit Instructions: Fix Weekly Tasks Appearing Every Day
+
+## CRITICAL: MULTI-USER PRODUCTION SYSTEM
+**THIS APP SERVES DOZENS OF USERS SIMULTANEOUSLY. ALL DATA MUST BE IN SHARED DATABASE.**
+
+## The Problem
+Weekly tasks that should appear only on specific days (e.g., Monday/Wednesday/Friday) are appearing EVERY SINGLE DAY. This is creating 7x more tasks than intended.
+
+## Core Issue
+The system is creating a task for every day without checking if that day matches the template's selectedDays array.
+
+## Weekly Task Rules (MUST FOLLOW EXACTLY)
+
+A weekly task with selectedDays = ['Monday', 'Wednesday', 'Friday'] should:
+- Create a task on Monday
+- Create a task on Wednesday  
+- Create a task on Friday
+- NOT create tasks on Tuesday, Thursday, Saturday, or Sunday
+
+Over 31 days, this should create approximately 13 tasks, NOT 31 tasks.
+
+## The Fix Required
+
+### Step 1: Check Day Names Correctly
+For each day in the 31-day range:
+```
+1. Get the day name (e.g., "Monday", "Tuesday")
+2. Check if this day name is in template.selectedDays
+3. ONLY create task if the day matches
+```
+
+### Step 2: Verify selectedDays Format
+The selectedDays array should contain:
+- Full day names: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+- NOT numbers
+- NOT abbreviations
+- Case-sensitive matching
+
+### Step 3: Database Storage Requirements
+Every task must be:
+- Created in the shared database (Firestore/PostgreSQL)
+- Immediately visible to all users
+- Persistent across app restarts
+- NOT stored in React state or memory
+
+## Example Generation Logic
+
+For a template "Water Plants" with selectedDays = ['Monday', 'Thursday']:
+
+Checking October 28-November 28:
+- Oct 28 (Monday) → CREATE task
+- Oct 29 (Tuesday) → SKIP
+- Oct 30 (Wednesday) → SKIP
+- Oct 31 (Thursday) → CREATE task
+- Nov 1 (Friday) → SKIP
+- Nov 2 (Saturday) → SKIP
+- Nov 3 (Sunday) → SKIP
+- Nov 4 (Monday) → CREATE task
+
+Result: ~9 tasks over 31 days, NOT 31 tasks
+
+## Multi-User Considerations
+
+1. **Concurrent Access**: Multiple users may trigger generation simultaneously
+2. **Lock Mechanism**: Use database locks to prevent duplicate generation
+3. **Shared Visibility**: All users must see the same tasks immediately
+4. **No User-Specific Generation**: Tasks are generated for the entire team, not per user
+
+## Permanent Solution Architecture
+
+1. **Database First**: All operations read from and write to the database
+2. **Stateless Generation**: Don't rely on React state or memory
+3. **Idempotent Operations**: Running generation twice should not create duplicates
+4. **Scalable**: Should handle dozens of users without issues
+
+## Testing the Fix
+
+1. Create a weekly task for "Tuesday only"
+2. Generate tasks for 31 days
+3. Should see exactly 4-5 Tuesday tasks
+4. Should NOT see tasks on any other day
+
+## Common Mistakes Causing Daily Spam
+
+1. **Ignoring selectedDays**: Creating tasks without checking the day
+2. **Wrong day comparison**: Comparing numbers instead of day names
+3. **OR instead of AND logic**: Creating if ANY condition matches instead of ALL
+
+## Expected Results
+
+If you have 10 weekly templates with various day selections:
+- Some for MWF (3 days/week)
+- Some for Tuesday/Thursday (2 days/week)  
+- Some for weekdays only (5 days/week)
+
+You should see approximately 100-150 total weekly tasks over 31 days, NOT 310 tasks (10 × 31).
+
+## Final Database Verification
+
+After generation:
+1. Query database for all tasks
+2. Group by recurringTaskId
+3. Verify each weekly template has appropriate number of instances
+4. Verify tasks exist only on their selected days

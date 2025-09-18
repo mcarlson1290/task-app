@@ -3141,10 +3141,39 @@ class DatabaseStorage implements IStorage {
     // Generate instances based on frequency
     switch (recurringTask.frequency) {
       case 'weekly': {
-        // Generate for the next 4 weeks starting from current week
-        for (let week = 0; week < 4; week++) {
+        // Parse the daysOfWeek array - critical for weekly task filtering
+        let selectedDays: string[] = [];
+        try {
+          if (typeof recurringTask.daysOfWeek === 'string') {
+            selectedDays = JSON.parse(recurringTask.daysOfWeek);
+          } else if (Array.isArray(recurringTask.daysOfWeek)) {
+            selectedDays = recurringTask.daysOfWeek;
+          }
+        } catch (error) {
+          console.error(`❌ Failed to parse daysOfWeek for "${recurringTask.title}":`, error);
+          break; // Skip this task if daysOfWeek is invalid
+        }
+
+        if (!selectedDays || selectedDays.length === 0) {
+          console.log(`⚠️ No selectedDays for weekly task "${recurringTask.title}" - skipping`);
+          break; // Skip tasks with no selected days
+        }
+
+        // Normalize day names to lowercase for comparison
+        const normalizedSelectedDays = selectedDays.map(day => day.toLowerCase());
+        
+        // Generate for the next 31 days, checking each day
+        for (let dayOffset = 0; dayOffset < 31; dayOffset++) {
           const taskDate = new Date(baseDate);
-          taskDate.setDate(taskDate.getDate() + (week * 7));
+          taskDate.setDate(taskDate.getDate() + dayOffset);
+          
+          // Get the day name (Monday, Tuesday, etc.)
+          const dayName = taskDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+          
+          // CRITICAL: Only create task if this day matches selectedDays
+          if (!normalizedSelectedDays.includes(dayName)) {
+            continue; // Skip this day - not in selectedDays
+          }
           
           const dueDate = new Date(taskDate);
           dueDate.setDate(dueDate.getDate() + 6); // Due at end of week
@@ -3186,6 +3215,7 @@ class DatabaseStorage implements IStorage {
               deletedRecurringTaskId: null,
               deletedRecurringTaskTitle: null
             });
+            console.log(`✅ Creating weekly task "${recurringTask.title}" for ${dayName} (${taskDate.toDateString()})`);
           }
         }
         break;
