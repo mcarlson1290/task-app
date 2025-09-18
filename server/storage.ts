@@ -642,14 +642,14 @@ export class MemStorage implements IStorage {
           for (const expected of expectedTasks) {
             const existingTask = existingTasks.find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
-              t.dueDate && 
+              t.dueDate !== null && 
               this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
             );
             
             // Check LIVE task state, not snapshot, to avoid repeated creations
             const existingTaskLive = Array.from(this.tasks.values()).find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
-              t.dueDate && 
+              t.dueDate !== null && 
               this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
             );
             
@@ -1576,6 +1576,7 @@ export class MemStorage implements IStorage {
         ...task,
         id: this.currentRecurringTaskId++,
         createdAt: new Date(),
+        assignTo: null,
         checklistTemplate: null,
         dayOfMonth: null,
         automation: null
