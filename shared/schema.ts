@@ -62,6 +62,11 @@ export const tasks = pgTable("tasks", {
   isFromDeletedRecurring: boolean("is_from_deleted_recurring").default(false),
   deletedRecurringTaskTitle: text("deleted_recurring_task_title"),
   
+  // Update propagation tracking
+  templateVersion: integer("template_version").default(1), // Which template version was this created from
+  isModifiedAfterCreation: boolean("is_modified_after_creation").default(false), // Flag if task was modified after creation
+  modifiedFromTemplateAt: timestamp("modified_from_template_at"), // When template update was applied
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -115,7 +120,30 @@ export const recurringTasks = pgTable("recurring_tasks", {
     }[];
   }>(),
   
+  // Update propagation system fields
+  versionNumber: integer("version_number").default(1), // Increment on template changes
+  lastModifiedDate: timestamp("last_modified_date").defaultNow(),
+  lastModifiedBy: integer("last_modified_by").references(() => users.id),
+  
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Change audit log for recurring task template updates
+export const recurringTaskChanges = pgTable("recurring_task_changes", {
+  id: serial("id").primaryKey(),
+  recurringTaskId: integer("recurring_task_id").notNull().references(() => recurringTasks.id),
+  changedFields: json("changed_fields").$type<{
+    field: string;
+    oldValue: any;
+    newValue: any;
+  }[]>(), // Track which fields changed and their values
+  changeTimestamp: timestamp("change_timestamp").defaultNow(),
+  changedByUser: integer("changed_by_user").notNull().references(() => users.id),
+  affectedInstanceCount: integer("affected_instance_count").default(0), // How many task instances were updated
+  updateStatus: text("update_status").default('pending'), // 'pending', 'completed', 'failed', 'partial'
+  errorMessage: text("error_message"), // If update failed, store error details
+  userConfirmed: boolean("user_confirmed").default(false), // Did user confirm the changes
+  rollbackData: json("rollback_data").$type<Record<string, any>>(), // Data needed for rollback
 });
 
 export const growingSystems = pgTable("growing_systems", {
@@ -301,7 +329,12 @@ export type Tray = typeof trays.$inferSelect;
 export type TrayMovement = typeof trayMovements.$inferSelect;
 export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
 
-export const insertRecurringTaskSchema = createInsertSchema(recurringTasks);
+export const insertRecurringTaskSchema = createInsertSchema(recurringTasks).omit({ 
+  id: true, 
+  createdAt: true, 
+  versionNumber: true, 
+  lastModifiedDate: true 
+});
 export const insertGrowingSystemSchema = createInsertSchema(growingSystems);
 export const insertTraySchema = createInsertSchema(trays);
 export const insertTrayMovementSchema = createInsertSchema(trayMovements);
@@ -312,6 +345,16 @@ export type InsertGrowingSystem = z.infer<typeof insertGrowingSystemSchema>;
 export type InsertTray = z.infer<typeof insertTraySchema>;
 export type InsertTrayMovement = z.infer<typeof insertTrayMovementSchema>;
 export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransactionSchema>;
+
+// Recurring task changes schemas
+export const insertRecurringTaskChangeSchema = createInsertSchema(recurringTaskChanges).omit({ 
+  id: true, 
+  changeTimestamp: true,
+  updateStatus: true,
+  userConfirmed: true
+});
+export type InsertRecurringTaskChange = z.infer<typeof insertRecurringTaskChangeSchema>;
+export type RecurringTaskChange = typeof recurringTaskChanges.$inferSelect;
 
 export const taskLogs = pgTable("task_logs", {
   id: serial("id").primaryKey(),
