@@ -1,0 +1,108 @@
+# Replit Instructions: Fix Task Accumulation - Show Only Today's Tasks
+
+## CRITICAL: MULTI-USER DATABASE SYSTEM
+**ALL CHANGES MUST USE DATABASE STORAGE. THIS AFFECTS DOZENS OF USERS.**
+
+## The Problem
+Tasks are accumulating across days instead of showing only on their assigned day:
+- Thursday shows: Tuesday + Wednesday tasks
+- Friday shows: Tuesday + Wednesday + Thursday tasks
+- Each day adds more tasks instead of showing ONLY that day's tasks
+
+## Root Cause
+The visibility filter is using "show all tasks up to today" instead of "show only today's tasks".
+
+## Required Fix
+
+### For Weekly Tasks
+**Current (WRONG)**: Show task if task.dueDate <= today
+**Correct**: Show task if task.dueDate === today
+
+A Wednesday task should:
+- Be invisible on Tuesday
+- Be visible ONLY on Wednesday
+- Be invisible on Thursday
+
+### For Monthly/Bi-Weekly/Quarterly Tasks
+These should continue using date ranges (visibleFromDate to dueDate) - they are working correctly.
+
+## Database Filtering Logic
+
+The query/filter must distinguish between task types:
+
+### Weekly Tasks (frequency = 'daily')
+```
+Show task if:
+- dueDate equals selected viewing date (exact match)
+- NOT less than or equal to
+- NOT greater than or equal to
+- EXACT DATE MATCH ONLY
+```
+
+### All Other Tasks
+```
+Show task if:
+- viewing date >= visibleFromDate AND
+- viewing date <= dueDate
+```
+
+## Example Scenarios
+
+**Viewing Thursday, October 31:**
+- Should see: Thursday's weekly tasks ONLY
+- Should NOT see: Wednesday's tasks, Tuesday's tasks
+- Should see: Monthly/bi-weekly tasks in their valid date range
+
+**Viewing Friday, November 1:**
+- Should see: Friday's weekly tasks ONLY
+- Should NOT see: Any tasks from previous days
+- Should see: November's monthly tasks (just started their visibility period)
+
+## Implementation Requirements
+
+1. **Database Queries**: Filter must happen at the database level
+   - Don't load all tasks then filter in memory
+   - Use proper WHERE clauses in your database query
+
+2. **Date Comparison**: Use exact date matching for weekly tasks
+   - Strip time components to compare dates only
+   - Account for timezone differences
+
+3. **Task Type Awareness**: The filter must know task frequency
+   - Weekly tasks: exact date match
+   - Others: date range match
+
+## Testing the Fix
+
+1. Create weekly tasks for different days:
+   - Monday task: "Water seedlings"
+   - Wednesday task: "Check pH levels"
+   - Friday task: "Harvest microgreens"
+
+2. View each day:
+   - Monday: Should see ONLY "Water seedlings"
+   - Tuesday: Should see NO weekly tasks
+   - Wednesday: Should see ONLY "Check pH levels"
+   - Thursday: Should see NO weekly tasks
+   - Friday: Should see ONLY "Harvest microgreens"
+
+## Common Implementation Mistakes
+
+1. **Using <= instead of === for weekly tasks**
+2. **Applying the same filter logic to all task types**
+3. **Not distinguishing between frequency types in the filter**
+4. **Filtering in React/memory instead of at database level**
+
+## Expected Results
+
+On any given day, a user should see:
+- ONLY that day's weekly tasks (not accumulated from previous days)
+- Plus any monthly/bi-weekly/quarterly tasks whose visibility window includes today
+- Total tasks should vary by day, not accumulate
+
+## Database Performance Note
+
+Since this is a multi-user system with dozens of users:
+- Filters must be efficient database queries
+- Don't load all tasks for all time
+- Query only what's needed for the current view

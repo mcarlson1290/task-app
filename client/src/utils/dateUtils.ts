@@ -62,7 +62,26 @@ export const formatDateForComparison = (date: Date | string): string => {
 export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean => {
   if (!task || !targetDate) return false;
   
-  // PRIMARY: Use explicit visibleFromDate → dueDate range when available (server-provided)
+  // CRITICAL FIX: Weekly tasks must use exact date matching, not range matching
+  // This prevents task accumulation across days
+  if (task.frequency === 'weekly') {
+    const taskDate = formatDateForComparison(task.taskDate);
+    if (taskDate) {
+      const matches = targetDate === taskDate;
+      console.log(`[dateUtils] 📅 WEEKLY TASK: "${task.title}" | TaskDate: ${taskDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
+      return matches;
+    }
+    
+    // Fallback to dueDate for weekly tasks without taskDate
+    const dueDate = formatDateForComparison(task.dueDate);
+    if (dueDate) {
+      const matches = targetDate === dueDate;
+      console.log(`[dateUtils] 📅 WEEKLY TASK (via dueDate): "${task.title}" | DueDate: ${dueDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
+      return matches;
+    }
+  }
+  
+  // For non-weekly tasks: Use explicit visibleFromDate → dueDate range when available (server-provided)
   if (task.visibleFromDate && task.dueDate) {
     const start = formatDateForComparison(task.visibleFromDate);
     const end = formatDateForComparison(task.dueDate);
