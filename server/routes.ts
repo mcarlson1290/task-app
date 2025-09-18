@@ -982,6 +982,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Resolve conflict for a task with template updates
+  app.post("/api/tasks/:id/resolve-conflict", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { action, notes, templateChanges } = req.body;
+
+      if (!['keep_current', 'apply_template', 'manual_merge', 'defer'].includes(action)) {
+        return res.status(400).json({ message: "Invalid resolution action" });
+      }
+
+      const result = await storage.resolveTaskConflict(taskId, {
+        action,
+        notes,
+        templateChanges,
+        resolvedBy: req.user?.id || 1, // TODO: Use proper user ID from auth
+        resolvedAt: new Date().toISOString()
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error resolving task conflict:', error);
+      res.status(500).json({ message: "Failed to resolve task conflict" });
+    }
+  });
+
   // Regenerate ALL task instances with corrected logic
   app.post("/api/recurring-tasks/regenerate-all", async (req, res) => {
     try {

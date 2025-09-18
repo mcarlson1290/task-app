@@ -288,4 +288,4 @@ function TaskUpdateDetails({ task }: { task: TaskWithUpdate }) {
   );
 }
 
-export default RecurringTaskUpdateNotifications;
+// Export removed - using named export above

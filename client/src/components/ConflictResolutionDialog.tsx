@@ -283,4 +283,4 @@ export function ConflictResolutionDialog({
   );
 }
 
-export default ConflictResolutionDialog;
+// Export removed - using named export above
