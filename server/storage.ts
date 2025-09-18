@@ -353,21 +353,38 @@ export class MemStorage implements IStorage {
           ? template.daysOfWeek 
           : (template.daysOfWeek ? [template.daysOfWeek] : []);
         
-        if (templateDays.includes(dayName)) {
+        // FIXED: Only generate if specific days are configured AND current day matches
+        if (templateDays.length > 0 && templateDays.includes(dayName)) {
           return this.buildTaskFromTemplate(template, {
             id: `${template.id}-${this.formatDate(checkDate)}`,
             visibleFromDate: checkDate,
             dueDate: checkDate
           });
         }
+        // If no days specified, don't generate any tasks (instead of every day)
         break;
         
-      case 'daily': // Daily tasks - generate every day
-        return this.buildTaskFromTemplate(template, {
-          id: `${template.id}-${this.formatDate(checkDate)}`,
-          visibleFromDate: checkDate,
-          dueDate: checkDate
-        });
+      case 'daily': // Daily tasks - respect daysOfWeek for selective generation
+        const dailyTemplateDays = Array.isArray(template.daysOfWeek) 
+          ? template.daysOfWeek 
+          : (template.daysOfWeek ? [template.daysOfWeek] : []);
+        
+        // If no days specified, don't generate (empty means no days, not every day)
+        if (dailyTemplateDays.length === 0) {
+          return null;
+        }
+        
+        // Only generate if current day matches specified days
+        if (dailyTemplateDays.includes(dayName)) {
+          return this.buildTaskFromTemplate(template, {
+            id: `${template.id}-${this.formatDate(checkDate)}`,
+            visibleFromDate: checkDate,
+            dueDate: checkDate
+          });
+        }
+        
+        // Current day doesn't match specified days
+        return null;
         
       case 'quarterly':
         const quarterStarts = [0, 3, 6, 9];
@@ -2399,7 +2416,9 @@ export class MemStorage implements IStorage {
             const currentDayName = dayNames[dayOfWeek];
             shouldCreate = selectedDays.includes(currentDayName);
           } else {
-            shouldCreate = true; // No specific days selected, create every day
+            // FIXED: No specific days selected means NO GENERATION (not every day)
+            shouldCreate = false; 
+            console.log(`⏭️ Skipping weekly task "${recurringTask.title}" - no days specified`);
           }
         } else if (recurringTask.frequency === 'weekly') {
           // Check if current day matches selected days
@@ -2969,7 +2988,8 @@ class DatabaseStorage implements IStorage {
   }
 
   async getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]> {
-    return db.select().from(recurringTasks).where(eq(recurringTasks.location, locationId));
+    // Case-insensitive location matching to handle mixed case in database
+    return db.select().from(recurringTasks).where(sql`LOWER(${recurringTasks.location}) = LOWER(${locationId})`);
   }
 
   async createRecurringTask(taskData: InsertRecurringTask): Promise<RecurringTask> {
