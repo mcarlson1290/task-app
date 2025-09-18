@@ -88,8 +88,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       return { text: 'NO DATA', color: '#6b7280' }; // Gray
     }
     
-    // For recurring tasks, show frequency with day
-    if (task.isRecurring && task.frequency) {
+    // For recurring tasks OR tasks with recurring frequencies, show frequency with day
+    // FIXED: Weekly tasks generated from recurring templates should show RECURRING ribbon
+    const isRecurringTask = task.isRecurring || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency));
+    
+    if (isRecurringTask && task.frequency) {
       const frequencyLabel = getFrequencyLabel(task.frequency);
       
       if (!task.dueDate) {
@@ -233,8 +236,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       <CardContent className="p-6">
         {/* Badge Container - Modular system handles 2-4 badges flexibly */}
         <div className="flex flex-wrap items-center gap-1 mb-3">
-          {/* RECURRING Badge - Only for recurring tasks */}
-          {task.recurringTaskId && (
+          {/* RECURRING Badge - For recurring tasks OR tasks with recurring frequencies */}
+          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency))) && (
             <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-blue-600 text-white">
               RECURRING
             </span>
@@ -256,16 +259,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
             </span>
           )}
           
-          {/* Frequency Badge - Only for recurring tasks with frequency */}
-          {task.recurringTaskId && task.frequency && (
+          {/* Frequency Badge - For recurring tasks OR tasks with recurring frequencies */}
+          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency))) && task.frequency && (
             <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
               ${task.frequency === 'daily' ? 'bg-green-600' : 
+                task.frequency === 'weekly' ? 'bg-green-600' :
                 task.frequency === 'biweekly' ? 'bg-cyan-600' : 
                 task.frequency === 'monthly' ? 'bg-purple-600' : 
                 task.frequency === 'quarterly' ? 'bg-orange-600' : 
                 'bg-gray-600'}
             `}>
               {task.frequency === 'daily' ? 'DAILY' :
+               task.frequency === 'weekly' ? 'WEEKLY' :
                task.frequency === 'biweekly' ? 'BI-WK' :
                task.frequency === 'monthly' ? 'MONTHLY' :
                task.frequency === 'quarterly' ? 'QTLY' : 

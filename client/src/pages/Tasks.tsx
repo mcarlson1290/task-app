@@ -401,7 +401,7 @@ const Tasks: React.FC = () => {
 
     // NEW DATE FILTER LOGIC - Show tasks based on visibility rules
     if (dateFilter) {
-      const normalizeBiweekly = (freq) => (freq || '').toLowerCase().replace(/[^a-z]/g, '');
+      const normalizeBiweekly = (freq?: string) => (freq || '').toLowerCase().replace(/[^a-z]/g, '');
       const biweeklyTasks = filtered.filter(t => normalizeBiweekly(t.frequency) === 'biweekly');
       console.log(`📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks (${biweeklyTasks.length} biweekly)`);
       
@@ -447,10 +447,44 @@ const Tasks: React.FC = () => {
       return true;
     });
     
-    // Log summary for debugging
-    console.log(`Filtered from ${tasks.length} to ${uniqueFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
+    // PRIORITY SORTING: Weekly -> Bi-Weekly -> Monthly -> Quarterly -> Others
+    const getFrequencyPriority = (frequency: string): number => {
+      switch (frequency?.toLowerCase()) {
+        case 'weekly': return 1;
+        case 'biweekly': 
+        case 'bi-weekly': return 2;
+        case 'monthly': return 3;
+        case 'quarterly': return 4;
+        default: return 5; // daily, one-time, and other tasks
+      }
+    };
     
-    return uniqueFiltered;
+    const sortedFiltered = [...uniqueFiltered].sort((a, b) => {
+      // First, sort by frequency priority (weekly first, then bi-weekly, etc.)
+      const aPriority = getFrequencyPriority(a.frequency);
+      const bPriority = getFrequencyPriority(b.frequency);
+      
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+      
+      // Within the same frequency, sort by status (pending first, then in_progress)
+      const statusOrder: Record<string, number> = { 'pending': 1, 'in_progress': 2, 'paused': 3, 'completed': 4, 'skipped': 5 };
+      const aStatusOrder = statusOrder[a.status || ''] || 6;
+      const bStatusOrder = statusOrder[b.status || ''] || 6;
+      
+      if (aStatusOrder !== bStatusOrder) {
+        return aStatusOrder - bStatusOrder;
+      }
+      
+      // Finally, sort by title alphabetically
+      return a.title.localeCompare(b.title);
+    });
+    
+    // Log summary for debugging
+    console.log(`Filtered from ${tasks.length} to ${sortedFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
+    
+    return sortedFiltered;
   }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.code, isViewingAllLocations, staffData]);
 
   // Clear all filters function
