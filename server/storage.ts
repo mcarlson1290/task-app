@@ -12,7 +12,7 @@ import {
   type SystemLock, type InsertSystemLock
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, or, gte } from "drizzle-orm";
 import { PersistenceManager } from './persistence';
 
 export interface IStorage {
@@ -3353,11 +3353,11 @@ class DatabaseStorage implements IStorage {
   }
 
   async updateRecurringTask(id: number, updates: Partial<RecurringTask>, options?: { strategy?: 'update_all' | 'new_only'; userId?: number }): Promise<{ task: RecurringTask | null; report: any }> {
-    return await db.transaction(async (tx) => {
+    try {
       console.log(`🔍 [DATABASE PROPAGATION] Starting update for recurring task ${id}`);
       
-      // Step 1: Get original task within transaction
-      const [originalTask] = await tx.select().from(recurringTasks).where(eq(recurringTasks.id, id));
+      // Step 1: Get original task
+      const [originalTask] = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id));
       if (!originalTask) {
         return { task: null, report: { error: 'Task not found' } };
       }
@@ -3377,7 +3377,7 @@ class DatabaseStorage implements IStorage {
         lastModifiedBy: options?.userId || null
       };
       
-      const [updatedTask] = await tx.update(recurringTasks)
+      const [updatedTask] = await db.update(recurringTasks)
         .set(updateData)
         .where(eq(recurringTasks.id, id))
         .returning();
@@ -3396,13 +3396,13 @@ class DatabaseStorage implements IStorage {
 
       // Step 6: Execute propagation strategy
       if (shouldRegenerateInstances) {
-        propagationReport = await this.regenerateTaskInstancesStrategyDB(tx, id, updatedTask, propagationReport);
+        propagationReport = await this.regenerateTaskInstancesStrategyDB(id, updatedTask, propagationReport);
       } else {
-        propagationReport = await this.updateExistingInstancesStrategyDB(tx, id, updatedTask, changedFields, propagationReport);
+        propagationReport = await this.updateExistingInstancesStrategyDB(id, updatedTask, changedFields, propagationReport);
       }
 
       // Step 7: Log changes to audit trail
-      await this.logRecurringTaskChangeDB(tx, {
+      await this.logRecurringTaskChangeDB({
         recurringTaskId: id,
         changedFields: changedFields,
         changeTimestamp: new Date(),
@@ -3414,7 +3414,10 @@ class DatabaseStorage implements IStorage {
       console.log(`✅ [DATABASE PROPAGATION] Completed for task "${updatedTask.title}" - ${propagationReport.processedInstances} instances affected`);
       
       return { task: updatedTask, report: propagationReport };
-    });
+    } catch (error) {
+      console.error('Error updating recurring task:', error);
+      throw error;
+    }
   }
 
   // FIELD-BY-FIELD CHANGE TRACKING FOR DATABASE STORAGE
@@ -3439,11 +3442,11 @@ class DatabaseStorage implements IStorage {
   }
 
   // REGENERATE INSTANCES STRATEGY (for frequency/schedule changes) - DATABASE VERSION
-  private async regenerateTaskInstancesStrategyDB(tx: any, recurringTaskId: number, updatedTask: RecurringTask, report: any): Promise<any> {
+  private async regenerateTaskInstancesStrategyDB(recurringTaskId: number, updatedTask: RecurringTask, report: any): Promise<any> {
     console.log(`🔄 [DB REGENERATE STRATEGY] Regenerating instances for recurring task: ${updatedTask.title}`);
     
     // Delete ONLY future pending task instances (preserve completed/in-progress tasks)
-    const deletedResult = await tx.delete(tasks)
+    const deletedResult = await db.delete(tasks)
       .where(and(
         eq(tasks.recurringTaskId, recurringTaskId),
         eq(tasks.status, 'pending'),
@@ -3468,7 +3471,7 @@ class DatabaseStorage implements IStorage {
     console.log(`🔄 [DB UPDATE STRATEGY] Updating existing instances for recurring task: ${updatedTask.title}`);
     
     // Find all affected instances (pending + in-progress, preserve completed)
-    const affectedInstances = await tx.select()
+    const affectedInstances = await db.select()
       .from(tasks)
       .where(and(
         eq(tasks.recurringTaskId, recurringTaskId),
@@ -3507,7 +3510,7 @@ class DatabaseStorage implements IStorage {
       
       // Execute batch updates
       for (const { id, updates } of batchUpdates) {
-        await tx.update(tasks).set(updates).where(eq(tasks.id, id));
+        await db.update(tasks).set(updates).where(eq(tasks.id, id));
         updatedCount++;
       }
       
@@ -3645,9 +3648,9 @@ class DatabaseStorage implements IStorage {
   }
 
   // CHANGE AUDIT LOGGING - DATABASE VERSION
-  private async logRecurringTaskChangeDB(tx: any, changeData: any): Promise<void> {
+  private async logRecurringTaskChangeDB(changeData: any): Promise<void> {
     // Store in notifications table as audit log for now
-    await tx.insert(notifications).values({
+    await db.insert(notifications).values({
       userId: changeData.changedByUser || 1,
       type: 'recurring_task_update',
       title: 'Recurring Task Updated',

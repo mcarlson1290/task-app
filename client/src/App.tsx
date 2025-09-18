@@ -376,6 +376,11 @@ function Router() {
           <Tasks />
         </ProtectedRoute>
       </Route>
+      <Route path="/tasks">
+        <ProtectedRoute>
+          <Tasks />
+        </ProtectedRoute>
+      </Route>
       <Route path="/inventory">
         <ProtectedRoute>
           <Inventory />

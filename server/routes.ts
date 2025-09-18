@@ -899,6 +899,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Preflight endpoint for impact calculation
+  // Get single recurring task
+  app.get("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+      }
+      
+      const task = await storage.getRecurringTask(id);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      res.json(task);
+    } catch (error) {
+      console.error("Error getting recurring task:", error);
+      res.status(500).json({ message: "Failed to get recurring task" });
+    }
+  });
+
   app.get("/api/recurring-tasks/:id/impact", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

@@ -806,8 +806,19 @@ const Tasks: React.FC = () => {
               setCanScrollRight(target.scrollLeft + target.clientWidth < target.scrollWidth - 5);
             }}
           >
-          {/* Category Select */}
+          {/* Task Type Toggle - Regular vs Recurring */}
+          <Button
+            data-testid="button-recurring-tasks"
+            variant={showAllRecurring ? "default" : "outline"}
+            className={`filter-button ${showAllRecurring ? 'active' : ''}`}
+            onClick={() => setShowAllRecurring(!showAllRecurring)}
+          >
+            {showAllRecurring ? "📋 Regular Tasks" : "🔄 Recurring Tasks"}
+          </Button>
+
+          {!showAllRecurring && (
           <select 
+            data-testid="select-category"
             value={activeFilter}
             onChange={async (e) => {
               setActiveFilter(e.target.value);
@@ -822,6 +833,7 @@ const Tasks: React.FC = () => {
               </option>
             ))}
           </select>
+          )}
 
           {/* Status Select */}
           <select
