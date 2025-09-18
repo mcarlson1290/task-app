@@ -1,0 +1,254 @@
+# Replit Instructions: Recurring Task Update Propagation System
+
+**CRITICAL: When a recurring task template is edited, ALL future instances must update automatically while preserving completed task history.**
+
+## Understanding Recurring Tasks Architecture
+
+### Two-Layer System
+
+1. **Recurring Task Templates** (Master)
+   - The blueprint that defines what tasks should be created
+   - Contains: title, description, frequency, checklist template, assignee, etc.
+   - Lives in recurring_tasks table
+   - Has unique recurring_task_id
+
+2. **Task Instances** (Generated)
+   - Individual tasks created from templates
+   - Contains: copy of all template fields + due_date + status
+   - Lives in tasks table
+   - Links back to template via parent_recurring_task_id
+
+## When Template Changes Need to Propagate
+
+### Changes That SHOULD Update All Instances
+When these fields change in the template, update ALL future uncompleted instances:
+- Task title
+- Description/instructions
+- Checklist steps
+- Estimated duration
+- Priority level
+- Assigned role/user
+- Warning/safety notes
+
+### Changes That Should NOT Affect Existing Instances
+These changes only affect newly generated instances:
+- Frequency (daily → weekly)
+- Due time changes
+- Active/inactive status
+- Start/end dates
+
+### Data That Must Be Preserved
+NEVER modify these on existing instances:
+- Completion status
+- Actual completion time
+- Checklist progress/answers
+- User-entered notes
+- Skip reasons
+- Time tracking data
+
+## Update Propagation Logic
+
+### Step 1: Identify Affected Instances
+When a recurring task template is saved:
+```
+Find all task instances where:
+- parent_recurring_task_id = [template_id]
+- status IN ('pending', 'assigned', 'overdue')
+- due_date >= today
+```
+
+### Step 2: Determine What Changed
+Compare old template values to new values:
+- Track which fields were modified
+- Log changes for audit trail
+- Check if changes require user notification
+
+### Step 3: Update Strategy
+
+**For Simple Field Updates** (title, description, priority):
+- Direct database update to all affected instances
+- Single bulk operation for performance
+- Maintain update timestamp
+
+**For Checklist Updates** (more complex):
+1. If checklist items added: Append to existing checklists
+2. If checklist items removed: Mark as "removed" but don't delete
+3. If checklist items reordered: Update order but preserve progress
+4. If checklist item text changed: Update text but keep responses
+
+### Step 4: Handle In-Progress Tasks
+For tasks currently being worked on:
+- Show notification: "This task has been updated"
+- Preserve current progress
+- Merge changes carefully:
+  - Keep user's current checklist progress
+  - Update instructions/descriptions
+  - Flag any conflicts for review
+
+## Special Cases & Rules
+
+### 1. Completed Tasks Archive
+- Completed tasks are NEVER updated
+- They serve as historical records
+- Show exactly what was done at that time
+
+### 2. Started Tasks Protection
+Tasks with status 'in-progress' need special handling:
+- Preserve all user-entered data
+- Update only non-destructive fields
+- Show "Updated" badge to user
+
+### 3. Frequency Changes
+When frequency changes (e.g., daily → weekly):
+- Do NOT delete existing instances
+- Stop generating new instances at old frequency
+- Start generating at new frequency from tomorrow
+- Optional: Mark existing instances as "orphaned"
+
+### 4. Deactivated Templates
+When a template is deactivated:
+- Keep all existing future instances
+- Stop generating new instances
+- Mark template as "inactive" in instances
+- Allow completion of existing tasks
+
+## Database Design Requirements
+
+### Recurring Task Template Table
+- recurring_task_id (unique)
+- version_number (increment on changes)
+- last_modified_date
+- last_modified_by
+- all template fields...
+
+### Task Instance Table
+- task_id (unique)
+- parent_recurring_task_id (foreign key)
+- template_version (which version was this created from)
+- is_modified_after_creation (boolean flag)
+- all task fields...
+
+### Change Log Table
+- change_id
+- recurring_task_id
+- changed_fields (JSON)
+- change_timestamp
+- changed_by_user
+- affected_instance_count
+
+## User Interface Considerations
+
+### When Editing Recurring Task Template
+
+Show warning dialog:
+```
+"This change will affect 23 future instances of this task.
+ 
+What should we do?
+- Update all future instances (Recommended)
+- Only apply to newly created tasks
+- Cancel changes
+
+Note: Completed tasks will not be affected."
+```
+
+### Visual Indicators in Task List
+- Show "sync" icon for instances linked to templates
+- Show "broken link" icon if template was deleted
+- Show "updated" badge if task was modified after creation
+
+### Conflict Resolution UI
+If user is mid-task when update occurs:
+- Soft notification: "This task has been updated"
+- Option to: "View changes" or "Dismiss"
+- Never force refresh that loses progress
+
+## Performance Optimization
+
+### Bulk Update Strategy
+1. Use single SQL UPDATE with WHERE clause
+2. Limit to batches of 100 for large updates
+3. Run as background job for 500+ instances
+4. Show progress: "Updating 234 tasks... 45% complete"
+
+### Caching Considerations
+- Invalidate task cache after bulk updates
+- Update search indices if applicable
+- Refresh user's current view after completion
+
+### Database Indexing
+Ensure indexes on:
+- parent_recurring_task_id
+- status + due_date (compound)
+- template_version
+
+## Error Handling & Rollback
+
+### Transaction Safety
+- Wrap all updates in database transaction
+- Roll back on any error
+- Log failed updates for manual review
+
+### Validation Rules
+Before updating instances:
+- Verify template exists and is active
+- Check user has permission to edit
+- Validate new data integrity
+- Ensure no circular dependencies
+
+### Recovery Options
+If update fails:
+- Maintain old version in history
+- Allow manual rollback to previous version
+- Provide "undo" option for 24 hours
+- Email notification of failed updates
+
+## Testing Scenarios
+
+### Must Test These Cases
+
+1. **Basic Update**: Change title of daily task → verify all future instances updated
+2. **Mid-Task Update**: User working on checklist when template updates
+3. **Mass Update**: Template with 1000+ instances
+4. **Conflict Resolution**: Update checklist while user has partial progress
+5. **Edge Cases**: 
+   - Update on last day of month
+   - Update during daylight savings change
+   - Update while offline/syncing
+
+### Verification Checklist
+- ✓ Future instances updated correctly
+- ✓ Completed tasks unchanged
+- ✓ In-progress tasks preserve user data
+- ✓ Update completes in < 5 seconds for 100 tasks
+- ✓ Audit trail shows all changes
+- ✓ Users notified appropriately
+
+## Implementation Steps
+
+### Phase 1: Basic Updates
+1. Add parent_recurring_task_id to tasks
+2. Implement simple field propagation
+3. Add version tracking
+4. Test with small data set
+
+### Phase 2: Complex Updates
+1. Handle checklist modifications
+2. Add conflict resolution
+3. Implement notification system
+4. Build rollback capability
+
+### Phase 3: Performance & Scale
+1. Add bulk update optimization
+2. Implement background jobs
+3. Add progress tracking
+4. Load test with 10,000+ tasks
+
+## Success Metrics
+
+The system is working when:
+- Template changes propagate in < 2 seconds
+- No user data is ever lost
+- Historical records remain accurate
+- Users understand what changed and why
+- System handles 10,000+ instances smoothly
