@@ -183,10 +183,11 @@ const CreateTrayStep: React.FC<CreateTrayStepProps> = ({
   // Generate tray ID whenever inputs change
   useEffect(() => {
     const date = new Date();
+    // TIMEZONE FIX: Use UTC methods to match database storage and consistent date handling
     const dateStr = 
-      (date.getMonth() + 1).toString().padStart(2, '0') +
-      date.getDate().toString().padStart(2, '0') +
-      date.getFullYear().toString().slice(2);
+      (date.getUTCMonth() + 1).toString().padStart(2, '0') +
+      date.getUTCDate().toString().padStart(2, '0') +
+      date.getUTCFullYear().toString().slice(2);
     
     // Determine SKU based on varieties
     let sku = 'MIX'; // Default for multiple varieties

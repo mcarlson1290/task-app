@@ -108,7 +108,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
       }
       
       try {
-        const dayName = getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
+        // TIMEZONE FIX: Always use taskDate when available (shows actual assignment day), fallback to dueDate
+        const dateToUse = task.taskDate ? 
+          (typeof task.taskDate === 'string' ? task.taskDate : task.taskDate?.toISOString() || '') :
+          (typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
+        const dayName = getDayAbbreviation(dateToUse);
         return { 
           text: `${frequencyLabel} • ${dayName}`,
           color: task.frequency === 'daily' ? '#059669' : // Green
@@ -129,7 +133,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
     }
     
     try {
-      const dayName = getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
+      // TIMEZONE FIX: Use taskDate for better accuracy if available, fallback to dueDate
+      const dateToUse = task.taskDate ? 
+        (typeof task.taskDate === 'string' ? task.taskDate : task.taskDate?.toISOString() || '') :
+        (typeof task.dueDate === 'string' ? task.dueDate : task.dueDate?.toISOString() || '');
+      const dayName = getDayAbbreviation(dateToUse);
       return { text: dayName, color: '#059669' }; // Green
     } catch (error) {
       return { text: 'INVALID DATE', color: '#ef4444' }; // Red
@@ -243,9 +251,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
             </span>
           )}
           
-          {/* Day Badge - Always present */}
+          {/* Day Badge - Frequency-aware day display */}
           <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-teal-500 text-white">
-            {task.dueDate ? getDayAbbreviation(typeof task.dueDate === 'string' ? task.dueDate : task.dueDate.toISOString()) : 'NO DATE'}
+            {(() => {
+              // Use frequency-aware logic: taskDate for weekly/daily, dueDate for others
+              if (task.frequency && ['daily', 'weekly'].includes(task.frequency) && task.taskDate) {
+                const dateStr = typeof task.taskDate === 'string' ? task.taskDate : task.taskDate.toISOString();
+                return getDayAbbreviation(dateStr);
+              } else if (task.dueDate) {
+                const dateStr = typeof task.dueDate === 'string' ? task.dueDate : task.dueDate.toISOString();
+                return getDayAbbreviation(dateStr);
+              } else if (task.taskDate) {
+                const dateStr = typeof task.taskDate === 'string' ? task.taskDate : task.taskDate.toISOString();
+                return getDayAbbreviation(dateStr);
+              } else {
+                return 'NO DATE';
+              }
+            })()}
           </span>
           
           {/* Priority Badge - Show when priority exists */}

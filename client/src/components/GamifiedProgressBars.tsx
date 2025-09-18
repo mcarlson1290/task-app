@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getTodayString } from '../utils/dateUtils';
 
 interface GamifiedProgressBarsProps {
   tasks: any[];
@@ -7,7 +8,7 @@ interface GamifiedProgressBarsProps {
 }
 
 const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, currentUser, selectedDate }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayString(); // Use UTC-based date to match database storage
   const [currentAffirmation, setCurrentAffirmation] = useState(0);
   
   // Affirmations pool - moved before useEffect to ensure consistent order
