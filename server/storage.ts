@@ -315,16 +315,10 @@ export class MemStorage implements IStorage {
     
     switch (template.frequency) {
       case 'monthly':
-        // Generate monthly task for any day in the month (not just the 1st)
-        // This ensures current period tasks are created even when added mid-month
-        const lastDay = new Date(Date.UTC(year, month + 1, 0));
-        const monthlyTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`;
-        
-        // Check if we already have a task for this month
-        const existingMonthlyTask = await this.taskExistsForPeriod(template.id, year, month, 'monthly');
-        if (!existingMonthlyTask) {
+        if (dayOfMonth === 1) {
+          const lastDay = new Date(Date.UTC(year, month + 1, 0));
           return this.buildTaskFromTemplate(template, {
-            id: monthlyTaskId,
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
             visibleFromDate: new Date(Date.UTC(year, month, 1)),
             dueDate: lastDay
           });
@@ -332,38 +326,25 @@ export class MemStorage implements IStorage {
         break;
         
       case 'biweekly':
-        // Generate bi-weekly tasks based on current period (not just specific days)
-        
-        // First half of month (1st-14th)
-        if (dayOfMonth >= 1 && dayOfMonth <= 14) {
-          const firstHalfTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`;
-          const existingFirstHalf = await this.taskExistsForPeriod(template.id, year, month, 'biweekly-first');
-          
-          if (!existingFirstHalf) {
-            const visibleDate = new Date(Date.UTC(year, month, 1));
-            const dueDate = new Date(Date.UTC(year, month, 14));
-            return this.buildTaskFromTemplate(template, {
-              id: firstHalfTaskId,
-              visibleFromDate: visibleDate,
-              dueDate: dueDate
-            });
-          }
+        // Create first half task on day 1 (due on 14th)
+        if (dayOfMonth === 1) {
+          const visibleDate = new Date(Date.UTC(year, month, 1));
+          const dueDate = new Date(Date.UTC(year, month, 14));
+          return this.buildTaskFromTemplate(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`,
+            visibleFromDate: visibleDate,
+            dueDate: dueDate
+          });
         }
-        
-        // Second half of month (15th-end)
-        if (dayOfMonth >= 15) {
-          const secondHalfTaskId = `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`;
-          const existingSecondHalf = await this.taskExistsForPeriod(template.id, year, month, 'biweekly-second');
-          
-          if (!existingSecondHalf) {
-            const visibleDate = new Date(Date.UTC(year, month, 15));
-            const dueDate = new Date(Date.UTC(year, month + 1, 0));
-            return this.buildTaskFromTemplate(template, {
-              id: secondHalfTaskId,
-              visibleFromDate: visibleDate,
-              dueDate: dueDate
-            });
-          }
+        // Create second half task on day 15 (due on last day of month)
+        if (dayOfMonth === 15) {
+          const visibleDate = new Date(Date.UTC(year, month, 15));
+          const dueDate = new Date(Date.UTC(year, month + 1, 0));
+          return this.buildTaskFromTemplate(template, {
+            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`,
+            visibleFromDate: visibleDate,
+            dueDate: dueDate
+          });
         }
         break;
         
@@ -423,8 +404,9 @@ export class MemStorage implements IStorage {
 
   // BLUEPRINT: Task Creation Helper (returns InsertTask without ID)
   private async buildTaskFromTemplate(template: RecurringTask, dateInfo: { id: string; visibleFromDate: Date; dueDate: Date }): Promise<InsertTask> {
-    // Always preserve the template's original frequency
-    const taskFrequency = template.frequency;
+    // Determine the correct frequency for the generated task
+    const isPeriodicTask = dateInfo.visibleFromDate.getTime() !== dateInfo.dueDate.getTime();
+    const taskFrequency = isPeriodicTask ? 'biweekly' : template.frequency;
     
     const newTask: InsertTask = {
       title: template.title,
@@ -563,42 +545,6 @@ export class MemStorage implements IStorage {
     });
   }
 
-  private async taskExistsForPeriod(recurringTaskId: number, year: number, month: number, periodType: 'monthly' | 'biweekly-first' | 'biweekly-second'): Promise<boolean> {
-    // Check if a task already exists for this recurring task ID and specific period
-    return Array.from(this.tasks.values()).some(task => {
-      if (!task.dueDate || task.recurringTaskId !== recurringTaskId) return false;
-      
-      const taskDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
-      const visibleDate = task.visibleFromDate ? 
-        (task.visibleFromDate instanceof Date ? task.visibleFromDate : new Date(task.visibleFromDate)) :
-        taskDate;
-      
-      // Check if task is in the same year and month
-      if (taskDate.getUTCFullYear() !== year || taskDate.getUTCMonth() !== month) {
-        return false;
-      }
-      
-      switch (periodType) {
-        case 'monthly':
-          // For monthly tasks, check if due date is last day of month
-          const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
-          return taskDate.getUTCDate() === lastDayOfMonth.getUTCDate();
-          
-        case 'biweekly-first':
-          // For first half, check if due date is 14th and visible from 1st
-          return taskDate.getUTCDate() === 14 && visibleDate.getUTCDate() === 1;
-          
-        case 'biweekly-second':
-          // For second half, check if due date is last day and visible from 15th
-          const lastDay = new Date(Date.UTC(year, month + 1, 0));
-          return taskDate.getUTCDate() === lastDay.getUTCDate() && visibleDate.getUTCDate() === 15;
-          
-        default:
-          return false;
-      }
-    });
-  }
-
   private async saveTask(task: Task): Promise<void> {
     console.log(`🔍 SAVE TASK DEBUG: Adding task ${task.id} (${task.title}) to in-memory cache. Cache size before: ${this.tasks.size}`);
     this.tasks.set(task.id, task);
@@ -642,14 +588,14 @@ export class MemStorage implements IStorage {
           for (const expected of expectedTasks) {
             const existingTask = existingTasks.find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
-              t.dueDate !== null && 
+              t.dueDate && 
               this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
             );
             
             // Check LIVE task state, not snapshot, to avoid repeated creations
             const existingTaskLive = Array.from(this.tasks.values()).find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
-              t.dueDate !== null && 
+              t.dueDate && 
               this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
             );
             
@@ -1576,7 +1522,6 @@ export class MemStorage implements IStorage {
         ...task,
         id: this.currentRecurringTaskId++,
         createdAt: new Date(),
-        assignTo: null,
         checklistTemplate: null,
         dayOfMonth: null,
         automation: null
@@ -3487,192 +3432,77 @@ class HybridStorage implements IStorage {
     return this.memStorage.clearAllData();
   }
 
-  // FIXED: Use DATABASE storage for task generation and persistence
+  // FIXED: Use DATABASE storage for task generation instead of memory storage
   async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> {
-    console.log(`🔄 REGENERATING ALL TASK INSTANCES WITH DATABASE PERSISTENCE`);
-    
-    // Get recurring tasks from DATABASE
+    // Get recurring tasks from DATABASE, not memory
     const recurringTasks = await this.dbStorage.getAllRecurringTasks();
     console.log(`🔄 Found ${recurringTasks.length} recurring templates in DATABASE for task generation`);
     
     if (recurringTasks.length === 0) {
-      console.log('⚠️ No recurring tasks found in database');
+      console.log('⚠️ No recurring tasks found in database - checking if migration needed');
+      // Check if MemStorage has templates that need to be migrated
+      const memTasks = await this.memStorage.getAllRecurringTasks();
+      if (memTasks.length > 0) {
+        console.log(`🔄 Migrating ${memTasks.length} recurring tasks from memory to database`);
+        for (const memTask of memTasks) {
+          try {
+            await this.dbStorage.createRecurringTask({
+              title: memTask.title,
+              description: memTask.description,
+              type: memTask.type,
+              frequency: memTask.frequency,
+              daysOfWeek: memTask.daysOfWeek,
+              dayOfMonth: memTask.dayOfMonth,
+              isActive: memTask.isActive,
+              location: memTask.location,
+              assignTo: memTask.assignTo,
+              createdBy: memTask.createdBy,
+              automation: memTask.automation,
+              checklistTemplate: memTask.checklistTemplate
+            });
+          } catch (error) {
+            console.error(`Failed to migrate recurring task ${memTask.id}:`, error);
+          }
+        }
+        console.log('✅ Migration complete - refetching from database');
+        const migratedTasks = await this.dbStorage.getAllRecurringTasks();
+        console.log(`📊 After migration: ${migratedTasks.length} tasks in database`);
+      }
       return { totalTasksCreated: 0, recurringTasksProcessed: 0 };
     }
     
-    // Clear existing task instances from DATABASE
+    // SIMPLE FIX: Clear database tasks, copy templates to memory, then use memory regeneration
     console.log('🗑️ Clearing existing pending task instances from database...');
     await this.dbStorage.resetTasks();
     
-    let totalTasksCreated = 0;
+    // Copy DATABASE templates to MemStorage for generation
+    console.log('📥 Copying database templates to memory for generation...');
+    this.memStorage.recurringTasks.clear();
+    let memIdCounter = 1;
     
-    // Generate task instances for each recurring task using corrected logic
-    for (const recurringTask of recurringTasks) {
-      if (!recurringTask.isActive) {
-        console.log(`⏸️ Skipped inactive task: ${recurringTask.title}`);
-        continue;
-      }
-      
-      console.log(`=== GENERATING TASK INSTANCES FOR: ${recurringTask.title} ===`);
-      
-      // Use the same generation logic as MemStorage but save to database
-      const tasksGenerated = await this.generateTaskInstancesForDatabase(recurringTask);
-      totalTasksCreated += tasksGenerated;
-      console.log(`✅ Generated ${tasksGenerated} instances for: ${recurringTask.title}`);
+    for (const dbTask of recurringTasks) {
+      this.memStorage.recurringTasks.set(memIdCounter, {
+        id: memIdCounter,
+        title: dbTask.title,
+        description: dbTask.description,
+        type: dbTask.type,
+        frequency: dbTask.frequency,
+        daysOfWeek: dbTask.daysOfWeek,
+        dayOfMonth: dbTask.dayOfMonth,
+        isActive: dbTask.isActive,
+        location: dbTask.location,
+        assignTo: dbTask.assignTo,
+        createdBy: dbTask.createdBy,
+        automation: dbTask.automation,
+        checklistTemplate: dbTask.checklistTemplate
+      });
+      memIdCounter++;
     }
     
-    console.log(`🎉 REGENERATION COMPLETE: ${totalTasksCreated} tasks created for ${recurringTasks.length} recurring tasks`);
+    console.log(`📋 Copied ${memIdCounter - 1} templates to memory storage`);
     
-    return {
-      totalTasksCreated,
-      recurringTasksProcessed: recurringTasks.length
-    };
-  }
-
-  // Helper method to generate task instances directly to database
-  private async generateTaskInstancesForDatabase(recurringTask: RecurringTask): Promise<number> {
-    const today = new Date();
-    const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-    let tasksCreated = 0;
-    
-    if (recurringTask.frequency === 'monthly') {
-      // Monthly tasks: generate for current and next 2 months
-      for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
-        const targetYear = today.getFullYear();
-        const targetMonth = today.getMonth() + monthOffset;
-        
-        // Handle year rollover
-        const actualYear = targetYear + Math.floor(targetMonth / 12);
-        const actualMonth = targetMonth % 12;
-        
-        // Monthly task due on last day of month
-        const lastDay = new Date(actualYear, actualMonth + 1, 0).getDate();
-        const dueDate = new Date(Date.UTC(actualYear, actualMonth, lastDay, 12, 0, 0));
-        const visibleDate = new Date(Date.UTC(actualYear, actualMonth, 1, 12, 0, 0));
-        
-        console.log(`Checking monthly task for ${actualYear}-${actualMonth + 1}: due ${dueDate.toISOString()}`);
-        
-        // Generate for current period even if we're mid-period
-        const isInCurrentPeriod = todayUTC >= visibleDate && todayUTC <= dueDate;
-        const isFuturePeriod = dueDate > todayUTC;
-        
-        if (isInCurrentPeriod || isFuturePeriod) {
-          console.log(`✅ CREATING - Monthly task for ${dueDate.toISOString()} (period: ${visibleDate.toISOString()} to ${dueDate.toISOString()})`);
-          await this.createTaskInstanceInDatabase(recurringTask, visibleDate, dueDate);
-          tasksCreated++;
-        } else {
-          console.log(`❌ SKIPPING - Past period (due: ${dueDate.toISOString()}, today: ${todayUTC.toISOString()})`);
-        }
-      }
-    } else if (recurringTask.frequency === 'biweekly') {
-      // Bi-weekly tasks: generate for current and next 2 months
-      for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
-        const targetYear = today.getFullYear();
-        const targetMonth = today.getMonth() + monthOffset;
-        
-        // Handle year rollover
-        const actualYear = targetYear + Math.floor(targetMonth / 12);
-        const actualMonth = targetMonth % 12;
-        
-        const currentDay = new Date().getDate();
-        const monthFirstDay = new Date(Date.UTC(actualYear, actualMonth, 1));
-        const monthLastDay = new Date(Date.UTC(actualYear, actualMonth + 1, 0));
-        
-        // First half of month (1st-14th)
-        const firstHalfDue = new Date(Date.UTC(actualYear, actualMonth, 14, 12, 0, 0));
-        const firstHalfVisible = new Date(Date.UTC(actualYear, actualMonth, 1, 12, 0, 0));
-        
-        if (monthOffset === 0 && currentDay >= 1 && currentDay <= 14) {
-          // Current month, first half period
-          console.log(`✅ CREATING - Bi-weekly first half for ${firstHalfDue.toISOString()}`);
-          await this.createTaskInstanceInDatabase(recurringTask, firstHalfVisible, firstHalfDue);
-          tasksCreated++;
-        } else if (monthOffset > 0) {
-          // Future months, always create first half
-          console.log(`✅ CREATING - Bi-weekly first half for ${firstHalfDue.toISOString()}`);
-          await this.createTaskInstanceInDatabase(recurringTask, firstHalfVisible, firstHalfDue);
-          tasksCreated++;
-        }
-        
-        // Second half of month (15th-end)
-        const secondHalfDue = new Date(Date.UTC(actualYear, actualMonth + 1, 0, 12, 0, 0));
-        const secondHalfVisible = new Date(Date.UTC(actualYear, actualMonth, 15, 12, 0, 0));
-        
-        if (monthOffset === 0 && currentDay >= 15) {
-          // Current month, second half period
-          console.log(`✅ CREATING - Bi-weekly second half for ${secondHalfDue.toISOString()}`);
-          await this.createTaskInstanceInDatabase(recurringTask, secondHalfVisible, secondHalfDue);
-          tasksCreated++;
-        } else if (monthOffset > 0) {
-          // Future months, always create second half
-          console.log(`✅ CREATING - Bi-weekly second half for ${secondHalfDue.toISOString()}`);
-          await this.createTaskInstanceInDatabase(recurringTask, secondHalfVisible, secondHalfDue);
-          tasksCreated++;
-        }
-      }
-    } else {
-      // For other frequencies, use a simplified approach for now
-      // This can be expanded later with the full MemStorage logic if needed
-      console.log(`⚠️ Frequency ${recurringTask.frequency} not yet implemented in database generation`);
-    }
-    
-    return tasksCreated;
-  }
-
-  // Helper method to create a task instance directly in the database
-  private async createTaskInstanceInDatabase(template: RecurringTask, visibleDate: Date, dueDate: Date): Promise<Task> {
-    const taskData: InsertTask = {
-      title: template.title,
-      description: template.description || '',
-      type: template.type,
-      status: 'pending',
-      priority: 'medium',
-      frequency: template.frequency, // Preserve original frequency
-      assignedTo: null,
-      assignTo: template.assignTo || undefined,
-      createdBy: template.createdBy,
-      location: template.location,
-      estimatedTime: null,
-      actualTime: null,
-      progress: 0,
-      checklist: template.checklistTemplate?.steps?.map((step, index) => ({
-        id: `${index + 1}`,
-        text: step.label || step.text || '',
-        completed: false,
-        required: step.required || false,
-        type: step.type,
-        config: {
-          inventoryCategory: step.inventoryCategory,
-          min: step.min,
-          max: step.max,
-          default: step.default,
-          systemType: step.systemType,
-          autoSuggest: step.autoSuggest,
-          dataType: step.dataType,
-          calculation: step.calculation
-        },
-        dataCollection: step.type === 'data-capture' ? { 
-          type: step.dataType || 'text', 
-          label: step.label || '' 
-        } : undefined
-      })) || [],
-      data: {},
-      taskDate: visibleDate,
-      dueDate: dueDate,
-      visibleFromDate: visibleDate,
-      startedAt: null,
-      completedAt: null,
-      pausedAt: null,
-      resumedAt: null,
-      skippedAt: null,
-      skipReason: null,
-      isRecurring: true,
-      recurringTaskId: template.id,
-      isFromDeletedRecurring: false,
-      deletedRecurringTaskTitle: null
-    };
-    
-    return this.dbStorage.createTask(taskData);
+    // Now use MemStorage regeneration which will save tasks to database via storage singleton
+    return this.memStorage.regenerateAllTaskInstances();
   }
 
   async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> {
