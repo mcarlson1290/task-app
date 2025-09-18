@@ -3091,11 +3091,170 @@ class DatabaseStorage implements IStorage {
   async createTaskLog(logData: InsertTaskLog): Promise<TaskLog> { throw new Error('Not implemented'); }
   async getTaskLogs(taskId: number): Promise<TaskLog[]> { return []; }
   
-  // Missing task generation methods
-  async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> { 
-    return { totalTasksCreated: 0, recurringTasksProcessed: 0 }; 
+  // Task generation methods - generate DATABASE entries from recurring tasks
+  async regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }> {
+    console.log('🔄 DatabaseStorage.regenerateAllTaskInstances() - generating task instances from recurring tasks...');
+    
+    // Get all active recurring tasks
+    const activeRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+    console.log(`📋 Found ${activeRecurringTasks.length} active recurring tasks to process`);
+    
+    let totalTasksCreated = 0;
+    let recurringTasksProcessed = 0;
+    
+    const now = new Date();
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    for (const recurringTask of activeRecurringTasks) {
+      try {
+        const tasksCreated = await this.generateTaskInstancesForRecurringTask(recurringTask, currentDate);
+        totalTasksCreated += tasksCreated;
+        recurringTasksProcessed++;
+        
+        if (tasksCreated > 0) {
+          console.log(`✅ Generated ${tasksCreated} task instances for "${recurringTask.title}" (${recurringTask.frequency})`);
+        }
+      } catch (error) {
+        console.error(`❌ Error generating tasks for recurring task ${recurringTask.id}: ${error}`);
+      }
+    }
+    
+    console.log(`🎯 DatabaseStorage task generation complete: ${totalTasksCreated} tasks created from ${recurringTasksProcessed} recurring tasks`);
+    return { totalTasksCreated, recurringTasksProcessed };
   }
-  async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> { return false; }
+  async regenerateTaskInstances(recurringTaskId: number): Promise<boolean> {
+    // Get the specific recurring task
+    const [recurringTask] = await db.select().from(recurringTasks).where(eq(recurringTasks.id, recurringTaskId));
+    if (!recurringTask || !recurringTask.isActive) {
+      return false;
+    }
+    
+    const currentDate = new Date();
+    const tasksCreated = await this.generateTaskInstancesForRecurringTask(recurringTask, currentDate);
+    return tasksCreated > 0;
+  }
+  
+  private async generateTaskInstancesForRecurringTask(recurringTask: any, baseDate: Date): Promise<number> {
+    let tasksCreated = 0;
+    const tasksToCreate: any[] = [];
+    
+    // Generate instances based on frequency
+    switch (recurringTask.frequency) {
+      case 'weekly': {
+        // Generate for the next 4 weeks starting from current week
+        for (let week = 0; week < 4; week++) {
+          const taskDate = new Date(baseDate);
+          taskDate.setDate(taskDate.getDate() + (week * 7));
+          
+          const dueDate = new Date(taskDate);
+          dueDate.setDate(dueDate.getDate() + 6); // Due at end of week
+          
+          // Check if this task instance already exists
+          const [existing] = await db.select().from(tasks).where(
+            and(
+              eq(tasks.title, recurringTask.title),
+              eq(tasks.taskDate, taskDate),
+              eq(tasks.location, recurringTask.location)
+            )
+          );
+          
+          if (!existing) {
+            tasksToCreate.push({
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending',
+              priority: 'medium',
+              assignedTo: null,
+              assignTo: recurringTask.assignTo,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              taskDate: taskDate,
+              dueDate: dueDate,
+              frequency: recurringTask.frequency,
+              estimatedTime: null,
+              actualTime: null,
+              progress: 0,
+              checklist: recurringTask.checklistTemplate?.steps || [],
+              data: {},
+              visibleFromDate: taskDate,
+              startedAt: null,
+              completedAt: null,
+              pausedAt: null,
+              resumedAt: null,
+              skippedAt: null,
+              deletedRecurringTaskId: null,
+              deletedRecurringTaskTitle: null
+            });
+          }
+        }
+        break;
+      }
+      
+      case 'bi-weekly': {
+        // Generate for the next 8 weeks (4 bi-weekly instances)
+        for (let period = 0; period < 4; period++) {
+          const taskDate = new Date(baseDate);
+          taskDate.setDate(taskDate.getDate() + (period * 14));
+          
+          const dueDate = new Date(taskDate);
+          dueDate.setDate(dueDate.getDate() + 13); // Due at end of 2-week period
+          
+          const [existing] = await db.select().from(tasks).where(
+            and(
+              eq(tasks.title, recurringTask.title),
+              eq(tasks.taskDate, taskDate),
+              eq(tasks.location, recurringTask.location)
+            )
+          );
+          
+          if (!existing) {
+            tasksToCreate.push({
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending',
+              priority: 'medium',
+              assignedTo: null,
+              assignTo: recurringTask.assignTo,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              taskDate: taskDate,
+              dueDate: dueDate,
+              frequency: recurringTask.frequency,
+              estimatedTime: null,
+              actualTime: null,
+              progress: 0,
+              checklist: recurringTask.checklistTemplate?.steps || [],
+              data: {},
+              visibleFromDate: taskDate,
+              startedAt: null,
+              completedAt: null,
+              pausedAt: null,
+              resumedAt: null,
+              skippedAt: null,
+              deletedRecurringTaskId: null,
+              deletedRecurringTaskTitle: null
+            });
+          }
+        }
+        break;
+      }
+      
+      case 'monthly': {
+        // Monthly tasks already exist, skip for now
+        break;
+      }
+    }
+    
+    // Insert all new tasks
+    if (tasksToCreate.length > 0) {
+      await db.insert(tasks).values(tasksToCreate);
+      tasksCreated = tasksToCreate.length;
+    }
+    
+    return tasksCreated;
+  }
   
   // Tray methods
   async splitTray(originalTrayId: string, splitData: { splitCount: number; newTrayIds: string[] }): Promise<Tray[]> { return []; }
