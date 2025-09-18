@@ -3167,8 +3167,11 @@ class DatabaseStorage implements IStorage {
           const taskDate = new Date(baseDate);
           taskDate.setDate(taskDate.getDate() + dayOffset);
           
-          // Get the day name (Monday, Tuesday, etc.)
-          const dayName = taskDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+          // TIMEZONE FIX: Use UTC-based day calculation to match database storage
+          // This ensures day name calculation matches the UTC date stored in database
+          const utcDayIndex = taskDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const dayName = dayNames[utcDayIndex];
           
           // CRITICAL: Only create task if this day matches selectedDays
           if (!normalizedSelectedDays.includes(dayName)) {

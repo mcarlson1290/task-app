@@ -120,13 +120,15 @@ export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean =
 };
 
 /**
- * Get today's date in YYYY-MM-DD format (local timezone)
+ * Get today's date in YYYY-MM-DD format (UTC timezone)
+ * TIMEZONE FIX: Now uses UTC to match database storage and server-side task generation
  */
 export const getTodayString = (): string => {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+  // Use UTC methods to match database storage timezone
+  const year = today.getUTCFullYear();
+  const month = String(today.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(today.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
