@@ -1,0 +1,81 @@
+# Replit Instructions: Fix "Only My Tasks" to Stack with Other Filters
+
+## Current Problem
+The "Only My Tasks" checkbox resets all other filters instead of working together with them. This means users can't see "just my tasks for today" - they see all their tasks across all dates.
+
+## Desired Behavior
+"Only My Tasks" should ADD to existing filters, not replace them:
+- Date filter: Today → Shows all tasks for today
+- Date filter: Today + Only My Tasks → Shows only YOUR tasks for today
+- Category filter: Cleaning + Only My Tasks → Shows only YOUR cleaning tasks
+
+## Implementation Logic
+
+### Current (Wrong) Behavior
+When "Only My Tasks" is clicked:
+1. Clears all other filters
+2. Shows all tasks assigned to current user
+3. Ignores date, category, status filters
+
+### Correct Behavior
+When "Only My Tasks" is clicked:
+1. Keep all existing filters active
+2. ADD assignment filtering on top
+3. Show tasks that match ALL active filters
+
+## Example Scenarios
+
+### Scenario 1: Morning Login
+1. User opens app (default shows today's tasks)
+2. Sees 20 tasks for today (all users)
+3. Clicks "Only My Tasks"
+4. Now sees 5 tasks (just their tasks for today)
+
+### Scenario 2: Specific Category
+1. User selects "Seeding" category
+2. Sees 8 seeding tasks across all dates
+3. Clicks "Only My Tasks"
+4. Now sees 3 seeding tasks assigned to them
+
+### Scenario 3: Future Planning
+1. User selects next Monday's date
+2. Sees 15 tasks scheduled for Monday
+3. Clicks "Only My Tasks"
+4. Now sees 4 tasks they need to do on Monday
+
+## Filter Stacking Logic
+
+All active filters should work together using AND logic:
+```
+Show tasks where:
+  - Date matches selected date (if date filter active)
+  - AND category matches selected category (if category filter active)
+  - AND status matches selected status (if status filter active)
+  - AND assigned to current user (if "Only My Tasks" checked)
+  - AND priority matches selected priority (if priority filter active)
+```
+
+## Common Implementation Mistakes to Avoid
+
+1. **Don't clear other filters** when "Only My Tasks" is toggled
+2. **Don't reset the date** to "all dates" 
+3. **Don't change filter mode** from AND to OR
+4. **Preserve all filter states** in the URL/state
+
+## User Experience Benefits
+
+This change allows workers to:
+- Quickly see what they personally need to do today
+- Plan ahead by checking their tasks for tomorrow
+- Focus on their specific responsibilities
+- Still see team tasks by unchecking the filter
+
+## Testing the Fix
+
+1. Set date filter to today
+2. Check "Only My Tasks" 
+3. Verify you see only your tasks for today (not all your tasks ever)
+4. Add category filter
+5. Verify you see only your tasks in that category for today
+6. Uncheck "Only My Tasks"
+7. Verify you see all tasks in that category for today (team-wide)
