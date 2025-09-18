@@ -490,7 +490,7 @@ export class MemStorage implements IStorage {
         startDate.setUTCHours(0, 0, 0, 0);
         
         const endDate = new Date(today);
-        endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+        endDate.setUTCDate(today.getUTCDate() + 31); // 31 days ahead
         endDate.setUTCHours(23, 59, 59, 999);
         
         const generatedTasks = await this.generateTasksForDateRange(startDate, endDate);
@@ -564,7 +564,7 @@ export class MemStorage implements IStorage {
     startDate.setUTCHours(0, 0, 0, 0);
     
     const endDate = new Date(today);
-    endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+    endDate.setUTCDate(today.getUTCDate() + 31); // 31 days ahead
     endDate.setUTCHours(23, 59, 59, 999);
     
     const templates = Array.from(this.recurringTasks.values()).filter(t => t.isActive);
@@ -911,11 +911,11 @@ export class MemStorage implements IStorage {
       console.log(`✅ Created current period task for: ${template.title}`);
     }
     
-    // Generate future tasks until end of current month only
+    // Generate future tasks 31 days ahead
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     const endDate = new Date(today);
-    endDate.setUTCMonth(today.getUTCMonth() + 1, 0); // Last day of current month
+    endDate.setUTCDate(today.getUTCDate() + 31); // 31 days ahead
     endDate.setUTCHours(23, 59, 59, 999);
     
     const futureTasks = await this.generateTasksForDateRange(tomorrow, endDate, template);
@@ -2393,9 +2393,9 @@ export class MemStorage implements IStorage {
         }
       }
     } else {
-      // Daily/weekly tasks - generate until end of current month only
+      // Daily/weekly tasks - generate 31 days ahead
       const endDate = new Date(todayUTC);
-      endDate.setUTCMonth(todayUTC.getUTCMonth() + 1, 0); // Last day of current month
+      endDate.setUTCDate(todayUTC.getUTCDate() + 31); // 31 days ahead
       endDate.setUTCHours(23, 59, 59, 999);
       
       let currentDate = new Date(todayUTC);
