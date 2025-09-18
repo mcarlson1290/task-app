@@ -71,21 +71,22 @@ export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean =
     return isVisible;
   }
   
-  // FALLBACK: Show weekly tasks ONLY on their exact due date when visibleFromDate is absent
+  // FALLBACK: If taskDate && dueDate exist, treat as work period (taskDate → dueDate)
   const dueDate = formatDateForComparison(task.dueDate);
   const taskDate = formatDateForComparison(task.taskDate);
   
+  if (taskDate && dueDate) {
+    // Show task throughout its work period (taskDate → dueDate)
+    const isInWorkPeriod = targetDate >= taskDate && targetDate <= dueDate;
+    console.log(`[dateUtils] 📅 WORK PERIOD: "${task.title}" | Period: ${taskDate} → ${dueDate} | Check: ${targetDate} | Match: ${isInWorkPeriod ? 'YES ✅' : 'NO ❌'}`);
+    return isInWorkPeriod;
+  }
+  
   if (dueDate) {
-    // Show task ONLY if it's due on the target date (exact day match for weekly tasks)
-    const targetDateObj = new Date(targetDate);
-    const dueDateObj = new Date(dueDate);
-    const daysDiff = Math.floor((dueDateObj.getTime() - targetDateObj.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Show ONLY if due today (0 days) - weekly tasks must appear on exact due date
-    const isInRange = daysDiff === 0;
-    
-    console.log(`[dateUtils] 📅 DUE DATE: "${task.title}" | TaskDate: ${taskDate} | DueDate: ${dueDate} | ViewDate: ${targetDate} | Days: ${daysDiff} | Match: ${isInRange ? 'YES ✅' : 'NO ❌'}`);
-    return isInRange;
+    // Show task only on exact due date when no taskDate
+    const matches = targetDate === dueDate;
+    console.log(`[dateUtils] 📅 DUE DATE ONLY: "${task.title}" | DueDate: ${dueDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
+    return matches;
   }
   
   // Final fallback: exact day match on taskDate if no dueDate
