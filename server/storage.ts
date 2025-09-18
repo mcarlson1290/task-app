@@ -668,8 +668,20 @@ export class MemStorage implements IStorage {
     
     // Daily tasks - check if should run on this day
     if (template.frequency === 'daily') {
-      // For daily tasks, generate every day
-      tasks.push(this.createTaskFromTemplate(template, checkDate, checkDate));
+      // For daily tasks, check if specific days are selected
+      const selectedDays = Array.isArray(template.daysOfWeek) 
+        ? template.daysOfWeek 
+        : (template.daysOfWeek ? [template.daysOfWeek] : []);
+        
+      if (selectedDays.length > 0) {
+        const shouldGenerate = selectedDays.includes(dayName);
+        if (shouldGenerate) {
+          tasks.push(this.createTaskFromTemplate(template, checkDate, checkDate));
+        }
+      } else {
+        // FIXED: No specific days selected means NO GENERATION (not every day)
+        console.log(`⏭️ Skipping daily task "${template.title}" - no days specified`);
+      }
     }
     
     // Weekly tasks - only on specific days
@@ -2728,8 +2740,21 @@ export class MemStorage implements IStorage {
       return true;
     } else {
       // All recurring tasks regeneration
-      const result = await this.regenerateTaskInstances();
-      return result;
+      const recurringTasks = Array.from(this.recurringTasks.values()).filter(t => t.isActive);
+      console.log(`🔄 Regenerating task instances for ${recurringTasks.length} active recurring tasks`);
+      
+      let totalTasksCreated = 0;
+      for (const recurringTask of recurringTasks) {
+        try {
+          await this.generateTaskInstances(recurringTask);
+          console.log(`✅ Generated instances for: ${recurringTask.title}`);
+          totalTasksCreated++;
+        } catch (error) {
+          console.error(`❌ Failed to generate instances for ${recurringTask.title}:`, error);
+        }
+      }
+      
+      return { totalTasksCreated, recurringTasksProcessed: recurringTasks.length };
     }
   }
 
@@ -3446,7 +3471,37 @@ class HybridStorage implements IStorage {
       return { totalTasksCreated: 0, recurringTasksProcessed: 0 };
     }
     
-    // Use memory storage's generation logic with DATABASE templates
+    // SIMPLE FIX: Clear database tasks, copy templates to memory, then use memory regeneration
+    console.log('🗑️ Clearing existing pending task instances from database...');
+    await this.dbStorage.resetTasks();
+    
+    // Copy DATABASE templates to MemStorage for generation
+    console.log('📥 Copying database templates to memory for generation...');
+    this.memStorage.recurringTasks.clear();
+    let memIdCounter = 1;
+    
+    for (const dbTask of recurringTasks) {
+      this.memStorage.recurringTasks.set(memIdCounter, {
+        id: memIdCounter,
+        title: dbTask.title,
+        description: dbTask.description,
+        type: dbTask.type,
+        frequency: dbTask.frequency,
+        daysOfWeek: dbTask.daysOfWeek,
+        dayOfMonth: dbTask.dayOfMonth,
+        isActive: dbTask.isActive,
+        location: dbTask.location,
+        assignTo: dbTask.assignTo,
+        createdBy: dbTask.createdBy,
+        automation: dbTask.automation,
+        checklistTemplate: dbTask.checklistTemplate
+      });
+      memIdCounter++;
+    }
+    
+    console.log(`📋 Copied ${memIdCounter - 1} templates to memory storage`);
+    
+    // Now use MemStorage regeneration which will save tasks to database via storage singleton
     return this.memStorage.regenerateAllTaskInstances();
   }
 
