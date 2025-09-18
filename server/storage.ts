@@ -2510,7 +2510,11 @@ export class MemStorage implements IStorage {
       isRecurring: true,
       frequency: recurringTask.frequency,
       recurringTaskId: recurringTask.id,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // Update propagation tracking fields
+      templateVersion: 1,
+      isModifiedAfterCreation: false,
+      modifiedFromTemplateAt: null
     };
     
     this.tasks.set(newTask.id, newTask);
