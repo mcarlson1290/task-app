@@ -71,18 +71,18 @@ export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean =
     return isVisible;
   }
   
-  // FALLBACK: Show tasks that are due today or tomorrow when visibleFromDate is absent
+  // FALLBACK: Show weekly tasks ONLY on their exact due date when visibleFromDate is absent
   const dueDate = formatDateForComparison(task.dueDate);
   const taskDate = formatDateForComparison(task.taskDate);
   
   if (dueDate) {
-    // Show task if it's due on target date or up to 1 day before due date
+    // Show task ONLY if it's due on the target date (exact day match for weekly tasks)
     const targetDateObj = new Date(targetDate);
     const dueDateObj = new Date(dueDate);
     const daysDiff = Math.floor((dueDateObj.getTime() - targetDateObj.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Show if due today (0 days) or tomorrow (1 day) 
-    const isInRange = daysDiff >= 0 && daysDiff <= 1;
+    // Show ONLY if due today (0 days) - weekly tasks must appear on exact due date
+    const isInRange = daysDiff === 0;
     
     console.log(`[dateUtils] 📅 DUE DATE: "${task.title}" | TaskDate: ${taskDate} | DueDate: ${dueDate} | ViewDate: ${targetDate} | Days: ${daysDiff} | Match: ${isInRange ? 'YES ✅' : 'NO ❌'}`);
     return isInRange;

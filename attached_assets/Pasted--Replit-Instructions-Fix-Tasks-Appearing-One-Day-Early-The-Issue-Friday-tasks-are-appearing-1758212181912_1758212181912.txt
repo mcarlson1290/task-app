@@ -1,0 +1,54 @@
+# Replit Instructions: Fix Tasks Appearing One Day Early
+
+## The Issue
+Friday tasks are appearing on Thursday. Tasks seem to be visible one day before they should be. This is a critical issue for farm operations where timing is precise.
+
+## Root Cause
+The visibility logic is likely showing tasks when current date >= (visibleFromDate - 1 day) instead of exactly on the visibleFromDate.
+
+## For Weekly Tasks
+**Current behavior**: Friday task appears on Thursday
+**Correct behavior**: Friday task appears ONLY on Friday
+
+### The Fix
+Weekly tasks should be visible ONLY on their exact due date, not the day before.
+
+For weekly tasks:
+- visibleFromDate and dueDate should be the SAME date
+- Task should only be visible when TODAY equals that date
+- No early visibility
+
+## For Monthly/Bi-Weekly/Quarterly Tasks
+These tasks have visibility windows and should appear throughout their period:
+- Monthly: Visible from 1st through last day
+- Bi-weekly: Visible throughout their respective periods
+- Quarterly: Visible throughout the quarter
+
+These are working correctly and should not change.
+
+## Critical Business Rule
+**Farm operations require precise timing**. Tasks must NOT appear early because:
+- Plant growth cycles are precisely timed
+- Doing tasks early disrupts the growing process
+- Each task is scheduled for optimal plant development
+
+## Verification Test
+1. Create a weekly task for Friday only
+2. Check on Thursday - should NOT see the Friday task
+3. Check on Friday - should see the Friday task
+4. Check on Saturday - should NOT see the Friday task
+
+## Common Causes of Day-Offset Issues
+
+1. **Timezone conversions** shifting dates by a day
+2. **Greater-than-or-equal** comparisons that should be **equal-only** for weekly tasks
+3. **Date parsing** that interprets dates as previous day
+
+## Expected Behavior Summary
+
+**Weekly tasks**: Visible ONLY on their assigned day
+- Wednesday task → Visible only on Wednesday
+- Friday task → Visible only on Friday
+- NOT visible the day before
+
+**All other frequencies**: Continue working as they are (with visibility windows)
