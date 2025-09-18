@@ -991,7 +991,7 @@ const Tasks: React.FC = () => {
 
       {/* Gamified Progress Bars */}
       <GamifiedProgressBars 
-        tasks={tasks as any}
+        tasks={filteredTasks as any}
         currentUser={currentUser as any}
         selectedDate={dateFilter}
       />

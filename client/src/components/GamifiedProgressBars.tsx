@@ -61,28 +61,9 @@ const GamifiedProgressBars: React.FC<GamifiedProgressBarsProps> = ({ tasks, curr
   // Only show for today view
   if (selectedDate !== today) return null;
   
-  // Filter tasks to only today's tasks
-  const todayTasks = tasks.filter(task => {
-    try {
-      // Completed/skipped tasks: check if completed today
-      if (task.status === 'completed' || task.status === 'skipped') {
-        const actionDate = (task.completedAt || task.skippedAt || task.dueDate);
-        const actionDateString = actionDate ? new Date(actionDate).toISOString().split('T')[0] : '';
-        return actionDateString === today;
-      }
-      
-      // Overdue tasks: show on today
-      const taskDate = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '';
-      if (taskDate < today && (task.status === 'pending' || task.status === 'in_progress')) {
-        return true;
-      }
-      
-      // Regular tasks: due today
-      return taskDate === today;
-    } catch (error) {
-      return false;
-    }
-  });
+  // Use the pre-filtered tasks passed from the parent component
+  // These tasks are already filtered by the Tasks page to show only tasks visible on the selected date
+  const todayTasks = tasks;
   
   // Calculate task stats for today's tasks only - with error handling
   const teamStats = {
