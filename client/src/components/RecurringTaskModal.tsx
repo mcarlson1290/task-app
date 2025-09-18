@@ -15,6 +15,7 @@ import ChecklistBuilder from './ChecklistBuilder';
 import SearchableAssignmentSelect from './SearchableAssignmentSelect';
 import { Calendar, Clock, Settings, CheckSquare, Building2, Repeat } from 'lucide-react';
 import { useLocation } from '@/contexts/LocationContext';
+import UpdatePropagationWarningDialog from './UpdatePropagationWarningDialog';
 
 interface RecurringTaskModalProps {
   task: RecurringTask | null;
@@ -29,6 +30,11 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   const [originalData, setOriginalData] = useState<any>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [affectedInstanceCount, setAffectedInstanceCount] = useState(0);
+  const [changedFields, setChangedFields] = useState<Array<{ field: string; oldValue: any; newValue: any; requiresNotification: boolean }>>([]);
+  const [isProcessingUpdate, setIsProcessingUpdate] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState<{ current: number; total: number; stage: string } | undefined>();
   const [assignmentOptions, setAssignmentOptions] = useState<{
     roles: { value: string; label: string; staffCount: number }[];
     users: { value: string; label: string; roles: string[] }[];
@@ -251,18 +257,102 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       return;
     }
     
+    // For existing tasks, check for impact and show warning dialog
+    if (task && hasChanges) {
+      try {
+        // Calculate changed fields
+        const changes = identifyChangedFields(originalData, formData);
+        setChangedFields(changes);
+        
+        // Fetch affected instance count
+        const response = await fetch(`/api/tasks?recurringTaskId=${task.id}`);
+        const allTasks = await response.json();
+        const futureInstances = allTasks.filter((t: any) => 
+          t.recurringTaskId === task.id && 
+          (t.status === 'pending' || t.status === 'in_progress') &&
+          new Date(t.dueDate) >= new Date()
+        );
+        
+        setAffectedInstanceCount(futureInstances.length);
+        
+        // Show warning dialog if there are changes and affected instances
+        if (changes.length > 0 && futureInstances.length > 0) {
+          setShowWarningDialog(true);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking task impact:', error);
+      }
+    }
+    
+    // Proceed with save for new tasks or tasks with no instances
+    await performSave('update_all');
+  };
+  
+  const performSave = async (strategy: 'update_all' | 'new_only') => {
     setIsSaving(true);
+    setIsProcessingUpdate(true);
+    
     try {
+      // Simulate progress tracking for large updates
+      if (affectedInstanceCount > 50) {
+        const intervals = Math.min(10, Math.floor(affectedInstanceCount / 10));
+        for (let i = 1; i <= intervals; i++) {
+          setProcessingProgress({
+            current: Math.floor((i / intervals) * affectedInstanceCount),
+            total: affectedInstanceCount,
+            stage: i === intervals ? 'Finalizing changes...' : 'Updating task instances...'
+          });
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
       await onSave({
         ...formData,
         id: task?.id,
-        location: currentLocation.name
+        location: currentLocation.name,
+        updateStrategy: strategy
       });
+      
+      // Show completion state briefly
+      setProcessingProgress(undefined);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       // onClose will be called by the parent component on successful save
     } catch (error) {
       console.error('Failed to save recurring task:', error);
       setIsSaving(false);
+      setIsProcessingUpdate(false);
+      setProcessingProgress(undefined);
     }
+  };
+  
+  // Helper function to identify changed fields
+  const identifyChangedFields = (original: any, current: any): Array<{ field: string; oldValue: any; newValue: any; requiresNotification: boolean }> => {
+    const changes: Array<{ field: string; oldValue: any; newValue: any; requiresNotification: boolean }> = [];
+    const notificationRequiredFields = ['title', 'description', 'checklistTemplate', 'estimatedTime', 'priority', 'assignTo'];
+    
+    Object.keys(current).forEach(field => {
+      if (JSON.stringify(original[field]) !== JSON.stringify(current[field])) {
+        changes.push({
+          field,
+          oldValue: original[field],
+          newValue: current[field],
+          requiresNotification: notificationRequiredFields.includes(field)
+        });
+      }
+    });
+    
+    return changes;
+  };
+  
+  const handleWarningConfirm = (strategy: 'update_all' | 'new_only') => {
+    setShowWarningDialog(false);
+    performSave(strategy);
+  };
+  
+  const handleWarningCancel = () => {
+    setShowWarningDialog(false);
   };
 
   const handleCancel = () => {
@@ -686,6 +776,19 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
           </div>
         </form>
       </DialogContent>
+      
+      {/* Update Propagation Warning Dialog */}
+      <UpdatePropagationWarningDialog
+        isOpen={showWarningDialog}
+        onClose={handleWarningCancel}
+        onConfirm={handleWarningConfirm}
+        changedFields={changedFields}
+        affectedInstanceCount={affectedInstanceCount}
+        conflictCount={0} // TODO: Calculate conflicts from backend
+        taskTitle={formData.title || 'Untitled Task'}
+        isProcessing={isProcessingUpdate}
+        processingProgress={processingProgress}
+      />
     </Dialog>
   );
 };

@@ -61,7 +61,7 @@ export interface IStorage {
   getAllRecurringTasks(): Promise<RecurringTask[]>;
   getRecurringTasksByLocation(locationId: string): Promise<RecurringTask[]>;
   createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
-  updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
+  updateRecurringTask(id: number, updates: Partial<RecurringTask>, options?: { strategy?: 'update_all' | 'new_only'; userId?: number }): Promise<{ task: RecurringTask | null; report: any }>;
   deleteRecurringTask(id: number): Promise<boolean>;
   resetRecurringTasks(): Promise<boolean>;
   regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }>;
@@ -787,6 +787,10 @@ export class MemStorage implements IStorage {
       frequency: template.frequency, // Add required frequency field
       isFromDeletedRecurring: false,
       deletedRecurringTaskTitle: null,
+      // Update propagation tracking fields
+      templateVersion: template.versionNumber || 1,
+      isModifiedAfterCreation: false,
+      modifiedFromTemplateAt: null,
       createdAt: new Date()
     };
   }
@@ -1256,12 +1260,29 @@ export class MemStorage implements IStorage {
         id: this.currentTaskId++,
         data: {},
         dueDate: task.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000),
+        // Update propagation tracking fields
+        templateVersion: 1,
+        isModifiedAfterCreation: false,
+        modifiedFromTemplateAt: null,
         createdAt: new Date(),
         description: task.description || null,
         estimatedTime: task.estimatedTime || null,
         actualTime: task.actualTime || null,
         progress: task.progress || 0,
         checklist: task.checklist || null,
+        // Add missing required fields
+        assignTo: task.assignedTo ? `user_${task.assignedTo}` : null,
+        taskDate: task.dueDate || new Date(),
+        visibleFromDate: task.dueDate || new Date(),
+        pausedAt: null,
+        resumedAt: null,
+        skippedAt: null,
+        skipReason: null,
+        isRecurring: task.isRecurring || false,
+        recurringTaskId: task.recurringTaskId || null,
+        frequency: task.frequency || null,
+        isFromDeletedRecurring: false,
+        deletedRecurringTaskTitle: null,
         startedAt: task.startedAt || null,
         completedAt: task.completedAt || null,
         assignedTo: task.assignedTo || null,
@@ -1526,7 +1547,12 @@ export class MemStorage implements IStorage {
         createdAt: new Date(),
         checklistTemplate: null,
         dayOfMonth: null,
-        automation: null
+        automation: null,
+        // Add missing required fields for updated schema
+        assignTo: task.assignedTo ? `user_${task.assignedTo}` : null,
+        versionNumber: 1,
+        lastModifiedDate: new Date(),
+        lastModifiedBy: task.createdBy || null
       };
       this.recurringTasks.set(newRecurringTask.id, newRecurringTask);
     });
@@ -2041,77 +2067,327 @@ export class MemStorage implements IStorage {
     return newTask;
   }
 
-  async updateRecurringTask(id: number, updates: any): Promise<RecurringTask | null> {
-    const task = this.recurringTasks.get(id);
-    if (!task) return null;
+  // COMPREHENSIVE UPDATE PROPAGATION SYSTEM
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>, options?: { strategy?: 'update_all' | 'new_only'; userId?: number }): Promise<{ task: RecurringTask | null; report: any }> {
+    const originalTask = this.recurringTasks.get(id);
+    if (!originalTask) return { task: null, report: { error: 'Task not found' } };
 
-    const updatedTask = { ...task, ...updates };
+    // Step 1: Track what fields changed for audit trail
+    const changedFields = this.identifyChangedFields(originalTask, updates);
+    console.log(`🔍 [UPDATE PROPAGATION] Changes detected:`, changedFields.map(f => f.field));
+
+    // Step 2: Increment version number for tracking
+    const newVersionNumber = (originalTask.versionNumber || 1) + 1;
+    
+    // Step 3: Create updated task with version tracking
+    const updatedTask = { 
+      ...originalTask, 
+      ...updates,
+      versionNumber: newVersionNumber,
+      lastModifiedDate: new Date(),
+      lastModifiedBy: options?.userId || null
+    };
     this.recurringTasks.set(id, updatedTask);
-    
-    // If frequency or daysOfWeek changed, regenerate all task instances
-    if (updates.frequency || updates.daysOfWeek) {
-      console.log('Frequency or days changed, regenerating task instances...');
-      
-      // Delete ONLY future pending task instances (preserve completed/in-progress tasks)
-      const taskIds = Array.from(this.tasks.keys()).filter(taskId => {
-        const task = this.tasks.get(taskId);
-        return task?.recurringTaskId === id && 
-               task?.status === 'pending' && 
-               task?.dueDate && new Date(task.dueDate) >= new Date();
-      });
-      
-      taskIds.forEach(taskId => this.tasks.delete(taskId));
-      console.log(`Deleted ${taskIds.length} future pending task instances`);
-      
-      // Generate new task instances with updated schedule (with duplicate prevention)
-      await this.generateTaskInstances(updatedTask);
-    } else {
-      // Update existing pending and in-progress instances (not completed ones)
-      const taskInstances = Array.from(this.tasks.values()).filter(t => 
-        t.recurringTaskId === id && 
-        (t.status === 'pending' || t.status === 'in_progress') && 
-        t.dueDate && new Date(t.dueDate) >= new Date()
-      );
-      
-      taskInstances.forEach(instance => {
-        // Update checklist while preserving completed steps
-        let updatedChecklist = instance.checklist;
-        if (updatedTask.checklistTemplate?.steps) {
-          updatedChecklist = updatedTask.checklistTemplate.steps.map((step: any, index: number) => {
-            const existingStep = instance.checklist?.[index];
-            return {
-              id: step.id || `${index + 1}`,
-              text: step.label || '',
-              completed: existingStep?.completed || false, // Preserve completion status
-              required: step.required || false,
-              type: step.type,
-              config: step.config, // Always use latest config
-              dataCollection: step.type === 'data-capture' ? { 
-                type: step.config?.dataType || 'text', 
-                label: step.label || '' 
-              } : undefined
-            };
-          });
-        }
 
-        const updatedInstance = {
-          ...instance,
-          title: updatedTask.title || instance.title,
-          description: updatedTask.description || instance.description,
-          type: updatedTask.type || instance.type,
-          frequency: updatedTask.frequency || instance.frequency,
-          checklist: updatedChecklist
-        };
-        this.tasks.set(instance.id, updatedInstance);
-      });
-      
-      console.log(`Updated ${taskInstances.length} pending task instances for recurring task: ${updatedTask.title}`);
-    }
+    // Step 4: Determine update strategy based on changes
+    const shouldRegenerateInstances = changedFields.some(f => 
+      ['frequency', 'daysOfWeek', 'isActive'].includes(f.field)
+    );
     
-    // Persist all changes
+    let propagationReport: any = {
+      strategy: shouldRegenerateInstances ? 'regenerate' : 'update_existing',
+      changedFields: changedFields,
+      versionNumber: newVersionNumber,
+      timestamp: new Date().toISOString()
+    };
+
+    // Step 5: Execute propagation strategy
+    if (shouldRegenerateInstances) {
+      propagationReport = await this.regenerateTaskInstancesStrategy(id, updatedTask, propagationReport);
+    } else {
+      propagationReport = await this.updateExistingInstancesStrategy(id, updatedTask, changedFields, propagationReport);
+    }
+
+    // Step 6: Log changes to audit trail
+    await this.logRecurringTaskChange({
+      recurringTaskId: id,
+      changedFields: changedFields,
+      changeTimestamp: new Date(),
+      changedByUser: userId || null,
+      affectedInstanceCount: propagationReport.processedInstances || 0,
+      strategyUsed: propagationReport.strategy
+    });
+
+    // Step 7: Persist all changes
     await this.persistData();
     
-    return updatedTask;
+    console.log(`✅ [UPDATE PROPAGATION] Completed for task "${updatedTask.title}" - ${propagationReport.processedInstances} instances affected`);
+    
+    return { task: updatedTask, report: propagationReport };
+  }
+
+  // FIELD-BY-FIELD CHANGE TRACKING
+  private identifyChangedFields(original: RecurringTask, updates: any): Array<{ field: string; oldValue: any; newValue: any; requiresNotification: boolean }> {
+    const changes: Array<{ field: string; oldValue: any; newValue: any; requiresNotification: boolean }> = [];
+    
+    // Fields that require user notification when changed
+    const notificationRequiredFields = ['title', 'description', 'checklistTemplate', 'estimatedTime', 'priority', 'assignTo'];
+    
+    // Fields that should NOT affect existing instances (only new ones)
+    const nonPropagatingFields = ['frequency', 'daysOfWeek', 'isActive', 'nextOccurrence'];
+    
+    Object.keys(updates).forEach(field => {
+      if (JSON.stringify(original[field as keyof RecurringTask]) !== JSON.stringify(updates[field])) {
+        changes.push({
+          field,
+          oldValue: original[field as keyof RecurringTask],
+          newValue: updates[field],
+          requiresNotification: notificationRequiredFields.includes(field)
+        });
+      }
+    });
+    
+    return changes;
+  }
+
+  // REGENERATE INSTANCES STRATEGY (for frequency/schedule changes)
+  private async regenerateTaskInstancesStrategy(recurringTaskId: number, updatedTask: RecurringTask, report: any): Promise<any> {
+    console.log(`🔄 [REGENERATE STRATEGY] Regenerating instances for recurring task: ${updatedTask.title}`);
+    
+    // Delete ONLY future pending task instances (preserve completed/in-progress tasks)
+    const taskIdsToDelete = Array.from(this.tasks.keys()).filter(taskId => {
+      const task = this.tasks.get(taskId);
+      return task?.recurringTaskId === recurringTaskId && 
+             task?.status === 'pending' && 
+             task?.dueDate && new Date(task.dueDate) >= new Date();
+    });
+    
+    // Batch delete for performance
+    taskIdsToDelete.forEach(taskId => this.tasks.delete(taskId));
+    
+    // Generate new task instances with updated schedule
+    await this.generateTaskInstances(updatedTask);
+    
+    return {
+      ...report,
+      deletedInstances: taskIdsToDelete.length,
+      processedInstances: taskIdsToDelete.length,
+      details: 'Regenerated all future pending instances with new schedule'
+    };
+  }
+
+  // UPDATE EXISTING INSTANCES STRATEGY (for content changes)
+  private async updateExistingInstancesStrategy(recurringTaskId: number, updatedTask: RecurringTask, changedFields: any[], report: any): Promise<any> {
+    console.log(`🔄 [UPDATE STRATEGY] Updating existing instances for recurring task: ${updatedTask.title}`);
+    
+    // Find all affected instances (pending + in-progress, preserve completed)
+    const affectedInstances = Array.from(this.tasks.values()).filter(t => 
+      t.recurringTaskId === recurringTaskId && 
+      (t.status === 'pending' || t.status === 'in_progress') && 
+      t.dueDate && new Date(t.dueDate) >= new Date()
+    );
+    
+    let updatedCount = 0;
+    let conflictCount = 0;
+    const conflictDetails: any[] = [];
+    
+    // Process instances in batches for performance
+    const batchSize = 100;
+    for (let i = 0; i < affectedInstances.length; i += batchSize) {
+      const batch = affectedInstances.slice(i, i + batchSize);
+      
+      batch.forEach(instance => {
+        const updateResult = this.updateSingleTaskInstance(instance, updatedTask, changedFields);
+        
+        if (updateResult.hasConflict) {
+          conflictCount++;
+          conflictDetails.push({
+            taskId: instance.id,
+            taskTitle: instance.title,
+            status: instance.status,
+            conflicts: updateResult.conflicts
+          });
+        }
+        
+        // Apply the update with preserved user data
+        this.tasks.set(instance.id, updateResult.updatedInstance);
+        updatedCount++;
+      });
+      
+      // Log progress for large updates
+      if (affectedInstances.length > 100) {
+        const progress = Math.round(((i + batch.length) / affectedInstances.length) * 100);
+        console.log(`📊 [BULK UPDATE] Progress: ${progress}% (${i + batch.length}/${affectedInstances.length})`);
+      }
+    }
+    
+    return {
+      ...report,
+      processedInstances: updatedCount,
+      conflictCount: conflictCount,
+      conflictDetails: conflictDetails,
+      details: `Updated ${updatedCount} existing instances with ${conflictCount} conflicts detected`
+    };
+  }
+
+  // SMART SINGLE INSTANCE UPDATE WITH CONFLICT DETECTION
+  private updateSingleTaskInstance(instance: any, updatedTemplate: RecurringTask, changedFields: any[]): { updatedInstance: any; hasConflict: boolean; conflicts: string[] } {
+    let hasConflict = false;
+    const conflicts: string[] = [];
+    
+    // Start with current instance
+    let updatedInstance = { ...instance };
+    
+    // Update simple fields (preserve user modifications)
+    changedFields.forEach(change => {
+      switch (change.field) {
+        case 'title':
+          // Always update title unless user has manually modified it
+          if (!instance.isModifiedAfterCreation) {
+            updatedInstance.title = updatedTemplate.title;
+          } else {
+            hasConflict = true;
+            conflicts.push(`Title was manually modified: "${instance.title}"`);
+          }
+          break;
+          
+        case 'description':
+          if (!instance.isModifiedAfterCreation) {
+            updatedInstance.description = updatedTemplate.description;
+          }
+          break;
+          
+        case 'priority':
+          updatedInstance.priority = updatedTemplate.priority;
+          break;
+          
+        case 'assignTo':
+          updatedInstance.assignTo = updatedTemplate.assignTo;
+          break;
+          
+        case 'estimatedTime':
+          updatedInstance.estimatedTime = updatedTemplate.estimatedTime;
+          break;
+          
+        case 'checklistTemplate':
+          // Complex checklist merge with progress preservation
+          const mergeResult = this.mergeChecklistWithProgress(instance.checklist, updatedTemplate.checklistTemplate);
+          updatedInstance.checklist = mergeResult.mergedChecklist;
+          if (mergeResult.hasConflicts) {
+            hasConflict = true;
+            conflicts.push(...mergeResult.conflicts);
+          }
+          break;
+      }
+    });
+    
+    // Update tracking fields
+    updatedInstance.templateVersion = updatedTemplate.versionNumber;
+    updatedInstance.modifiedFromTemplateAt = new Date();
+    
+    // Flag if task is in-progress and has conflicts
+    if (instance.status === 'in_progress' && hasConflict) {
+      // Create notification for user about changes
+      this.createUpdateNotification(instance.id, conflicts);
+    }
+    
+    return { updatedInstance, hasConflict, conflicts };
+  }
+
+  // ADVANCED CHECKLIST MERGE WITH PROGRESS PRESERVATION
+  private mergeChecklistWithProgress(existingChecklist: any[], newTemplate: any): { mergedChecklist: any[]; hasConflicts: boolean; conflicts: string[] } {
+    if (!newTemplate?.steps) {
+      return { mergedChecklist: existingChecklist || [], hasConflicts: false, conflicts: [] };
+    }
+    
+    const conflicts: string[] = [];
+    let hasConflicts = false;
+    
+    const mergedChecklist = newTemplate.steps.map((newStep: any, index: number) => {
+      const existingStep = existingChecklist?.[index];
+      
+      // Preserve user progress and data
+      const mergedStep = {
+        id: newStep.id || `${index + 1}`,
+        text: newStep.label || newStep.text || '',
+        completed: existingStep?.completed || false, // NEVER lose completion status
+        required: newStep.required || false,
+        type: newStep.type,
+        config: newStep.config, // Always use latest config
+        dataCollection: newStep.type === 'data-capture' ? { 
+          type: newStep.config?.dataType || 'text', 
+          label: newStep.label || '' 
+        } : undefined
+      };
+      
+      // Detect conflicts where user has entered data but step changed significantly
+      if (existingStep?.completed && existingStep.text !== mergedStep.text) {
+        hasConflicts = true;
+        conflicts.push(`Step ${index + 1}: Text changed but user had completed "${existingStep.text}"`);
+      }
+      
+      // Preserve user-entered data in data collection steps
+      if (existingStep?.data) {
+        mergedStep.data = existingStep.data;
+      }
+      
+      return mergedStep;
+    });
+    
+    // Handle removed steps (mark as removed but don't delete)
+    if (existingChecklist && existingChecklist.length > newTemplate.steps.length) {
+      const removedSteps = existingChecklist.slice(newTemplate.steps.length);
+      removedSteps.forEach((removedStep, removedIndex) => {
+        if (removedStep.completed) {
+          hasConflicts = true;
+          conflicts.push(`Step was removed but user had completed: "${removedStep.text}"`);
+          // Keep the removed step marked as legacy
+          mergedChecklist.push({
+            ...removedStep,
+            isLegacy: true,
+            removedInUpdate: true
+          });
+        }
+      });
+    }
+    
+    return { mergedChecklist, hasConflicts, conflicts };
+  }
+
+  // CHANGE AUDIT LOGGING
+  private async logRecurringTaskChange(changeData: any): Promise<void> {
+    const changeLog = {
+      id: this.currentChangeLogId++,
+      ...changeData,
+      createdAt: new Date()
+    };
+    
+    // Store in change audit log (using notifications table for now)
+    await this.createNotification({
+      userId: changeData.changedByUser || 1,
+      type: 'recurring_task_update',
+      title: 'Recurring Task Updated',
+      message: `Template "${changeData.recurringTaskId}" updated affecting ${changeData.affectedInstanceCount} instances`,
+      data: changeLog
+    });
+    
+    console.log(`📝 [AUDIT LOG] Logged change for recurring task ${changeData.recurringTaskId}`);
+  }
+
+  // USER NOTIFICATION SYSTEM
+  private async createUpdateNotification(taskId: number, conflicts: string[]): Promise<void> {
+    const task = this.tasks.get(taskId);
+    if (!task || !task.assignedTo) return;
+    
+    await this.createNotification({
+      userId: task.assignedTo,
+      type: 'task_updated',
+      title: 'Task Updated',
+      message: `Task "${task.title}" has been updated. ${conflicts.length} conflicts detected.`,
+      data: { taskId, conflicts }
+    });
+    
+    console.log(`🔔 [NOTIFICATION] Created update notification for task ${taskId}`);
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
@@ -3028,9 +3304,21 @@ class DatabaseStorage implements IStorage {
     return task;
   }
 
-  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>, options?: { strategy?: 'update_all' | 'new_only'; userId?: number }): Promise<{ task: RecurringTask | null; report: any }> {
+    // TODO: Implement full propagation logic matching MemStorage capabilities
     const [task] = await db.update(recurringTasks).set(updates).where(eq(recurringTasks.id, id)).returning();
-    return task || undefined;
+    
+    return { 
+      task: task || null, 
+      report: { 
+        strategy: options?.strategy || 'update_all',
+        changedFields: [],
+        affectedCount: 0,
+        conflictCount: 0,
+        timestamp: new Date().toISOString(),
+        note: 'Full propagation logic pending implementation'
+      }
+    };
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
@@ -3521,8 +3809,8 @@ class HybridStorage implements IStorage {
     return this.dbStorage.createRecurringTask(taskData);
   }
 
-  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
-    return this.dbStorage.updateRecurringTask(id, updates);
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>, options?: { strategy?: 'update_all' | 'new_only'; userId?: number }): Promise<{ task: RecurringTask | null; report: any }> {
+    return this.dbStorage.updateRecurringTask(id, updates, options);
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
