@@ -898,17 +898,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/recurring-tasks/:id", async (req, res) => {
+  // Preflight endpoint for impact calculation
+  app.get("/api/recurring-tasks/:id/impact", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const task = await storage.updateRecurringTask(id, req.body);
+      const changedFields = JSON.parse(req.query.changedFields as string || '[]');
       
-      if (!task) {
+      // Get the original recurring task
+      const originalTask = await storage.getRecurringTask(id);
+      if (!originalTask) {
         return res.status(404).json({ message: "Recurring task not found" });
       }
 
-      res.json(task);
+      // Calculate impact without making changes
+      const impact = await storage.calculateUpdateImpact(id, changedFields);
+      
+      res.json({
+        taskId: id,
+        taskTitle: originalTask.title,
+        ...impact
+      });
     } catch (error) {
+      console.error('Error calculating update impact:', error);
+      res.status(500).json({ message: "Failed to calculate update impact" });
+    }
+  });
+
+  app.patch("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { strategy, userId, ...updates } = req.body;
+      
+      // Use the new comprehensive update method with options
+      const result = await storage.updateRecurringTask(id, updates, { strategy, userId });
+      
+      if (!result.task) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      res.json({
+        task: result.task,
+        report: result.report
+      });
+    } catch (error) {
+      console.error('Error updating recurring task:', error);
       res.status(500).json({ message: "Failed to update recurring task" });
     }
   });
