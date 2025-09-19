@@ -229,7 +229,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
               </SelectTrigger>
               <SelectContent>
                 {isLoadingAssignments ? (
-                  <SelectItem value="" disabled>Loading assignments...</SelectItem>
+                  <SelectItem value="__loading__" disabled>Loading assignments...</SelectItem>
                 ) : (
                   <>
                     {/* Special Options (All Staff for "Other" tasks) */}
@@ -245,7 +245,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                     
                     {/* Role Separator */}
                     {assignmentOptions.roles.length > 0 && assignmentOptions.special.length > 0 && (
-                      <SelectItem value="" disabled>──────── Roles ────────</SelectItem>
+                      <SelectItem value="__roles_separator__" disabled>──────── Roles ────────</SelectItem>
                     )}
                     
                     {/* Roles (with primary/recommended indicator) */}
@@ -261,7 +261,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                     
                     {/* People Separator */}
                     {assignmentOptions.users.length > 0 && (assignmentOptions.roles.length > 0 || assignmentOptions.special.length > 0) && (
-                      <SelectItem value="" disabled>──────── People ────────</SelectItem>
+                      <SelectItem value="__people_separator__" disabled>──────── People ────────</SelectItem>
                     )}
                     
                     {/* Individual Users */}
