@@ -245,24 +245,9 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                       </SelectItem>
                     ))}
                     
-                    {/* Role Separator */}
-                    {assignmentOptions.roles.length > 0 && assignmentOptions.special.length > 0 && (
-                      <SelectItem value="__roles_separator__" disabled>──────── Roles ────────</SelectItem>
-                    )}
-                    
-                    {/* Roles (with primary/recommended indicator) */}
-                    {assignmentOptions.roles.map(role => (
-                      <SelectItem 
-                        key={role.value} 
-                        value={role.value}
-                        className={role.isPrimary ? 'font-semibold text-green-700' : ''}
-                      >
-                        {role.label} ({role.staffCount} {role.staffCount === 1 ? 'person' : 'people'})
-                      </SelectItem>
-                    ))}
                     
                     {/* People Separator */}
-                    {assignmentOptions.users.length > 0 && (assignmentOptions.roles.length > 0 || assignmentOptions.special.length > 0) && (
+                    {assignmentOptions.users.length > 0 && assignmentOptions.special.length > 0 && (
                       <SelectItem value="__people_separator__" disabled>──────── People ────────</SelectItem>
                     )}
                     
@@ -271,11 +256,10 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                       <SelectItem 
                         key={user.value} 
                         value={user.value}
-                        className={user.isCurrentUser ? 'bg-blue-50' : user.hasPrimaryRole ? 'text-green-700' : ''}
+                        className={user.isCurrentUser ? 'bg-blue-50' : ''}
                       >
                         {user.label} 
                         {user.isCurrentUser && ' (You)'}
-                        {user.roles && user.roles.length > 0 && ` - ${user.roles.join(', ')}`}
                       </SelectItem>
                     ))}
                   </>

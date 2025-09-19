@@ -69,14 +69,7 @@ const SearchableAssignmentSelect: React.FC<SearchableAssignmentSelectProps> = ({
       });
     });
 
-    // Add roles
-    assignmentOptions.roles.forEach(opt => {
-      options.push({
-        ...opt,
-        type: 'role',
-        searchText: `${opt.label} role`.toLowerCase()
-      });
-    });
+    // Skip roles - we only want to show individual staff names
 
     // Add users
     assignmentOptions.users.forEach(opt => {
