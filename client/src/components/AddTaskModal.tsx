@@ -43,15 +43,12 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
   useEffect(() => {
     const loadAssignmentOptions = async () => {
       if (taskData.type && currentUser) {
-        console.log('🔄 Loading assignment options for task type:', taskData.type);
-        console.log('👤 Current user:', currentUser);
         setIsLoadingAssignments(true);
         try {
           const options = await getAssignmentOptions(currentUser, taskData.type);
-          console.log('✅ Assignment options loaded:', options);
           setAssignmentOptions(options);
         } catch (error) {
-          console.error('❌ Error loading assignment options:', error);
+          console.error('Error loading assignment options:', error);
           toast({
             title: "Error Loading Assignments",
             description: "Could not load assignment options. Please try again.",
@@ -60,8 +57,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
         } finally {
           setIsLoadingAssignments(false);
         }
-      } else {
-        console.log('⏳ Waiting for task type and current user...', { taskType: taskData.type, currentUser: !!currentUser });
       }
     };
     
@@ -158,8 +153,15 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     onClose();
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      // Only reset form when dialog is actually closing
+      handleClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[#203B17]">Add New Task</DialogTitle>
@@ -193,12 +195,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
 
           <div className="space-y-2">
             <Label htmlFor="type">Task Type *</Label>
-            <Select value={taskData.type} onValueChange={(value) => {
-              console.log('🎯 Task type selected:', value);
-              console.log('📋 Available task types:', taskTypes);
-              console.log('🔄 Setting task data with type:', value);
-              setTaskData({ ...taskData, type: value });
-            }}>
+            <Select value={taskData.type} onValueChange={(value) => setTaskData({ ...taskData, type: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Select Type" />
               </SelectTrigger>
