@@ -3649,9 +3649,15 @@ class DatabaseStorage implements IStorage {
 
   // CHANGE AUDIT LOGGING - DATABASE VERSION
   private async logRecurringTaskChangeDB(changeData: any): Promise<void> {
+    // Skip notification logging if no valid user ID (prevent foreign key constraint errors)
+    if (!changeData.changedByUser) {
+      console.log(`⚠️ [AUDIT LOG] Skipping notification - no valid user ID provided`);
+      return;
+    }
+
     // Store in notifications table as audit log for now
     await db.insert(notifications).values({
-      userId: changeData.changedByUser || 1,
+      userId: changeData.changedByUser,
       type: 'recurring_task_update',
       title: 'Recurring Task Updated',
       message: `Template "${changeData.recurringTaskId}" updated affecting ${changeData.affectedInstanceCount} instances`,
