@@ -20,7 +20,7 @@ export const getPrimaryRole = (taskType: string): string => {
 
 // Get all available roles from the mapping
 export const getAllRoles = (): string[] => {
-  const roles = [...new Set(Object.values(taskTypeToRoleMapping))];
+  const roles = Array.from(new Set(Object.values(taskTypeToRoleMapping)));
   // Add Manager role which can do everything
   roles.push('Manager');
   // Remove 'All Staff' as it's not a real role
