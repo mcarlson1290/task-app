@@ -27,8 +27,11 @@ export const getAssignmentOptions = async (currentUser: any, taskType: string): 
     const response = await fetch('/api/staff');
     const staff: StaffMember[] = await response.json();
     
-    // Filter active staff only (case insensitive check)
-    const activeStaff = staff.filter(s => s.activeStatus?.toLowerCase() === 'active');
+    // Filter active staff only (case insensitive check) AND exclude deleted users
+    const activeStaff = staff.filter(s => 
+      s.activeStatus?.toLowerCase() === 'active' && 
+      !s.fullName?.startsWith('[DELETED]')
+    );
     
     // Get the primary role for this task type
     const primaryRole = getPrimaryRole(taskType);

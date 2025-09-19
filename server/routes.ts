@@ -88,8 +88,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/staff", async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      // Transform ALL users to staff format for frontend compatibility
-      const staff = users.map(user => ({
+      // Filter out deleted users before transforming
+      const activeUsers = users.filter(user => !user.name?.startsWith('[DELETED]'));
+      // Transform active users to staff format for frontend compatibility
+      const staff = activeUsers.map(user => ({
         id: user.id.toString(),
         fullName: user.name || 'Unknown User',
         email: user.username,
@@ -121,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: undefined
       }));
       
-      console.log(`Returning ${staff.length} staff members from ${users.length} users`);
+      console.log(`Returning ${staff.length} staff members from ${activeUsers.length} active users (${users.length} total users)`);
       res.json(staff);
     } catch (error) {
       console.error('Staff fetch error:', error);
