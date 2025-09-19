@@ -48,7 +48,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
           const options = await getAssignmentOptions(currentUser, taskData.type);
           setAssignmentOptions(options);
         } catch (error) {
-          console.error('Error loading assignment options:', error);
+          console.error('❌ AddTaskModal: Error loading assignment options:', error);
           toast({
             title: "Error Loading Assignments",
             description: "Could not load assignment options. Please try again.",
