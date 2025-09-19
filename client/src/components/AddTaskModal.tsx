@@ -234,37 +234,27 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                   <SelectItem value="__loading__" disabled>Loading assignments...</SelectItem>
                 ) : (
                   <>
-                    {/* Special Options (All Staff for "Other" tasks) */}
+                    {/* Special Options */}
                     {assignmentOptions.special.map(option => (
                       <SelectItem 
                         key={option.value} 
                         value={option.value}
-                        className={option.isPrimary ? 'font-semibold text-green-700' : ''}
+                        className="font-semibold"
                       >
                         {option.label} ({option.staffCount} {option.staffCount === 1 ? 'person' : 'people'})
                       </SelectItem>
                     ))}
                     
-                    
-                    {/* Individual Users */}
-                    {assignmentOptions.users.length > 0 && assignmentOptions.special.length > 0 && (
-                      <SelectSeparator />
-                    )}
-                    {assignmentOptions.users.length > 0 && (
-                      <SelectGroup>
-                        <SelectLabel>Staff Members</SelectLabel>
-                        {assignmentOptions.users.map(user => (
-                          <SelectItem 
-                            key={user.value} 
-                            value={user.value}
-                            className={user.isCurrentUser ? 'bg-blue-50' : ''}
-                          >
-                            {user.label} 
-                            {user.isCurrentUser && ' (You)'}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )}
+                    {/* Staff Members - Direct list without groups/separators */}
+                    {assignmentOptions.users.map(user => (
+                      <SelectItem 
+                        key={user.value} 
+                        value={user.value}
+                        className={user.isCurrentUser ? 'bg-blue-50' : ''}
+                      >
+                        {user.label}{user.isCurrentUser ? ' (You)' : ''}
+                      </SelectItem>
+                    ))}
                   </>
                 )}
               </SelectContent>
