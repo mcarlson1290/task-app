@@ -27,8 +27,8 @@ export const getAssignmentOptions = async (currentUser: any, taskType: string): 
     const response = await fetch('/api/staff');
     const staff: StaffMember[] = await response.json();
     
-    // Filter active staff only
-    const activeStaff = staff.filter(s => s.activeStatus === 'active');
+    // Filter active staff only (case insensitive check)
+    const activeStaff = staff.filter(s => s.activeStatus?.toLowerCase() === 'active');
     
     // Get the primary role for this task type
     const primaryRole = getPrimaryRole(taskType);
@@ -236,7 +236,7 @@ export const getAssignmentText = (task: any, staff: StaffMember[]): string => {
 
 // Get staff members who should see a task based on assignment
 export const getAssignedStaffIds = (task: any, staff: StaffMember[]): string[] => {
-  const activeStaff = staff.filter(s => s.activeStatus === 'active');
+  const activeStaff = staff.filter(s => s.activeStatus?.toLowerCase() === 'active');
   
   // Check new assignTo field first
   if (task.assignTo) {
