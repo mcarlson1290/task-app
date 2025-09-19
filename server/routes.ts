@@ -483,6 +483,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Use noon UTC to avoid edge cases
       };
 
+      // Location mapping helper to ensure consistency with API filtering
+      const mapLocation = (location: string): string => {
+        if (!location) return location;
+        const cleanedLocation = location.trim();
+        const upperLocation = cleanedLocation.toUpperCase();
+        
+        // Map short location codes to full names for backwards compatibility  
+        const locationMap: { [key: string]: string } = {
+          'K': 'Kenosha'
+        };
+        return locationMap[upperLocation] || cleanedLocation;
+      };
+
       // Convert date string to Date object before validation
       const processedBody = {
         ...req.body,
@@ -496,6 +509,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         taskDate: req.body.taskDate ? parseUTCDate(req.body.taskDate) : 
                   req.body.visibleFromDate ? parseUTCDate(req.body.visibleFromDate) :
                   req.body.dueDate ? parseUTCDate(req.body.dueDate) : undefined,
+        // LOCATION MAPPING FIX: Apply same location mapping as API filtering to ensure consistency
+        location: req.body.location ? mapLocation(req.body.location) : req.body.location,
       };
       
       const taskData = insertTaskSchema.parse(processedBody);
