@@ -15,6 +15,9 @@ import { db } from "./db";
 import { eq, and, sql, or, gte } from "drizzle-orm";
 import { PersistenceManager } from './persistence';
 
+// Safe date handling utility to prevent TypeScript errors
+const safeDate = (v: Date | string | number | null | undefined): Date | null => v == null ? null : new Date(v);
+
 export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
@@ -250,13 +253,13 @@ export class MemStorage implements IStorage {
     let migratedCount = 0;
     
     // Reverse migrate: Convert 'daily' back to 'weekly' if daysOfWeek is present
-    for (const [id, recurringTask] of this.recurringTasks) {
+    this.recurringTasks.forEach((recurringTask, id) => {
       if (recurringTask.frequency === 'daily' && recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
         recurringTask.frequency = 'weekly';
         migratedCount++;
         console.log(`Restored recurring task ${id} (${recurringTask.title}) from daily to weekly with days: ${recurringTask.daysOfWeek.join(', ')}`);
       }
-    }
+    });
     
     // Don't migrate regular task instances - they should be regenerated correctly
     
@@ -590,14 +593,16 @@ export class MemStorage implements IStorage {
             const existingTask = existingTasks.find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
               t.dueDate && 
-              this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
+              expected.dueDate &&
+              this.isSameDate(safeDate(t.dueDate)!, safeDate(expected.dueDate)!)
             );
             
             // Check LIVE task state, not snapshot, to avoid repeated creations
             const existingTaskLive = Array.from(this.tasks.values()).find(t => 
               t.recurringTaskId === expected.recurringTaskId && 
               t.dueDate && 
-              this.isSameDate(new Date(t.dueDate), new Date(expected.dueDate))
+              expected.dueDate &&
+              this.isSameDate(safeDate(t.dueDate)!, safeDate(expected.dueDate)!)
             );
             
             if (!existingTaskLive) {
@@ -958,38 +963,22 @@ export class MemStorage implements IStorage {
       case 'monthly':
         // If we're past the 1st, still create this month's task
         const lastDay = new Date(Date.UTC(year, month + 1, 0));
-        return this.buildTaskFromTemplate(template, {
-          id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}`,
-          visibleFromDate: new Date(Date.UTC(year, month, 1)),
-          dueDate: lastDay
-        });
+        return this.createTaskFromTemplate(template, new Date(Date.UTC(year, month, 1)), lastDay);
         
       case 'biweekly':
         if (dayOfMonth <= 14) {
           // First period
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-01`,
-            visibleFromDate: new Date(Date.UTC(year, month, 1)),
-            dueDate: new Date(Date.UTC(year, month, 14))
-          });
+          return this.createTaskFromTemplate(template, new Date(Date.UTC(year, month, 1)), new Date(Date.UTC(year, month, 14)));
         } else {
           // Second period
           const lastDay = new Date(Date.UTC(year, month + 1, 0));
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-15`,
-            visibleFromDate: new Date(Date.UTC(year, month, 15)),
-            dueDate: lastDay
-          });
+          return this.createTaskFromTemplate(template, new Date(Date.UTC(year, month, 15)), lastDay);
         }
         
       case 'daily':
         const dayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         if (template.daysOfWeek?.includes(dayName)) {
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${this.formatDate(today)}`,
-            visibleFromDate: today,
-            dueDate: today
-          });
+          return this.createTaskFromTemplate(template, today, today);
         }
         break;
     }
@@ -2998,15 +2987,15 @@ export class MemStorage implements IStorage {
   }
 
   async markAllNotificationsAsRead(userId: number): Promise<void> {
-    for (const [id, notification] of this.notifications.entries()) {
+    this.notifications.forEach((notification, id) => {
       if (notification.userId === userId && !notification.isRead) {
         this.notifications.set(id, {
           ...notification,
           isRead: true,
-          readAt: new Date()
+          readAt: safeDate(new Date())
         });
       }
-    }
+    });
   }
 
   async deleteNotification(id: number): Promise<boolean> {
