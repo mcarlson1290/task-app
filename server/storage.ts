@@ -3467,7 +3467,7 @@ class DatabaseStorage implements IStorage {
   }
 
   // UPDATE EXISTING INSTANCES STRATEGY (for content changes) - DATABASE VERSION
-  private async updateExistingInstancesStrategyDB(tx: any, recurringTaskId: number, updatedTask: RecurringTask, changedFields: any[], report: any): Promise<any> {
+  private async updateExistingInstancesStrategyDB(recurringTaskId: number, updatedTask: RecurringTask, changedFields: any[], report: any): Promise<any> {
     console.log(`🔄 [DB UPDATE STRATEGY] Updating existing instances for recurring task: ${updatedTask.title}`);
     
     // Find all affected instances (pending + in-progress, preserve completed)

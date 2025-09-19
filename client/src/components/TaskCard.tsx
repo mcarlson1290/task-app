@@ -13,10 +13,11 @@ import { getAssignmentDisplay } from "../utils/taskAssignment";
 interface TaskCardProps {
   task: Task;
   onTaskAction: (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume') => void;
+  onEditTemplate?: (taskId: number) => void;
   staff?: StaffMember[];
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate, staff = [] }) => {
   const { currentUser } = useCurrentUser();
   // Safety check for task object
   if (!task) {
@@ -423,52 +424,68 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, staff = [] }) =
 
         {/* Action button - centered */}
         <div className="task-actions flex justify-center mt-4">
-          {isPending && (
+          {/* TYPE SAFETY: Prevent instance-only actions from appearing on recurring task templates */}
+          {task.isTemplate ? (
+            /* Template actions - for recurring task templates only */
             <Button 
-              onClick={() => onTaskAction(task.id, 'start')}
-              className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
-              data-testid="button-start-task"
-            >
-              Start Task
-            </Button>
-          )}
-          {isInProgress && (
-            <Button 
-              onClick={() => onTaskAction(task.id, 'collaborate')}
-              className="btn-action bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium"
-              data-testid="button-continue-task"
-            >
-              👥 Collaborate/Continue
-            </Button>
-          )}
-          {isPaused && (
-            <Button 
-              onClick={() => onTaskAction(task.id, 'resume')}
-              className="btn-action bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md font-medium"
-              data-testid="button-resume-task"
-            >
-              Resume Task
-            </Button>
-          )}
-          {(isCompleted || isSkipped) && (
-            <Button 
-              onClick={() => onTaskAction(task.id, 'view')}
+              onClick={() => onEditTemplate?.(task.id)}
               variant="outline"
-              className="btn-action px-6 py-2 rounded-md font-medium"
-              data-testid="button-view-details"
+              className="btn-action px-6 py-2 rounded-md font-medium border-blue-500 text-blue-600 hover:bg-blue-50"
+              data-testid="button-edit-template"
             >
-              View Details
+              📝 Edit Template
             </Button>
-          )}
-          {/* Fallback for tasks that don't match any status */}
-          {!isPending && !isInProgress && !isPaused && !isCompleted && !isSkipped && (
-            <Button 
-              onClick={() => onTaskAction(task.id, 'start')}
-              className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
-              data-testid="button-start-task-fallback"
-            >
-              Start Task
-            </Button>
+          ) : (
+            /* Instance actions - for regular task instances only */
+            <>
+              {isPending && (
+                <Button 
+                  onClick={() => onTaskAction(task.id, 'start')}
+                  className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
+                  data-testid="button-start-task"
+                >
+                  Start Task
+                </Button>
+              )}
+              {isInProgress && (
+                <Button 
+                  onClick={() => onTaskAction(task.id, 'collaborate')}
+                  className="btn-action bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium"
+                  data-testid="button-continue-task"
+                >
+                  👥 Collaborate/Continue
+                </Button>
+              )}
+              {isPaused && (
+                <Button 
+                  onClick={() => onTaskAction(task.id, 'resume')}
+                  className="btn-action bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md font-medium"
+                  data-testid="button-resume-task"
+                >
+                  Resume Task
+                </Button>
+              )}
+              {(isCompleted || isSkipped) && (
+                <Button 
+                  onClick={() => onTaskAction(task.id, 'view')}
+                  variant="outline"
+                  className="btn-action px-6 py-2 rounded-md font-medium"
+                  data-testid="button-view-details"
+                >
+                  View Details
+                </Button>
+              )}
+              {/* Fallback for tasks that don't match any status */}
+              {!isPending && !isInProgress && !isPaused && !isCompleted && !isSkipped && (
+                <Button 
+                  onClick={() => onTaskAction(task.id, 'start')}
+                  className="btn-action bg-[#2D8028] hover:bg-[#236020] text-white px-6 py-2 rounded-md font-medium"
+                  data-testid="button-start-task-fallback"
+                >
+                  Start Task
+                </Button>
+              )}
+            </>
           )}
         </div>
       </CardContent>

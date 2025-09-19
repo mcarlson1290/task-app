@@ -10,7 +10,8 @@ import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import { AddTaskModal } from "@/components/AddTaskModal";
 import TaskActionModal from "@/components/TaskActionModal";
-import { Task } from "@shared/schema";
+import RecurringTaskModal from "@/components/RecurringTaskModal";
+import { Task, RecurringTask } from "@shared/schema";
 import { TaskFilters, TaskType } from "@/types";
 import { getStoredAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,8 @@ const Tasks: React.FC = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = React.useState(false);
   const [taskActionModalOpen, setTaskActionModalOpen] = React.useState(false);
+  // Recurring task editing
+  const [editingRecurringTask, setEditingRecurringTask] = React.useState<RecurringTask | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const [activeFilter, setActiveFilter] = React.useState<string>("all");
@@ -259,6 +262,36 @@ const Tasks: React.FC = () => {
     },
   });
 
+  // Recurring task save mutation  
+  const saveRecurringTaskMutation = useMutation({
+    mutationFn: async (taskData: any) => {
+      if (editingRecurringTask) {
+        // Update existing recurring task
+        return await apiRequest("PATCH", `/api/recurring-tasks/${editingRecurringTask.id}`, taskData);
+      } else {
+        // Create new recurring task  
+        return await apiRequest("POST", "/api/recurring-tasks", taskData);
+      }
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recurring-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      setEditingRecurringTask(null);
+      toast({
+        title: editingRecurringTask ? 'Template Updated' : 'Template Created',
+        description: editingRecurringTask ? 'Recurring task template has been updated successfully.' : 'Recurring task template has been created successfully.',
+      });
+    },
+    onError: (error) => {
+      console.error("Error saving recurring task:", error);
+      toast({
+        title: "Failed to save template",
+        description: "There was an error saving the recurring task template. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     { value: "seeding-microgreens", label: "Seeding - Microgreens", emoji: "🌱" },
@@ -346,11 +379,32 @@ const Tasks: React.FC = () => {
   const filteredTasks = React.useMemo(() => {
     let filtered = tasks;
     
-    // DEBUG: Show all recurring tasks option
+    // FIXED: Show recurring task templates when in recurring mode
     if (showAllRecurring) {
-      const recurringOnly = tasks.filter(t => t.recurringTaskId);
-      console.log(`🧪 DEBUG MODE: Showing ${recurringOnly.length} recurring tasks (bypassing filters)`);
-      return recurringOnly;
+      // Return recurring task templates, not task instances with recurringTaskId
+      const recurringTemplates = recurringTasks.map(template => ({
+        ...template,
+        // Transform recurring task template to task-like object for UI compatibility
+        id: template.id,
+        title: template.title,
+        description: template.description || '',
+        type: template.type || 'other',
+        status: 'pending', // Templates don't have status
+        priority: 'medium', // Default priority for templates
+        assignedTo: template.assignTo || null,
+        dueDate: null, // Templates don't have due dates
+        taskDate: null, // Templates don't have task dates
+        location: template.location,
+        isRecurring: true,
+        recurringTaskId: template.id, // Templates are their own source
+        frequency: template.frequency,
+        // Template-specific fields
+        isTemplate: true,
+        daysOfWeek: template.daysOfWeek,
+        dayOfMonth: template.dayOfMonth
+      }));
+      console.log(`🔄 RECURRING MODE: Showing ${recurringTemplates.length} recurring task templates`);
+      return recurringTemplates;
     }
     
     // Location filtering handled server-side to avoid double-filtering
@@ -485,7 +539,7 @@ const Tasks: React.FC = () => {
     console.log(`Filtered from ${tasks.length} to ${sortedFiltered.length} tasks (removed ${filtered.length - uniqueFiltered.length} duplicates)`);
     
     return sortedFiltered;
-  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.code, isViewingAllLocations, staffData]);
+  }, [tasks, searchTerm, activeFilter, statusFilter, priorityFilter, assignedToMeFilter, dateFilter, currentLocation.code, isViewingAllLocations, staffData, showAllRecurring, recurringTasks]);
 
   // Clear all filters function
   const clearAllFilters = async () => {
@@ -610,6 +664,15 @@ const Tasks: React.FC = () => {
   };
 
   // Single task action handler
+  // Handler for editing recurring task templates
+  const handleEditRecurringTask = (taskId: number) => {
+    // Find the recurring task template to edit
+    const recurringTask = recurringTasks.find(t => t.id === taskId);
+    if (recurringTask) {
+      setEditingRecurringTask(recurringTask);
+    }
+  };
+
   const handleTaskAction = async (taskId: number, action: 'start' | 'collaborate' | 'complete' | 'pause' | 'skip' | 'view' | 'resume', reason?: string) => {
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (!task) return;
@@ -1024,6 +1087,7 @@ const Tasks: React.FC = () => {
                   key={task.id}
                   task={task}
                   onTaskAction={handleTaskAction}
+                  onEditTemplate={handleEditRecurringTask}
                   staff={staffData}
                 />
               ))}
@@ -1053,6 +1117,14 @@ const Tasks: React.FC = () => {
         task={selectedTask}
         open={taskActionModalOpen}
         onClose={() => setTaskActionModalOpen(false)}
+      />
+
+      {/* Recurring Task Edit Modal */}
+      <RecurringTaskModal
+        task={editingRecurringTask}
+        isOpen={!!editingRecurringTask}
+        onClose={() => setEditingRecurringTask(null)}
+        onSave={(taskData) => saveRecurringTaskMutation.mutateAsync(taskData)}
       />
       
       </div>
