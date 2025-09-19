@@ -69,7 +69,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
     console.log('Form submitted with data:', taskData);
     
     // Validate required fields
-    if (!taskData.title || !taskData.type || !taskData.assignTo || !taskData.dueDate || !taskData.estimatedTime) {
+    if (!taskData.title || !taskData.type || !taskData.dueDate || !taskData.estimatedTime) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields marked with *",
@@ -224,10 +224,10 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assignTo">Assign To *</Label>
+            <Label htmlFor="assignTo">Assign To</Label>
             <Select value={taskData.assignTo} onValueChange={(value) => setTaskData({ ...taskData, assignTo: value })}>
               <SelectTrigger>
-                <SelectValue placeholder={isLoadingAssignments ? "Loading..." : "Select Assignee"} />
+                <SelectValue placeholder={isLoadingAssignments ? "Loading..." : "Select Assignee (Optional)"} />
               </SelectTrigger>
               <SelectContent>
                 {isLoadingAssignments ? (

@@ -469,15 +469,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Creating task with data:", req.body);
       
+      // UTC-aware date parsing helper to prevent timezone issues
+      const parseUTCDate = (dateString: string): Date => {
+        if (!dateString) return new Date();
+        
+        // If it's already an ISO string, use it directly
+        if (dateString.includes('T') || dateString.includes('Z')) {
+          return new Date(dateString);
+        }
+        
+        // For YYYY-MM-DD format, explicitly create UTC date to avoid timezone shifts
+        const [year, month, day] = dateString.split('-').map(Number);
+        return new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // Use noon UTC to avoid edge cases
+      };
+
       // Convert date string to Date object before validation
       const processedBody = {
         ...req.body,
-        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-        startedAt: req.body.startedAt ? new Date(req.body.startedAt) : undefined,
-        completedAt: req.body.completedAt ? new Date(req.body.completedAt) : undefined,
-        pausedAt: req.body.pausedAt ? new Date(req.body.pausedAt) : undefined,
-        resumedAt: req.body.resumedAt ? new Date(req.body.resumedAt) : undefined,
-        skippedAt: req.body.skippedAt ? new Date(req.body.skippedAt) : undefined,
+        dueDate: req.body.dueDate ? parseUTCDate(req.body.dueDate) : undefined,
+        startedAt: req.body.startedAt ? parseUTCDate(req.body.startedAt) : undefined,
+        completedAt: req.body.completedAt ? parseUTCDate(req.body.completedAt) : undefined,
+        pausedAt: req.body.pausedAt ? parseUTCDate(req.body.pausedAt) : undefined,
+        resumedAt: req.body.resumedAt ? parseUTCDate(req.body.resumedAt) : undefined,
+        skippedAt: req.body.skippedAt ? parseUTCDate(req.body.skippedAt) : undefined,
+        // CRITICAL FIX: Ensure taskDate is set - use visibleFromDate or dueDate as fallback
+        taskDate: req.body.taskDate ? parseUTCDate(req.body.taskDate) : 
+                  req.body.visibleFromDate ? parseUTCDate(req.body.visibleFromDate) :
+                  req.body.dueDate ? parseUTCDate(req.body.dueDate) : undefined,
       };
       
       const taskData = insertTaskSchema.parse(processedBody);
