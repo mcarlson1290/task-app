@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { getTaskTypeOptions } from '../data/roleTaskMapping';
 import { getAssignmentOptions, AssignmentOptions } from '../services/taskAssignmentService';
@@ -246,22 +246,25 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
                     ))}
                     
                     
-                    {/* People Separator */}
-                    {assignmentOptions.users.length > 0 && assignmentOptions.special.length > 0 && (
-                      <SelectItem value="__people_separator__" disabled>──────── People ────────</SelectItem>
-                    )}
-                    
                     {/* Individual Users */}
-                    {assignmentOptions.users.map(user => (
-                      <SelectItem 
-                        key={user.value} 
-                        value={user.value}
-                        className={user.isCurrentUser ? 'bg-blue-50' : ''}
-                      >
-                        {user.label} 
-                        {user.isCurrentUser && ' (You)'}
-                      </SelectItem>
-                    ))}
+                    {assignmentOptions.users.length > 0 && assignmentOptions.special.length > 0 && (
+                      <SelectSeparator />
+                    )}
+                    {assignmentOptions.users.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>Staff Members</SelectLabel>
+                        {assignmentOptions.users.map(user => (
+                          <SelectItem 
+                            key={user.value} 
+                            value={user.value}
+                            className={user.isCurrentUser ? 'bg-blue-50' : ''}
+                          >
+                            {user.label} 
+                            {user.isCurrentUser && ' (You)'}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
                   </>
                 )}
               </SelectContent>
