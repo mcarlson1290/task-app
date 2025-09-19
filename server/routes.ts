@@ -967,6 +967,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PUT route for recurring tasks (same as PATCH for frontend compatibility)
+  app.put("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { strategy, userId, ...updates } = req.body;
+      
+      console.log(`📝 [PUT] Updating recurring task ${id} with updates:`, Object.keys(updates));
+      
+      // Use the new comprehensive update method with options
+      const result = await storage.updateRecurringTask(id, updates, { strategy, userId });
+      
+      if (!result.task) {
+        return res.status(404).json({ message: "Recurring task not found" });
+      }
+
+      console.log(`✅ [PUT] Successfully updated recurring task ${id}, propagated to ${result.report.processedInstances || 0} instances`);
+      res.json({
+        task: result.task,
+        report: result.report
+      });
+    } catch (error) {
+      console.error(`❌ [PUT] Failed to update recurring task:`, error);
+      res.status(500).json({ message: "Failed to update recurring task" });
+    }
+  });
+
   app.delete("/api/recurring-tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
