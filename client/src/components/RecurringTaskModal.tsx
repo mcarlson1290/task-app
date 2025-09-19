@@ -45,12 +45,31 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     special: []
   });
   const [loadingAssignments, setLoadingAssignments] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    type: string;
+    frequency: string;
+    daysOfWeek: string[];
+    isActive: boolean;
+    assignTo: string;
+    automation: {
+      enabled: boolean;
+      generateTrays: boolean;
+      trayCount: number;
+      cropType: string;
+      flow: {
+        type: string;
+        stages: any[];
+      };
+    };
+    checklistTemplate: { steps: any[] };
+  }>({
     title: '',
     description: '',
     type: 'seeding-microgreens',
     frequency: 'daily',
-    daysOfWeek: [],
+    daysOfWeek: [] as string[],
     isActive: true,
     assignTo: '',
     automation: {
@@ -311,7 +330,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         ...formData,
         id: task?.id,
         location: currentLocation.name,
-        updateStrategy: strategy
+        strategy: strategy
       });
       
       // Show completion state briefly
