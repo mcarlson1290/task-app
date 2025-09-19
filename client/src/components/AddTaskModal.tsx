@@ -193,7 +193,12 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ open, onClose, onSav
 
           <div className="space-y-2">
             <Label htmlFor="type">Task Type *</Label>
-            <Select value={taskData.type} onValueChange={(value) => setTaskData({ ...taskData, type: value })}>
+            <Select value={taskData.type} onValueChange={(value) => {
+              console.log('🎯 Task type selected:', value);
+              console.log('📋 Available task types:', taskTypes);
+              console.log('🔄 Setting task data with type:', value);
+              setTaskData({ ...taskData, type: value });
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select Type" />
               </SelectTrigger>
