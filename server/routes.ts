@@ -880,9 +880,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/recurring-tasks", async (req, res) => {
     try {
-      const task = await storage.createRecurringTask(req.body);
-      res.json(task);
+      console.log('🔄 Creating new recurring task and generating instances...');
+      
+      // Apply location mapping for consistency
+      const mapLocation = (loc: string): string => {
+        const locationMap: { [key: string]: string } = { 'K': 'Kenosha' };
+        return locationMap[loc] || loc;
+      };
+      
+      const processedBody = {
+        ...req.body,
+        location: req.body.location ? mapLocation(req.body.location) : req.body.location
+      };
+      
+      // Create the recurring task template
+      const task = await storage.createRecurringTask(processedBody);
+      console.log(`✅ Created recurring task template: "${task.title}" (ID: ${task.id})`);
+      
+      // CRITICAL FIX: Generate task instances for the next 31 days
+      try {
+        const result = await storage.regenerateTaskInstances(task.id);
+        console.log(`🎯 Generated task instances for recurring task "${task.title}"`);
+        
+        res.status(201).json({ 
+          task, 
+          generationSuccess: true,
+          message: `Created recurring task "${task.title}" and generated task instances` 
+        });
+      } catch (generationError) {
+        console.error(`❌ Failed to generate instances for recurring task ${task.id}:`, generationError);
+        
+        // Attempt rollback - delete the created recurring task since it's not functional
+        try {
+          await storage.deleteRecurringTask(task.id);
+          console.log(`🔄 Rolled back recurring task ${task.id} due to generation failure`);
+        } catch (rollbackError) {
+          console.error(`❌ Failed to rollback recurring task ${task.id}:`, rollbackError);
+        }
+        
+        res.status(500).json({ 
+          message: "Failed to generate task instances for recurring task",
+          error: "Task creation rolled back due to generation failure"
+        });
+      }
+      
     } catch (error) {
+      console.error('❌ Error creating recurring task:', error);
       res.status(500).json({ message: "Failed to create recurring task" });
     }
   });
