@@ -70,6 +70,12 @@ export interface IStorage {
   resetRecurringTasks(): Promise<boolean>;
   regenerateAllTaskInstances(): Promise<{ totalTasksCreated: number; recurringTasksProcessed: number }>;
   regenerateTaskInstances(recurringTaskId: number): Promise<boolean>;
+  verifyTaskIntegrity(): Promise<{
+    missingTasksCreated: number;
+    duplicatesRemoved: number;
+    errors: string[];
+    verificationReport: string[];
+  }>;
 
   // Growing systems
   getGrowingSystem(id: number): Promise<GrowingSystem | undefined>;
@@ -3111,6 +3117,21 @@ export class MemStorage implements IStorage {
   async checkLock(lockId: string): Promise<SystemLock | null> {
     return null;
   }
+
+  // Simple verification implementation for MemStorage (mostly for interface compliance)
+  async verifyTaskIntegrity(): Promise<{
+    missingTasksCreated: number;
+    duplicatesRemoved: number;
+    errors: string[];
+    verificationReport: string[];
+  }> {
+    return {
+      missingTasksCreated: 0,
+      duplicatesRemoved: 0,
+      errors: [],
+      verificationReport: ['MemStorage verification not implemented - use DatabaseStorage for full verification']
+    };
+  }
 }
 
 // Database Storage Implementation (switching from MemStorage to use database)
@@ -3806,6 +3827,227 @@ class DatabaseStorage implements IStorage {
     const currentDate = new Date();
     const tasksCreated = await this.generateTaskInstancesForRecurringTask(recurringTask, currentDate);
     return tasksCreated > 0;
+  }
+
+  // Task verification system - checks for missing tasks and duplicates in 31-day window
+  async verifyTaskIntegrity(): Promise<{
+    missingTasksCreated: number;
+    duplicatesRemoved: number;
+    errors: string[];
+    verificationReport: string[];
+  }> {
+    const report: string[] = [];
+    const errors: string[] = [];
+    let missingTasksCreated = 0;
+    let duplicatesRemoved = 0;
+
+    try {
+      report.push(`🔍 Starting task integrity verification at ${new Date().toISOString()}`);
+      
+      // Get all active recurring tasks
+      const activeRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      report.push(`📋 Found ${activeRecurringTasks.length} active recurring tasks to verify`);
+
+      const currentDate = new Date();
+      const endDate = new Date(currentDate);
+      endDate.setDate(currentDate.getDate() + 31); // 31-day window
+
+      for (const recurringTask of activeRecurringTasks) {
+        try {
+          // Check what tasks should exist for this recurring task in the 31-day window
+          const expectedTasks = await this.generateExpectedTaskDates(recurringTask, currentDate, endDate);
+          
+          // Check what tasks actually exist
+          const existingTasks = await db.select().from(tasks).where(
+            and(
+              eq(tasks.title, recurringTask.title),
+              eq(tasks.location, recurringTask.location),
+              gte(tasks.taskDate, currentDate),
+              lte(tasks.taskDate, endDate)
+            )
+          );
+
+          // Find missing tasks
+          const existingTaskDates = new Set(existingTasks.map(t => t.taskDate?.toDateString()));
+          const missingDates = expectedTasks.filter(date => !existingTaskDates.has(date.toDateString()));
+          
+          // Create missing tasks
+          for (const missingDate of missingDates) {
+            const dueDate = recurringTask.frequency === 'daily' ? new Date(missingDate) : new Date(missingDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+            
+            await db.insert(tasks).values({
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending',
+              priority: 'medium',
+              assignedTo: null,
+              assignTo: recurringTask.assignTo,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              taskDate: missingDate,
+              dueDate: dueDate,
+              frequency: recurringTask.frequency,
+              estimatedTime: null,
+              actualTime: null,
+              progress: 0,
+              checklist: recurringTask.checklistTemplate?.steps || [],
+              data: {},
+              visibleFromDate: missingDate,
+              startedAt: null,
+              completedAt: null,
+              pausedAt: null,
+              resumedAt: null,
+              skippedAt: null,
+              deletedRecurringTaskId: null,
+              deletedRecurringTaskTitle: null
+            });
+            
+            missingTasksCreated++;
+            report.push(`✅ Created missing task "${recurringTask.title}" for ${missingDate.toDateString()}`);
+          }
+
+          // Find and remove duplicates (same title, location, and taskDate)
+          const tasksByDate = new Map<string, typeof existingTasks>();
+          for (const task of existingTasks) {
+            const dateKey = task.taskDate?.toDateString();
+            if (dateKey) {
+              if (tasksByDate.has(dateKey)) {
+                // Found duplicate - remove the one with higher ID (newer)
+                const existing = tasksByDate.get(dateKey)!;
+                const duplicateTask = task.id > existing[0].id ? task : existing[0];
+                
+                await db.delete(tasks).where(eq(tasks.id, duplicateTask.id));
+                duplicatesRemoved++;
+                report.push(`🗑️ Removed duplicate task "${recurringTask.title}" (ID: ${duplicateTask.id}) for ${dateKey}`);
+                
+                // Keep the older task in the map
+                if (task.id < existing[0].id) {
+                  tasksByDate.set(dateKey, [task]);
+                }
+              } else {
+                tasksByDate.set(dateKey, [task]);
+              }
+            }
+          }
+
+        } catch (error) {
+          const errorMsg = `❌ Error verifying recurring task "${recurringTask.title}": ${error}`;
+          errors.push(errorMsg);
+          report.push(errorMsg);
+        }
+      }
+
+      report.push(`🎯 Verification complete: ${missingTasksCreated} missing tasks created, ${duplicatesRemoved} duplicates removed`);
+      
+    } catch (error) {
+      const errorMsg = `❌ Critical error during task verification: ${error}`;
+      errors.push(errorMsg);
+      report.push(errorMsg);
+    }
+
+    return {
+      missingTasksCreated,
+      duplicatesRemoved,
+      errors,
+      verificationReport: report
+    };
+  }
+
+  // Helper function to generate expected task dates for a recurring task
+  private async generateExpectedTaskDates(recurringTask: any, startDate: Date, endDate: Date): Promise<Date[]> {
+    const expectedDates: Date[] = [];
+    
+    switch (recurringTask.frequency) {
+      case 'daily': {
+        // Parse the daysOfWeek array
+        let selectedDays: string[] = [];
+        try {
+          if (typeof recurringTask.daysOfWeek === 'string') {
+            selectedDays = JSON.parse(recurringTask.daysOfWeek);
+          } else if (Array.isArray(recurringTask.daysOfWeek)) {
+            selectedDays = recurringTask.daysOfWeek;
+          }
+        } catch (error) {
+          return expectedDates; // Return empty if can't parse
+        }
+
+        if (!selectedDays || selectedDays.length === 0) {
+          return expectedDates; // Return empty if no days selected
+        }
+
+        const normalizedSelectedDays = selectedDays.map(day => day.toLowerCase());
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        // Check each day in the date range
+        for (let dayOffset = 0; dayOffset <= Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)); dayOffset++) {
+          const checkDate = new Date(startDate);
+          checkDate.setDate(startDate.getDate() + dayOffset);
+          
+          if (checkDate > endDate) break;
+          
+          const dayIndex = checkDate.getUTCDay();
+          const dayName = dayNames[dayIndex];
+          
+          if (normalizedSelectedDays.includes(dayName)) {
+            expectedDates.push(new Date(checkDate));
+          }
+        }
+        break;
+      }
+      
+      case 'weekly': {
+        // Similar logic for weekly tasks
+        let selectedDays: string[] = [];
+        try {
+          if (typeof recurringTask.daysOfWeek === 'string') {
+            selectedDays = JSON.parse(recurringTask.daysOfWeek);
+          } else if (Array.isArray(recurringTask.daysOfWeek)) {
+            selectedDays = recurringTask.daysOfWeek;
+          }
+        } catch (error) {
+          return expectedDates;
+        }
+
+        if (!selectedDays || selectedDays.length === 0) {
+          return expectedDates;
+        }
+
+        const normalizedSelectedDays = selectedDays.map(day => day.toLowerCase());
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        // Check each day in the date range
+        for (let dayOffset = 0; dayOffset <= Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)); dayOffset++) {
+          const checkDate = new Date(startDate);
+          checkDate.setDate(startDate.getDate() + dayOffset);
+          
+          if (checkDate > endDate) break;
+          
+          const dayIndex = checkDate.getUTCDay();
+          const dayName = dayNames[dayIndex];
+          
+          if (normalizedSelectedDays.includes(dayName)) {
+            expectedDates.push(new Date(checkDate));
+          }
+        }
+        break;
+      }
+      
+      case 'bi-weekly': {
+        // Generate bi-weekly instances
+        for (let period = 0; period < 4; period++) {
+          const taskDate = new Date(startDate);
+          taskDate.setDate(startDate.getDate() + (period * 14));
+          
+          if (taskDate <= endDate) {
+            expectedDates.push(taskDate);
+          }
+        }
+        break;
+      }
+    }
+    
+    return expectedDates;
   }
   
   private async generateTaskInstancesForRecurringTask(recurringTask: any, baseDate: Date): Promise<number> {
@@ -4530,6 +4772,16 @@ class HybridStorage implements IStorage {
   async initializeAppVerification(userId: number = 1): Promise<void> {
     console.log('🔄 HybridStorage delegating task verification to MemStorage...');
     return this.memStorage.initializeAppVerification(userId);
+  }
+
+  // Verification system - delegate to DatabaseStorage for full verification
+  async verifyTaskIntegrity(): Promise<{
+    missingTasksCreated: number;
+    duplicatesRemoved: number;
+    errors: string[];
+    verificationReport: string[];
+  }> {
+    return this.dbStorage.verifyTaskIntegrity();
   }
 }
 
