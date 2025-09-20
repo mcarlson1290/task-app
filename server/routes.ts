@@ -530,6 +530,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = req.body;
       console.log("Updating task:", id, "with updates:", updates);
+      
+      // Run verification when a task is started (status changes to in_progress)
+      if (updates.status === 'in_progress') {
+        console.log("🔍 Task being started - running verification system...");
+        try {
+          const verificationResult = await storage.verifyTaskIntegrity();
+          console.log("✅ Verification complete:", verificationResult);
+          
+          // Store verification result for dev page reporting
+          (global as any).lastVerificationResult = {
+            ...verificationResult,
+            timestamp: new Date(),
+            triggeredBy: 'task_start',
+            taskId: id
+          };
+        } catch (verifyError) {
+          console.error("⚠️ Verification failed:", verifyError);
+          // Don't fail the task start if verification fails
+        }
+      }
+      
       const task = await storage.updateTask(id, updates);
       
       if (!task) {
@@ -949,6 +970,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error bulk updating recurring task locations:', error);
       res.status(500).json({ message: 'Failed to update recurring task locations' });
+    }
+  });
+
+  // Get verification system reports for dev page
+  app.get("/api/dev/verification-report", async (req, res) => {
+    try {
+      const lastResult = (global as any).lastVerificationResult || null;
+      res.json({
+        lastVerificationResult: lastResult,
+        systemStatus: {
+          verificationEnabled: true,
+          lastRunTime: lastResult?.timestamp || null,
+          triggeredBy: lastResult?.triggeredBy || 'none'
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching verification report:', error);
+      res.status(500).json({ message: 'Failed to fetch verification report' });
+    }
+  });
+
+  // Manual verification trigger for dev testing
+  app.post("/api/dev/run-verification", async (req, res) => {
+    try {
+      console.log('🔧 Manual verification triggered from dev page');
+      const verificationResult = await storage.verifyTaskIntegrity();
+      
+      // Store verification result
+      (global as any).lastVerificationResult = {
+        ...verificationResult,
+        timestamp: new Date(),
+        triggeredBy: 'manual_dev_trigger',
+        taskId: null
+      };
+      
+      res.json({
+        success: true,
+        result: verificationResult
+      });
+    } catch (error) {
+      console.error('Error running manual verification:', error);
+      res.status(500).json({ message: 'Failed to run verification', error: error instanceof Error ? error.message : String(error) });
     }
   });
 

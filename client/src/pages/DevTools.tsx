@@ -17,6 +17,8 @@ const DevTools = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
   const [deviceInfo, setDeviceInfo] = useState<any>({});
+  const [verificationReport, setVerificationReport] = useState<any>(null);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useUser();
 
@@ -75,6 +77,52 @@ const DevTools = () => {
     
     return () => clearInterval(interval);
   }, [hasAccess]);
+
+  // Load verification report
+  const fetchVerificationReport = async () => {
+    try {
+      const response = await apiRequest('GET', '/api/dev/verification-report');
+      setVerificationReport(response);
+    } catch (error) {
+      console.error('Failed to fetch verification report:', error);
+    }
+  };
+
+  // Auto-fetch verification report on load and then periodically
+  useEffect(() => {
+    if (!hasAccess) return;
+    
+    fetchVerificationReport();
+    
+    // Update verification report every 30 seconds
+    const interval = setInterval(fetchVerificationReport, 30000);
+    return () => clearInterval(interval);
+  }, [hasAccess]);
+
+  // Manual verification trigger
+  const runManualVerification = async () => {
+    setIsVerificationLoading(true);
+    try {
+      const response = await apiRequest('POST', '/api/dev/run-verification', {});
+      
+      toast({
+        title: 'Verification Complete',
+        description: `Created ${response.result.missingTasksCreated} missing tasks, removed ${response.result.duplicatesRemoved} duplicates`,
+      });
+      
+      // Refresh the verification report
+      await fetchVerificationReport();
+    } catch (error) {
+      console.error('Manual verification failed:', error);
+      toast({
+        title: 'Verification Failed',
+        description: 'Failed to run verification. Check console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsVerificationLoading(false);
+    }
+  };
 
   // Auto-generate missing tasks on load (improved 31-day system)
   useEffect(() => {
@@ -910,6 +958,104 @@ const DevTools = () => {
                   <>
                     <Settings className="w-4 h-4 mr-2" />
                     🎯 Generate Today's Future Tasks
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Task Verification System */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Task Verification System
+              </CardTitle>
+              <CardDescription>
+                Automated verification that checks for missing tasks and removes duplicates
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* System Status */}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">System Status</h4>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span>Status:</span>
+                      <span className="text-green-600 font-medium">
+                        {verificationReport?.systemStatus?.verificationEnabled ? '✅ Active' : '❌ Inactive'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Last Run:</span>
+                      <span className="font-mono">
+                        {verificationReport?.systemStatus?.lastRunTime 
+                          ? new Date(verificationReport.systemStatus.lastRunTime).toLocaleString()
+                          : 'Never'
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Triggered By:</span>
+                      <span className="font-mono">
+                        {verificationReport?.systemStatus?.triggeredBy || 'none'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Last Verification Results */}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">Last Verification</h4>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span>Missing Tasks Created:</span>
+                      <span className="font-mono text-blue-600">
+                        {verificationReport?.lastVerificationResult?.missingTasksCreated || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Duplicates Removed:</span>
+                      <span className="font-mono text-red-600">
+                        {verificationReport?.lastVerificationResult?.duplicatesRemoved || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Errors:</span>
+                      <span className="font-mono text-red-600">
+                        {verificationReport?.lastVerificationResult?.errors?.length || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Details */}
+              {verificationReport?.lastVerificationResult?.verificationReport && (
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">Verification Report</h4>
+                  <div className="space-y-1 text-xs max-h-32 overflow-y-auto">
+                    {verificationReport.lastVerificationResult.verificationReport.map((line: string, idx: number) => (
+                      <div key={idx} className="font-mono text-gray-700">{line}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Trigger */}
+              <Button
+                onClick={runManualVerification}
+                disabled={isVerificationLoading}
+                className="w-full bg-green-600 hover:bg-green-700"
+                data-testid="button-run-verification"
+              >
+                {isVerificationLoading ? (
+                  'Running Verification...'
+                ) : (
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    🔍 Run Manual Verification
                   </>
                 )}
               </Button>
