@@ -3898,6 +3898,90 @@ class DatabaseStorage implements IStorage {
         break;
       }
       
+      case 'daily': {
+        // Parse the daysOfWeek array - critical for daily task filtering
+        let selectedDays: string[] = [];
+        try {
+          if (typeof recurringTask.daysOfWeek === 'string') {
+            selectedDays = JSON.parse(recurringTask.daysOfWeek);
+          } else if (Array.isArray(recurringTask.daysOfWeek)) {
+            selectedDays = recurringTask.daysOfWeek;
+          }
+        } catch (error) {
+          console.error(`❌ Failed to parse daysOfWeek for "${recurringTask.title}":`, error);
+          break; // Skip this task if daysOfWeek is invalid
+        }
+
+        if (!selectedDays || selectedDays.length === 0) {
+          console.log(`⚠️ No selectedDays for daily task "${recurringTask.title}" - skipping`);
+          break; // Skip tasks with no selected days
+        }
+
+        // Normalize day names to lowercase for comparison
+        const normalizedSelectedDays = selectedDays.map(day => day.toLowerCase());
+        
+        // Generate for the next 31 days, checking each day
+        for (let dayOffset = 0; dayOffset < 31; dayOffset++) {
+          const taskDate = new Date(baseDate);
+          taskDate.setDate(taskDate.getDate() + dayOffset);
+          
+          // TIMEZONE FIX: Use UTC-based day calculation to match database storage
+          // This ensures day name calculation matches the UTC date stored in database
+          const utcDayIndex = taskDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const dayName = dayNames[utcDayIndex];
+          
+          // CRITICAL: Only create task if this day matches selectedDays
+          if (!normalizedSelectedDays.includes(dayName)) {
+            continue; // Skip this day - not in selectedDays
+          }
+          
+          // Daily tasks are due on the same day
+          const dueDate = new Date(taskDate);
+          
+          // Check if this task instance already exists
+          const [existing] = await db.select().from(tasks).where(
+            and(
+              eq(tasks.title, recurringTask.title),
+              eq(tasks.taskDate, taskDate),
+              eq(tasks.location, recurringTask.location)
+            )
+          );
+          
+          if (!existing) {
+            tasksToCreate.push({
+              title: recurringTask.title,
+              description: recurringTask.description,
+              type: recurringTask.type,
+              status: 'pending',
+              priority: 'medium',
+              assignedTo: null,
+              assignTo: recurringTask.assignTo,
+              createdBy: recurringTask.createdBy,
+              location: recurringTask.location,
+              taskDate: taskDate,
+              dueDate: dueDate,
+              frequency: recurringTask.frequency,
+              estimatedTime: null,
+              actualTime: null,
+              progress: 0,
+              checklist: recurringTask.checklistTemplate?.steps || [],
+              data: {},
+              visibleFromDate: taskDate,
+              startedAt: null,
+              completedAt: null,
+              pausedAt: null,
+              resumedAt: null,
+              skippedAt: null,
+              deletedRecurringTaskId: null,
+              deletedRecurringTaskTitle: null
+            });
+            console.log(`✅ Creating daily task "${recurringTask.title}" for ${dayName} (${taskDate.toDateString()})`);
+          }
+        }
+        break;
+      }
+      
       case 'bi-weekly': {
         // Generate for the next 8 weeks (4 bi-weekly instances)
         for (let period = 0; period < 4; period++) {
