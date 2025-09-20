@@ -25,8 +25,16 @@ const DevTools = () => {
   // Check access for Corporate users only
   
   // Only allow access for Corporate users (Robert and Matt)
+  console.log('🛠️ DevTools Access Check:', {
+    currentUser,
+    hasCurrentUser: !!currentUser,
+    role: currentUser?.role,
+    email: currentUser?.email,
+    allowedEmails: ['robert@growspace.farm', 'matt@growspace.farm']
+  });
+  
   const hasAccess = currentUser && 
-    currentUser.role === 'Corporate' && 
+    (currentUser.role?.includes('Corporate') || currentUser.role?.includes('Manager')) && 
     (currentUser.email === 'robert@growspace.farm' || currentUser.email === 'matt@growspace.farm');
 
   // Load debug information
