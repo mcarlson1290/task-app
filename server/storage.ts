@@ -3907,13 +3907,28 @@ class DatabaseStorage implements IStorage {
           
           // Create missing tasks
           for (const missingDate of missingDates) {
+            // Race condition protection: check if task already exists before creation
+            const existingTaskCheck = await db.select().from(tasks).where(
+              and(
+                eq(tasks.title, recurringTask.title),
+                eq(tasks.location, recurringTask.location),
+                sql`DATE(${tasks.taskDate}) = ${missingDate.toISOString().split('T')[0]}`
+              )
+            ).limit(1);
+            
+            if (existingTaskCheck.length > 0) {
+              // Task was created by another verification run, skip
+              continue;
+            }
+            
             const dueDate = recurringTask.frequency === 'daily' ? new Date(missingDate) : new Date(missingDate.getTime() + (7 * 24 * 60 * 60 * 1000));
             
-            await db.insert(tasks).values({
-              title: recurringTask.title,
-              description: recurringTask.description,
-              type: recurringTask.type,
-              status: 'pending',
+            try {
+              await db.insert(tasks).values({
+                title: recurringTask.title,
+                description: recurringTask.description,
+                type: recurringTask.type,
+                status: 'pending',
               priority: 'medium',
               assignedTo: null,
               assignTo: recurringTask.assignTo,
@@ -3936,9 +3951,18 @@ class DatabaseStorage implements IStorage {
               deletedRecurringTaskId: null,
               deletedRecurringTaskTitle: null
             });
-            
-            missingTasksCreated++;
-            report.push(`✅ Created missing task "${recurringTask.title}" for ${missingDate.toDateString()}`);
+              
+              missingTasksCreated++;
+              report.push(`✅ Created missing task "${recurringTask.title}" for ${missingDate.toDateString()}`);
+            } catch (insertError) {
+              // Handle duplicate insertion errors (race condition)
+              if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
+                // Duplicate key violation - task was created by another process
+                continue;
+              }
+              // Re-throw other errors
+              throw insertError;
+            }
           }
 
           // Find and remove duplicates (same title, location, and taskDate)
