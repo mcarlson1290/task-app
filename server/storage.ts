@@ -3889,12 +3889,6 @@ class DatabaseStorage implements IStorage {
           // Check what tasks should exist for this recurring task in the 31-day window
           const expectedTasks = await this.generateExpectedTaskDates(recurringTask, currentDate, endDate);
           
-          // DEBUG: Log expected tasks for debugging
-          if (recurringTask.title === 'Water Microgreen Trays') {
-            console.log(`🔍 DEBUG: "${recurringTask.title}" expected tasks:`, expectedTasks.map(d => d.toDateString()));
-            console.log(`🔍 DEBUG: Days of week config:`, recurringTask.daysOfWeek);
-            console.log(`🔍 DEBUG: Current date:`, currentDate.toDateString(), 'UTC day:', currentDate.getUTCDay());
-          }
           
           // Check what tasks actually exist
           const existingTasks = await db.select().from(tasks).where(
@@ -3910,11 +3904,6 @@ class DatabaseStorage implements IStorage {
           const existingTaskDates = new Set(existingTasks.map(t => t.taskDate?.toDateString()));
           const missingDates = expectedTasks.filter(date => !existingTaskDates.has(date.toDateString()));
           
-          // DEBUG: Log missing dates
-          if (recurringTask.title === 'Water Microgreen Trays') {
-            console.log(`🔍 DEBUG: Existing task dates:`, Array.from(existingTaskDates));
-            console.log(`🔍 DEBUG: Missing dates:`, missingDates.map(d => d.toDateString()));
-          }
           
           // Create missing tasks
           for (const missingDate of missingDates) {
@@ -4413,10 +4402,8 @@ class DatabaseStorage implements IStorage {
     console.log(`🔄 DatabaseStorage: Initializing app verification for user ${userId}`);
     
     try {
-      console.log(`🔍 DEBUG: About to call verifyTaskIntegrity()`);
       // Run the verification to generate missing tasks
       const result = await this.verifyTaskIntegrity();
-      console.log(`🔍 DEBUG: verifyTaskIntegrity() returned:`, result);
       
       if (result.missingTasksCreated > 0 || result.duplicatesRemoved > 0) {
         console.log(`✅ Verification completed: ${result.missingTasksCreated} tasks created, ${result.duplicatesRemoved} duplicates removed`);
