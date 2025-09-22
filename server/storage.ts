@@ -3725,8 +3725,40 @@ class DatabaseStorage implements IStorage {
   }
 
   async deleteRecurringTask(id: number): Promise<boolean> {
-    const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
-    return result.rowCount > 0;
+    console.log('🗑️ [DB DELETE] Deleting recurring task with associated tasks:', id);
+    
+    try {
+      // First, check if the recurring task exists
+      const recurringTask = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id)).limit(1);
+      if (recurringTask.length === 0) {
+        console.log('🚫 [DB DELETE] Recurring task not found:', id);
+        return false;
+      }
+
+      // Delete associated future pending tasks (preserve completed and in-progress)
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      
+      const deletedTasks = await db.delete(tasks)
+        .where(
+          and(
+            eq(tasks.recurringTaskId, id),
+            eq(tasks.status, 'pending')
+            // Note: We delete ALL pending tasks regardless of date since we want to clean up all future instances
+          )
+        );
+      
+      console.log(`🗑️ [DB DELETE] Deleted ${deletedTasks.rowCount || 0} future pending tasks for recurring task ${id}`);
+
+      // Delete the recurring task
+      const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
+      
+      console.log(`🗑️ [DB DELETE] Successfully deleted recurring task ${id}`);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('🚨 [DB DELETE] Error deleting recurring task:', error);
+      throw error;
+    }
   }
 
   async resetRecurringTasks(): Promise<boolean> {

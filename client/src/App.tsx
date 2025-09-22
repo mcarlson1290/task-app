@@ -401,6 +401,11 @@ function Router() {
           <RecurringTasks />
         </ProtectedRoute>
       </Route>
+      <Route path="/recurring">
+        <ProtectedRoute>
+          <RecurringTasks />
+        </ProtectedRoute>
+      </Route>
       <Route path="/task-data">
         <ProtectedRoute>
           <TaskData />
