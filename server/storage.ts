@@ -3937,6 +3937,8 @@ class DatabaseStorage implements IStorage {
               taskDate: missingDate,
               dueDate: dueDate,
               frequency: recurringTask.frequency,
+              isRecurring: true,
+              recurringTaskId: recurringTask.id, // CRITICAL FIX: Add missing recurringTaskId field
               estimatedTime: null,
               actualTime: null,
               progress: 0,
@@ -4178,6 +4180,8 @@ class DatabaseStorage implements IStorage {
               taskDate: taskDate,
               dueDate: dueDate,
               frequency: recurringTask.frequency,
+              isRecurring: true,
+              recurringTaskId: recurringTask.id, // CRITICAL FIX: Add missing recurringTaskId field
               estimatedTime: null,
               actualTime: null,
               progress: 0,
@@ -4262,6 +4266,8 @@ class DatabaseStorage implements IStorage {
               taskDate: taskDate,
               dueDate: dueDate,
               frequency: recurringTask.frequency,
+              isRecurring: true,
+              recurringTaskId: recurringTask.id, // CRITICAL FIX: Add missing recurringTaskId field
               estimatedTime: null,
               actualTime: null,
               progress: 0,
@@ -4313,6 +4319,8 @@ class DatabaseStorage implements IStorage {
               taskDate: taskDate,
               dueDate: dueDate,
               frequency: recurringTask.frequency,
+              isRecurring: true,
+              recurringTaskId: recurringTask.id, // CRITICAL FIX: Add missing recurringTaskId field
               estimatedTime: null,
               actualTime: null,
               progress: 0,
