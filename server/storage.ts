@@ -3100,22 +3100,68 @@ export class MemStorage implements IStorage {
   }
 
   async acquireLock(lockId: string, userId: number, lockType: string, expirationMinutes = 10): Promise<SystemLock | null> {
-    const systemLock: SystemLock = {
-      id: lockId,
-      lockedBy: userId,
-      lockType: lockType,
-      acquiredAt: new Date(),
-      expiresAt: new Date(Date.now() + expirationMinutes * 60 * 1000),
-    };
-    return systemLock;
+    try {
+      // First, clean up expired locks
+      await db.delete(systemLocks).where(
+        and(
+          eq(systemLocks.id, lockId),
+          lte(systemLocks.expiresAt, new Date())
+        )
+      );
+      
+      // Try to acquire the lock
+      const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
+      const lockData = {
+        id: lockId,
+        lockedBy: userId,
+        lockType,
+        acquiredAt: new Date(),
+        expiresAt
+      };
+      
+      await db.insert(systemLocks).values(lockData);
+      
+      console.log(`🔒 Lock acquired: ${lockId} by user ${userId} (expires: ${expiresAt.toISOString()})`);
+      return lockData;
+    } catch (error) {
+      console.log(`⚠️ Lock acquisition failed: ${lockId} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return null;
+    }
   }
 
   async releaseLock(lockId: string): Promise<boolean> {
-    return true;
+    try {
+      await db.delete(systemLocks).where(eq(systemLocks.id, lockId));
+      console.log(`🔓 Lock released: ${lockId}`);
+      return true;
+    } catch (error) {
+      console.log(`⚠️ Lock release failed: ${lockId} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return false;
+    }
   }
 
   async checkLock(lockId: string): Promise<SystemLock | null> {
-    return null;
+    try {
+      const locks = await db.select().from(systemLocks)
+        .where(eq(systemLocks.id, lockId));
+      
+      if (locks.length === 0) return null;
+      
+      const lock = locks[0];
+      
+      // Check if lock has expired
+      if (lock.expiresAt && lock.expiresAt <= new Date()) {
+        // Clean up expired lock
+        await db.delete(systemLocks).where(eq(systemLocks.id, lockId));
+        console.log(`🕐 Expired lock cleaned up: ${lockId}`);
+        return null;
+      }
+      
+      return lock;
+    } catch (error) {
+      console.log(`⚠️ Lock check failed: ${lockId} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return null;
+    }
   }
 
   // Simple verification implementation for MemStorage (mostly for interface compliance)

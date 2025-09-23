@@ -2112,7 +2112,344 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PRODUCTION RECURRING TASK SYSTEM - Works for ANY frequency pattern in database
+  // PRODUCTION BLUEPRINT SYSTEM - Phase 1: Generation Engine Hardening
+  app.post("/api/admin/generate-blueprint-tasks", async (req, res) => {
+    const userId = 1; // Admin user for system operations
+    const lockId = 'blueprint-task-generation';
+    
+    try {
+      console.log('🚀 BLUEPRINT GENERATION ENGINE - Phase 1: Generation Hardening');
+      
+      // Step 1: Acquire system lock to prevent duplicates
+      const lock = await storage.acquireLock(lockId, userId, 'task_generation', 15);
+      if (!lock) {
+        console.log('⏳ Another generation process is running, skipping');
+        return res.status(423).json({
+          success: false,
+          message: 'Another task generation is in progress',
+          error: 'SYSTEM_LOCKED'
+        });
+      }
+
+      console.log(`🔒 Generation lock acquired: ${lock.id}`);
+      
+      try {
+        // Step 2: Get all active recurring tasks
+        const recurringTasks = await storage.getAllRecurringTasks();
+        const activeRecurringTasks = recurringTasks.filter(rt => rt.isActive);
+        console.log(`📋 Processing ${activeRecurringTasks.length} active recurring tasks`);
+        
+        // Step 3: Get current time references
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0-indexed
+        const today = new Date(currentYear, currentMonth, now.getDate());
+        
+        let totalCreated = 0;
+        let taskInstancesGenerated = 0;
+        
+        // Step 4: Process each recurring task with blueprint logic
+        for (const recurringTask of activeRecurringTasks) {
+          try {
+            console.log(`\n🎯 Processing: "${recurringTask.title}" (${recurringTask.frequency})`);
+            
+            const generatedInstances = await generateBlueprintTaskInstances(
+              recurringTask, 
+              today, 
+              currentYear, 
+              currentMonth
+            );
+            
+            totalCreated += generatedInstances.length;
+            taskInstancesGenerated += generatedInstances.length;
+            
+            if (generatedInstances.length > 0) {
+              console.log(`✅ Generated ${generatedInstances.length} instances for "${recurringTask.title}"`);
+            }
+            
+          } catch (error) {
+            console.error(`❌ Failed to process "${recurringTask.title}":`, error);
+          }
+        }
+        
+        console.log(`\n🎉 BLUEPRINT GENERATION COMPLETE:`);
+        console.log(`   📊 Total instances created: ${totalCreated}`);
+        console.log(`   🔄 Recurring tasks processed: ${activeRecurringTasks.length}`);
+        
+        // Step 5: Release the lock
+        await storage.releaseLock(lockId);
+        console.log(`🔓 Generation lock released`);
+        
+        res.json({
+          success: true,
+          message: `Blueprint generation complete`,
+          totalCreated,
+          recurringTasksProcessed: activeRecurringTasks.length,
+          generationTimestamp: now.toISOString()
+        });
+        
+      } catch (error) {
+        // Always release lock on error
+        await storage.releaseLock(lockId);
+        console.log(`🔓 Lock released due to error`);
+        throw error;
+      }
+      
+    } catch (error) {
+      console.error('❌ Blueprint generation failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Blueprint task generation failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+// Blueprint Generation Engine - Core Logic Functions (Module Level)
+async function generateBlueprintTaskInstances(
+    recurringTask: any,
+    today: Date,
+    currentYear: number,
+    currentMonth: number
+  ): Promise<any[]> {
+    console.log(`🔧 Blueprint generation for: ${recurringTask.title} (${recurringTask.frequency})`);
+    
+    const createdInstances: any[] = [];
+    
+    // Step 1: Determine required instances based on frequency
+    const requiredInstances = calculateRequiredInstances(
+      recurringTask.frequency,
+      currentYear,
+      currentMonth,
+      today
+    );
+    
+    console.log(`📅 Found ${requiredInstances.length} required instances for ${recurringTask.frequency}`);
+    
+    // Step 2: Check existing instances to avoid duplicates
+    const existingTasks = await storage.getAllTasks();
+    const existingInstances = existingTasks.filter(task => 
+      task.recurringTaskId === recurringTask.id &&
+      task.isRecurring === true
+    );
+    
+    console.log(`📝 Found ${existingInstances.length} existing instances`);
+    
+    // Step 3: Create missing instances with blueprint specifications
+    for (const required of requiredInstances) {
+      // Check if this specific instance already exists
+      const instanceExists = existingInstances.some(existing => 
+        existing.visibleFromDate && existing.dueDate &&
+        areDatesEqual(new Date(existing.visibleFromDate), required.visibleFromDate) &&
+        areDatesEqual(new Date(existing.dueDate), required.dueDate)
+      );
+      
+      if (!instanceExists) {
+        console.log(`📝 Creating instance: ${required.label}`);
+        
+        try {
+          // Blueprint Data Transfer - Copy ALL fields from template
+          const taskInstance = {
+            title: recurringTask.title,
+            description: recurringTask.description,
+            type: recurringTask.type,
+            status: 'pending' as const,
+            priority: 'medium' as const,
+            
+            // Assignment Logic - Use template assignment or default to null  
+            assignTo: recurringTask.assignTo || null, // New dynamic assignment system
+            assignedTo: null, // Legacy field for compatibility
+            
+            createdBy: recurringTask.createdBy,
+            location: recurringTask.location,
+            
+            // Blueprint Date Logic - Precise visibility and due dates
+            taskDate: required.visibleFromDate, // Primary filtering date
+            visibleFromDate: required.visibleFromDate, // When task becomes visible
+            dueDate: required.dueDate, // When task is due
+            
+            // Recurring Task Metadata
+            isRecurring: true,
+            recurringTaskId: recurringTask.id,
+            frequency: recurringTask.frequency,
+            
+            // Template Version Tracking for Update Propagation
+            templateVersion: recurringTask.versionNumber || 1,
+            isModifiedAfterCreation: false,
+            
+            // Advanced Checklist Transfer  
+            checklist: recurringTask.checklistTemplate ? 
+              generateChecklistFromTemplate(recurringTask.checklistTemplate) : [],
+            
+            // Data Collection Container
+            data: {},
+            
+            // Time tracking
+            estimatedTime: null,
+            actualTime: null,
+            progress: 0,
+            
+            // Dates
+            startedAt: null,
+            completedAt: null,
+            pausedAt: null,
+            resumedAt: null,
+            skippedAt: null,
+            skipReason: null,
+            modifiedFromTemplateAt: null,
+            
+            createdAt: new Date()
+          };
+          
+          // Create the task instance
+          const createdTask = await storage.createTask(taskInstance);
+          createdInstances.push(createdTask);
+          
+          console.log(`✅ Created: "${taskInstance.title}" | Visible: ${required.visibleFromDate.toDateString()} | Due: ${required.dueDate.toDateString()}`);
+          
+        } catch (error) {
+          console.error(`❌ Failed to create instance for ${recurringTask.title}:`, error);
+        }
+      } else {
+        console.log(`⏭️ Skipping existing instance: ${required.label}`);
+      }
+    }
+    
+    return createdInstances;
+  }
+
+// Calculate Required Instances - Blueprint Specification Logic
+function calculateRequiredInstances(
+    frequency: string,
+    currentYear: number,
+    currentMonth: number,
+    today: Date
+  ): Array<{
+    visibleFromDate: Date;
+    dueDate: Date;
+    label: string;
+    period?: string;
+  }> {
+    const instances: Array<{
+      visibleFromDate: Date;
+      dueDate: Date;
+      label: string;
+      period?: string;
+    }> = [];
+    
+    switch (frequency) {
+      case 'daily':
+        // Daily: Visible and due on same day
+        instances.push({
+          visibleFromDate: new Date(today),
+          dueDate: new Date(today),
+          label: `${currentYear}-${currentMonth + 1}-${today.getDate()}-daily`
+        });
+        break;
+        
+      case 'weekly':
+        // Weekly: Visible for 7 days, due 7 days later
+        const weeklyDue = new Date(today);
+        weeklyDue.setDate(today.getDate() + 7);
+        instances.push({
+          visibleFromDate: new Date(today),
+          dueDate: weeklyDue,
+          label: `${currentYear}-${currentMonth + 1}-week-${Math.ceil(today.getDate() / 7)}`
+        });
+        break;
+        
+      case 'bi-weekly':
+      case 'biweekly':
+        // BI-WEEKLY BLUEPRINT SPECIFICATION - EXACT IMPLEMENTATION
+        console.log(`📅 Bi-weekly logic: Today is ${today.getDate()}th of month`);
+        
+        // First Half: Days 1-14 (visible Sept 1-14, due Sept 14)
+        const firstHalf = {
+          visibleFromDate: new Date(currentYear, currentMonth, 1),
+          dueDate: new Date(currentYear, currentMonth, 14),
+          label: `${currentYear}-${currentMonth + 1}-1st-14th`,
+          period: "1st-14th"
+        };
+        
+        // Second Half: Days 15-end (visible Sept 15-30, due last day)
+        const secondHalf = {
+          visibleFromDate: new Date(currentYear, currentMonth, 15),
+          dueDate: new Date(currentYear, currentMonth + 1, 0), // Last day of month
+          label: `${currentYear}-${currentMonth + 1}-15th-end`,
+          period: "15th-end"
+        };
+        
+        instances.push(firstHalf, secondHalf);
+        
+        console.log(`📅 First half: ${firstHalf.visibleFromDate.toDateString()} → ${firstHalf.dueDate.toDateString()}`);
+        console.log(`📅 Second half: ${secondHalf.visibleFromDate.toDateString()} → ${secondHalf.dueDate.toDateString()}`);
+        break;
+        
+      case 'monthly':
+        // Monthly: Visible all month, due on last day
+        instances.push({
+          visibleFromDate: new Date(currentYear, currentMonth, 1),
+          dueDate: new Date(currentYear, currentMonth + 1, 0),
+          label: `${currentYear}-${currentMonth + 1}-monthly`
+        });
+        break;
+        
+      case 'quarterly':
+        // Quarterly: Visible all quarter, due on last day of quarter
+        const quarterStart = Math.floor(currentMonth / 3) * 3;
+        instances.push({
+          visibleFromDate: new Date(currentYear, quarterStart, 1),
+          dueDate: new Date(currentYear, quarterStart + 3, 0),
+          label: `${currentYear}-Q${Math.floor(currentMonth / 3) + 1}`
+        });
+        break;
+        
+      default:
+        console.log(`⚠️ Unsupported frequency: ${frequency}`);
+        break;
+    }
+    
+    return instances;
+  }
+
+// Advanced Checklist Generation from Template
+function generateChecklistFromTemplate(checklistTemplate: any): any[] {
+    if (!checklistTemplate || !checklistTemplate.steps) {
+      return [];
+    }
+    
+    return checklistTemplate.steps.map((step: any, index: number) => ({
+      id: `step-${index + 1}`,
+      text: step.text || step.label || '',
+      type: step.type || 'instruction',
+      completed: false,
+      required: step.required || false,
+      config: {
+        inventoryCategory: step.inventoryCategory,
+        min: step.min,
+        max: step.max,
+        default: step.default,
+        systemType: step.systemType,
+        autoSuggest: step.autoSuggest,
+        dataType: step.dataType,
+        calculation: step.calculation
+      },
+      data: null,
+      dataCollection: step.type === 'data-capture' ? {
+        type: step.dataType || 'text',
+        label: step.label || '',
+        value: null
+      } : undefined
+    }));
+  }
+
+// Utility function for precise date comparison
+function areDatesEqual(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
       console.log('🚀 PRODUCTION RECURRING TASK GENERATION - FIX FOREIGN KEY ISSUE');
