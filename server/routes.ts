@@ -1851,6 +1851,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRITICAL DATA REPAIR - Fix orphaned task instances by linking them to recurring task templates
+  app.post("/api/admin/repair-orphaned-task-linkage", async (req, res) => {
+    try {
+      console.log('🔧 REPAIRING ORPHANED TASK LINKAGE - FIXING CASCADE DELETION');
+      
+      // Call the comprehensive repair method from DatabaseStorage
+      const result = await (storage as any).repairOrphanedTaskLinkage();
+      
+      // Detailed logging for audit trail
+      console.log(`📊 REPAIR RESULTS:`);
+      console.log(`   Orphaned tasks found: ${result.orphanedTasksFound}`);
+      console.log(`   Tasks successfully linked: ${result.tasksLinked}`);
+      console.log(`   Unmatched tasks: ${result.unmatchedTasks}`);
+      console.log(`   Errors encountered: ${result.errors.length}`);
+      
+      if (result.errors.length > 0) {
+        console.log('❌ Repair errors:');
+        result.errors.forEach((error, index) => {
+          console.log(`   ${index + 1}. ${error}`);
+        });
+      }
+      
+      const successRate = result.orphanedTasksFound > 0 
+        ? Math.round((result.tasksLinked / result.orphanedTasksFound) * 100) 
+        : 100;
+
+      console.log(`🎯 REPAIR COMPLETE: ${successRate}% success rate`);
+      
+      res.json({
+        success: true,
+        message: `Orphaned task linkage repair completed`,
+        results: {
+          orphanedTasksFound: result.orphanedTasksFound,
+          tasksLinked: result.tasksLinked,
+          unmatchedTasks: result.unmatchedTasks,
+          successRate: `${successRate}%`,
+          errorCount: result.errors.length
+        },
+        detailedReport: result.repairReport,
+        errors: result.errors
+      });
+      
+    } catch (error) {
+      console.error('❌ Orphaned task repair failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to repair orphaned task linkage',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // MANUAL BI-WEEKLY TASK CREATOR - Create missing tasks without foreign key issues
   app.post("/api/admin/create-missing-biweekly", async (req, res) => {
     try {

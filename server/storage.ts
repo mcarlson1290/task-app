@@ -12,7 +12,7 @@ import {
   type SystemLock, type InsertSystemLock
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, or, gte, lte } from "drizzle-orm";
+import { eq, and, sql, or, gte, lte, isNull } from "drizzle-orm";
 import { PersistenceManager } from './persistence';
 
 // Safe date handling utility to prevent TypeScript errors
@@ -4012,6 +4012,189 @@ class DatabaseStorage implements IStorage {
       errors,
       verificationReport: report
     };
+  }
+
+  // CRITICAL DATA REPAIR: Fix orphaned task instances by linking them to proper recurring task templates
+  async repairOrphanedTaskLinkage(): Promise<{
+    orphanedTasksFound: number;
+    tasksLinked: number;
+    unmatchedTasks: number;
+    errors: string[];
+    repairReport: string[];
+  }> {
+    const report: string[] = [];
+    const errors: string[] = [];
+    let orphanedTasksFound = 0;
+    let tasksLinked = 0;
+    let unmatchedTasks = 0;
+
+    try {
+      report.push(`🔧 Starting orphaned task linkage repair at ${new Date().toISOString()}`);
+      
+      // Find all orphaned tasks (those that should be recurring but lack proper linkage)
+      const orphanedTasks = await db.select().from(tasks).where(
+        and(
+          or(
+            isNull(tasks.recurringTaskId),
+            eq(tasks.recurringTaskId, 0)
+          ),
+          eq(tasks.isRecurring, false) // These are likely orphaned instances
+        )
+      );
+
+      orphanedTasksFound = orphanedTasks.length;
+      report.push(`📋 Found ${orphanedTasksFound} potentially orphaned tasks`);
+
+      if (orphanedTasksFound === 0) {
+        report.push(`✅ No orphaned tasks found - all tasks properly linked`);
+        return {
+          orphanedTasksFound: 0,
+          tasksLinked: 0,
+          unmatchedTasks: 0,
+          errors,
+          repairReport: report
+        };
+      }
+
+      // Get all active recurring task templates for matching
+      const recurringTemplates = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      report.push(`🎯 Using ${recurringTemplates.length} active recurring task templates for matching`);
+
+      // Create efficient lookup maps for matching
+      const templatesByExactMatch = new Map<string, typeof recurringTemplates[0]>();
+      const templatesByTitle = new Map<string, typeof recurringTemplates[0][]>();
+
+      for (const template of recurringTemplates) {
+        // Exact match key: title + location + type + frequency + assignment
+        const exactKey = `${template.title}|${template.location}|${template.type}|${template.frequency}|${template.assignTo || ''}`;
+        templatesByExactMatch.set(exactKey, template);
+
+        // Title-based lookup for fallback matching
+        const titleKey = template.title.toLowerCase().trim();
+        if (!templatesByTitle.has(titleKey)) {
+          templatesByTitle.set(titleKey, []);
+        }
+        templatesByTitle.get(titleKey)!.push(template);
+      }
+
+      // Process orphaned tasks in batches for efficiency
+      const batchSize = 50;
+      const batches = [];
+      for (let i = 0; i < orphanedTasks.length; i += batchSize) {
+        batches.push(orphanedTasks.slice(i, i + batchSize));
+      }
+
+      for (const batch of batches) {
+        for (const task of batch) {
+          try {
+            let matchedTemplate = null;
+
+            // Strategy 1: Exact match (highest confidence)
+            const exactKey = `${task.title}|${task.location}|${task.type}|${task.frequency}|${task.assignTo || ''}`;
+            matchedTemplate = templatesByExactMatch.get(exactKey);
+
+            // Strategy 2: Title + Location match (high confidence)
+            if (!matchedTemplate && task.title) {
+              const titleCandidates = templatesByTitle.get(task.title.toLowerCase().trim());
+              if (titleCandidates) {
+                matchedTemplate = titleCandidates.find(t => t.location === task.location);
+              }
+            }
+
+            // Strategy 3: Title-only match (medium confidence, prefer first match)
+            if (!matchedTemplate && task.title) {
+              const titleCandidates = templatesByTitle.get(task.title.toLowerCase().trim());
+              if (titleCandidates && titleCandidates.length === 1) {
+                // Only auto-match if there's exactly one template with this title
+                matchedTemplate = titleCandidates[0];
+              }
+            }
+
+            // Strategy 4: Fuzzy title matching for common variations
+            if (!matchedTemplate && task.title) {
+              const taskTitle = task.title.toLowerCase().trim();
+              for (const [templateTitle, candidates] of templatesByTitle.entries()) {
+                // Check for close title matches (accounting for minor variations)
+                if (this.isSimilarTitle(taskTitle, templateTitle)) {
+                  const locationMatch = candidates.find(t => t.location === task.location);
+                  if (locationMatch) {
+                    matchedTemplate = locationMatch;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (matchedTemplate) {
+              // Update the orphaned task with the correct recurringTaskId
+              await db.update(tasks)
+                .set({ 
+                  recurringTaskId: matchedTemplate.id,
+                  isRecurring: true,
+                  // Fix any assignment discrepancies while we're at it
+                  assignTo: matchedTemplate.assignTo || task.assignTo
+                })
+                .where(eq(tasks.id, task.id));
+
+              tasksLinked++;
+              report.push(`✅ Linked task "${task.title}" (ID: ${task.id}) to recurring template "${matchedTemplate.title}" (ID: ${matchedTemplate.id})`);
+            } else {
+              unmatchedTasks++;
+              report.push(`⚠️ Could not match orphaned task "${task.title}" (ID: ${task.id}, Location: ${task.location}, Type: ${task.type})`);
+            }
+
+          } catch (error) {
+            const errorMsg = `❌ Error linking task "${task.title}" (ID: ${task.id}): ${error}`;
+            errors.push(errorMsg);
+            report.push(errorMsg);
+          }
+        }
+      }
+
+      report.push(`🎯 Repair complete: ${tasksLinked} tasks linked, ${unmatchedTasks} unmatched, ${errors.length} errors`);
+      
+    } catch (error) {
+      const errorMsg = `❌ Critical error during orphaned task repair: ${error}`;
+      errors.push(errorMsg);
+      report.push(errorMsg);
+    }
+
+    return {
+      orphanedTasksFound,
+      tasksLinked,
+      unmatchedTasks,
+      errors,
+      repairReport: report
+    };
+  }
+
+  // Helper method to check if two titles are similar (handles minor variations)
+  private isSimilarTitle(title1: string, title2: string): boolean {
+    // Remove common variations and normalize
+    const normalize = (str: string) => {
+      return str
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/[^\w\s]/g, '')
+        .trim();
+    };
+
+    const norm1 = normalize(title1);
+    const norm2 = normalize(title2);
+
+    // Exact match after normalization
+    if (norm1 === norm2) return true;
+
+    // Check if one title contains the other (handles shortened versions)
+    if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
+
+    // Check for common word overlap (at least 70% of words match)
+    const words1 = norm1.split(' ');
+    const words2 = norm2.split(' ');
+    const commonWords = words1.filter(w => words2.includes(w));
+    const similarityRatio = commonWords.length / Math.max(words1.length, words2.length);
+    
+    return similarityRatio >= 0.7;
   }
 
   // Helper function to generate expected task dates for a recurring task

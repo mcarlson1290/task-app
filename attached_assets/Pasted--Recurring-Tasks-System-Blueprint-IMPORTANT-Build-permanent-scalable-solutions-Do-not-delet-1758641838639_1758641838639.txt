@@ -1,0 +1,230 @@
+# Recurring Tasks System Blueprint
+
+**IMPORTANT: Build permanent, scalable solutions. Do not delete existing data, hardcode solutions, or break existing functionality.**
+
+## System Definition
+
+The recurring tasks system creates time-bound task instances from reusable templates. All users at a location see the same tasks from a shared database.
+
+## Task Generation Rules
+
+### Generation Timing
+- System maintains tasks for current day plus next 31 days
+- Generation runs at midnight or on first daily app access
+- When new recurring task is created, immediately generate current period tasks
+- Database tracks last generation date to prevent duplicates
+
+### Frequency-Specific Generation
+
+**Daily Tasks**
+- Generate only on selected weekdays
+- One task per selected day
+- Visible and due on same day
+
+**Weekly Tasks**  
+- Generate on specific weekday(s) selected
+- Visible and due on same day
+- Skip weeks if not selected
+
+**Bi-Weekly Tasks**
+- Generate TWO tasks per month:
+  - First: Generated on 1st, visible days 1-14, due on 14th
+  - Second: Generated on 15th, visible days 15-last day, due on last day
+
+**Monthly Tasks**
+- Generate ONE task on 1st of month
+- Visible entire month (1st through last day)
+- Due on last day of month
+
+**Quarterly Tasks**
+- Generate on: Jan 1, Apr 1, Jul 1, Oct 1
+- Visible entire quarter
+- Due on last day of quarter
+
+## Task Visibility
+
+Tasks display when current date falls within their visibility window:
+- `visibleFromDate`: First day task appears in task list
+- `dueDate`: Last day task can be completed on time
+
+Filter checks: `today >= visibleFromDate AND today <= dueDate`
+
+## Template → Instance Data Transfer
+
+When generating instances from templates, copy these fields:
+- title, description, quickInfo
+- priority, estimatedTime
+- assignedTo (role or user)
+- taskType, microgreensWeight
+- checklistTemplate (full structure)
+- processLink, requiresApproval
+
+Add instance-specific fields:
+- id: Unique identifier
+- parentRecurringTaskId: Link to template
+- visibleFromDate: Based on frequency rules
+- dueDate: Based on frequency rules
+- status: Always starts as 'pending'
+- createdAt: Generation timestamp
+
+## Checklist System
+
+### Step Types Available
+
+**Text Instruction**
+- Display only, no interaction
+- Auto-advances to next step
+- Does not count toward completion
+
+**Number Input**  
+- Accepts numeric values
+- Optional min/max validation
+- Shows units (lbs, pH, degrees)
+
+**Inventory Usage**
+- Dropdown shows inventory items
+- Quantity input field  
+- Records usage on completion
+
+**Photo Upload**
+- Camera capture on mobile
+- Image stored with task
+- Thumbnail in completion data
+
+**Movement Trigger**
+- Source location dropdown
+- Destination location dropdown
+- Updates tray tracking
+
+**Tray Management**
+- Create Tray: Generates new tray with ID
+- Edit Tray: Modifies existing tray data
+
+### Checklist Behavior
+- Progress saves after each step
+- Can pause and resume
+- Completion data includes: timestamp, user, responses
+- Progress bar shows (completed steps / total interactive steps)
+
+## Template Update Propagation
+
+When recurring template is edited:
+
+### Updates These Tasks
+- Status = 'pending'
+- Due date >= today
+- Linked to edited template
+
+### Updates These Fields
+- title, description, quickInfo
+- priority, estimatedTime  
+- assignedTo
+- checklistTemplate structure
+- processLink
+
+### Preserves These Fields
+- id, status, dates
+- User-entered data
+- Completion history
+- Progress data
+
+### Never Updates
+- Completed tasks
+- In-progress tasks
+- Paused tasks
+- Skipped tasks
+
+## Multi-User Synchronization
+
+- All data stored in shared database
+- First user each day triggers generation for location
+- Generation lock prevents duplicate creation
+- Changes visible to all users immediately
+- No localStorage for task data
+
+## Task States & Workflow
+
+**Pending**: Initial state, can be edited
+**Assigned**: Specific user assigned
+**In-Progress**: User started task
+**Paused**: Temporarily stopped
+**Completed**: Finished successfully  
+**Skipped**: Bypassed with reason
+**Overdue**: Past due date + 8:27 PM
+
+### Overdue Detection
+- Automatic status change at due date + 8:27 PM
+- Email notification to managers
+- Visual styling changes (red indicators)
+- Shows time overdue
+
+## Data Validation Rules
+
+- Due dates must be future or today
+- Monthly tasks cannot have specific weekday
+- Bi-weekly tasks cannot have weekday selection
+- Required fields: title, frequency, assignedTo
+- Maximum 50 checklist steps
+- No duplicate title + date combinations
+
+## Notification System
+
+- Overdue alerts at 8:27 PM via email
+- Assignment notifications to users
+- Approval request alerts via Teams
+- Daily summary for managers
+- Completion confirmations
+
+## Template Library
+
+- Current location templates always visible
+- Kenosha (HQ) templates available to all
+- Filter: "Show only templates with checklists"
+- Clone preserves all settings
+- Usage tracking for analytics
+
+## Permission Levels
+
+**Staff**
+- View assigned tasks
+- Complete tasks
+- Cannot create recurring tasks
+
+**Managers**  
+- All staff permissions
+- Create/edit recurring tasks
+- View all location tasks
+- Approve tasks
+
+**Corporate**
+- All manager permissions  
+- Access all locations
+- Edit cross-location templates
+- View system analytics
+
+## Display Features
+
+### Task Cards Show
+- Title and quick info
+- Priority badge (colored)
+- Status indicator
+- Due date/time remaining
+- Recurring indicator + frequency
+- Assigned user/role
+- Progress bar (if checklist)
+
+### Recurring Task Page Shows
+- List of all templates
+- Inline editing capabilities
+- Frequency and assignment
+- Enable/disable toggle
+- "Create Checklist" button
+- Last generated date
+
+## System Automation
+
+- Generation runs automatically
+- Overdue detection automatic
+- Progress auto-saves
+- Notification dispatch automatic
+- Database cleanup for old completed tasks (archive after 90 days)
