@@ -3575,7 +3575,7 @@ class DatabaseStorage implements IStorage {
           break;
           
         case 'assignTo':
-          updateData.assignedTo = updatedTemplate.assignTo;
+          updateData.assignTo = updatedTemplate.assignTo;  // FIXED: Update correct field (assignTo, not assignedTo)
           break;
           
         case 'estimatedTime':
