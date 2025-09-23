@@ -69,14 +69,21 @@ const SearchableAssignmentSelect: React.FC<SearchableAssignmentSelectProps> = ({
       });
     });
 
-    // Skip roles - we only want to show individual staff names
+    // Add roles (PRIMARY - most tasks should be role-based, not person-based)
+    assignmentOptions.roles.forEach(opt => {
+      options.push({
+        ...opt,
+        type: 'role',
+        searchText: `${opt.label} role`.toLowerCase()
+      });
+    });
 
-    // Add users
+    // Add individual users (FALLBACK - only for rare cases where specific person needed)
     assignmentOptions.users.forEach(opt => {
       options.push({
         ...opt,
         type: 'user',
-        searchText: `${opt.label} ${opt.roles?.join(' ') || ''}`.toLowerCase()
+        searchText: `${opt.label} ${opt.roles?.join(' ') || ''} individual person`.toLowerCase()
       });
     });
 
