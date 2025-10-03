@@ -380,6 +380,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Task routes
   app.get("/api/tasks", async (req, res) => {
+    // AUTOMATIC TRIGGER: Run generation when viewing tasks (background, non-blocking)
+    runAutomatedTaskGeneration().catch(err => 
+      console.error('Background generation failed:', err)
+    );
+    
     try {
       const { userId, location } = req.query;
       console.log(`🔍 /api/tasks called with userId: ${userId}, location: "${location}"`);
@@ -1868,7 +1873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (result.errors.length > 0) {
         console.log('❌ Repair errors:');
-        result.errors.forEach((error, index) => {
+        result.errors.forEach((error: string, index: number) => {
           console.log(`   ${index + 1}. ${error}`);
         });
       }
@@ -2449,6 +2454,316 @@ function areDatesEqual(date1: Date, date2: Date): boolean {
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
   }
+
+// AUTOMATED TASK GENERATION SYSTEM - 31-Day Rolling Buffer
+async function runAutomatedTaskGeneration(userId: number = 1): Promise<{
+  success: boolean;
+  tasksCreated: number;
+  generatedThrough: string;
+  message: string;
+}> {
+  const lockId = 'automated-task-generation';
+  
+  try {
+    // Step 1: Acquire system lock
+    const lock = await storage.acquireLock(lockId, userId, 'automated_generation', 5);
+    if (!lock) {
+      console.log('⏭️ Generation already running, skipping');
+      return { success: false, tasksCreated: 0, generatedThrough: '', message: 'Generation already running' };
+    }
+
+    console.log('🤖 AUTOMATED TASK GENERATION - Starting 31-day buffer maintenance');
+    
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = formatDateYYYYMMDD(today);
+      
+      // Step 2: Check last generation date
+      const generationStatus = await storage.getSystemStatus('task-generation-status');
+      const lastGenDate = generationStatus?.lastGenerationDate || null;
+      
+      console.log(`📅 Last generation: ${lastGenDate || 'Never'}`);
+      console.log(`📅 Today: ${todayStr}`);
+      
+      // Step 3: Determine generation range
+      let startDate: Date;
+      if (!lastGenDate || lastGenDate < todayStr) {
+        // Never run or outdated - start from today
+        startDate = new Date(today);
+      } else {
+        // Already run today - nothing to do
+        console.log('✅ Already generated today, buffer is current');
+        await storage.releaseLock(lockId);
+        return { 
+          success: true, 
+          tasksCreated: 0, 
+          generatedThrough: generationStatus?.generatedThrough || todayStr,
+          message: 'Generation already current'
+        };
+      }
+      
+      // Calculate end date (today + 31 days)
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + 31);
+      const endDateStr = formatDateYYYYMMDD(endDate);
+      
+      console.log(`📊 Generating tasks from ${formatDateYYYYMMDD(startDate)} to ${endDateStr}`);
+      
+      // Step 4: Get all active recurring tasks
+      const recurringTasks = await storage.getAllRecurringTasks();
+      const activeRecurringTasks = recurringTasks.filter(rt => rt.isActive);
+      console.log(`🔄 Processing ${activeRecurringTasks.length} active recurring tasks`);
+      
+      // Step 5: Generate tasks for each date in range
+      let totalCreated = 0;
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        const tasksForDate = await generateTasksForDate(currentDate, activeRecurringTasks);
+        totalCreated += tasksForDate;
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      // Step 6: Update generation status
+      await storage.setSystemStatus({
+        id: 'task-generation-status',
+        lastGenerationDate: todayStr,
+        generatedThrough: endDateStr,
+        lastUpdateBy: userId
+      });
+      
+      console.log(`✅ AUTOMATED GENERATION COMPLETE:`);
+      console.log(`   📊 Tasks created: ${totalCreated}`);
+      console.log(`   📅 Buffer extends through: ${endDateStr}`);
+      
+      await storage.releaseLock(lockId);
+      
+      return {
+        success: true,
+        tasksCreated: totalCreated,
+        generatedThrough: endDateStr,
+        message: `Generated ${totalCreated} tasks through ${endDateStr}`
+      };
+      
+    } catch (error) {
+      await storage.releaseLock(lockId);
+      throw error;
+    }
+    
+  } catch (error) {
+    console.error('❌ Automated generation failed:', error);
+    return {
+      success: false,
+      tasksCreated: 0,
+      generatedThrough: '',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+// Generate tasks for a specific date based on recurring task templates
+async function generateTasksForDate(date: Date, recurringTasks: any[]): Promise<number> {
+  let created = 0;
+  const dateStr = formatDateYYYYMMDD(date);
+  const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const dayOfMonth = date.getDate();
+  const isFirstOfMonth = dayOfMonth === 1;
+  const isFifteenthOfMonth = dayOfMonth === 15;
+  const isStartOfQuarter = isFirstOfMonth && (date.getMonth() % 3 === 0);
+  
+  for (const recurringTask of recurringTasks) {
+    let shouldGenerate = false;
+    let visibleFrom: Date | null = null;
+    let dueDate: Date | null = null;
+    
+    switch (recurringTask.frequency.toLowerCase()) {
+      case 'daily':
+        shouldGenerate = true;
+        visibleFrom = new Date(date);
+        dueDate = new Date(date);
+        break;
+        
+      case 'weekly':
+        // Check if this day of week matches
+        if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const currentDayName = dayNames[dayOfWeek];
+          shouldGenerate = recurringTask.daysOfWeek.map((d: string) => d.toLowerCase()).includes(currentDayName);
+        }
+        if (shouldGenerate) {
+          visibleFrom = new Date(date);
+          dueDate = new Date(date);
+          dueDate.setDate(dueDate.getDate() + 7);
+        }
+        break;
+        
+      case 'bi-weekly':
+      case 'biweekly':
+        // First half (1st-14th) - generate on 1st
+        if (isFirstOfMonth) {
+          shouldGenerate = true;
+          visibleFrom = new Date(date.getFullYear(), date.getMonth(), 1);
+          dueDate = new Date(date.getFullYear(), date.getMonth(), 14);
+        }
+        // Second half (15th-end) - generate on 15th
+        else if (isFifteenthOfMonth) {
+          shouldGenerate = true;
+          visibleFrom = new Date(date.getFullYear(), date.getMonth(), 15);
+          dueDate = new Date(date.getFullYear(), date.getMonth() + 1, 0); // Last day of month
+        }
+        break;
+        
+      case 'monthly':
+        // Generate on first of month or specific day
+        if (recurringTask.dayOfMonth) {
+          shouldGenerate = dayOfMonth === recurringTask.dayOfMonth;
+        } else {
+          shouldGenerate = isFirstOfMonth;
+        }
+        if (shouldGenerate) {
+          visibleFrom = new Date(date.getFullYear(), date.getMonth(), 1);
+          dueDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        }
+        break;
+        
+      case 'quarterly':
+        shouldGenerate = isStartOfQuarter;
+        if (shouldGenerate) {
+          const quarterStart = Math.floor(date.getMonth() / 3) * 3;
+          visibleFrom = new Date(date.getFullYear(), quarterStart, 1);
+          dueDate = new Date(date.getFullYear(), quarterStart + 3, 0);
+        }
+        break;
+    }
+    
+    if (shouldGenerate && visibleFrom && dueDate) {
+      // Check if task already exists
+      const existingTasks = await storage.getAllTasks();
+      const taskExists = existingTasks.some(t => 
+        t.recurringTaskId === recurringTask.id &&
+        t.visibleFromDate &&
+        areDatesEqual(new Date(t.visibleFromDate), visibleFrom!) &&
+        t.dueDate &&
+        areDatesEqual(new Date(t.dueDate), dueDate!)
+      );
+      
+      if (!taskExists) {
+        // Create the task instance
+        try {
+          await storage.createTask({
+            title: recurringTask.title,
+            description: recurringTask.description,
+            type: recurringTask.type,
+            status: 'pending',
+            priority: 'medium',
+            assignTo: recurringTask.assignTo || null,
+            assignedTo: null,
+            createdBy: recurringTask.createdBy,
+            location: recurringTask.location,
+            taskDate: visibleFrom,
+            visibleFromDate: visibleFrom,
+            dueDate: dueDate,
+            isRecurring: true,
+            recurringTaskId: recurringTask.id,
+            frequency: recurringTask.frequency,
+            templateVersion: recurringTask.versionNumber || 1,
+            isModifiedAfterCreation: false,
+            checklist: recurringTask.checklistTemplate ? 
+              generateChecklistFromTemplate(recurringTask.checklistTemplate) : [],
+            data: {},
+            estimatedTime: null,
+            actualTime: null,
+            progress: 0,
+            startedAt: null,
+            completedAt: null,
+            pausedAt: null,
+            resumedAt: null,
+            skippedAt: null,
+            skipReason: null,
+            modifiedFromTemplateAt: null
+          });
+          created++;
+          console.log(`   ✅ ${dateStr}: Created "${recurringTask.title}"`);
+        } catch (error) {
+          console.error(`   ❌ ${dateStr}: Failed to create "${recurringTask.title}":`, error);
+        }
+      }
+    }
+  }
+  
+  return created;
+}
+
+// Helper function to format date as YYYY-MM-DD
+function formatDateYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+  // API: Get generation status (read-only monitoring)
+  app.get("/api/admin/generation-status", async (req, res) => {
+    try {
+      const status = await storage.getSystemStatus('task-generation-status');
+      const today = formatDateYYYYMMDD(new Date());
+      
+      if (!status || !status.lastGenerationDate) {
+        return res.json({
+          lastGeneration: null,
+          generatedThrough: null,
+          health: 'RED',
+          message: 'Never generated - system needs initialization',
+          totalFutureTasks: 0
+        });
+      }
+      
+      const lastGenDate = status.lastGenerationDate;
+      const generatedThrough = status.generatedThrough || lastGenDate;
+      
+      // Calculate health status
+      let health: 'GREEN' | 'YELLOW' | 'RED';
+      if (lastGenDate >= today) {
+        health = 'GREEN';
+      } else if (lastGenDate >= formatDateYYYYMMDD(new Date(Date.now() - 86400000))) {
+        health = 'YELLOW';
+      } else {
+        health = 'RED';
+      }
+      
+      // Count future tasks
+      const allTasks = await storage.getAllTasks();
+      const futureTasks = allTasks.filter(t => 
+        t.taskDate && new Date(t.taskDate) >= new Date()
+      );
+      
+      res.json({
+        lastGeneration: lastGenDate,
+        generatedThrough: generatedThrough,
+        health,
+        message: health === 'GREEN' ? 'System healthy' : 
+                 health === 'YELLOW' ? 'Generation slightly outdated' : 
+                 'Generation critically outdated',
+        totalFutureTasks: futureTasks.length,
+        lastUpdateBy: status.lastUpdateBy,
+        updatedAt: status.updatedAt
+      });
+      
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to fetch generation status',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // API: Trigger automated generation (for testing/manual override)
+  app.post("/api/admin/trigger-generation", async (req, res) => {
+    const userId = req.body.userId || 1;
+    const result = await runAutomatedTaskGeneration(userId);
+    res.json(result);
+  });
 
   app.post("/api/admin/generate-dynamic-recurring", async (req, res) => {
     try {
