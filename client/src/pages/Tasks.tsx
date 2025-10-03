@@ -22,6 +22,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import { isMyTask } from "../utils/taskHelpers";
 import GamifiedProgressBars from "@/components/GamifiedProgressBars";
+import { GenerationStatusBadge } from "@/components/GenerationStatusBadge";
 
 const Tasks: React.FC = () => {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -934,6 +935,9 @@ const Tasks: React.FC = () => {
           >
             {isRefreshing ? '⏳ Refreshing...' : '🔄 Refresh Tasks'}
           </button>
+
+          {/* Generation Status Badge */}
+          <GenerationStatusBadge />
           </div>
         </div>
       </div>
