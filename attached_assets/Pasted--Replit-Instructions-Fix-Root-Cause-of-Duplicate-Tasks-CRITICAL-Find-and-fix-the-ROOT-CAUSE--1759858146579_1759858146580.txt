@@ -1,0 +1,119 @@
+# Replit Instructions: Fix Root Cause of Duplicate Tasks
+
+**CRITICAL: Find and fix the ROOT CAUSE. Do NOT just delete duplicates - prevent them from being created.**
+
+## The Problem
+
+You have duplicate recurring task templates causing duplicate task instances. This is NOT a display issue - it's a data integrity problem at the source.
+
+## Step 1: Diagnose Why Duplicates Are Being Created
+
+**Find the root cause of duplicate creation:**
+
+1. **Check the "Add Recurring Task" function** - Is it creating multiple records on a single save?
+2. **Check the template cloning** - When using a template, is it duplicating the original?
+3. **Check the edit/save logic** - Is editing a task creating a new one instead of updating?
+4. **Check for double-click protection** - Can users accidentally create duplicates by clicking save twice?
+5. **Check database constraints** - Are there unique constraints to prevent duplicates?
+
+## Step 2: Find Where "Wednesday, Wednesday" Comes From
+
+The duplicate days ("Weekly on Wednesday, Wednesday") indicates:
+- The day selection is being appended instead of replaced
+- OR the system is merging two tasks' day selections
+- OR the UI is allowing multiple selections of the same day
+
+**Check these areas:**
+- Day selection UI - Is it allowing the same day to be selected twice?
+- Save logic - Is it appending days instead of replacing?
+- Data model - Is the days field being treated as an array that accumulates values?
+
+## Step 3: Implement Prevention Mechanisms
+
+**Add these safeguards:**
+
+1. **Unique constraint on recurring tasks:**
+   - No two tasks should have identical: title + frequency + days + assignee
+   - Before creating, check if similar task exists
+
+2. **Debounce save operations:**
+   - Disable save button immediately after click
+   - Show loading state during save
+   - Re-enable only after save completes or fails
+
+3. **Clean day selection:**
+   - When saving days, use a Set to remove duplicates
+   - Replace the entire days array, don't append
+   - Validate that selected days make sense for frequency
+
+4. **Transaction safety:**
+   - Wrap task creation in database transaction
+   - If any part fails, roll back entire operation
+   - Log all operations for debugging
+
+## Step 4: Clean Existing Data (One Time Only)
+
+**After fixing the root cause:**
+
+1. **Identify true duplicates:**
+   - Group by: title, frequency, type, assignee
+   - Keep the oldest (original) version
+   - Log what will be removed before removing
+
+2. **Fix malformed day selections:**
+   - "Wednesday, Wednesday" → "Wednesday"
+   - Remove duplicate days within single task
+
+3. **Verify task instances:**
+   - Ensure each recurring task generates only one instance per applicable day
+   - Remove duplicate instances keeping the one with most progress
+
+## Step 5: Add Monitoring
+
+**Prevent future issues:**
+
+1. **Add duplicate detection warning:**
+   - When creating recurring task, check for similar existing tasks
+   - Warn user: "Similar task already exists. Continue?"
+
+2. **Add data validation:**
+   - Recurring task must have valid frequency
+   - Days selection must match frequency type
+   - No duplicate days in selection
+
+3. **Add generation logging:**
+   - Log each task instance creation
+   - Flag if same recurring task tries to generate multiple times for same date
+
+## What NOT to Do
+
+❌ Do NOT just delete duplicate tasks without fixing creation logic
+❌ Do NOT add hardcoded filters to hide duplicates
+❌ Do NOT ignore the "Wednesday, Wednesday" data corruption
+❌ Do NOT allow the save button to be clicked multiple times rapidly
+
+## Testing After Fix
+
+1. Create a new weekly recurring task
+   - Verify only ONE template is created
+   - Verify days show correctly (not duplicated)
+   
+2. Edit an existing recurring task
+   - Verify it updates, not creates new
+   - Verify day selection replaces, not appends
+
+3. Clone a template
+   - Verify it creates ONE new task
+   - Verify original template unchanged
+
+4. Rapidly click save button
+   - Verify only ONE task created
+   - Verify button disabled during save
+
+## Success Criteria
+
+- No duplicate recurring task templates
+- No duplicate day selections ("Wednesday, Wednesday")
+- Each recurring task generates exactly one instance per applicable date
+- Save operations are atomic and protected from double-execution
+- Data validation prevents invalid states
