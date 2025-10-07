@@ -3245,8 +3245,36 @@ function formatDateYYYYMMDD(date: Date): string {
     } catch (error) {
       console.error('❌ Cleanup failed:', error);
       res.status(500).json({ 
-        success: true, 
+        success: false, 
         message: 'Failed to cleanup daily tasks', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Delete daily recurring task templates permanently
+  app.post("/api/admin/delete-daily-templates", async (req, res) => {
+    try {
+      console.log('🗑️  DELETING DAILY RECURRING TASK TEMPLATES');
+      
+      const result = await db.execute(sql`
+        DELETE FROM recurring_tasks WHERE frequency = 'daily'
+      `);
+      
+      const deletedCount = result.rowCount || 0;
+      console.log(`✅ Deleted ${deletedCount} daily recurring task templates`);
+      
+      res.json({
+        success: true,
+        message: `Deleted ${deletedCount} daily recurring task templates`,
+        deletedCount
+      });
+      
+    } catch (error) {
+      console.error('❌ Template deletion failed:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to delete daily templates', 
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
