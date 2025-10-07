@@ -68,7 +68,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     title: '',
     description: '',
     type: 'seeding-microgreens',
-    frequency: 'daily',
+    frequency: 'weekly',
     daysOfWeek: [] as string[],
     isActive: true,
     assignTo: '',
@@ -92,7 +92,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         title: task.title || '',
         description: task.description || '',
         type: task.type || 'seeding-microgreens',
-        frequency: task.frequency || 'daily',
+        frequency: task.frequency || 'weekly',
         daysOfWeek: task.daysOfWeek || [],
         isActive: task.isActive ?? true,
         assignTo: task.assignTo || 'no-assignment',
@@ -117,7 +117,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         title: '',
         description: '',
         type: 'seeding-microgreens',
-        frequency: 'daily',
+        frequency: 'weekly',
         daysOfWeek: [],
         isActive: true,
         assignTo: 'no-assignment',
@@ -233,7 +233,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
   ];
 
   const frequencies = [
-    { value: 'daily', label: 'Weekly' },  // Keep value as 'daily' for compatibility
+    { value: 'weekly', label: 'Weekly' },
     { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
     { value: 'monthly', label: 'Monthly (Last Day)' },
     { value: 'quarterly', label: 'Quarterly' }
@@ -553,8 +553,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 </Select>
               </div>
 
-              {/* Show day selection only for weekly frequency (stored as 'daily') */}
-              {formData.frequency === 'daily' && (
+              {/* Show day selection only for weekly frequency */}
+              {formData.frequency === 'weekly' && (
                 <div className="space-y-2">
                   <Label>Days of Week</Label>
                   <div className="grid grid-cols-4 gap-2">

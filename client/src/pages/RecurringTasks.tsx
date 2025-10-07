@@ -269,8 +269,7 @@ const RecurringTasks: React.FC = () => {
   });
 
   const getFrequencyDisplay = (task: RecurringTask) => {
-    // Display "Weekly" for both 'daily' and 'weekly' frequencies (migration compatibility)
-    if (task.frequency === 'daily' || task.frequency === 'weekly') {
+    if (task.frequency === 'weekly') {
       const days = task.daysOfWeek?.map(day => 
         typeof day === 'string' ? day.charAt(0).toUpperCase() + day.slice(1) : String(day)
       ).join(', ');
@@ -281,6 +280,9 @@ const RecurringTasks: React.FC = () => {
     }
     if (task.frequency === 'monthly') {
       return 'Monthly (Last Day)';
+    }
+    if (task.frequency === 'quarterly') {
+      return 'Quarterly';
     }
     return task.frequency;
   };
