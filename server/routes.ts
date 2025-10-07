@@ -2244,16 +2244,86 @@ async function generateBlueprintTaskInstances(
     
     const createdInstances: any[] = [];
     
-    // Step 1: Determine required instances based on frequency
-    const requiredInstances = calculateRequiredInstances(
-      recurringTask.frequency,
-      currentYear,
-      currentMonth,
-      today,
-      recurringTask // Pass full task for daysOfWeek access
-    );
+    // Step 1: Generate instances for next 31 days from TODAY
+    const requiredInstances: Array<{
+      visibleFromDate: Date;
+      dueDate: Date;
+      label: string;
+    }> = [];
     
-    console.log(`📅 Found ${requiredInstances.length} required instances for ${recurringTask.frequency}`);
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + 31);
+    
+    const currentDate = new Date(today);
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    console.log(`📅 Generating from ${formatDateYYYYMMDD(currentDate)} to ${formatDateYYYYMMDD(endDate)}`);
+    
+    while (currentDate <= endDate) {
+      let shouldGenerate = false;
+      const taskDate = new Date(currentDate); // Clone date for this instance
+      const dueDate = new Date(currentDate);  // Clone date for due date
+      
+      switch (recurringTask.frequency.toLowerCase()) {
+        case 'daily':
+          shouldGenerate = true;
+          dueDate.setDate(dueDate.getDate() + 1); // Due tomorrow
+          break;
+          
+        case 'weekly':
+          if (recurringTask.daysOfWeek && recurringTask.daysOfWeek.length > 0) {
+            const dayIndex = currentDate.getDay();
+            const dayName = dayNames[dayIndex];
+            const normalizedDays = recurringTask.daysOfWeek.map((d: string) => d.toLowerCase());
+            shouldGenerate = normalizedDays.includes(dayName);
+            if (shouldGenerate) {
+              dueDate.setDate(dueDate.getDate() + 7); // Due 7 days later
+            }
+          }
+          break;
+          
+        case 'bi-weekly':
+        case 'biweekly':
+          const dayOfMonth = currentDate.getDate();
+          if (dayOfMonth === 1 || dayOfMonth === 15) {
+            shouldGenerate = true;
+            if (dayOfMonth === 1) {
+              dueDate.setDate(14); // Due on 14th
+            } else {
+              dueDate.setMonth(dueDate.getMonth() + 1, 0); // Due on last day of month
+            }
+          }
+          break;
+          
+        case 'monthly':
+          if (currentDate.getDate() === 1) {
+            shouldGenerate = true;
+            dueDate.setMonth(dueDate.getMonth() + 1, 0); // Due on last day of month
+          }
+          break;
+          
+        case 'quarterly':
+          if (currentDate.getDate() === 1 && currentDate.getMonth() % 3 === 0) {
+            shouldGenerate = true;
+            dueDate.setMonth(dueDate.getMonth() + 3, 0); // Due on last day of quarter
+          }
+          break;
+      }
+      
+      if (shouldGenerate) {
+        const label = `${taskDate.getFullYear()}-${taskDate.getMonth() + 1}-${taskDate.getDate()}-${dayNames[taskDate.getDay()]}`;
+        console.log(`Generation loop - Day: ${taskDate.toISOString().split('T')[0]}, Creating: 1 task for ${recurringTask.title}`);
+        requiredInstances.push({
+          visibleFromDate: taskDate,
+          dueDate: dueDate,
+          label: label
+        });
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+    }
+    
+    console.log(`📅 Generation loop complete - Created ${requiredInstances.length} instances for ${recurringTask.frequency}`);
     
     // Step 2: Check existing instances to avoid duplicates
     const existingTasks = await storage.getAllTasks();
