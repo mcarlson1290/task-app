@@ -4343,6 +4343,10 @@ class DatabaseStorage implements IStorage {
     let tasksCreated = 0;
     const tasksToCreate: any[] = [];
     
+    const endDate = new Date(baseDate);
+    endDate.setDate(endDate.getDate() + 31);
+    console.log(`📅 Generating from: ${baseDate.toISOString().split('T')[0]} to: ${endDate.toISOString().split('T')[0]} for "${recurringTask.title}"`);
+    
     // Generate instances based on frequency
     switch (recurringTask.frequency) {
       case 'weekly': {
@@ -4378,9 +4382,17 @@ class DatabaseStorage implements IStorage {
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           const dayName = dayNames[utcDayIndex];
           
+          if (dayOffset === 0) {
+            console.log(`  🔍 Loop day 0: baseDate=${baseDate.toISOString().split('T')[0]}, taskDate=${taskDate.toISOString().split('T')[0]}, dayName=${dayName}`);
+          }
+          
           // CRITICAL: Only create task if this day matches selectedDays
           if (!normalizedSelectedDays.includes(dayName)) {
             continue; // Skip this day - not in selectedDays
+          }
+          
+          if (tasksToCreate.length === 0) {
+            console.log(`  ✅ First match! dayOffset=${dayOffset}, taskDate=${taskDate.toISOString().split('T')[0]}, dayName=${dayName}`);
           }
           
           const dueDate = new Date(taskDate);
