@@ -1,0 +1,153 @@
+# Replit Instructions: Fix Date Filtering and Clean Duplicate Tasks
+
+**CRITICAL: Fix date filtering to show tasks ONLY on due date and clean up duplicate tasks.**
+
+## The Problems
+
+1. **Tasks showing on multiple days** - Old tasks have date ranges (Oct 1→8) instead of single dates
+2. **Filter shows entire work period** - Currently showing tasks throughout their range instead of just on due date
+3. **Duplicate tasks exist** - Both old (with ranges) and new (with exact dates) versions
+
+## Fix 1: Change Date Filter to Exact Match
+
+**Current broken behavior:** Shows tasks throughout their work period  
+**Correct behavior:** Show tasks ONLY on their due date
+
+### Update the date filter logic:
+
+```javascript
+// WRONG - Shows task on all days in range
+const isInWorkPeriod = targetDate >= taskDate && targetDate <= dueDate;
+
+// CORRECT - Shows task only on due date
+const isDueToday = task.dueDate === targetDateString;
+```
+
+### Complete filter fix:
+
+Find your date filtering function and replace with:
+```javascript
+const filterTasksByDate = (tasks, targetDate) => {
+  // Convert target date to YYYY-MM-DD string
+  const targetDateString = targetDate.toLocaleDateString('en-CA');
+  
+  return tasks.filter(task => {
+    // Task shows ONLY on its due date
+    return task.dueDate === targetDateString;
+  });
+};
+```
+
+## Fix 2: Clean Up Duplicate Tasks
+
+**Remove old tasks with date ranges, keep new tasks with exact dates.**
+
+### Identify and remove duplicates:
+
+```javascript
+const cleanupDuplicateTasks = () => {
+  // Group tasks by title and parent recurring task
+  const taskGroups = {};
+  
+  tasks.forEach(task => {
+    const key = `${task.title}-${task.parentRecurringTaskId}`;
+    if (!taskGroups[key]) {
+      taskGroups[key] = [];
+    }
+    taskGroups[key].push(task);
+  });
+  
+  // For each group, keep only tasks with exact dates
+  Object.values(taskGroups).forEach(group => {
+    if (group.length > 1) {
+      group.forEach(task => {
+        // Remove tasks where taskDate !== dueDate (these have ranges)
+        if (task.taskDate !== task.dueDate) {
+          deleteTask(task.id);
+        }
+      });
+    }
+  });
+};
+
+// Run cleanup once
+cleanupDuplicateTasks();
+```
+
+## Fix 3: Prevent Future Date Range Tasks
+
+**Ensure all new tasks have exact dates only.**
+
+### When creating tasks:
+
+```javascript
+const createTask = (template, date) => {
+  const dateString = date.toLocaleDateString('en-CA');
+  
+  return {
+    ...template,
+    taskDate: dateString,  // Same date
+    dueDate: dateString,   // Same date
+    visibleFromDate: dateString, // Same date
+    // NOT date ranges!
+  };
+};
+```
+
+## Fix 4: Update Monthly/Bi-Weekly Visibility
+
+**For tasks that legitimately need visibility periods, use separate logic.**
+
+### Special handling for monthly/bi-weekly:
+
+```javascript
+const filterTasksByDate = (tasks, targetDate) => {
+  const targetDateString = targetDate.toLocaleDateString('en-CA');
+  
+  return tasks.filter(task => {
+    // Regular tasks: show only on due date
+    if (!['monthly', 'biweekly'].includes(task.frequency)) {
+      return task.dueDate === targetDateString;
+    }
+    
+    // Monthly/Bi-weekly: show during visibility period
+    // BUT store visibleFromDate and visibleToDate separately
+    if (task.frequency === 'monthly' || task.frequency === 'biweekly') {
+      const targetTime = new Date(targetDateString).getTime();
+      const visibleFrom = new Date(task.visibleFromDate).getTime();
+      const visibleTo = new Date(task.dueDate).getTime();
+      
+      return targetTime >= visibleFrom && targetTime <= visibleTo;
+    }
+    
+    return false;
+  });
+};
+```
+
+## Implementation Steps
+
+1. **First**: Fix the date filter to show tasks only on due date
+2. **Second**: Run cleanup to remove old tasks with date ranges  
+3. **Third**: Verify all new tasks create with exact dates
+4. **Fourth**: Test that "Today" shows only today's tasks
+
+## What NOT to Do
+
+❌ Do NOT create tasks with different taskDate and dueDate (except monthly/bi-weekly)
+❌ Do NOT use date ranges for daily/weekly tasks
+❌ Do NOT show tasks on multiple days unless explicitly needed
+❌ Do NOT keep duplicate tasks
+
+## Success Verification
+
+After fixes:
+- "Today" filter shows ONLY tasks due today
+- No duplicate tasks in database
+- Weekly tasks appear only on their scheduled day
+- Monthly/bi-weekly tasks still visible throughout their period (if needed)
+- No tasks appearing on wrong days
+
+## Critical Note
+
+The date range approach was causing tasks to appear on multiple days. Most tasks should have a SINGLE date when they appear. Only monthly and bi-weekly tasks need special visibility windows, and those should be handled separately from the due date.
