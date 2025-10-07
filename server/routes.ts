@@ -2249,7 +2249,8 @@ async function generateBlueprintTaskInstances(
       recurringTask.frequency,
       currentYear,
       currentMonth,
-      today
+      today,
+      recurringTask // Pass full task for daysOfWeek access
     );
     
     console.log(`📅 Found ${requiredInstances.length} required instances for ${recurringTask.frequency}`);
@@ -2351,7 +2352,8 @@ function calculateRequiredInstances(
     frequency: string,
     currentYear: number,
     currentMonth: number,
-    today: Date
+    today: Date,
+    recurringTask?: any
   ): Array<{
     visibleFromDate: Date;
     dueDate: Date;
@@ -2376,14 +2378,42 @@ function calculateRequiredInstances(
         break;
         
       case 'weekly':
-        // Weekly: Visible for 7 days, due 7 days later
-        const weeklyDue = new Date(today);
-        weeklyDue.setDate(today.getDate() + 7);
-        instances.push({
-          visibleFromDate: new Date(today),
-          dueDate: weeklyDue,
-          label: `${currentYear}-${currentMonth + 1}-week-${Math.ceil(today.getDate() / 7)}`
-        });
+        // FIXED: Generate instances for ALL 31 days, but only on selected days of week
+        // Parse selected days from recurring task
+        let selectedDays: string[] = [];
+        if (recurringTask && recurringTask.daysOfWeek) {
+          try {
+            selectedDays = typeof recurringTask.daysOfWeek === 'string' 
+              ? JSON.parse(recurringTask.daysOfWeek) 
+              : recurringTask.daysOfWeek;
+          } catch (error) {
+            console.error('Failed to parse daysOfWeek:', error);
+          }
+        }
+        
+        const normalizedDays = selectedDays.map(d => d.toLowerCase());
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        // Generate task for each day in next 31 days that matches selected days
+        for (let dayOffset = 0; dayOffset < 31; dayOffset++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(today.getDate() + dayOffset);
+          
+          const dayIndex = checkDate.getDay(); // Use local day, not UTC
+          const dayName = dayNames[dayIndex];
+          
+          // Only create if this day matches selectedDays
+          if (normalizedDays.includes(dayName)) {
+            const dueDate = new Date(checkDate);
+            dueDate.setDate(checkDate.getDate() + 6); // Due 6 days later
+            
+            instances.push({
+              visibleFromDate: new Date(checkDate),
+              dueDate: dueDate,
+              label: `${checkDate.getFullYear()}-${checkDate.getMonth() + 1}-${checkDate.getDate()}-${dayName}`
+            });
+          }
+        }
         break;
         
       case 'bi-weekly':
