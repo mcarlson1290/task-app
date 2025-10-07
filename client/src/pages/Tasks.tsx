@@ -473,7 +473,7 @@ const Tasks: React.FC = () => {
     setStatusFilter("all");
     setPriorityFilter("all");
     setAssignedToMeFilter(false);
-    setDateFilter(getTodayString()); // Reset to today's date
+    setDateFilter(""); // Clear date filter to show ALL tasks from ALL dates
     setSearchTerm("");
     // Refresh tasks to ensure immediate UI update
     await refreshTasks();
