@@ -75,7 +75,7 @@ export const recurringTasks = pgTable("recurring_tasks", {
   title: text("title").notNull(),
   description: text("description"),
   type: text("type").notNull(),
-  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'bi-weekly', 'monthly'
+  frequency: text("frequency").notNull(), // 'weekly', 'bi-weekly', 'biweekly', 'monthly', 'quarterly' - NO DAILY!
   daysOfWeek: json("days_of_week").$type<string[]>(), // ['monday', 'tuesday', etc.]
   dayOfMonth: integer("day_of_month"), // For monthly tasks
   isActive: boolean("is_active").default(true),

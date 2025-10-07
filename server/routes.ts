@@ -921,6 +921,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: req.body.location ? mapLocation(req.body.location) : req.body.location
       };
       
+      // VALIDATION: Reject 'daily' frequency (eliminated from system)
+      if (processedBody.frequency === 'daily') {
+        return res.status(400).json({ 
+          message: "'daily' frequency is no longer supported. Please use 'weekly' instead and select the days of the week." 
+        });
+      }
+      
       // Create the recurring task template
       const task = await storage.createRecurringTask(processedBody);
       console.log(`✅ Created recurring task template: "${task.title}" (ID: ${task.id})`);
@@ -1098,6 +1105,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { strategy, userId, ...updates } = req.body;
       
+      // VALIDATION: Reject 'daily' frequency (eliminated from system)
+      if (updates.frequency === 'daily') {
+        return res.status(400).json({ 
+          message: "'daily' frequency is no longer supported. Please use 'weekly' instead and select the days of the week." 
+        });
+      }
+      
       // Use the new comprehensive update method with options
       const result = await storage.updateRecurringTask(id, updates, { strategy, userId });
       
@@ -1120,6 +1134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { strategy, userId, ...updates } = req.body;
+      
+      // VALIDATION: Reject 'daily' frequency (eliminated from system)
+      if (updates.frequency === 'daily') {
+        return res.status(400).json({ 
+          message: "'daily' frequency is no longer supported. Please use 'weekly' instead and select the days of the week." 
+        });
+      }
       
       console.log(`📝 [PUT] Updating recurring task ${id} with updates:`, Object.keys(updates));
       
