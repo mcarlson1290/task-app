@@ -282,7 +282,7 @@ export const systemStatus = pgTable("system_status", {
   id: text("id").primaryKey(), // 'task-generation-status'
   lastGenerationDate: text("last_generation_date"), // YYYY-MM-DD
   generatedThrough: text("generated_through"), // YYYY-MM-DD (31 days ahead)
-  lastUpdateBy: integer("last_update_by").references(() => users.id),
+  lastUpdateBy: integer("last_update_by"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
