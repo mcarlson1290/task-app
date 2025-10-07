@@ -57,32 +57,27 @@ export const formatDateForComparison = (date: Date | string): string => {
 
 /**
  * Check if a task should appear on a specific date
- * FIXED: Tasks now show ONLY on their exact due date (no more date ranges)
+ * FIXED: Recurring tasks show on their taskDate, not dueDate
  */
 export const shouldTaskAppearOnDate = (task: any, targetDate: string): boolean => {
   if (!task || !targetDate) return false;
   
-  // ALL TASKS: Show only on exact due date
-  const dueDate = formatDateForComparison(task.dueDate);
-  
-  if (dueDate) {
-    const matches = targetDate === dueDate;
-    if (!matches) {
-      // Only log mismatches for debugging
-      // console.log(`[dateUtils] ❌ "${task.title}" | DueDate: ${dueDate} ≠ ViewDate: ${targetDate}`);
-    }
-    return matches;
-  }
-  
-  // Fallback: Use taskDate if no dueDate (shouldn't happen with new tasks)
+  // RECURRING TASKS: Use taskDate (the day they should appear)
+  // For weekly tasks, taskDate is the specific day (e.g., Monday) and dueDate is 6 days later
   const taskDate = formatDateForComparison(task.taskDate);
+  
   if (taskDate) {
     const matches = targetDate === taskDate;
-    console.log(`[dateUtils] 📅 FALLBACK - "${task.title}" | TaskDate: ${taskDate} | ViewDate: ${targetDate} | Match: ${matches ? 'YES ✅' : 'NO ❌'}`);
     return matches;
   }
   
-  console.log(`🔍 Task "${task.title}" has no valid dates - NO MATCH`);
+  // Fallback: Use dueDate if no taskDate (for one-time tasks)
+  const dueDate = formatDateForComparison(task.dueDate);
+  if (dueDate) {
+    const matches = targetDate === dueDate;
+    return matches;
+  }
+  
   return false;
 };
 
