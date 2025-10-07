@@ -1,0 +1,160 @@
+# Replit Instructions: Fix Critical Generation and Date Issues
+
+**CRITICAL: The system has multiple failures. Fix these issues WITHOUT adding buttons or temporary solutions.**
+
+## Issue 1: Stuck Generation Lock
+
+The generation lock is stuck in "running" state, blocking all generation.
+
+**Fix the lock mechanism:**
+```
+1. Change lock to use timestamp, not boolean
+2. Lock expires after 5 minutes automatically
+3. On startup, clear any lock older than 5 minutes
+
+Instead of: generationRunning = true/false
+Use: generationLockTime = timestamp
+Is locked if: (now - generationLockTime) < 5 minutes
+```
+
+## Issue 2: Date/Timezone Chaos
+
+The system is confused about dates (showing Nov 6 when it's Oct 30).
+
+**Fix all date handling:**
+```
+1. ALWAYS use local timezone for display
+2. Store dates as YYYY-MM-DD strings (no time component)
+3. When comparing dates, normalize to midnight local time
+4. Never trust Date objects crossing system boundaries
+
+Example:
+- Store: "2025-10-30" (string)
+- Display: Parse and format in local timezone
+- Compare: Both dates at midnight local time
+```
+
+## Issue 3: Today Filter Broken
+
+"Today" filter showing future tasks.
+
+**Fix the filter logic:**
+```
+Today filter should ONLY show tasks where:
+- Task due date (as string) === today's date (as string)
+- Both formatted as "YYYY-MM-DD"
+- No timezone conversions
+
+Example:
+const todayString = new Date().toLocaleDateString('en-CA'); // "2025-10-30"
+const taskMatches = task.dueDate === todayString;
+```
+
+## Issue 4: Generation Not Running
+
+Generation keeps skipping due to lock.
+
+**Fix generation to actually run:**
+```
+On every page load:
+1. Check if lock is expired (>5 minutes old)
+2. If expired, clear lock
+3. Check last generation date
+4. If not today, run generation:
+   - Set lock with current timestamp
+   - Generate tasks for next 31 days
+   - Update last generation date
+   - Clear lock
+```
+
+## Complete Fix Implementation
+
+### Step 1: Fix Lock System
+```
+Replace boolean lock with timestamp-based lock:
+- generationLock = { timestamp: Date.now(), pid: processId }
+- isLocked = (Date.now() - lock.timestamp) < 300000 // 5 minutes
+- On startup: if isLocked === false, clear lock
+```
+
+### Step 2: Fix Date Storage
+```
+All dates must be stored as "YYYY-MM-DD" strings:
+- When creating task: dueDate = date.toLocaleDateString('en-CA')
+- When filtering: compare strings directly
+- When displaying: parse string and format for display
+```
+
+### Step 3: Fix Today Filter
+```
+const getTodayTasks = () => {
+  const today = new Date().toLocaleDateString('en-CA');
+  return tasks.filter(task => task.dueDate === today);
+}
+```
+
+### Step 4: Fix Generation Process
+```
+const runGeneration = async () => {
+  // Clear stuck lock
+  if (isLockExpired()) {
+    clearLock();
+  }
+  
+  // Check if can run
+  if (isLocked()) {
+    return; // Another process is running
+  }
+  
+  // Set new lock
+  setLock();
+  
+  try {
+    // Generate for next 31 days
+    const today = new Date();
+    for (let i = 0; i <= 31; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      generateTasksForDate(date);
+    }
+    
+    // Update last run
+    updateLastGeneration();
+  } finally {
+    // Always clear lock
+    clearLock();
+  }
+}
+```
+
+## Permanent Fixes Required
+
+1. **Date strings everywhere** - Stop using Date objects for storage
+2. **Timestamp-based locks** - Prevent permanent lock states
+3. **Local timezone only** - No UTC conversions
+4. **String comparison** - Compare "YYYY-MM-DD" strings directly
+
+## What NOT to Do
+
+❌ Do NOT add debug buttons
+❌ Do NOT use UTC dates
+❌ Do NOT store Date objects
+❌ Do NOT use boolean locks
+❌ Do NOT skip generation due to stale locks
+
+## Immediate Actions
+
+1. Clear the stuck generation lock
+2. Fix date storage to use strings
+3. Fix today filter to compare date strings
+4. Run generation for next 31 days
+5. Ensure generation runs daily
+
+## Success Verification
+
+The system works when:
+- "Today" shows ONLY today's tasks
+- Tasks exist 31 days in future
+- Generation runs automatically daily
+- No date confusion between picker and display
+- No stuck locks blocking generation
