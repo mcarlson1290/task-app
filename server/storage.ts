@@ -4343,15 +4343,6 @@ class DatabaseStorage implements IStorage {
     let tasksCreated = 0;
     const tasksToCreate: any[] = [];
     
-    // DEBUG: Log the recurringTask object
-    console.log('🔍 FREQUENCY DEBUG - Recurring Task Object:', {
-      id: recurringTask.id,
-      title: recurringTask.title,
-      frequency: recurringTask.frequency,
-      daysOfWeek: recurringTask.daysOfWeek,
-      fullObject: recurringTask
-    });
-    
     // Generate instances based on frequency
     switch (recurringTask.frequency) {
       case 'weekly': {
@@ -4373,8 +4364,6 @@ class DatabaseStorage implements IStorage {
           break; // Skip tasks with no selected days
         }
 
-        console.log(`📅 Weekly task "${recurringTask.title}" selected days:`, selectedDays);
-
         // Normalize day names to lowercase for comparison
         const normalizedSelectedDays = selectedDays.map(day => day.toLowerCase());
         
@@ -4388,17 +4377,6 @@ class DatabaseStorage implements IStorage {
           const utcDayIndex = taskDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           const dayName = dayNames[utcDayIndex];
-          
-          // DEBUG: Log day checking
-          if (dayOffset < 7) { // Only log first week to avoid spam
-            console.log(`🔍 DAY CHECK:`, {
-              taskTitle: recurringTask.title,
-              taskDate: taskDate.toDateString(),
-              targetDay: dayName,
-              selectedDays: normalizedSelectedDays,
-              shouldCreate: normalizedSelectedDays.includes(dayName)
-            });
-          }
           
           // CRITICAL: Only create task if this day matches selectedDays
           if (!normalizedSelectedDays.includes(dayName)) {
@@ -4418,16 +4396,6 @@ class DatabaseStorage implements IStorage {
           );
           
           if (!existing) {
-            // DEBUG: Log RIGHT BEFORE pushing to array
-            console.log('🔍 FREQUENCY DEBUG - About to create task:', {
-              recurringTaskId: recurringTask.id,
-              recurringTaskTitle: recurringTask.title,
-              recurringTaskFrequency: recurringTask.frequency,
-              aboutToSetFrequency: recurringTask.frequency,
-              taskDate: taskDate.toDateString(),
-              dayName: dayName
-            });
-            
             tasksToCreate.push({
               title: recurringTask.title,
               description: recurringTask.description,
@@ -4457,7 +4425,6 @@ class DatabaseStorage implements IStorage {
               deletedRecurringTaskId: null,
               deletedRecurringTaskTitle: null
             });
-            console.log(`✅ Creating weekly task "${recurringTask.title}" for ${dayName} (${taskDate.toDateString()})`);
           }
         }
         break;
@@ -4664,8 +4631,9 @@ class DatabaseStorage implements IStorage {
       }).returning();
       
       return newLock;
-    } catch {
+    } catch (error) {
       // Lock acquisition failed (someone else got it)
+      console.error(`❌ Lock acquisition failed for ${lockId}:`, error);
       return null;
     }
   }
