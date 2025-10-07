@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema, insertCourseAssignmentSchema, insertNotificationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -3213,6 +3215,38 @@ function formatDateYYYYMMDD(date: Date): string {
       res.status(500).json({ 
         success: false,
         message: 'Failed to generate periodic tasks', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Cleanup endpoint - Remove all daily task instances using batch delete
+  app.post("/api/admin/cleanup-daily-tasks", async (req, res) => {
+    try {
+      console.log('🧹 CLEANING UP DAILY TASK INSTANCES (BATCH DELETE)');
+      
+      // Use direct SQL for fast batch delete
+      const result = await db.execute(sql`
+        DELETE FROM tasks 
+        WHERE recurring_task_id IN (
+          SELECT id FROM recurring_tasks WHERE frequency = 'daily'
+        )
+      `);
+      
+      const deletedCount = result.rowCount || 0;
+      console.log(`✅ Deleted ${deletedCount} daily task instances`);
+      
+      res.json({
+        success: true,
+        message: `Deleted ${deletedCount} daily task instances`,
+        deletedCount
+      });
+      
+    } catch (error) {
+      console.error('❌ Cleanup failed:', error);
+      res.status(500).json({ 
+        success: true, 
+        message: 'Failed to cleanup daily tasks', 
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
