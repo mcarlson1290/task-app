@@ -2640,12 +2640,16 @@ async function runAutomatedTaskGeneration(userId: number = 1): Promise<{
       
       // Step 5: Generate tasks for each date in range
       let totalCreated = 0;
-      const currentDate = new Date(startDate);
       
-      while (currentDate <= endDate) {
+      for (let dayOffset = 0; dayOffset <= 31; dayOffset++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + dayOffset);
+        
         const tasksForDate = await generateTasksForDate(currentDate, activeRecurringTasks);
+        if (tasksForDate > 0) {
+          console.log(`📅 Automated generation - Day ${dayOffset}: ${formatDateYYYYMMDD(currentDate)}, Created: ${tasksForDate} tasks`);
+        }
         totalCreated += tasksForDate;
-        currentDate.setDate(currentDate.getDate() + 1);
       }
       
       // Step 6: Update generation status
@@ -2715,8 +2719,8 @@ async function generateTasksForDate(date: Date, recurringTasks: any[]): Promise<
           shouldGenerate = recurringTask.daysOfWeek.map((d: string) => d.toLowerCase()).includes(currentDayName);
         }
         if (shouldGenerate) {
-          visibleFrom = new Date(date);
-          dueDate = new Date(date);
+          visibleFrom = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          dueDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
           dueDate.setDate(dueDate.getDate() + 7);
         }
         break;
