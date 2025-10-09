@@ -2721,7 +2721,6 @@ async function generateTasksForDate(date: Date, recurringTasks: any[]): Promise<
         if (shouldGenerate) {
           visibleFrom = new Date(date.getFullYear(), date.getMonth(), date.getDate());
           dueDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          dueDate.setDate(dueDate.getDate() + 7);
         }
         break;
         
