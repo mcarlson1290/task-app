@@ -189,15 +189,41 @@ const Tasks: React.FC = () => {
     return () => clearInterval(interval);
   }, [refetch]);
 
-  // Task update mutation
+  // Task update mutation with optimistic updates for instant UI feedback
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, updates }: { taskId: number; updates: Partial<Task> }) => {
       return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
     },
-    onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      // Immediately refresh tasks for instant UI update
-      await refreshTasks();
+    onMutate: async ({ taskId, updates }) => {
+      const queryKey = ["/api/tasks", { userId: auth.user?.id, location: currentLocation.code }];
+      
+      await queryClient.cancelQueries({ queryKey });
+      
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+      
+      queryClient.setQueryData<Task[]>(queryKey, (old) => {
+        if (!old) return old;
+        return old.map(task => 
+          task.id === taskId ? { ...task, ...updates } : task
+        );
+      });
+      
+      return { previousTasks, queryKey };
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousTasks && context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousTasks);
+      }
+      toast({
+        title: "Update failed",
+        description: "Failed to update task. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: (data, error, variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
 
@@ -551,11 +577,9 @@ const Tasks: React.FC = () => {
     updateTaskStatus(taskId, 'in_progress');
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (task) {
-      setSelectedTask({ ...task, status: 'in_progress' });
+      setSelectedTask({ ...task, status: 'in_progress', startedAt: new Date().toISOString() });
       setModalOpen(true);
     }
-    // Refresh tasks to ensure immediate UI update
-    await refreshTasks();
   };
 
   const handleCompleteTask = async (taskId: number) => {
@@ -584,9 +608,6 @@ const Tasks: React.FC = () => {
       spread: 70,
       origin: { y: 0.6 }
     });
-    
-    // Refresh tasks to ensure immediate UI update
-    await refreshTasks();
   };
 
   // Single task action handler
@@ -603,8 +624,6 @@ const Tasks: React.FC = () => {
       case 'collaborate':
         setSelectedTask(task);
         setModalOpen(true);
-        // Refresh tasks in case status changed
-        await refreshTasks();
         break;
         
       case 'complete':
@@ -614,8 +633,6 @@ const Tasks: React.FC = () => {
       case 'view':
         setSelectedTask(task);
         setModalOpen(true);
-        // Refresh tasks in case status changed
-        await refreshTasks();
         break;
         
       case 'pause':
@@ -631,7 +648,6 @@ const Tasks: React.FC = () => {
           title: "Task Paused",
           description: "The task has been paused and can be resumed later.",
         });
-        await refreshTasks();
         break;
         
       case 'skip':
@@ -648,7 +664,6 @@ const Tasks: React.FC = () => {
           title: "Task Skipped",
           description: reason ? `Task skipped: ${reason}` : "Task has been skipped.",
         });
-        await refreshTasks();
         break;
         
       case 'resume':
@@ -659,13 +674,12 @@ const Tasks: React.FC = () => {
             resumedAt: new Date().toISOString()
           } as any
         });
-        setSelectedTask({ ...task, status: 'in_progress' });
+        setSelectedTask({ ...task, status: 'in_progress', resumedAt: new Date().toISOString() });
         setModalOpen(true);
         toast({
           title: "Task Resumed",
           description: "The task has been resumed and you can continue working.",
         });
-        await refreshTasks();
         break;
     }
   };

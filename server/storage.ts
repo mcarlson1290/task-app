@@ -3232,12 +3232,44 @@ class DatabaseStorage implements IStorage {
     return db.select().from(tasks).where(eq(tasks.location, locationId));
   }
 
+  private async findDuplicateTask(title: string, taskDate: Date | string | null, location: string, recurringTaskId?: number | null): Promise<Task | null> {
+    const taskDateStr = taskDate ? new Date(taskDate).toISOString().split('T')[0] : null;
+    
+    const conditions = [
+      eq(tasks.title, title),
+      eq(tasks.location, location)
+    ];
+    
+    if (taskDateStr) {
+      conditions.push(sql`DATE(${tasks.taskDate}) = ${taskDateStr}`);
+    }
+    
+    if (recurringTaskId) {
+      conditions.push(eq(tasks.recurringTaskId, recurringTaskId));
+    }
+    
+    const [duplicate] = await db.select().from(tasks).where(and(...conditions)).limit(1);
+    return duplicate || null;
+  }
+
   async createTask(taskData: InsertTask): Promise<Task> {
-    // Ensure taskDate is set if missing - use visibleFromDate as fallback
     const safeTaskData = {
       ...taskData,
       taskDate: taskData.taskDate || taskData.visibleFromDate || null
     };
+    
+    const duplicate = await this.findDuplicateTask(
+      safeTaskData.title,
+      safeTaskData.taskDate,
+      safeTaskData.location,
+      safeTaskData.recurringTaskId
+    );
+    
+    if (duplicate) {
+      console.log(`🔍 Duplicate task found: "${safeTaskData.title}" on ${safeTaskData.taskDate} at ${safeTaskData.location} - updating existing task #${duplicate.id}`);
+      const updatedTask = await this.updateTask(duplicate.id, safeTaskData);
+      return updatedTask || duplicate;
+    }
     
     const [task] = await db.insert(tasks).values(safeTaskData).returning();
     return task;

@@ -47,8 +47,18 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
         body: JSON.stringify(updates),
       });
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update failed",
+        description: "Failed to update task. Please try again.",
+        variant: "destructive",
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });
       onClose();
     },
   });
