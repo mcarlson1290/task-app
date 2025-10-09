@@ -40,6 +40,8 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
     return () => clearInterval(interval);
   }, [task?.startedAt]);
 
+  const [actionType, setActionType] = useState<'pause' | 'complete' | 'skip' | null>(null);
+
   const updateTaskMutation = useMutation({
     mutationFn: async (updates: Partial<Task>) => {
       return await apiRequest(`/api/tasks/${task?.id}`, {
@@ -56,40 +58,54 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
         description: "Failed to update task. Please try again.",
         variant: "destructive",
       });
+      setActionType(null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });
+      
+      // Show success feedback based on action type
+      if (actionType === 'pause') {
+        toast({
+          title: "Task paused",
+          description: "The task has been paused and can be resumed later.",
+        });
+      } else if (actionType === 'complete') {
+        toast({
+          title: "🎉 Task completed!",
+          description: "Great job! The task has been marked as completed.",
+        });
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } else if (actionType === 'skip') {
+        toast({
+          title: "Task skipped",
+          description: "The task has been skipped with your reason noted.",
+        });
+      }
+      
+      setActionType(null);
       onClose();
     },
   });
 
   const handlePauseTask = () => {
+    setActionType('pause');
     updateTaskMutation.mutate({
       status: "pending",
       actualTime: elapsedTime,
     });
-    toast({
-      title: "Task paused",
-      description: "The task has been paused and can be resumed later.",
-    });
   };
 
   const handleCompleteTask = () => {
+    setActionType('complete');
     updateTaskMutation.mutate({
       status: "completed",
       progress: 100,
       completedAt: new Date().toISOString(),
       actualTime: elapsedTime,
-    });
-    toast({
-      title: "🎉 Task completed!",
-      description: "Great job! The task has been marked as completed.",
-    });
-    // Celebrate with confetti!
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
     });
   };
 
@@ -103,6 +119,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
       return;
     }
     
+    setActionType('skip');
     updateTaskMutation.mutate({
       status: "pending",
       data: { 
@@ -110,10 +127,6 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
         skipped: true, 
         skipReason: notes 
       },
-    });
-    toast({
-      title: "Task skipped",
-      description: "The task has been skipped with your reason noted.",
     });
   };
 
@@ -178,18 +191,20 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
               onClick={handlePauseTask}
               disabled={updateTaskMutation.isPending}
               className="flex items-center space-x-1"
+              data-testid="button-pause-task"
             >
               <Pause className="h-4 w-4" />
-              <span>Pause</span>
+              <span>{updateTaskMutation.isPending && actionType === 'pause' ? 'Pausing...' : 'Pause'}</span>
             </Button>
             
             <Button
               onClick={handleCompleteTask}
               disabled={updateTaskMutation.isPending}
               className="flex items-center space-x-1 bg-[#2D8028] hover:bg-[#203B17]"
+              data-testid="button-complete-task"
             >
               <CheckCircle className="h-4 w-4" />
-              <span>Complete</span>
+              <span>{updateTaskMutation.isPending && actionType === 'complete' ? 'Completing...' : 'Complete'}</span>
             </Button>
             
             <Button
@@ -197,9 +212,10 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
               onClick={handleSkipTask}
               disabled={updateTaskMutation.isPending}
               className="flex items-center space-x-1 text-orange-600 border-orange-200 hover:bg-orange-50"
+              data-testid="button-skip-task"
             >
               <SkipForward className="h-4 w-4" />
-              <span>Skip</span>
+              <span>{updateTaskMutation.isPending && actionType === 'skip' ? 'Skipping...' : 'Skip'}</span>
             </Button>
           </div>
         </div>
