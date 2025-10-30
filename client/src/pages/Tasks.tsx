@@ -128,22 +128,64 @@ const Tasks: React.FC = () => {
     enabled: !!auth.user,
   });
   
-  // Refresh function to update tasks immediately
+  // Refresh function to update tasks immediately and remove duplicates
   const refreshTasks = React.useCallback(async () => {
     try {
       setIsRefreshing(true);
+      console.log("=== STARTING REFRESH WITH DUPLICATE CHECK ===");
+      
+      // First, remove any duplicate tasks
+      const duplicateResponse = await fetch('/api/tasks/remove-duplicates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!duplicateResponse.ok) {
+        throw new Error('Failed to remove duplicates');
+      }
+      
+      const duplicateResult = await duplicateResponse.json();
+      console.log("Duplicate removal result:", duplicateResult);
+      
       // Force refetch to get latest data
       await refetch();
+      
       // Also invalidate queries to ensure cache coherence
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/dashboard"] });
+      
+      // Show user feedback about what was done
+      if (duplicateResult.duplicatesRemoved > 0) {
+        toast({
+          title: "✨ Tasks Refreshed",
+          description: `Removed ${duplicateResult.duplicatesRemoved} duplicate task${duplicateResult.duplicatesRemoved !== 1 ? 's' : ''}. ${duplicateResult.finalCount} unique tasks remaining.`,
+          duration: 4000,
+        });
+      } else {
+        toast({
+          title: "✅ Tasks Refreshed",
+          description: "No duplicates found. All tasks are up to date.",
+          duration: 3000,
+        });
+      }
+      
+      console.log("=== REFRESH COMPLETE ===");
+      console.log(`- Started with: ${duplicateResult.totalTasks} tasks`);
+      console.log(`- Removed: ${duplicateResult.duplicatesRemoved} duplicates`);
+      console.log(`- Final count: ${duplicateResult.finalCount} unique tasks`);
     } catch (error) {
       console.error('Failed to refresh tasks:', error);
+      toast({
+        title: "❌ Refresh Failed",
+        description: "Could not refresh tasks. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     } finally {
       // Brief delay to show the refresh indicator
-      setTimeout(() => setIsRefreshing(false), 300);
+      setTimeout(() => setIsRefreshing(false), 500);
     }
-  }, [refetch, queryClient]);
+  }, [refetch, queryClient, toast]);
 
 
   // Fetch staff data for assignment display
