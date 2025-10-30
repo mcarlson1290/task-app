@@ -602,6 +602,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Remove duplicate tasks endpoint
+  app.post("/api/tasks/remove-duplicates", async (req, res) => {
+    try {
+      console.log("=== STARTING DUPLICATE REMOVAL ===");
+      
+      // Get all tasks from database
+      const allTasks = await storage.getAllTasks();
+      console.log(`Found ${allTasks.length} total tasks`);
+      
+      if (allTasks.length === 0) {
+        return res.json({ 
+          totalTasks: 0, 
+          duplicatesRemoved: 0, 
+          finalCount: 0,
+          message: "No tasks to process" 
+        });
+      }
+      
+      // Group tasks by unique key to find duplicates
+      const taskGroups = new Map<string, typeof allTasks>();
+      
+      allTasks.forEach(task => {
+        // Create composite key for duplicate detection
+        // Normalize values to handle null/undefined consistently
+        const title = (task.title || '').trim();
+        const taskDate = task.taskDate ? new Date(task.taskDate).toISOString().split('T')[0] : 'none';
+        const location = (task.location || 'none').trim();
+        const recurringTaskId = task.recurringTaskId?.toString() || 'none';
+        
+        const key = `${title}|${taskDate}|${location}|${recurringTaskId}`;
+        
+        if (!taskGroups.has(key)) {
+          taskGroups.set(key, []);
+        }
+        taskGroups.get(key)!.push(task);
+      });
+      
+      // Process duplicates
+      let duplicatesRemoved = 0;
+      const tasksToKeep: typeof allTasks = [];
+      const tasksToDelete: typeof allTasks = [];
+      
+      for (const [key, duplicates] of taskGroups.entries()) {
+        if (duplicates.length > 1) {
+          console.log(`Found ${duplicates.length} duplicates for: ${key}`);
+          
+          // Sort to determine which task to keep
+          duplicates.sort((a, b) => {
+            // First try updatedAt (keep most recent if both have it)
+            if (a.updatedAt && b.updatedAt) {
+              const aTime = new Date(a.updatedAt).getTime();
+              const bTime = new Date(b.updatedAt).getTime();
+              if (aTime !== bTime) {
+                return bTime - aTime; // Most recent first
+              }
+            }
+            // If updatedAt is same or missing, prefer completed/in-progress over pending/skipped
+            const statusPriority: { [key: string]: number } = {
+              'completed': 4,
+              'approved': 4,
+              'in_progress': 3,
+              'pending': 2,
+              'skipped': 1
+            };
+            const aPriority = statusPriority[a.status || 'pending'] || 0;
+            const bPriority = statusPriority[b.status || 'pending'] || 0;
+            if (aPriority !== bPriority) {
+              return bPriority - aPriority; // Higher priority first
+            }
+            // Fall back to ID (lower ID = older = original)
+            return a.id - b.id;
+          });
+          
+          // Keep first one (best match based on sort), delete the rest
+          tasksToKeep.push(duplicates[0]);
+          console.log(`  Keeping task ID ${duplicates[0].id} (status: ${duplicates[0].status})`);
+          
+          for (let i = 1; i < duplicates.length; i++) {
+            tasksToDelete.push(duplicates[i]);
+            console.log(`  Removing duplicate ID ${duplicates[i].id} (status: ${duplicates[i].status})`);
+            duplicatesRemoved++;
+          }
+        } else {
+          // No duplicates, keep the task
+          tasksToKeep.push(duplicates[0]);
+        }
+      }
+      
+      // Delete duplicates from database
+      console.log(`Removing ${duplicatesRemoved} duplicate tasks...`);
+      for (const task of tasksToDelete) {
+        await storage.deleteTask(task.id);
+      }
+      
+      console.log("=== DUPLICATE REMOVAL COMPLETE ===");
+      console.log(`- Started with: ${allTasks.length} tasks`);
+      console.log(`- Removed: ${duplicatesRemoved} duplicates`);
+      console.log(`- Final count: ${tasksToKeep.length} unique tasks`);
+      
+      res.json({
+        totalTasks: allTasks.length,
+        duplicatesRemoved,
+        finalCount: tasksToKeep.length,
+        message: duplicatesRemoved > 0 
+          ? `Removed ${duplicatesRemoved} duplicate task${duplicatesRemoved !== 1 ? 's' : ''}` 
+          : "No duplicates found"
+      });
+    } catch (error) {
+      console.error("Error removing duplicates:", error);
+      res.status(500).json({ 
+        message: "Failed to remove duplicates", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
   // Inventory routes
   app.get("/api/inventory", async (req, res) => {
     try {
