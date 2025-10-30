@@ -266,11 +266,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
             </div>
           )}
 
-          {/* Advanced Checklist Execution */}
+          {/* Advanced Checklist Execution - Keyed by task ID to force remount */}
           {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status === 'in_progress' && (
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-[#203B17] mb-4">Task Checklist</h4>
               <ChecklistExecution
+                key={task.id}
                 task={task}
                 checklist={{ steps: (checklist.length > 0 ? checklist : task.checklist || []).map(item => ({
                   id: item.id,

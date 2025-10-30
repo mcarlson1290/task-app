@@ -187,6 +187,23 @@ const Tasks: React.FC = () => {
     }
   }, [refetch, queryClient, toast]);
 
+  // HARD RESET: Master function to clear all task-related state
+  const performHardReset = React.useCallback(async (actionName: string, shouldRefresh: boolean = true) => {
+    console.log(`=== HARD RESET: ${actionName} ===`);
+    
+    // 1. Clear all UI state
+    setSelectedTask(null);
+    setModalOpen(false);
+    setTaskActionModalOpen(false);
+    
+    // 2. If requested, refresh tasks from database (with duplicate check)
+    if (shouldRefresh) {
+      await refreshTasks();
+    }
+    
+    // 3. Log completion
+    console.log(`=== ${actionName} COMPLETE - Clean State ===`);
+  }, [refreshTasks]);
 
   // Fetch staff data for assignment display
   const { data: staffData = [] } = useQuery({
@@ -616,17 +633,23 @@ const Tasks: React.FC = () => {
   };
 
   const handleStartTask = async (taskId: number) => {
+    // Perform hard reset synchronously - no delays
+    console.log('🔄 Starting task - performing hard reset');
+    setSelectedTask(null);
+    setModalOpen(false);
+    setTaskActionModalOpen(false);
+    
     updateTaskStatus(taskId, 'in_progress');
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     if (task) {
+      // Set fresh task state - component will remount with new task.id
       setSelectedTask({ ...task, status: 'in_progress', startedAt: new Date().toISOString() });
-      setModalOpen(true);
+      setTaskActionModalOpen(true);
     }
   };
 
   const handleCompleteTask = async (taskId: number) => {
     updateTaskStatus(taskId, 'completed');
-    setModalOpen(false);
     
     const task = tasks.find(t => t.id === taskId || t.id.toString() === taskId.toString());
     
@@ -639,6 +662,10 @@ const Tasks: React.FC = () => {
         completedBy: auth.user.id
       });
     }
+    
+    // Perform hard reset after completing task
+    console.log('✅ Task completed - performing hard reset');
+    await performHardReset('COMPLETE TASK');
     
     toast({
       title: "🎉 Task completed!",
@@ -664,6 +691,10 @@ const Tasks: React.FC = () => {
         break;
         
       case 'collaborate':
+        // Hard reset synchronously before opening task
+        console.log('🔄 Collaborating - performing hard reset');
+        setSelectedTask(null);
+        setModalOpen(false);
         setSelectedTask(task);
         setModalOpen(true);
         break;
@@ -673,6 +704,10 @@ const Tasks: React.FC = () => {
         break;
         
       case 'view':
+        // Hard reset synchronously before opening task
+        console.log('🔄 Viewing task - performing hard reset');
+        setSelectedTask(null);
+        setModalOpen(false);
         setSelectedTask(task);
         setModalOpen(true);
         break;
@@ -685,7 +720,9 @@ const Tasks: React.FC = () => {
             pausedAt: new Date().toISOString()
           } as any
         });
-        setModalOpen(false);
+        // Hard reset after pausing
+        console.log('⏸️ Task paused - performing hard reset');
+        await performHardReset('PAUSE TASK');
         toast({
           title: "Task Paused",
           description: "The task has been paused and can be resumed later.",
@@ -701,7 +738,9 @@ const Tasks: React.FC = () => {
             skippedAt: new Date().toISOString()
           } as any
         });
-        setModalOpen(false);
+        // Hard reset after skipping
+        console.log('⏭️ Task skipped - performing hard reset');
+        await performHardReset('SKIP TASK');
         toast({
           title: "Task Skipped",
           description: reason ? `Task skipped: ${reason}` : "Task has been skipped.",
@@ -709,6 +748,12 @@ const Tasks: React.FC = () => {
         break;
         
       case 'resume':
+        // Hard reset synchronously before resuming task
+        console.log('🔄 Resuming task - performing hard reset');
+        setSelectedTask(null);
+        setModalOpen(false);
+        setTaskActionModalOpen(false);
+        
         updateTaskMutation.mutate({
           taskId,
           updates: {
@@ -717,7 +762,7 @@ const Tasks: React.FC = () => {
           } as any
         });
         setSelectedTask({ ...task, status: 'in_progress', resumedAt: new Date().toISOString() });
-        setModalOpen(true);
+        setTaskActionModalOpen(true);
         toast({
           title: "Task Resumed",
           description: "The task has been resumed and you can continue working.",
@@ -1060,8 +1105,9 @@ const Tasks: React.FC = () => {
         )}
       </div>
 
-      {/* Task Modal */}
+      {/* Task Modal - Keyed by task ID to force remount when task changes */}
       <TaskModal
+        key={selectedTask?.id || 'no-task'}
         task={selectedTask}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -1076,11 +1122,16 @@ const Tasks: React.FC = () => {
         currentUser={auth?.user}
       />
 
-      {/* Task Action Modal */}
+      {/* Task Action Modal - Keyed by task ID to force remount when task changes */}
       <TaskActionModal
+        key={selectedTask?.id || 'no-task'}
         task={selectedTask}
         open={taskActionModalOpen}
-        onClose={() => setTaskActionModalOpen(false)}
+        onClose={() => {
+          // Clear selectedTask to prevent stale data
+          performHardReset('CLOSE TASK ACTION MODAL', false);
+          setTaskActionModalOpen(false);
+        }}
       />
 
       

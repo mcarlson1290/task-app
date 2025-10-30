@@ -23,6 +23,13 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // HARD RESET: Clear notes when task changes
+  useEffect(() => {
+    console.log('🔄 HARD RESET - TaskActionModal task changed, clearing notes state');
+    setNotes("");
+    setElapsedTime(0);
+  }, [task?.id]);
+
   // Calculate elapsed time
   useEffect(() => {
     if (!task?.startedAt) return;

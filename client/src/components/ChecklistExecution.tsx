@@ -63,6 +63,24 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
     splitTrays: null as any
   });
 
+  // HARD RESET: Clear all state when task ID changes
+  useEffect(() => {
+    console.log('🔄 HARD RESET - Task changed, clearing all checklist state for task:', task.id);
+    
+    // 1. Reset all state variables to clean slate
+    setCurrentStep(0);
+    setStepData({});
+    setErrors({});
+    setIsProcessing(false);
+    setSteps([...checklist.steps]); // Fresh copy of steps
+    setStepContext({
+      currentTrayId: task.id?.toString() || 'TRAY-001',
+      splitTrays: null
+    });
+    
+    console.log('✅ HARD RESET complete - Clean state initialized');
+  }, [task.id]); // Run whenever task ID changes
+
   // Initialize checklist progress from saved task data
   useEffect(() => {
     if (task.data?.checklistProgress) {
