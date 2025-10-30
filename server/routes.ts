@@ -644,21 +644,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tasksToKeep: typeof allTasks = [];
       const tasksToDelete: typeof allTasks = [];
       
-      for (const [key, duplicates] of taskGroups.entries()) {
+      // Convert entries to array for iteration
+      const groupEntries = Array.from(taskGroups.entries());
+      
+      for (const [key, duplicates] of groupEntries) {
         if (duplicates.length > 1) {
           console.log(`Found ${duplicates.length} duplicates for: ${key}`);
           
           // Sort to determine which task to keep
-          duplicates.sort((a, b) => {
-            // First try updatedAt (keep most recent if both have it)
-            if (a.updatedAt && b.updatedAt) {
-              const aTime = new Date(a.updatedAt).getTime();
-              const bTime = new Date(b.updatedAt).getTime();
-              if (aTime !== bTime) {
-                return bTime - aTime; // Most recent first
-              }
-            }
-            // If updatedAt is same or missing, prefer completed/in-progress over pending/skipped
+          type TaskType = typeof duplicates[0];
+          duplicates.sort((a: TaskType, b: TaskType) => {
+            // Prefer completed/in-progress over pending/skipped
             const statusPriority: { [key: string]: number } = {
               'completed': 4,
               'approved': 4,
@@ -671,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (aPriority !== bPriority) {
               return bPriority - aPriority; // Higher priority first
             }
-            // Fall back to ID (lower ID = older = original)
+            // If same priority, keep original (lower ID = older)
             return a.id - b.id;
           });
           
