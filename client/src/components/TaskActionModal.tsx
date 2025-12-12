@@ -150,7 +150,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{task.title}</DialogTitle>
         </DialogHeader>
@@ -192,7 +192,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-2 pt-4">
+          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2 pt-4">
             <Button
               variant="outline"
               onClick={handlePauseTask}

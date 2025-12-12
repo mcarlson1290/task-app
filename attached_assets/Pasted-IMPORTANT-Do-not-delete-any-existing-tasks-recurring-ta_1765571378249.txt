@@ -1,0 +1,221 @@
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.
+The Problems
+
+Task modal requires horizontal scrolling on mobile (poor UX)
+Checklist doesn't appear on first click (requires second tap)
+
+Tell Replit:
+"Fix mobile UI issues: Task modal is too wide and requires horizontal scrolling. Also, the checklist doesn't show on first tap. Make the modal mobile-responsive and ensure checklist loads immediately."
+Fix 1: Mobile-Responsive Task Modal
+css/* Add to your CSS or styled components */
+.task-modal {
+  /* Mobile-first responsive design */
+  width: 95vw; /* 95% of viewport width on mobile */
+  max-width: 600px; /* Cap width on larger screens */
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box; /* Include padding in width */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Make all child elements responsive */
+.task-modal * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix form inputs and buttons */
+.task-modal input,
+.task-modal textarea,
+.task-modal button,
+.task-modal select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Stack buttons vertically on mobile */
+@media (max-width: 480px) {
+  .task-modal .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .task-modal button {
+    width: 100%;
+    min-height: 44px; /* Apple's touch target recommendation */
+  }
+}
+
+/* Fix checklist items */
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.checklist-item-text {
+  flex: 1;
+  min-width: 0; /* Allow text to wrap */
+}
+Fix 2: Checklist Loading on First Click
+javascript// Fix the timing issue with checklist loading
+const TaskModal = ({ task, onClose }) => {
+  const [checklist, setChecklist] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Immediate load without delays
+    if (task && task.id) {
+      setIsLoading(true);
+      
+      // Load checklist directly
+      const loadChecklist = async () => {
+        try {
+          // If checklist is part of task object
+          if (task.checklist) {
+            setChecklist([...task.checklist]);
+          } else {
+            // If needs to be loaded separately
+            const taskData = await loadTaskDetails(task.id);
+            setChecklist(taskData.checklist || []);
+          }
+        } catch (error) {
+          console.error('Error loading checklist:', error);
+          setChecklist([]);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadChecklist();
+    }
+  }, [task?.id]);
+  
+  return (
+    <div className="task-modal">
+      {/* Header */}
+      <div className="modal-header">
+        <h2>{task?.title || 'Loading...'}</h2>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      
+      {/* Checklist Section */}
+      <div className="checklist-section">
+        <h3>Checklist</h3>
+        {isLoading ? (
+          <div className="loading">Loading checklist...</div>
+        ) : checklist.length > 0 ? (
+          <div className="checklist-items">
+            {checklist.map((item, index) => (
+              <div key={index} className="checklist-item">
+                <input
+                  type="checkbox"
+                  id={`check-${index}`}
+                  className="checklist-checkbox"
+                />
+                <label 
+                  htmlFor={`check-${index}`}
+                  className="checklist-item-text"
+                >
+                  {item.text || item}
+                </label>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No checklist items</p>
+        )}
+      </div>
+      
+      {/* Action Buttons - Stack on mobile */}
+      <div className="button-group">
+        <button className="btn-complete">Complete Task</button>
+        <button className="btn-pause">Pause Task</button>
+        <button className="btn-skip">Skip Task</button>
+      </div>
+    </div>
+  );
+};
+Fix 3: Ensure Data Is Available on First Click
+javascript// Preload task data when showing task list
+const TaskCard = ({ task }) => {
+  // Ensure full task data is available
+  const handleTaskClick = async () => {
+    // Don't just pass the task reference, ensure it has all data
+    if (!task.checklist && task.id) {
+      // Load full task data if checklist missing
+      const fullTask = await loadTaskDetails(task.id);
+      openTaskModal(fullTask);
+    } else {
+      openTaskModal(task);
+    }
+  };
+  
+  return (
+    <div className="task-card" onClick={handleTaskClick}>
+      {/* Task card content */}
+    </div>
+  );
+};
+Fix 4: Mobile-Specific Modal Container
+javascript// Responsive modal container
+const Modal = ({ children, isOpen, onClose }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="modal-container"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 'calc(100vw - 20px)', // Full width minus margins
+          maxWidth: '600px',
+          maxHeight: '90vh',
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch', // Smooth iOS scrolling
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+Additional Mobile Fixes:
+css/* Prevent zoom on input focus (iOS) */
+input, textarea, select {
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Better touch targets */
+button, .clickable {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px 16px;
+}
+
+/* Fix viewport issues */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+Testing:
+
+Open on mobile device
+Click task → Checklist should appear immediately
+Modal should fit screen width without horizontal scroll
+All buttons and inputs should be easily tappable
+No pinch-zoom needed to interact with elements

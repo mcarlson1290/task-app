@@ -78,6 +78,39 @@
   }
 }
 
+/* Mobile Task Modal Improvements */
+@media (max-width: 480px) {
+  /* Prevent horizontal scrolling in modals */
+  [role="dialog"] {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  [role="dialog"] * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Better touch targets for buttons */
+  [role="dialog"] button {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  [role="dialog"] input,
+  [role="dialog"] textarea,
+  [role="dialog"] select {
+    font-size: 16px;
+  }
+  
+  /* Checklist items wrap properly */
+  .checklist-step {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
 /* Enhanced Task Card States */
 .task-card.completed {
   opacity: 0.8;

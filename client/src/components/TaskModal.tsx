@@ -224,7 +224,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <span className="text-2xl">{getTaskEmoji(task.type as TaskType)}</span>
@@ -267,7 +267,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
           )}
 
           {/* Advanced Checklist Execution - Keyed by task ID to force remount */}
-          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status === 'in_progress' && (
+          {/* Show for in_progress OR pending tasks so users can preview checklist */}
+          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && (task.status === 'in_progress' || task.status === 'pending') && (
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-[#203B17] mb-4">Task Checklist</h4>
               <ChecklistExecution
@@ -322,8 +323,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
             </div>
           )}
 
-          {/* Enhanced Checklist View for Completed/Non-Active Tasks */}
-          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status !== 'in_progress' && (
+          {/* Enhanced Checklist View for Completed/Skipped Tasks (not pending or in_progress) */}
+          {(checklist.length > 0 || (task.checklist && task.checklist.length > 0)) && task.status !== 'in_progress' && task.status !== 'pending' && (
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="font-medium text-[#203B17] mb-4">
                 Checklist Details
@@ -416,7 +417,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             {!showSkipReason && (
               <>
                 {/* Show action buttons only if in-progress */}
