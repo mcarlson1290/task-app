@@ -2,13 +2,14 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, Info, Users } from "lucide-react";
+import { Clock, CheckCircle, Info, Users, AlertTriangle } from "lucide-react";
 import { Task } from "@shared/schema";
 import { TaskType, TaskStatus } from "@/types";
 import { isMyTask } from "../utils/taskHelpers";
 import { useCurrentUser } from "../contexts/CurrentUserContext";
 import { StaffMember } from "../services/staffService";
 import { getAssignmentDisplay } from "../utils/taskAssignment";
+import { isTaskOverdue, getDaysOverdue, getOverdueSeverity, getDueDateDisplay, wasCompletedLate } from "../utils/dateUtils";
 
 interface TaskCardProps {
   task: Task;
@@ -173,62 +174,33 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
     return `${months[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
   };
 
-  const checkIfOverdue = (dueDateInput: string | Date | null): boolean => {
-    // Check if dev overdue protection is enabled
-    const overdueProtection = localStorage.getItem('devOverdueProtection') === 'true';
-    if (overdueProtection) {
-      return false; // Never show as overdue in dev mode
-    }
-    
-    if (!dueDateInput) return false;
-    
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    let dateString: string;
-    
-    // Handle both Date objects and strings
-    if (dueDateInput instanceof Date) {
-      // Convert Date to YYYY-MM-DD format
-      const year = dueDateInput.getFullYear();
-      const month = String(dueDateInput.getMonth() + 1).padStart(2, '0');
-      const day = String(dueDateInput.getDate()).padStart(2, '0');
-      dateString = `${year}-${month}-${day}`;
-    } else {
-      // Handle ISO string format by extracting date part
-      dateString = dueDateInput.split('T')[0];
-    }
-    
-    // Parse the task date (YYYY-MM-DD format)
-    const [year, month, day] = dateString.split('-');
-    const dueDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
-    // If due date is before today, it's overdue
-    if (dueDate < today) {
-      return true;
-    }
-    
-    // Set time to 8:30 PM Chicago time for due date
-    const chicagoTime = new Date(dueDate);
-    chicagoTime.setHours(20, 30, 0, 0); // 8:30 PM cutoff
-    
-    // Task is overdue if current time is past 8:30 PM on due date
-    return now > chicagoTime;
-  };
-
   const isCompleted = task.status === 'completed' || task.status === 'approved';
   const isInProgress = task.status === 'in_progress';
   const isPending = task.status === 'pending' || !task.status; // Include tasks with no status
   const isPaused = task.status === 'paused';
   const isSkipped = task.status === 'skipped';
   
-  // Debug logging (removed after fixing issue)
-  
-  const isCurrentlyOverdue = checkIfOverdue(task.dueDate);
+  // Use new overdue utility functions
+  const isCurrentlyOverdue = isTaskOverdue(task);
+  const daysOverdue = getDaysOverdue(task);
+  const overdueSeverity = getOverdueSeverity(task);
+  const dueDateDisplayText = getDueDateDisplay(task);
+  const isCompletedLate = wasCompletedLate(task);
   const dayDisplay = getTaskDayDisplay(task);
 
   // Check if task is assigned to current user
   const assignedToMe = isMyTask(task, currentUser);
+
+  // Build overdue class based on severity
+  const getOverdueClass = (): string => {
+    if (!isCurrentlyOverdue) return '';
+    switch (overdueSeverity) {
+      case 'critical': return 'task-overdue task-critical-overdue';
+      case 'warning': return 'task-overdue task-warning-overdue';
+      case 'mild': return 'task-overdue task-mild-overdue';
+      default: return 'task-overdue';
+    }
+  };
 
   return (
     <Card className={`task-card relative shadow-sm hover:shadow-md transition-shadow ${
@@ -240,8 +212,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
     } ${
       isSkipped ? 'bg-gray-50 border-l-4 border-l-gray-500' : ''
     } ${
-      isCurrentlyOverdue ? 'bg-red-50 border-l-4 border-l-red-500' : ''
-    }`} data-status={task.status}>
+      getOverdueClass()
+    }`} data-status={task.status} data-overdue={isCurrentlyOverdue ? daysOverdue : undefined}>
       <CardContent className="p-6">
         {/* Badge Container - Modular system handles 2-4 badges flexibly */}
         <div className="flex flex-wrap items-center gap-1 mb-3">
@@ -323,19 +295,31 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
         
         {/* Task Details - clean single display */}
         <div className="task-details mb-4">
-          {/* Overdue warning if applicable */}
+          {/* Overdue warning with severity badge */}
           {isCurrentlyOverdue && !isCompleted && (
-            <p className="overdue-warning text-red-600 font-medium mb-2">
-              ⚠️ OVERDUE - Task is past due
-            </p>
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`overdue-badge ${overdueSeverity}`} data-testid="overdue-badge">
+                <AlertTriangle className="h-3 w-3" />
+                {daysOverdue === 1 ? '1 DAY OVERDUE' : `${daysOverdue} DAYS OVERDUE`}
+              </span>
+            </div>
+          )}
+          
+          {/* Completed late indicator */}
+          {isCompleted && isCompletedLate && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="completed-late-badge" data-testid="completed-late-badge">
+                ⏰ Completed Late
+              </span>
+            </div>
           )}
           
           {/* Single task info row - due date and assignment */}
-          <div className="task-info-row flex gap-4 text-sm text-gray-600 mb-2">
-            {/* Due date */}
+          <div className="task-info-row flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+            {/* Due date with relative display */}
             {task.dueDate && (
-              <span className="due-date">
-                📅 {isCurrentlyOverdue ? 'Was due' : 'Due'} {formatDueDate(task.dueDate)}
+              <span className={`due-date ${isCurrentlyOverdue ? 'text-red-600 font-medium' : ''}`} data-testid="due-date-display">
+                📅 {dueDateDisplayText}
               </span>
             )}
             

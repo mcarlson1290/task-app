@@ -122,6 +122,124 @@
   background: linear-gradient(to right, rgba(245, 158, 11, 0.05) 0%, transparent 100%) !important;
 }
 
+/* ========================================
+   OVERDUE TASK STYLING SYSTEM
+   ======================================== */
+
+/* Base overdue styling - border indicator */
+.task-card.task-overdue {
+  border-left: 4px solid #FFA500 !important;
+}
+
+/* Mild overdue (1-2 days) - Light yellow background */
+.task-card.task-mild-overdue {
+  background-color: #FFF9E6 !important;
+  border-left-color: #FFC107 !important;
+}
+
+/* Warning overdue (3-6 days) - Light orange background */
+.task-card.task-warning-overdue {
+  background-color: #FFF0E0 !important;
+  border-left-color: #FF6B00 !important;
+}
+
+/* Critical overdue (7+ days) - Light red background */
+.task-card.task-critical-overdue {
+  background-color: #FFE6E6 !important;
+  border-left-color: #DC143C !important;
+}
+
+/* Overdue badge styles */
+.overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.overdue-badge.mild {
+  background-color: #FFC107;
+  color: #000;
+}
+
+.overdue-badge.warning {
+  background-color: #FF6B00;
+  color: #FFF;
+}
+
+.overdue-badge.critical {
+  background-color: #DC143C;
+  color: #FFF;
+  animation: pulse-critical 2s ease-in-out infinite;
+}
+
+@keyframes pulse-critical {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Completed Late badge */
+.completed-late-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+/* Overdue Summary Section */
+.overdue-summary {
+  background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+  border: 1px solid #FC8181;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.overdue-summary h3 {
+  font-weight: 600;
+  color: #C53030;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overdue-summary .overdue-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.overdue-summary .count-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.overdue-summary .count-item.critical {
+  color: #DC143C;
+  font-weight: 600;
+}
+
+.overdue-summary .count-item.warning {
+  color: #FF6B00;
+  font-weight: 500;
+}
+
+.overdue-summary .count-item.mild {
+  color: #B45309;
+}
+
 /* Gamified Progress Container */
 .gamified-progress-container {
   background: white;

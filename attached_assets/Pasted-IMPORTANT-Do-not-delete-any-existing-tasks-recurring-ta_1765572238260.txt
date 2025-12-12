@@ -1,0 +1,222 @@
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.
+The Problem
+The task overdue system needs fixing - tasks aren't properly showing when they're overdue, calculating overdue status incorrectly, or displaying confusing due date information.
+Tell Replit:
+"Fix the task overdue system. Tasks should clearly show when they're overdue, calculate overdue status correctly based on the current date/time, and display accurate due date information."
+Complete Overdue System Implementation:
+1. Fix Overdue Status Calculation
+javascript// Accurate overdue detection
+const isTaskOverdue = (task) => {
+  if (!task.dueDate || task.status === 'completed' || task.status === 'skipped') {
+    return false;
+  }
+  
+  // Get current date at midnight (start of day)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  
+  // Get due date at midnight
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  // Task is overdue if due date is before today
+  return dueDate < now;
+};
+
+// Calculate how overdue
+const getDaysOverdue = (task) => {
+  if (!isTaskOverdue(task)) return 0;
+  
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = now - dueDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+};
+2. Fix Due Date Display
+javascript// Clear, accurate due date text
+const getDueDateDisplay = (task) => {
+  if (!task.dueDate) return 'No due date';
+  
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = dueDate - now;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Format the actual date
+  const dateStr = dueDate.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  
+  // Return both relative and absolute date
+  if (diffDays < 0) {
+    const daysOverdue = Math.abs(diffDays);
+    if (daysOverdue === 1) {
+      return `Overdue by 1 day (${dateStr})`;
+    }
+    return `Overdue by ${daysOverdue} days (${dateStr})`;
+  } else if (diffDays === 0) {
+    return `Due today (${dateStr})`;
+  } else if (diffDays === 1) {
+    return `Due tomorrow (${dateStr})`;
+  } else if (diffDays <= 7) {
+    return `Due in ${diffDays} days (${dateStr})`;
+  } else {
+    return `Due ${dateStr}`;
+  }
+};
+3. Visual Overdue Indicators
+javascript// Task card styling based on status
+const getTaskCardClass = (task) => {
+  const classes = ['task-card'];
+  
+  if (isTaskOverdue(task)) {
+    classes.push('task-overdue');
+    const daysOverdue = getDaysOverdue(task);
+    
+    if (daysOverdue >= 7) {
+      classes.push('task-critical-overdue'); // Red
+    } else if (daysOverdue >= 3) {
+      classes.push('task-warning-overdue'); // Orange
+    } else {
+      classes.push('task-mild-overdue'); // Yellow
+    }
+  } else if (task.status === 'in-progress') {
+    classes.push('task-in-progress');
+  }
+  
+  return classes.join(' ');
+};
+4. CSS for Overdue States
+css/* Overdue task styling */
+.task-overdue {
+  border-left: 4px solid #FFA500;
+}
+
+.task-mild-overdue {
+  background-color: #FFF9E6; /* Light yellow */
+}
+
+.task-warning-overdue {
+  background-color: #FFF0E0; /* Light orange */
+  border-left-color: #FF6B00;
+}
+
+.task-critical-overdue {
+  background-color: #FFE6E6; /* Light red */
+  border-left-color: #DC143C;
+}
+
+/* Overdue badge */
+.overdue-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.overdue-badge.mild {
+  background-color: #FFC107;
+  color: #000;
+}
+
+.overdue-badge.warning {
+  background-color: #FF6B00;
+  color: #FFF;
+}
+
+.overdue-badge.critical {
+  background-color: #DC143C;
+  color: #FFF;
+}
+5. Task List Sorting with Overdue Priority
+javascript// Sort tasks with overdue at top
+const sortTasksWithOverduePriority = (tasks) => {
+  return tasks.sort((a, b) => {
+    // Overdue tasks first
+    const aOverdue = isTaskOverdue(a);
+    const bOverdue = isTaskOverdue(b);
+    
+    if (aOverdue && !bOverdue) return -1;
+    if (!aOverdue && bOverdue) return 1;
+    
+    // If both overdue, most overdue first
+    if (aOverdue && bOverdue) {
+      return getDaysOverdue(b) - getDaysOverdue(a);
+    }
+    
+    // Then by due date
+    if (a.dueDate && b.dueDate) {
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    }
+    
+    return 0;
+  });
+};
+6. Overdue Summary Dashboard
+javascript// Add overdue summary at top of task list
+const OverdueSummary = ({ tasks }) => {
+  const overdueTasks = tasks.filter(isTaskOverdue);
+  
+  if (overdueTasks.length === 0) return null;
+  
+  const criticalCount = overdueTasks.filter(t => getDaysOverdue(t) >= 7).length;
+  const warningCount = overdueTasks.filter(t => {
+    const days = getDaysOverdue(t);
+    return days >= 3 && days < 7;
+  }).length;
+  
+  return (
+    <div className="overdue-summary">
+      <h3>⚠️ Overdue Tasks: {overdueTasks.length}</h3>
+      {criticalCount > 0 && (
+        <span className="critical">🔴 {criticalCount} critical (7+ days)</span>
+      )}
+      {warningCount > 0 && (
+        <span className="warning">🟠 {warningCount} warning (3-6 days)</span>
+      )}
+    </div>
+  );
+};
+7. Fix Completed Late Detection
+javascript// Only mark as completed late if actually was overdue when completed
+const wasCompletedLate = (task) => {
+  if (task.status !== 'completed' || !task.dueDate || !task.completedAt) {
+    return false;
+  }
+  
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(23, 59, 59, 999); // End of due date
+  
+  const completedDate = new Date(task.completedAt);
+  
+  return completedDate > dueDate;
+};
+Key Requirements:
+
+Accurate Calculations: Use proper date comparisons at midnight boundaries
+Always Show Dates: Display "Overdue by X days (Nov 15)" not just "Overdue"
+Visual Hierarchy: Critical overdue (7+ days) > Warning (3-6 days) > Mild (1-2 days)
+Smart Sorting: Overdue tasks appear at top, most overdue first
+Status Respect: Completed/skipped tasks are never overdue
+Clear Messaging: Users see exactly how overdue and the specific date
+
+Testing:
+
+Create task due yesterday → Should show "Overdue by 1 day"
+Create task due today → Should show "Due today"
+Create task due tomorrow → Should show "Due tomorrow"
+Let task go 7+ days overdue → Should show red/critical styling
+Complete an overdue task → Should mark as "Completed Late"
