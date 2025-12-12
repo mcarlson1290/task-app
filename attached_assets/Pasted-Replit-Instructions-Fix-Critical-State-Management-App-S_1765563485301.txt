@@ -1,0 +1,206 @@
+Replit Instructions: Fix Critical State Management - App Shows Previous Results
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Only update the code functionality while preserving all existing data.
+The Critical Problem
+The app is "stuck" showing previous results. Every action only works correctly the FIRST time, then gets stuck showing old data until the app is reloaded. This affects:
+
+Creating recurring tasks (shows previous task form data)
+Opening tasks (shows previous task's checklist)
+All modal interactions
+
+Tell Replit:
+"CRITICAL BUG: The app has a state management issue where it always shows the previous result instead of current data. Every modal and form is stuck showing old data. This needs a complete state management overhaul to ensure fresh data every time."
+Root Cause & Solution:
+1. Force Component Unmount/Remount
+javascript// Add a key-based reset mechanism to force fresh renders
+const [modalKey, setModalKey] = useState(0);
+
+// Before opening ANY modal, increment the key
+const openTaskModal = (task) => {
+  setModalKey(prev => prev + 1); // Force new instance
+  setSelectedTask(task);
+  setShowTaskModal(true);
+};
+
+// Use the key on the modal component
+{showTaskModal && (
+  <TaskModal 
+    key={`task-modal-${modalKey}`} // Forces new instance
+    task={selectedTask}
+    onClose={closeTaskModal}
+  />
+)}
+2. Clear State BEFORE Setting New Values
+javascript// Wrong way (causes stale data):
+const openModal = (data) => {
+  setModalData(data); // Old data might persist
+  setShowModal(true);
+};
+
+// Correct way:
+const openModal = (data) => {
+  // Clear everything first
+  setModalData(null);
+  setShowModal(false);
+  
+  // Force a clean render cycle
+  setTimeout(() => {
+    setModalData(data);
+    setShowModal(true);
+  }, 0);
+};
+3. Fix Recurring Task Creator
+javascriptconst RecurringTaskCreator = ({ onClose, editingTask }) => {
+  // Don't initialize with old values
+  const [formData, setFormData] = useState(() => ({
+    title: '',
+    description: '',
+    category: '',
+    priority: 'medium',
+    frequency: 'weekly',
+    assignedRole: '',
+    checklist: [],
+    // ... other fields
+  }));
+  
+  // If editing, load data in useEffect
+  useEffect(() => {
+    if (editingTask) {
+      // Create completely fresh copy
+      setFormData({
+        title: editingTask.title || '',
+        description: editingTask.description || '',
+        category: editingTask.category || '',
+        priority: editingTask.priority || 'medium',
+        frequency: editingTask.frequency || 'weekly',
+        assignedRole: editingTask.assignedRole || '',
+        checklist: editingTask.checklist ? [...editingTask.checklist] : [],
+        // ... copy all fields explicitly
+      });
+    } else {
+      // New task - ensure completely empty
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        priority: 'medium',
+        frequency: 'weekly',
+        assignedRole: '',
+        checklist: [],
+        // ... all fields empty
+      });
+    }
+  }, [editingTask?.id]); // Only run when ID changes
+  
+  // On close, CLEAR everything
+  const handleClose = () => {
+    setFormData({
+      title: '',
+      description: '',
+      category: '',
+      priority: 'medium',
+      frequency: 'weekly',
+      assignedRole: '',
+      checklist: [],
+    });
+    onClose();
+  };
+};
+4. Fix Task Modal Checklist
+javascriptconst TaskModal = ({ task, onClose }) => {
+  // Don't reuse state between different tasks
+  const [checklist, setChecklist] = useState([]);
+  const [progress, setProgress] = useState({});
+  
+  // Load fresh data when task changes
+  useEffect(() => {
+    if (!task) {
+      setChecklist([]);
+      setProgress({});
+      return;
+    }
+    
+    // Create new arrays/objects (not references)
+    const freshChecklist = task.checklist ? 
+      task.checklist.map(item => ({...item})) : [];
+    
+    const freshProgress = {};
+    freshChecklist.forEach((_, idx) => {
+      freshProgress[idx] = false;
+    });
+    
+    setChecklist(freshChecklist);
+    setProgress(freshProgress);
+    
+    // Cleanup function
+    return () => {
+      setChecklist([]);
+      setProgress({});
+    };
+  }, [task?.id]); // Dependency on task ID ensures fresh load
+};
+5. Global State Reset Function
+javascript// Add this to your App component
+const resetAllModals = () => {
+  // Close all modals
+  setShowTaskModal(false);
+  setShowRecurringTaskModal(false);
+  setShowSettingsModal(false);
+  
+  // Clear all selections
+  setSelectedTask(null);
+  setEditingRecurringTask(null);
+  
+  // Clear any form data
+  setFormData(null);
+  
+  // Increment keys to force remount
+  setModalKey(prev => prev + 1);
+};
+
+// Call before any modal open
+const openAnyModal = (modalType, data = null) => {
+  resetAllModals(); // Clear everything first
+  
+  setTimeout(() => {
+    switch(modalType) {
+      case 'task':
+        setSelectedTask(data);
+        setShowTaskModal(true);
+        break;
+      case 'recurring':
+        setEditingRecurringTask(data);
+        setShowRecurringTaskModal(true);
+        break;
+      // etc...
+    }
+  }, 50); // Small delay ensures clean state
+};
+6. Prevent Stale Closures
+javascript// Bad - captures stale data
+const handleSave = () => {
+  saveTask(formData); // formData might be old
+};
+
+// Good - always get fresh data
+const handleSave = () => {
+  setFormData(current => {
+    saveTask(current); // Always uses current data
+    return current;
+  });
+};
+Critical Implementation Notes:
+
+Key-based Reset: Use dynamic keys on modals to force React to create new instances
+Clear Then Set: Always clear state, wait a tick, then set new values
+No State Reuse: Each modal/form should have its own isolated state
+Explicit Cleanup: Use useEffect cleanup functions to clear state when components unmount
+Fresh Copies: Always create new objects/arrays, never reuse references
+
+Testing the Fix:
+
+Create recurring task → Close → Create another → Should be blank form
+Open Task A → Close → Open Task B → Should show Task B's checklist
+No reload needed between actions
+Each interaction shows fresh, current data
+
+This is a CRITICAL fix - the app is unusable without proper state management!

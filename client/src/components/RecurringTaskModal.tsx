@@ -85,8 +85,18 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     checklistTemplate: { steps: [] }
   });
 
-  // Update form data when task changes
+  // HARD RESET: Clear all state when task changes or modal opens
   React.useEffect(() => {
+    console.log('🔄 HARD RESET - RecurringTaskModal task changed:', task?.id || 'new task');
+    
+    // Reset all state to clean slate
+    setActiveTab('basic');
+    setShowWarningDialog(false);
+    setAffectedInstanceCount(0);
+    setChangedFields([]);
+    setIsProcessingUpdate(false);
+    setProcessingProgress(undefined);
+    
     if (task) {
       const taskData = {
         title: task.title || '',
@@ -112,7 +122,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       setOriginalData(taskData);
       setHasChanges(false);
     } else {
-      // Reset form for new task
+      // Reset form for new task - ensure completely clean state
       const newTaskData = {
         title: '',
         description: '',
@@ -138,7 +148,8 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       setHasChanges(false);
     }
     setIsSaving(false);
-  }, [task]);
+    console.log('✅ HARD RESET complete - Clean state initialized');
+  }, [task?.id]);
 
   // Load assignment options when modal opens
   React.useEffect(() => {

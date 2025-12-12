@@ -25,6 +25,7 @@ const RecurringTasks: React.FC = () => {
   const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingTask, setDeletingTask] = useState<RecurringTask | null>(null);
+  const [modalKey, setModalKey] = useState(0); // Used to force modal remount
 
   
   // Filter states
@@ -325,7 +326,11 @@ const RecurringTasks: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">📋 Recurring Tasks</h1>
           <Button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              // Increment modalKey to force fresh state when opening modal for new task
+              setModalKey(prev => prev + 1);
+              setShowAddModal(true);
+            }}
             className="bg-[#2D8028] hover:bg-[#203B17]"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -524,8 +529,9 @@ const RecurringTasks: React.FC = () => {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal - Keyed to force remount when task changes or creating new task */}
       <RecurringTaskModal
+        key={`recurring-modal-${editingTask?.id || `new-${modalKey}`}`}
         task={editingTask}
         isOpen={showAddModal || !!editingTask}
         onClose={() => {

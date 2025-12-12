@@ -1107,10 +1107,14 @@ const Tasks: React.FC = () => {
 
       {/* Task Modal - Keyed by task ID to force remount when task changes */}
       <TaskModal
-        key={selectedTask?.id || 'no-task'}
+        key={`task-modal-${selectedTask?.id || 'none'}`}
         task={selectedTask}
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          // Clear selectedTask to prevent stale data
+          setSelectedTask(null);
+          setModalOpen(false);
+        }}
         onTaskAction={handleTaskAction}
       />
 
@@ -1124,7 +1128,7 @@ const Tasks: React.FC = () => {
 
       {/* Task Action Modal - Keyed by task ID to force remount when task changes */}
       <TaskActionModal
-        key={selectedTask?.id || 'no-task'}
+        key={`task-action-modal-${selectedTask?.id || 'none'}`}
         task={selectedTask}
         open={taskActionModalOpen}
         onClose={() => {
