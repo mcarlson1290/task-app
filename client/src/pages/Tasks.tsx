@@ -227,7 +227,7 @@ const Tasks: React.FC = () => {
         task.status !== 'completed' && 
         task.status !== 'approved' && 
         task.status !== 'skipped' && 
-        isOverdue(task)
+        isTaskOverdue(task)
       )
       .map(task => task.id);
     
@@ -441,7 +441,7 @@ const Tasks: React.FC = () => {
           filtered = filtered.filter(task => isTaskLate(task));
           break;
         case 'overdue':
-          filtered = filtered.filter(task => isOverdue(task));
+          filtered = filtered.filter(task => isTaskOverdue(task));
           break;
         default:
           filtered = filtered.filter(task => task.status === statusFilter);
@@ -486,9 +486,9 @@ const Tasks: React.FC = () => {
         if (!taskDueDate) return false;
         
         const taskDateStr = formatDateForComparison(taskDueDate);
-        const isTaskOverdue = isOverdue(task) && (task.status === 'pending' || task.status === 'in_progress');
+        const taskIsOverdue = isTaskOverdue(task);
         
-        if (isTaskOverdue) {
+        if (taskIsOverdue) {
           // Overdue tasks show ONLY on today
           return dateFilter === today;
         } else {
