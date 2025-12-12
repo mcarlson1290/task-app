@@ -219,7 +219,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
         {/* Badge Container - Modular system handles 2-4 badges flexibly */}
         <div className="flex flex-wrap items-center gap-1 mb-3">
           {/* RECURRING Badge - For recurring tasks OR tasks with recurring frequencies */}
-          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency))) && (
+          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'bi-weekly', 'monthly', 'quarterly'].includes(task.frequency))) && (
             <span className="inline-flex px-2 py-1 rounded text-xs font-bold uppercase bg-blue-600 text-white">
               RECURRING
             </span>
