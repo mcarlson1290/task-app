@@ -74,6 +74,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
       case 'weekly':
         return 'WEEKLY';
       case 'biweekly':
+      case 'bi-weekly':
         return 'BI-WEEKLY';
       case 'monthly': 
         return 'MONTHLY';
@@ -92,7 +93,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
     
     // For recurring tasks OR tasks with recurring frequencies, show frequency with day
     // FIXED: Weekly tasks generated from recurring templates should show RECURRING ribbon
-    const isRecurringTask = task.isRecurring || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency));
+    const isRecurringTask = task.isRecurring || (task.frequency && ['daily', 'weekly', 'biweekly', 'bi-weekly', 'monthly', 'quarterly'].includes(task.frequency));
     
     if (isRecurringTask && task.frequency) {
       const frequencyLabel = getFrequencyLabel(task.frequency);
@@ -102,7 +103,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
           text: frequencyLabel, 
           color: task.frequency === 'daily' ? '#059669' : // Green
                  task.frequency === 'weekly' ? '#059669' : // Green  
-                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan
+                 task.frequency === 'biweekly' || task.frequency === 'bi-weekly' ? '#0891b2' : // Cyan
                  task.frequency === 'monthly' ? '#7c3aed' : // Purple
                  task.frequency === 'quarterly' ? '#ea580c' : // Orange
                  '#6b7280' // Gray
@@ -119,7 +120,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
           text: `${frequencyLabel} • ${dayName}`,
           color: task.frequency === 'daily' ? '#059669' : // Green
                  task.frequency === 'weekly' ? '#059669' : // Green
-                 task.frequency === 'biweekly' ? '#0891b2' : // Cyan  
+                 task.frequency === 'biweekly' || task.frequency === 'bi-weekly' ? '#0891b2' : // Cyan  
                  task.frequency === 'monthly' ? '#7c3aed' : // Purple
                  task.frequency === 'quarterly' ? '#ea580c' : // Orange
                  '#6b7280' // Gray
@@ -255,18 +256,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskAction, onEditTemplate,
           )}
           
           {/* Frequency Badge - For recurring tasks OR tasks with recurring frequencies */}
-          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'monthly', 'quarterly'].includes(task.frequency))) && task.frequency && (
+          {(task.recurringTaskId || (task.frequency && ['daily', 'weekly', 'biweekly', 'bi-weekly', 'monthly', 'quarterly'].includes(task.frequency))) && task.frequency && (
             <span className={`inline-flex px-2 py-1 rounded text-xs font-bold uppercase text-white
               ${task.frequency === 'daily' ? 'bg-green-600' : 
                 task.frequency === 'weekly' ? 'bg-green-600' :
-                task.frequency === 'biweekly' ? 'bg-cyan-600' : 
+                task.frequency === 'biweekly' || task.frequency === 'bi-weekly' ? 'bg-cyan-600' : 
                 task.frequency === 'monthly' ? 'bg-purple-600' : 
                 task.frequency === 'quarterly' ? 'bg-orange-600' : 
                 'bg-gray-600'}
             `}>
               {task.frequency === 'daily' ? 'DAILY' :
                task.frequency === 'weekly' ? 'WEEKLY' :
-               task.frequency === 'biweekly' ? 'BI-WK' :
+               task.frequency === 'biweekly' || task.frequency === 'bi-weekly' ? 'BI-WK' :
                task.frequency === 'monthly' ? 'MONTHLY' :
                task.frequency === 'quarterly' ? 'QTLY' : 
                'CUSTOM'}
