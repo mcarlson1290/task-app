@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Filter, Search, ChevronDown, X, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import { isSameDay, formatDateForComparison, shouldTaskAppearOnDate, getTodayString, debugDateComparison } from "@/utils/dateUtils";
+import { isSameDay, formatDateForComparison, shouldTaskAppearOnDate, getTodayString, debugDateComparison, isTaskOverdue, getDaysOverdue, getOverdueSeverity } from "@/utils/dateUtils";
 import TaskCard from "@/components/TaskCard";
 import TaskModal from "@/components/TaskModal";
 import { AddTaskModal } from "@/components/AddTaskModal";
@@ -512,7 +512,7 @@ const Tasks: React.FC = () => {
       return true;
     });
     
-    // PRIORITY SORTING: Weekly -> Bi-Weekly -> Monthly -> Quarterly -> Others
+    // PRIORITY SORTING: Overdue first, then Weekly -> Bi-Weekly -> Monthly -> Quarterly -> Others
     const getFrequencyPriority = (frequency: string): number => {
       switch (frequency?.toLowerCase()) {
         case 'weekly': return 1;
@@ -525,7 +525,23 @@ const Tasks: React.FC = () => {
     };
     
     const sortedFiltered = [...uniqueFiltered].sort((a, b) => {
-      // First, sort by frequency priority (weekly first, then bi-weekly, etc.)
+      // FIRST: Overdue tasks always appear at the top
+      const aOverdue = isTaskOverdue(a);
+      const bOverdue = isTaskOverdue(b);
+      
+      if (aOverdue && !bOverdue) return -1;
+      if (!aOverdue && bOverdue) return 1;
+      
+      // If both overdue, sort by most overdue first (more days = higher priority)
+      if (aOverdue && bOverdue) {
+        const aDaysOverdue = getDaysOverdue(a);
+        const bDaysOverdue = getDaysOverdue(b);
+        if (aDaysOverdue !== bDaysOverdue) {
+          return bDaysOverdue - aDaysOverdue; // Most overdue first
+        }
+      }
+      
+      // Next, sort by frequency priority (weekly first, then bi-weekly, etc.)
       const aPriority = getFrequencyPriority(a.frequency);
       const bPriority = getFrequencyPriority(b.frequency);
       
@@ -1080,6 +1096,42 @@ const Tasks: React.FC = () => {
         currentUser={currentUser as any}
         selectedDate={dateFilter}
       />
+
+      {/* Overdue Tasks Summary */}
+      {(() => {
+        const overdueTasks = filteredTasks.filter(task => isTaskOverdue(task));
+        if (overdueTasks.length === 0) return null;
+        
+        const criticalCount = overdueTasks.filter(t => getOverdueSeverity(t) === 'critical').length;
+        const warningCount = overdueTasks.filter(t => getOverdueSeverity(t) === 'warning').length;
+        const mildCount = overdueTasks.filter(t => getOverdueSeverity(t) === 'mild').length;
+        
+        return (
+          <div className="overdue-summary" data-testid="overdue-summary">
+            <h3>
+              <span style={{ fontSize: '18px' }}>⚠️</span>
+              Overdue Tasks: {overdueTasks.length}
+            </h3>
+            <div className="overdue-counts">
+              {criticalCount > 0 && (
+                <div className="count-item critical" data-testid="overdue-critical-count">
+                  🔴 {criticalCount} critical (7+ days)
+                </div>
+              )}
+              {warningCount > 0 && (
+                <div className="count-item warning" data-testid="overdue-warning-count">
+                  🟠 {warningCount} warning (3-6 days)
+                </div>
+              )}
+              {mildCount > 0 && (
+                <div className="count-item mild" data-testid="overdue-mild-count">
+                  🟡 {mildCount} mild (1-2 days)
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Task Content */}
       <div className="task-content">
