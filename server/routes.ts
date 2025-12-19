@@ -540,6 +540,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
       console.log("Updating task:", id, "with updates:", updates);
       
+      // Convert date strings to Date objects for Drizzle ORM
+      if (updates.skippedAt && typeof updates.skippedAt === 'string') {
+        updates.skippedAt = new Date(updates.skippedAt);
+      }
+      if (updates.completedAt && typeof updates.completedAt === 'string') {
+        updates.completedAt = new Date(updates.completedAt);
+      }
+      if (updates.startedAt && typeof updates.startedAt === 'string') {
+        updates.startedAt = new Date(updates.startedAt);
+      }
+      if (updates.pausedAt && typeof updates.pausedAt === 'string') {
+        updates.pausedAt = new Date(updates.pausedAt);
+      }
+      
       // Run verification when a task is started (status changes to in_progress)
       if (updates.status === 'in_progress') {
         console.log("🔍 Task being started - running verification system...");
