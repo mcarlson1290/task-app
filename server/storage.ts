@@ -336,27 +336,33 @@ export class MemStorage implements IStorage {
         break;
         
       case 'biweekly':
-        // Create first half task on day 1 (due on 14th)
-        if (dayOfMonth === 1) {
-          const visibleDate = new Date(Date.UTC(year, month, 1));
-          const dueDate = new Date(Date.UTC(year, month, 14));
+      case 'bi-weekly': {
+        // True bi-weekly: every 14 days from the task's startDate
+        const startDate = template.startDate ? new Date(template.startDate) : new Date(template.createdAt || Date.now());
+        
+        // Calculate days since start date using UTC
+        const currentDateUTC = new Date(Date.UTC(year, month, dayOfMonth));
+        const startDateUTC = new Date(Date.UTC(
+          startDate.getUTCFullYear(),
+          startDate.getUTCMonth(),
+          startDate.getUTCDate()
+        ));
+        
+        const daysDifference = Math.floor(
+          (currentDateUTC.getTime() - startDateUTC.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        // Only generate if today is exactly on a 14-day interval from start (including day 0)
+        if (daysDifference >= 0 && daysDifference % 14 === 0) {
+          const taskDate = new Date(Date.UTC(year, month, dayOfMonth));
           return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-first`,
-            visibleFromDate: visibleDate,
-            dueDate: dueDate
-          });
-        }
-        // Create second half task on day 15 (due on last day of month)
-        if (dayOfMonth === 15) {
-          const visibleDate = new Date(Date.UTC(year, month, 15));
-          const dueDate = new Date(Date.UTC(year, month + 1, 0));
-          return this.buildTaskFromTemplate(template, {
-            id: `${template.id}-${year}-${String(month + 1).padStart(2, '0')}-second`,
-            visibleFromDate: visibleDate,
-            dueDate: dueDate
+            id: `${template.id}-${this.formatDate(taskDate)}`,
+            visibleFromDate: taskDate,
+            dueDate: taskDate
           });
         }
         break;
+      }
         
       case 'weekly': // Weekly tasks - handle both string and array formats
         const templateDays = Array.isArray(template.daysOfWeek) 
@@ -4354,14 +4360,36 @@ class DatabaseStorage implements IStorage {
         break;
       }
       
-      case 'bi-weekly': {
-        // Generate bi-weekly instances
-        for (let period = 0; period < 4; period++) {
-          const taskDate = new Date(startDate);
-          taskDate.setDate(startDate.getDate() + (period * 14));
+      case 'bi-weekly':
+      case 'biweekly': {
+        // True bi-weekly: every 14 days from the task's startDate
+        const templateStartDate = recurringTask.startDate ? new Date(recurringTask.startDate) : new Date(recurringTask.createdAt || startDate);
+        const templateStartDateUTC = new Date(Date.UTC(
+          templateStartDate.getUTCFullYear(),
+          templateStartDate.getUTCMonth(),
+          templateStartDate.getUTCDate()
+        ));
+        
+        // Check each day in the range to find 14-day intervals
+        for (let dayOffset = 0; dayOffset <= Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)); dayOffset++) {
+          const checkDate = new Date(startDate);
+          checkDate.setDate(startDate.getDate() + dayOffset);
           
-          if (taskDate <= endDate) {
-            expectedDates.push(taskDate);
+          if (checkDate > endDate) break;
+          
+          const checkDateUTC = new Date(Date.UTC(
+            checkDate.getUTCFullYear(),
+            checkDate.getUTCMonth(),
+            checkDate.getUTCDate()
+          ));
+          
+          const daysDifference = Math.floor(
+            (checkDateUTC.getTime() - templateStartDateUTC.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          
+          // Only add date if it falls on a 14-day interval from template start
+          if (daysDifference >= 0 && daysDifference % 14 === 0) {
+            expectedDates.push(new Date(checkDate));
           }
         }
         break;
@@ -4560,53 +4588,74 @@ class DatabaseStorage implements IStorage {
         break;
       }
       
-      case 'bi-weekly': {
-        // Generate for the next 8 weeks (4 bi-weekly instances)
-        for (let period = 0; period < 4; period++) {
-          const taskDate = new Date(baseDate);
-          taskDate.setDate(taskDate.getDate() + (period * 14));
+      case 'bi-weekly':
+      case 'biweekly': {
+        // True bi-weekly: every 14 days from the task's startDate
+        const startDate = recurringTask.startDate ? new Date(recurringTask.startDate) : new Date(recurringTask.createdAt || Date.now());
+        const startDateUTC = new Date(Date.UTC(
+          startDate.getUTCFullYear(),
+          startDate.getUTCMonth(),
+          startDate.getUTCDate()
+        ));
+        
+        // Generate tasks for the next 31 days that fall on 14-day intervals
+        for (let dayOffset = 0; dayOffset <= 31; dayOffset++) {
+          const checkDate = new Date(baseDate);
+          checkDate.setDate(checkDate.getDate() + dayOffset);
+          const checkDateUTC = new Date(Date.UTC(
+            checkDate.getUTCFullYear(),
+            checkDate.getUTCMonth(),
+            checkDate.getUTCDate()
+          ));
           
-          const dueDate = new Date(taskDate);
-          dueDate.setDate(dueDate.getDate() + 13); // Due at end of 2-week period
-          
-          const [existing] = await db.select().from(tasks).where(
-            and(
-              eq(tasks.title, recurringTask.title),
-              eq(tasks.taskDate, taskDate),
-              eq(tasks.location, recurringTask.location)
-            )
+          const daysDifference = Math.floor(
+            (checkDateUTC.getTime() - startDateUTC.getTime()) / (1000 * 60 * 60 * 24)
           );
           
-          if (!existing) {
-            tasksToCreate.push({
-              title: recurringTask.title,
-              description: recurringTask.description,
-              type: recurringTask.type,
-              status: 'pending',
-              priority: 'medium',
-              assignedTo: null,
-              assignTo: recurringTask.assignTo,
-              createdBy: recurringTask.createdBy,
-              location: recurringTask.location,
-              taskDate: taskDate,
-              dueDate: dueDate,
-              frequency: recurringTask.frequency,
-              isRecurring: true,
-              recurringTaskId: recurringTask.id, // CRITICAL FIX: Add missing recurringTaskId field
-              estimatedTime: null,
-              actualTime: null,
-              progress: 0,
-              checklist: recurringTask.checklistTemplate?.steps || [],
-              data: {},
-              visibleFromDate: taskDate,
-              startedAt: null,
-              completedAt: null,
-              pausedAt: null,
-              resumedAt: null,
-              skippedAt: null,
-              deletedRecurringTaskId: null,
-              deletedRecurringTaskTitle: null
-            });
+          // Only create task if this day falls on a 14-day interval from start
+          if (daysDifference >= 0 && daysDifference % 14 === 0) {
+            const taskDate = checkDateUTC;
+            
+            const [existing] = await db.select().from(tasks).where(
+              and(
+                eq(tasks.title, recurringTask.title),
+                sql`DATE(${tasks.taskDate}) = ${taskDate.toISOString().split('T')[0]}`,
+                eq(tasks.location, recurringTask.location)
+              )
+            );
+            
+            if (!existing) {
+              tasksToCreate.push({
+                title: recurringTask.title,
+                description: recurringTask.description,
+                type: recurringTask.type,
+                status: 'pending',
+                priority: 'medium',
+                assignedTo: null,
+                assignTo: recurringTask.assignTo,
+                createdBy: recurringTask.createdBy,
+                location: recurringTask.location,
+                taskDate: taskDate,
+                dueDate: taskDate,
+                frequency: 'bi-weekly',
+                isRecurring: true,
+                recurringTaskId: recurringTask.id,
+                estimatedTime: null,
+                actualTime: null,
+                progress: 0,
+                checklist: recurringTask.checklistTemplate?.steps || [],
+                data: {},
+                visibleFromDate: taskDate,
+                startedAt: null,
+                completedAt: null,
+                pausedAt: null,
+                resumedAt: null,
+                skippedAt: null,
+                deletedRecurringTaskId: null,
+                deletedRecurringTaskTitle: null
+              });
+              console.log(`✅ Creating bi-weekly task "${recurringTask.title}" for ${taskDate.toDateString()} (${daysDifference} days from start)`);
+            }
           }
         }
         break;
