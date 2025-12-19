@@ -3516,6 +3516,22 @@ function formatDateYYYYMMDD(date: Date): string {
     }
   });
 
+  // Temporary download route for project zip file
+  app.get("/download-project", (req, res) => {
+    const path = require('path');
+    const fs = require('fs');
+    const zipPath = path.join(process.cwd(), 'myprojects.zip');
+    
+    if (fs.existsSync(zipPath)) {
+      res.setHeader('Content-Disposition', 'attachment; filename=myprojects.zip');
+      res.setHeader('Content-Type', 'application/zip');
+      const fileStream = fs.createReadStream(zipPath);
+      fileStream.pipe(res);
+    } else {
+      res.status(404).send('Zip file not found. Please create it first.');
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
