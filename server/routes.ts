@@ -1238,6 +1238,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { strategy, userId, ...updates } = req.body;
       
+      // Convert date strings to Date objects for Drizzle ORM
+      if (updates.startDate && typeof updates.startDate === 'string') {
+        updates.startDate = new Date(updates.startDate);
+      }
+      
       // VALIDATION: Reject 'daily' frequency (eliminated from system)
       if (updates.frequency === 'daily') {
         return res.status(400).json({ 
@@ -1267,6 +1272,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { strategy, userId, ...updates } = req.body;
+      
+      // Convert date strings to Date objects for Drizzle ORM
+      if (updates.startDate && typeof updates.startDate === 'string') {
+        updates.startDate = new Date(updates.startDate);
+      }
       
       // VALIDATION: Reject 'daily' frequency (eliminated from system)
       if (updates.frequency === 'daily') {
