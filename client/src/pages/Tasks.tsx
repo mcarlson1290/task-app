@@ -362,11 +362,10 @@ const Tasks: React.FC = () => {
       );
       return await Promise.all(promises);
     },
-    onSuccess: async (_, taskIds) => {
+    onSuccess: (_, taskIds) => {
+      // Just invalidate - don't call refreshTasks() to prevent loops
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       console.log(`Automatically skipped ${taskIds.length} overdue tasks`);
-      // Immediately refresh tasks for instant UI update
-      await refreshTasks();
     },
     onError: (error) => {
       console.error("Error skipping overdue tasks:", error);
