@@ -276,8 +276,11 @@ const RecurringTasks: React.FC = () => {
       ).join(', ');
       return `Weekly on ${days}`;
     }
-    if (task.frequency === 'bi-weekly') {
-      return 'Bi-Weekly (1st & 15th)';
+    if (task.frequency === 'bi-weekly' || task.frequency === 'biweekly') {
+      const dayName = task.startDate 
+        ? new Date(task.startDate).toLocaleDateString('en-US', { weekday: 'long' }) + 's'
+        : '';
+      return dayName ? `Bi-Weekly (${dayName})` : 'Bi-Weekly';
     }
     if (task.frequency === 'monthly') {
       return 'Monthly (Last Day)';
@@ -286,6 +289,56 @@ const RecurringTasks: React.FC = () => {
       return 'Quarterly';
     }
     return task.frequency;
+  };
+
+  const getNextOccurrence = (task: RecurringTask): string | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (task.frequency === 'weekly' && task.daysOfWeek && task.daysOfWeek.length > 0) {
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const normalizedDays = task.daysOfWeek.map(d => d.toLowerCase());
+      
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() + i);
+        const dayName = dayNames[checkDate.getDay()];
+        if (normalizedDays.includes(dayName)) {
+          return checkDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+      }
+    }
+    
+    if ((task.frequency === 'bi-weekly' || task.frequency === 'biweekly') && task.startDate) {
+      const startDate = new Date(task.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilNext = daysDiff >= 0 ? (14 - (daysDiff % 14)) % 14 : Math.abs(daysDiff) % 14;
+      const nextDate = new Date(today);
+      nextDate.setDate(today.getDate() + (daysUntilNext === 0 ? 0 : daysUntilNext));
+      return nextDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    if (task.frequency === 'monthly') {
+      const nextDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      if (nextDate <= today) {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        nextDate.setDate(new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate());
+      }
+      return nextDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    if (task.frequency === 'quarterly') {
+      const quarter = Math.floor(today.getMonth() / 3);
+      const nextQuarterMonth = (quarter + 1) * 3;
+      const nextDate = new Date(today.getFullYear(), nextQuarterMonth, 1);
+      if (nextDate <= today) {
+        nextDate.setMonth(nextDate.getMonth() + 3);
+      }
+      return nextDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    return null;
   };
 
   const getTaskTypeEmoji = (type: string) => {
@@ -466,6 +519,13 @@ const RecurringTasks: React.FC = () => {
                   <Calendar className="w-4 h-4 mr-2" />
                   <span>{getFrequencyDisplay(task)}</span>
                 </div>
+                
+                {getNextOccurrence(task) && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <span>📅 Next: {getNextOccurrence(task)}</span>
+                  </div>
+                )}
                 
                 <div className="flex items-center text-sm text-gray-600">
                   <RotateCcw className="w-4 h-4 mr-2" />
