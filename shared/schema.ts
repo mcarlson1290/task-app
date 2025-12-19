@@ -75,9 +75,10 @@ export const recurringTasks = pgTable("recurring_tasks", {
   title: text("title").notNull(),
   description: text("description"),
   type: text("type").notNull(),
-  frequency: text("frequency").notNull(), // 'weekly', 'bi-weekly', 'biweekly', 'monthly', 'quarterly' - NO DAILY!
+  frequency: text("frequency").notNull(), // 'weekly', 'bi-weekly', 'monthly', 'quarterly' - NO DAILY!
   daysOfWeek: json("days_of_week").$type<string[]>(), // ['monday', 'tuesday', etc.]
   dayOfMonth: integer("day_of_month"), // For monthly tasks
+  startDate: timestamp("start_date"), // Anchor date for bi-weekly calculations (every 14 days from this date)
   isActive: boolean("is_active").default(true),
   location: text("location").notNull(), // Location code (K, R, MKE)
   assignTo: text("assign_to"), // Default assignment: 'user_123', 'role_Manager', 'all_staff'
