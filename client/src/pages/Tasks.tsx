@@ -330,49 +330,6 @@ const Tasks: React.FC = () => {
     },
   });
 
-  // Auto-skip overdue tasks mutation
-  const autoSkipOverdueMutation = useMutation({
-    mutationFn: async (taskIds: number[]) => {
-      const promises = taskIds.map((taskId) =>
-        apiRequest("PATCH", `/api/tasks/${taskId}`, {
-          status: "skipped",
-          skipReason: "Automatically skipped - overdue",
-        }),
-      );
-      return await Promise.all(promises);
-    },
-    onSuccess: (_, taskIds) => {
-      // Just invalidate - don't call refreshTasks() to prevent loops
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      console.log(`Automatically skipped ${taskIds.length} overdue tasks`);
-    },
-    onError: (error) => {
-      console.error("Error skipping overdue tasks:", error);
-    },
-  });
-
-  // Automatic overdue task skipping - with guard to prevent loops
-  // NOTE: This must be defined AFTER autoSkipOverdueMutation
-  React.useEffect(() => {
-    // Don't run if mutation is already in progress
-    if (autoSkipOverdueMutation.isPending) return;
-    if (!tasks || tasks.length === 0) return;
-
-    const overdueTaskIds = tasks
-      .filter(
-        (task) =>
-          task.status !== "completed" &&
-          task.status !== "approved" &&
-          task.status !== "skipped" &&
-          isTaskOverdue(task),
-      )
-      .map((task) => task.id);
-
-    if (overdueTaskIds.length > 0) {
-      autoSkipOverdueMutation.mutate(overdueTaskIds);
-    }
-  }, [tasks, autoSkipOverdueMutation.isPending]);
-
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
     {

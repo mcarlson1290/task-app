@@ -121,11 +121,6 @@ export const isTaskOverdue = (task: { dueDate?: string | Date | null; status?: s
     return false;
   }
   
-  // Check dev overdue protection mode
-  if (typeof window !== 'undefined' && localStorage.getItem('devOverdueProtection') === 'true') {
-    return false;
-  }
-  
   // Get current date at midnight (start of day) in local time
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
