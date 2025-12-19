@@ -249,8 +249,10 @@ const Tasks: React.FC = () => {
     enabled: !!auth.user,
   });
 
-  // Automatic overdue task skipping
+  // Automatic overdue task skipping - with guard to prevent loops
   React.useEffect(() => {
+    // Don't run if mutation is already in progress
+    if (autoSkipOverdueMutation.isPending) return;
     if (!tasks || tasks.length === 0) return;
 
     const overdueTaskIds = tasks
@@ -266,7 +268,7 @@ const Tasks: React.FC = () => {
     if (overdueTaskIds.length > 0) {
       autoSkipOverdueMutation.mutate(overdueTaskIds);
     }
-  }, [tasks]);
+  }, [tasks, autoSkipOverdueMutation.isPending]);
 
   // Periodic overdue status check (every minute)
   React.useEffect(() => {
