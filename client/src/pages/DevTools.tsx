@@ -11,9 +11,6 @@ import { detectIOSEnvironment, testStorageAvailability } from '@/config/authConf
 
 const DevTools = () => {
   const [, setLocation] = useWouterLocation();
-  const [overdueProtection, setOverdueProtection] = useState(
-    localStorage.getItem('devOverdueProtection') === 'true'
-  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
   const [deviceInfo, setDeviceInfo] = useState<any>({});
@@ -222,21 +219,6 @@ const DevTools = () => {
       </div>
     );
   }
-
-  // Toggle overdue protection
-  const toggleOverdueProtection = () => {
-    const newValue = !overdueProtection;
-    setOverdueProtection(newValue);
-    localStorage.setItem('devOverdueProtection', newValue.toString());
-    
-    toast({
-      title: `Overdue Protection ${newValue ? 'ENABLED' : 'DISABLED'}`,
-      description: newValue 
-        ? 'Tasks will not show as overdue during testing' 
-        : 'Normal overdue behavior restored',
-      variant: newValue ? 'default' : 'destructive',
-    });
-  };
 
   // Skip all overdue tasks
   const skipAllOverdueTasks = async () => {
@@ -699,8 +681,6 @@ const DevTools = () => {
     try {
       // Note: In a real implementation, you'd want specific API endpoints for this
       // For now, we'll just clear localStorage dev settings
-      localStorage.removeItem('devOverdueProtection');
-      setOverdueProtection(false);
       
       toast({
         title: 'Test Data Cleared',
@@ -751,41 +731,6 @@ const DevTools = () => {
 
         {/* Developer Tools */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Overdue Protection Toggle */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Overdue Protection
-              </CardTitle>
-              <CardDescription>
-                When enabled, tasks will never show as overdue (for testing)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={toggleOverdueProtection}
-                className={`w-full ${overdueProtection 
-                  ? 'bg-red-600 hover:bg-red-700' 
-                  : 'bg-[#2D8028] hover:bg-green-700'
-                }`}
-                data-testid="button-toggle-overdue-protection"
-              >
-                {overdueProtection ? (
-                  <>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Protection ON
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Protection OFF
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Skip All Overdue Tasks */}
           <Card>
             <CardHeader>
@@ -1187,12 +1132,6 @@ const DevTools = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Overdue Protection:</span>
-                <span className={`font-medium ${overdueProtection ? 'text-red-600' : 'text-green-600'}`}>
-                  {overdueProtection ? 'ENABLED' : 'DISABLED'}
-                </span>
-              </div>
               <div className="flex justify-between">
                 <span>Environment:</span>
                 <span className="font-medium">Development</span>
