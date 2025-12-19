@@ -249,27 +249,6 @@ const Tasks: React.FC = () => {
     enabled: !!auth.user,
   });
 
-  // Automatic overdue task skipping - with guard to prevent loops
-  React.useEffect(() => {
-    // Don't run if mutation is already in progress
-    if (autoSkipOverdueMutation.isPending) return;
-    if (!tasks || tasks.length === 0) return;
-
-    const overdueTaskIds = tasks
-      .filter(
-        (task) =>
-          task.status !== "completed" &&
-          task.status !== "approved" &&
-          task.status !== "skipped" &&
-          isTaskOverdue(task),
-      )
-      .map((task) => task.id);
-
-    if (overdueTaskIds.length > 0) {
-      autoSkipOverdueMutation.mutate(overdueTaskIds);
-    }
-  }, [tasks, autoSkipOverdueMutation.isPending]);
-
   // Periodic overdue status check (every minute)
   React.useEffect(() => {
     const checkOverdueStatus = () => {
@@ -371,6 +350,28 @@ const Tasks: React.FC = () => {
       console.error("Error skipping overdue tasks:", error);
     },
   });
+
+  // Automatic overdue task skipping - with guard to prevent loops
+  // NOTE: This must be defined AFTER autoSkipOverdueMutation
+  React.useEffect(() => {
+    // Don't run if mutation is already in progress
+    if (autoSkipOverdueMutation.isPending) return;
+    if (!tasks || tasks.length === 0) return;
+
+    const overdueTaskIds = tasks
+      .filter(
+        (task) =>
+          task.status !== "completed" &&
+          task.status !== "approved" &&
+          task.status !== "skipped" &&
+          isTaskOverdue(task),
+      )
+      .map((task) => task.id);
+
+    if (overdueTaskIds.length > 0) {
+      autoSkipOverdueMutation.mutate(overdueTaskIds);
+    }
+  }, [tasks, autoSkipOverdueMutation.isPending]);
 
   const taskTypes = [
     { value: "all", label: "All Tasks", emoji: "📋" },
