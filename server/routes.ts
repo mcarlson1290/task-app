@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
 import { insertUserSchema, insertTaskSchema, insertInventoryItemSchema, insertTrainingModuleSchema, insertUserProgressSchema, insertTaskLogSchema, insertCourseAssignmentSchema, insertNotificationSchema } from "@shared/schema";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -3518,8 +3520,6 @@ function formatDateYYYYMMDD(date: Date): string {
 
   // Temporary download route for project zip file
   app.get("/download-project", (req, res) => {
-    const path = require('path');
-    const fs = require('fs');
     const zipPath = path.join(process.cwd(), 'myprojects.zip');
     
     if (fs.existsSync(zipPath)) {
