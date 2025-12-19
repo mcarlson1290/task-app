@@ -739,7 +739,8 @@ const Tasks: React.FC = () => {
         status: "in_progress",
         startedAt: new Date().toISOString(),
       });
-      setTaskActionModalOpen(true);
+      // Open TaskModal (with checklist) instead of TaskActionModal
+      setModalOpen(true);
     }
   };
 
