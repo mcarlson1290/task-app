@@ -277,9 +277,13 @@ const RecurringTasks: React.FC = () => {
       return `Weekly on ${days}`;
     }
     if (task.frequency === 'bi-weekly' || task.frequency === 'biweekly') {
-      const dayName = task.startDate 
-        ? new Date(task.startDate).toLocaleDateString('en-US', { weekday: 'long' }) + 's'
-        : '';
+      let dayName = '';
+      if (task.startDate) {
+        const startDateStr = task.startDate.toString().split('T')[0];
+        const [year, month, day] = startDateStr.split('-').map(Number);
+        const localStartDate = new Date(year, month - 1, day);
+        dayName = localStartDate.toLocaleDateString('en-US', { weekday: 'long' }) + 's';
+      }
       return dayName ? `Bi-Weekly (${dayName})` : 'Bi-Weekly';
     }
     if (task.frequency === 'monthly') {
@@ -310,7 +314,10 @@ const RecurringTasks: React.FC = () => {
     }
     
     if ((task.frequency === 'bi-weekly' || task.frequency === 'biweekly') && task.startDate) {
-      const startDate = new Date(task.startDate);
+      // Parse date as local time to avoid timezone shifts
+      const startDateStr = task.startDate.toString().split('T')[0];
+      const [year, month, day] = startDateStr.split('-').map(Number);
+      const startDate = new Date(year, month - 1, day);
       startDate.setHours(0, 0, 0, 0);
       const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const daysUntilNext = daysDiff >= 0 ? (14 - (daysDiff % 14)) % 14 : Math.abs(daysDiff) % 14;
