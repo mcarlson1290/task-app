@@ -51,6 +51,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     type: string;
     frequency: string;
     daysOfWeek: string[];
+    startDate: string | null;
     isActive: boolean;
     assignTo: string;
     automation: {
@@ -70,6 +71,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
     type: 'seeding-microgreens',
     frequency: 'weekly',
     daysOfWeek: [] as string[],
+    startDate: null,
     isActive: true,
     assignTo: '',
     automation: {
@@ -104,6 +106,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         type: task.type || 'seeding-microgreens',
         frequency: task.frequency || 'weekly',
         daysOfWeek: task.daysOfWeek || [],
+        startDate: task.startDate ? new Date(task.startDate).toISOString().split('T')[0] : null,
         isActive: task.isActive ?? true,
         assignTo: task.assignTo || 'no-assignment',
         automation: task.automation || {
@@ -129,6 +132,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
         type: 'seeding-microgreens',
         frequency: 'weekly',
         daysOfWeek: [],
+        startDate: null,
         isActive: true,
         assignTo: 'no-assignment',
         automation: {
@@ -245,7 +249,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
 
   const frequencies = [
     { value: 'weekly', label: 'Weekly' },
-    { value: 'bi-weekly', label: 'Bi-Weekly (1st & 15th)' },
+    { value: 'bi-weekly', label: 'Bi-Weekly (Every 2 Weeks)' },
     { value: 'monthly', label: 'Monthly (Last Day)' },
     { value: 'quarterly', label: 'Quarterly' }
   ];
@@ -585,17 +589,35 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
                 </div>
               )}
 
-              {/* Show explanation for bi-weekly tasks */}
+              {/* Show start date picker for bi-weekly tasks */}
               {formData.frequency === 'bi-weekly' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-                  <h4 className="font-medium text-blue-900">📅 Bi-Weekly Schedule</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Task appears on <strong>1st of month</strong> → Due on <strong>14th</strong></li>
-                    <li>• Task appears on <strong>15th of month</strong> → Due on <strong>last day</strong></li>
-                  </ul>
-                  <p className="text-xs text-blue-600 mt-2">
-                    Two tasks per month with ample time to complete each one.
-                  </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date (Cycle Anchor)</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={formData.startDate || ''}
+                      onChange={(e) => updateFormData({ startDate: e.target.value || null })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                    <h4 className="font-medium text-blue-900">📅 Bi-Weekly Schedule</h4>
+                    <p className="text-sm text-blue-800">
+                      Task will appear <strong>every 14 days</strong> starting from the selected date.
+                    </p>
+                    {formData.startDate && (
+                      <p className="text-xs text-blue-600 mt-2">
+                        Next occurrences: {formData.startDate}, then every 2 weeks after.
+                      </p>
+                    )}
+                    {!formData.startDate && (
+                      <p className="text-xs text-orange-600 mt-2">
+                        Please select a start date to anchor the 2-week cycle.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
