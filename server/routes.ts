@@ -1049,6 +1049,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: req.body.location ? mapLocation(req.body.location) : req.body.location
       };
       
+      // Convert date strings to Date objects for Drizzle ORM
+      if (processedBody.startDate && typeof processedBody.startDate === 'string') {
+        processedBody.startDate = new Date(processedBody.startDate);
+      }
+      
       // VALIDATION: Reject 'daily' frequency (eliminated from system)
       if (processedBody.frequency === 'daily') {
         return res.status(400).json({ 
