@@ -845,7 +845,7 @@ const Tasks: React.FC = () => {
           updates: {
             status: "skipped",
             skipReason: reason || "No reason provided",
-            skippedAt: new Date().toISOString(),
+            skippedAt: new Date(),
           } as any,
         });
         // Hard reset after skipping
