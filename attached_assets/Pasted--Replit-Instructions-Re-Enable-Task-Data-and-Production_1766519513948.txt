@@ -1,0 +1,183 @@
+# Replit Instructions: Re-Enable Task Data and Production Data Tabs
+
+**IMPORTANT:** Do not delete any existing tasks, recurring tasks, or user data. This is a UI-only change to re-enable navigation items.
+
+---
+
+## Context
+
+During soft launch, the **Task Data** and **Production Data** tabs were disabled with "Soon" badges to prevent users from accessing incomplete features. The features are now ready for production launch, so we need to:
+
+1. Remove the "Soon" badges from both menu items
+2. Make the links clickable/functional again
+3. Ensure proper routing to the existing pages
+
+---
+
+## Step 1: Find the Sidebar Navigation Component
+
+The sidebar navigation component is likely in one of these locations:
+- `client/src/components/Sidebar.tsx`
+- `client/src/components/Navigation.tsx`
+- `client/src/components/Layout.tsx`
+- `client/src/components/AppSidebar.tsx`
+
+Look for the menu items array that contains objects with:
+- `path` or `to` property
+- `label` or `name` property
+- `disabled` or `comingSoon` property
+- The "Soon" badge text
+
+---
+
+## Step 2: Update Task Data Menu Item
+
+**Find code that looks like this:**
+```tsx
+{
+  path: '/task-data',
+  label: 'Task Data',
+  icon: BarChart3,
+  disabled: true,        // REMOVE or set to false
+  comingSoon: true,      // REMOVE or set to false
+  managerOnly: true
+}
+```
+
+**Change to:**
+```tsx
+{
+  path: '/task-data',
+  label: 'Task Data',
+  icon: BarChart3,
+  disabled: false,       // Now enabled
+  // Remove comingSoon property entirely
+  managerOnly: true
+}
+```
+
+---
+
+## Step 3: Update Production Data Menu Item
+
+**Find code that looks like this:**
+```tsx
+{
+  path: '/production-data',
+  label: 'Production Data',
+  icon: Leaf,
+  disabled: true,        // REMOVE or set to false
+  comingSoon: true,      // REMOVE or set to false
+  managerOnly: true
+}
+```
+
+**Change to:**
+```tsx
+{
+  path: '/production-data',
+  label: 'Production Data',
+  icon: Leaf,
+  disabled: false,       // Now enabled
+  // Remove comingSoon property entirely
+  managerOnly: true
+}
+```
+
+---
+
+## Step 4: Remove the "Soon" Badge Rendering
+
+Look for the JSX that renders the "Soon" badge. It might look like:
+
+**Current code:**
+```tsx
+<NavLink to={item.path} className={item.disabled ? 'nav-disabled' : ''}>
+  <item.icon className="nav-icon" />
+  <span>{item.label}</span>
+  {item.comingSoon && <span className="soon-badge">Soon</span>}
+</NavLink>
+```
+
+**Or with conditional disabled styling:**
+```tsx
+{item.disabled ? (
+  <div className="nav-item nav-disabled" title="Coming Soon">
+    <item.icon className="nav-icon" />
+    <span>{item.label}</span>
+    <span className="soon-badge">Soon</span>
+  </div>
+) : (
+  <NavLink to={item.path} className="nav-item">
+    <item.icon className="nav-icon" />
+    <span>{item.label}</span>
+  </NavLink>
+)}
+```
+
+**Update to always render as clickable NavLink** (the condition will handle it automatically once `disabled` is false).
+
+---
+
+## Step 5: Verify Routing Exists
+
+Confirm these routes exist in your router configuration (likely `client/src/App.tsx` or `client/src/routes.tsx`):
+
+```tsx
+<Route path="/task-data" element={<TaskData />} />
+<Route path="/production-data" element={<ProductionData />} />
+```
+
+The pages should already exist at:
+- `client/src/pages/TaskData.tsx`
+- `client/src/pages/ProductionData.tsx`
+
+---
+
+## Step 6: Clean Up CSS (Optional)
+
+If there's specific disabled styling, you can leave it in place (it won't apply once items aren't disabled). But you may want to verify the `.soon-badge` class isn't being applied anymore.
+
+---
+
+## Expected Result
+
+After these changes:
+- ✅ Task Data appears in sidebar without "Soon" badge
+- ✅ Task Data link is clickable and navigates to `/task-data`
+- ✅ Production Data appears in sidebar without "Soon" badge
+- ✅ Production Data link is clickable and navigates to `/production-data`
+- ✅ Both items remain visible only to Manager and Corporate roles (managerOnly: true)
+- ✅ All existing pages and data remain untouched
+
+---
+
+## Testing Checklist
+
+1. [ ] Log in as a Manager or Corporate user
+2. [ ] Verify Task Data appears in sidebar without "Soon" badge
+3. [ ] Click Task Data - confirm it navigates correctly
+4. [ ] Verify Production Data appears in sidebar without "Soon" badge
+5. [ ] Click Production Data - confirm it navigates correctly
+6. [ ] Log in as Staff user - confirm both items are still hidden (role-based visibility)
+7. [ ] Check mobile view - tabs should work on mobile as well
+
+---
+
+## Quick Reference: File Locations
+
+| What | Likely Location |
+|------|-----------------|
+| Sidebar/Navigation | `client/src/components/Sidebar.tsx` or `Navigation.tsx` |
+| Routes | `client/src/App.tsx` |
+| Task Data Page | `client/src/pages/TaskData.tsx` |
+| Production Data Page | `client/src/pages/ProductionData.tsx` |
+| Styles | `client/src/index.css` or component-level CSS |
+
+---
+
+## Notes
+
+- These pages already have sub-tabs (Task Data has Analytics, Production Data has Live Dashboard, Tray Tracking, Equipment, Crop Config)
+- The data and functionality on these pages is already built
+- We're just re-enabling the navigation links

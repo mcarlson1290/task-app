@@ -56,9 +56,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const managerItems = [
     { href: "/recurring-tasks", label: "Recurring Tasks", icon: "🔄", requiresRole: "manager", enabled: true },
-    { href: "/task-data", label: "Task Data", icon: "📊", requiresRole: "manager", enabled: false, comingSoon: true },
+    { href: "/task-data", label: "Task Data", icon: "📊", requiresRole: "manager", enabled: true },
     { href: "/staff-data", label: "Staff Data", icon: "👥", requiresRole: "manager", enabled: true },
-    { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager", enabled: false, comingSoon: true },
+    { href: "/production-data", label: "Production Data", icon: "🌱", requiresRole: "manager", enabled: true },
   ];
 
   // Use Microsoft authenticated user
