@@ -1,0 +1,107 @@
+I can see at line 804 that the modal shows step.config?.text, so the config.text IS being saved correctly by the ChecklistBuilder. The problem is in the server mapping when creating task instances.
+Now I have a clear picture. Here's the fix:
+
+Send this to the Replit agent:
+
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Make ONLY the changes described below.
+Problem: Checklist instruction text is not showing on task execution. When editing a recurring task, the instruction text is saved in checklistTemplate.steps[].config.text, but when task instances are generated, the config.text is not being copied to the task's checklist.
+Root Cause: In server/storage.ts, there are multiple places where checklist steps are mapped from the recurring task template to task instances, but the config object (which contains the instruction text) is either missing or incomplete.
+File: server/storage.ts
+
+FIX 1 of 4: Around line 441-461
+Find this code:
+typescriptchecklist: template.checklistTemplate?.steps?.map((step, index) => ({
+  id: `${index + 1}`,
+  text: step.label || step.text || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type,
+  config: {
+    inventoryCategory: step.inventoryCategory,
+    min: step.min,
+    max: step.max,
+    default: step.default,
+    systemType: step.systemType,
+    autoSuggest: step.autoSuggest,
+    dataType: step.dataType,
+    calculation: step.calculation
+  },
+Replace with:
+typescriptchecklist: template.checklistTemplate?.steps?.map((step, index) => ({
+  id: `${index + 1}`,
+  label: step.label || '',
+  text: step.label || step.text || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type,
+  config: {
+    ...step.config,
+    text: step.config?.text || step.text || '',
+    inventoryCategory: step.config?.inventoryCategory || step.inventoryCategory,
+    min: step.config?.min || step.min,
+    max: step.config?.max || step.max,
+    default: step.config?.default || step.default,
+    systemType: step.config?.systemType || step.systemType,
+    autoSuggest: step.config?.autoSuggest || step.autoSuggest,
+    dataType: step.config?.dataType || step.dataType,
+    calculation: step.config?.calculation || step.calculation
+  },
+
+FIX 2 of 4: Around line 786-792
+Find this code:
+typescriptchecklist: template.checklistTemplate?.steps?.map((step, index) => ({
+  id: `${index + 1}`,
+  text: step.label || step.text || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type
+})) || [],
+Replace with:
+typescriptchecklist: template.checklistTemplate?.steps?.map((step, index) => ({
+  id: `${index + 1}`,
+  label: step.label || '',
+  text: step.label || step.text || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type,
+  config: {
+    ...step.config,
+    text: step.config?.text || step.text || ''
+  }
+})) || [],
+
+FIX 3 of 4: Around line 2814-2825
+Find this code:
+typescriptchecklist: recurringTask.checklistTemplate?.steps?.map((step, index) => ({
+  id: step.id || `${index + 1}`,
+  text: step.label || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type,
+  config: step.config,
+Replace with:
+typescriptchecklist: recurringTask.checklistTemplate?.steps?.map((step, index) => ({
+  id: step.id || `${index + 1}`,
+  label: step.label || '',
+  text: step.label || step.text || '',
+  completed: false,
+  required: step.required || false,
+  type: step.type,
+  config: {
+    ...step.config,
+    text: step.config?.text || step.text || ''
+  },
+
+FIX 4 of 4: Search for any other occurrences
+Search for checklistTemplate?.steps?.map in storage.ts and ensure ALL occurrences include config with the text field properly copied. The pattern should always be:
+typescriptconfig: {
+  ...step.config,
+  text: step.config?.text || step.text || ''
+}
+
+After making changes: Existing task instances will NOT automatically get the instructions. You'll need to either:
+
+Edit and re-save the recurring task to regenerate instances, OR
+Run the regenerate endpoint for affected recurring tasks
+
+DO NOT delete any existing data. Confirm when complete and show me how many locations were updated.

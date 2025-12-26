@@ -440,19 +440,22 @@ export class MemStorage implements IStorage {
       progress: 0,
       checklist: template.checklistTemplate?.steps?.map((step, index) => ({
         id: `${index + 1}`,
+        label: step.label || '',
         text: step.label || step.text || '',
         completed: false,
         required: step.required || false,
         type: step.type,
         config: {
-          inventoryCategory: step.inventoryCategory,
-          min: step.min,
-          max: step.max,
-          default: step.default,
-          systemType: step.systemType,
-          autoSuggest: step.autoSuggest,
-          dataType: step.dataType,
-          calculation: step.calculation
+          ...step.config,
+          text: step.config?.text || step.text || '',
+          inventoryCategory: step.config?.inventoryCategory || step.inventoryCategory,
+          min: step.config?.min || step.min,
+          max: step.config?.max || step.max,
+          default: step.config?.default || step.default,
+          systemType: step.config?.systemType || step.systemType,
+          autoSuggest: step.config?.autoSuggest || step.autoSuggest,
+          dataType: step.config?.dataType || step.dataType,
+          calculation: step.config?.calculation || step.calculation
         },
         dataCollection: step.type === 'data-capture' ? { 
           type: step.dataType || 'text', 
@@ -785,10 +788,15 @@ export class MemStorage implements IStorage {
       progress: 0,
       checklist: template.checklistTemplate?.steps?.map((step, index) => ({
         id: `${index + 1}`,
+        label: step.label || '',
         text: step.label || step.text || '',
         completed: false,
         required: step.required || false,
-        type: step.type
+        type: step.type,
+        config: {
+          ...step.config,
+          text: step.config?.text || step.text || ''
+        }
       })) || [],
       data: {},
       taskDate: visibleDate, // Add required taskDate field
@@ -2813,11 +2821,15 @@ export class MemStorage implements IStorage {
       progress: 0,
       checklist: recurringTask.checklistTemplate?.steps?.map((step, index) => ({
         id: step.id || `${index + 1}`,
-        text: step.label || '',
+        label: step.label || '',
+        text: step.label || step.text || '',
         completed: false,
         required: step.required || false,
         type: step.type,
-        config: step.config,
+        config: {
+          ...step.config,
+          text: step.config?.text || step.text || ''
+        },
         dataCollection: step.type === 'data-capture' ? { 
           type: step.config?.dataType || 'text', 
           label: step.label || '' 
