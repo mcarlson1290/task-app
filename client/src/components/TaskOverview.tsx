@@ -862,11 +862,20 @@ export const TaskOverview: React.FC = () => {
                   <th className="text-left p-2 font-medium">Status</th>
                   <th className="text-left p-2 font-medium">Time Taken</th>
                   <th className="text-left p-2 font-medium">Priority</th>
-                  <th className="text-left p-2 font-medium">Created</th>
+                  <th className="text-left p-2 font-medium">Completed</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredTasks.slice(0, 10).map((task) => (
+                {filteredTasks
+                  .filter(task => task.status === 'completed')
+                  .sort((a, b) => {
+                    // Sort by completedAt date, most recent first
+                    const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+                    const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+                    return dateB - dateA;
+                  })
+                  .slice(0, 10)
+                  .map((task) => (
                   <tr key={task.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">
                       <div className="font-medium">{task.title}</div>
@@ -890,7 +899,7 @@ export const TaskOverview: React.FC = () => {
                       </Badge>
                     </td>
                     <td className="p-2 text-sm text-gray-500">
-                      {new Date(task.createdAt).toLocaleDateString()}
+                      {task.completedAt ? new Date(task.completedAt).toLocaleDateString() : '-'}
                     </td>
                   </tr>
                 ))}
