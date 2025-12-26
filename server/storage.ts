@@ -3819,22 +3819,29 @@ class DatabaseStorage implements IStorage {
         return false;
       }
 
-      // Delete associated future pending tasks (preserve completed and in-progress)
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      
+      // Delete associated pending/skipped tasks (these are future tasks that haven't been worked on)
       const deletedTasks = await db.delete(tasks)
         .where(
           and(
             eq(tasks.recurringTaskId, id),
-            eq(tasks.status, 'pending')
-            // Note: We delete ALL pending tasks regardless of date since we want to clean up all future instances
+            or(
+              eq(tasks.status, 'pending'),
+              eq(tasks.status, 'skipped')
+            )
           )
         );
       
-      console.log(`🗑️ [DB DELETE] Deleted ${deletedTasks.rowCount || 0} future pending tasks for recurring task ${id}`);
+      console.log(`🗑️ [DB DELETE] Deleted ${deletedTasks.rowCount || 0} pending/skipped tasks for recurring task ${id}`);
 
-      // Delete the recurring task
+      // Orphan remaining tasks (completed, in_progress) by setting recurringTaskId to null
+      // This preserves historical data while breaking the foreign key reference
+      const orphanedTasks = await db.update(tasks)
+        .set({ recurringTaskId: null })
+        .where(eq(tasks.recurringTaskId, id));
+      
+      console.log(`🗑️ [DB DELETE] Orphaned ${orphanedTasks.rowCount || 0} historical tasks for recurring task ${id}`);
+
+      // Now delete the recurring task (no more foreign key references)
       const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
       
       console.log(`🗑️ [DB DELETE] Successfully deleted recurring task ${id}`);
