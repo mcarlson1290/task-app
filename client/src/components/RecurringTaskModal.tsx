@@ -344,7 +344,7 @@ const RecurringTaskModal: React.FC<RecurringTaskModalProps> = ({ task, isOpen, o
       await onSave({
         ...formData,
         id: task?.id,
-        location: currentLocation.name,
+        location: currentLocation.code,
         strategy: strategy
       });
       

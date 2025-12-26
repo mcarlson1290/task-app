@@ -459,9 +459,14 @@ export const TaskOverview: React.FC = () => {
 
   // Calculate comprehensive analytics from task data
   const analyticsData = useMemo(() => {
+    // Map full location names to codes for backwards compatibility
+    const locationNameToCode: { [key: string]: string } = { 'Kenosha': 'K', 'kenosha': 'K' };
     const locationFilteredTasks = isViewingAllLocations 
       ? tasks 
-      : tasks.filter(task => task.location === currentLocation.code);
+      : tasks.filter(task => {
+          const taskCode = locationNameToCode[task.location] || task.location;
+          return taskCode === currentLocation.code;
+        });
     
     const totalTasks = locationFilteredTasks.length;
     const completedTasks = locationFilteredTasks.filter(task => task.status === 'completed').length;
@@ -578,7 +583,12 @@ export const TaskOverview: React.FC = () => {
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       // Location filter - only show tasks for current location unless viewing all locations
-      if (!isViewingAllLocations && task.location !== currentLocation.code) return false;
+      // Map full location names to codes for backwards compatibility
+      if (!isViewingAllLocations) {
+        const locationNameToCode: { [key: string]: string } = { 'Kenosha': 'K', 'kenosha': 'K' };
+        const taskCode = locationNameToCode[task.location] || task.location;
+        if (taskCode !== currentLocation.code) return false;
+      }
       
       // Apply filters
       if (filters.taskType !== 'all' && task.type !== filters.taskType) return false;

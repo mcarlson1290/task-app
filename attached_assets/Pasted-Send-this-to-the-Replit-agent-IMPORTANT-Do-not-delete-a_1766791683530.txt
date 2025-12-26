@@ -1,0 +1,82 @@
+Send this to the Replit agent:
+
+IMPORTANT: Do not delete any existing tasks, recurring tasks, or user data. Make ONLY the changes described below.
+Problem: We want to standardize on short location codes (e.g., "K" for Kenosha) instead of full names (e.g., "Kenosha"). This affects task creation, filtering, and display.
+Overview of changes needed:
+
+New recurring tasks should save with location code "K" instead of "Kenosha"
+Server-side filtering should map "K" to also match existing "Kenosha" tasks (for backwards compatibility)
+Client-side filtering should use the code consistently
+Optionally: A data migration to update existing tasks (can be done later)
+
+
+Fix 1: RecurringTaskModal - save location code instead of name
+File: client/src/components/RecurringTaskModal.tsx
+Find (around line 347):
+tsx        location: currentLocation.name,
+Replace with:
+tsx        location: currentLocation.code,
+
+Fix 2: TaskOverview - filter using code with backwards compatibility
+File: client/src/components/TaskOverview.tsx
+Find (around line 462-464):
+tsx    const locationFilteredTasks = isViewingAllLocations 
+      ? tasks 
+      : tasks.filter(task => task.location === currentLocation.code);
+Replace with:
+tsx    // Map full location names to codes for backwards compatibility
+    const locationNameToCode: { [key: string]: string } = { 'Kenosha': 'K', 'kenosha': 'K' };
+    const locationFilteredTasks = isViewingAllLocations 
+      ? tasks 
+      : tasks.filter(task => {
+          const taskCode = locationNameToCode[task.location] || task.location;
+          return taskCode === currentLocation.code;
+        });
+Find (around line 581):
+tsx      // Location filter - only show tasks for current location unless viewing all locations
+      if (!isViewingAllLocations && task.location !== currentLocation.code) return false;
+Replace with:
+tsx      // Location filter - only show tasks for current location unless viewing all locations
+      // Map full location names to codes for backwards compatibility
+      if (!isViewingAllLocations) {
+        const locationNameToCode: { [key: string]: string } = { 'Kenosha': 'K', 'kenosha': 'K' };
+        const taskCode = locationNameToCode[task.location] || task.location;
+        if (taskCode !== currentLocation.code) return false;
+      }
+
+Fix 3: Server routes - ensure location mapping works both ways
+File: server/routes.ts
+Find the location mapping in the GET /api/tasks endpoint (around line 404-407):
+tsx        // Map short location codes to full names for backwards compatibility  
+        const locationMap: { [key: string]: string } = {
+          'K': 'Kenosha'
+        };
+        const actualLocation = locationMap[upperLocation] || cleanedLocation;
+Replace with:
+tsx        // Map short location codes to full names AND full names to codes for backwards compatibility  
+        const codeToName: { [key: string]: string } = { 'K': 'Kenosha' };
+        const nameToCode: { [key: string]: string } = { 'KENOSHA': 'K' };
+        
+        // Determine if input is a code or a name, and get both versions
+        const isCode = codeToName[upperLocation];
+        const locationCode = isCode ? upperLocation : (nameToCode[upperLocation] || cleanedLocation);
+        const locationName = isCode ? codeToName[upperLocation] : cleanedLocation;
+        
+        console.log(`🔍 Using location filtering for: "${cleanedLocation}" → code: "${locationCode}", name: "${locationName}"`);
+        
+        // Get tasks matching either the code OR the full name (for backwards compatibility)
+        const tasksByCode = await storage.getTasksByLocation(locationCode);
+        const tasksByName = locationCode !== locationName ? await storage.getTasksByLocation(locationName) : [];
+        
+        // Combine and deduplicate
+        const taskMap = new Map();
+        [...tasksByCode, ...tasksByName].forEach(t => taskMap.set(t.id, t));
+        tasks = Array.from(taskMap.values());
+
+After these changes:
+
+New tasks will be created with location: "K"
+Existing tasks with location: "Kenosha" will still show up (backwards compatible)
+Task Data page will display all tasks correctly
+
+DO NOT make any other changes. Confirm when complete.

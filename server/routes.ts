@@ -400,20 +400,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const cleanedLocation = rawLocation.trim().replace(/^['"]|['"]$/g, '');
         const upperLocation = cleanedLocation.toUpperCase();
         
-        // Map short location codes to full names for backwards compatibility  
-        const locationMap: { [key: string]: string } = {
-          'K': 'Kenosha'
-        };
-        const actualLocation = locationMap[upperLocation] || cleanedLocation;
+        // Map short location codes to full names AND full names to codes for backwards compatibility  
+        const codeToName: { [key: string]: string } = { 'K': 'Kenosha' };
+        const nameToCode: { [key: string]: string } = { 'KENOSHA': 'K' };
         
-        console.log(`🔍 Using location filtering for: "${cleanedLocation}" → "${actualLocation}"`);
-        tasks = await storage.getTasksByLocation(actualLocation);
+        // Determine if input is a code or a name, and get both versions
+        const isCode = codeToName[upperLocation];
+        const locationCode = isCode ? upperLocation : (nameToCode[upperLocation] || cleanedLocation);
+        const locationName = isCode ? codeToName[upperLocation] : cleanedLocation;
         
-        // Defensive retry if mapping exists but got 0 results
-        if (tasks.length === 0 && locationMap[upperLocation] && actualLocation !== cleanedLocation) {
-          console.log(`🔍 Retrying with mapped location: "${actualLocation}"`);
-          tasks = await storage.getTasksByLocation(actualLocation);
-        }
+        console.log(`🔍 Using location filtering for: "${cleanedLocation}" → code: "${locationCode}", name: "${locationName}"`);
+        
+        // Get tasks matching either the code OR the full name (for backwards compatibility)
+        const tasksByCode = await storage.getTasksByLocation(locationCode);
+        const tasksByName = locationCode !== locationName ? await storage.getTasksByLocation(locationName) : [];
+        
+        // Combine and deduplicate
+        const taskMap = new Map();
+        [...tasksByCode, ...tasksByName].forEach(t => taskMap.set(t.id, t));
+        tasks = Array.from(taskMap.values());
       } else if (userId) {
         console.log(`🔍 Using user filtering for userId: ${userId}`);
         tasks = await storage.getTasksByUser(parseInt(userId as string));
