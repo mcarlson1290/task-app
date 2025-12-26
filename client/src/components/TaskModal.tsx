@@ -30,6 +30,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
   const [notes, setNotes] = React.useState<string>('');
   const [showSkipReason, setShowSkipReason] = React.useState(false);
   const [skipReason, setSkipReason] = React.useState('');
+  const [showIncompleteConfirm, setShowIncompleteConfirm] = React.useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -130,9 +131,19 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
     });
   };
 
-  const handleCompleteTask = () => {
+  const handleCompleteTask = (forceComplete = false) => {
     if (!task) {
       console.error('No task available for completion');
+      return;
+    }
+
+    // Check for incomplete checklist items
+    const checklistItems = task.checklist || [];
+    const incompleteCount = checklistItems.filter(item => !item.completed).length;
+    
+    if (incompleteCount > 0 && !forceComplete) {
+      // Show confirmation dialog instead of completing
+      setShowIncompleteConfirm(true);
       return;
     }
 
@@ -530,6 +541,39 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
           </div>
         </div>
       </DialogContent>
+
+      {/* Incomplete Checklist Confirmation Dialog */}
+      <Dialog open={showIncompleteConfirm} onOpenChange={setShowIncompleteConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-yellow-600">
+              ⚠️ Incomplete Checklist Items
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700">
+              There are <strong>{(task?.checklist || []).filter(item => !item.completed).length}</strong> uncompleted checklist steps.
+            </p>
+            <p className="text-gray-600 mt-2">
+              Are you sure you want to mark this task as complete anyway?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowIncompleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-[#2D8028] hover:bg-[#203B17]"
+              onClick={() => {
+                setShowIncompleteConfirm(false);
+                handleCompleteTask(true);
+              }}
+            >
+              Yes, Complete Task
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
