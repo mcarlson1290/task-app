@@ -487,8 +487,15 @@ export const TaskOverview: React.FC = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     const todaysTasks = locationFilteredTasks.filter(task => {
-      const taskDate = new Date(task.createdAt);
-      return taskDate >= today && taskDate < tomorrow;
+      // Use dueDate or taskDate to find tasks scheduled for today
+      const taskDateStr = task.dueDate || task.taskDate || task.createdAt;
+      if (!taskDateStr) return false;
+      
+      // Parse the date string and compare just the date portion (ignore time)
+      const taskDateParts = taskDateStr.toString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+      
+      return taskDateParts === todayStr;
     });
     
     const overdueRate = locationFilteredTasks.filter(task => {
