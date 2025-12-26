@@ -87,8 +87,9 @@ const RecurringTasks: React.FC = () => {
         const taskFreq = task.frequency.toLowerCase();
         
         if (frequencyFilter === 'weekly') {
-          // Weekly means it happens on specific days of the week
-          return taskFreq.includes('monday') || 
+          // Weekly tasks have frequency="weekly" and days in daysOfWeek array
+          return taskFreq === 'weekly' || 
+                 taskFreq.includes('monday') || 
                  taskFreq.includes('tuesday') || 
                  taskFreq.includes('wednesday') || 
                  taskFreq.includes('thursday') || 
@@ -98,11 +99,19 @@ const RecurringTasks: React.FC = () => {
         }
         
         if (frequencyFilter === 'bi-weekly') {
-          return taskFreq.includes('bi-weekly') || taskFreq.includes('biweekly');
+          return taskFreq === 'bi-weekly' || taskFreq === 'biweekly';
         }
         
         if (frequencyFilter === 'monthly') {
-          return taskFreq.includes('monthly');
+          return taskFreq === 'monthly';
+        }
+        
+        if (frequencyFilter === 'quarterly') {
+          return taskFreq === 'quarterly';
+        }
+        
+        if (frequencyFilter === 'daily') {
+          return taskFreq === 'daily';
         }
         
         return false;
