@@ -231,9 +231,11 @@ const RecurringTasks: React.FC = () => {
 
   const deleteTaskMutation = useMutation({
     mutationFn: async (id: number) => {
+      console.log('🗑️ Attempting to delete recurring task:', id);
       return await apiRequest('DELETE', `/api/recurring-tasks/${id}`);
     },
     onSuccess: () => {
+      console.log('✅ Delete successful');
       queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] }); // Also refresh tasks
       setShowDeleteModal(false);
@@ -241,6 +243,14 @@ const RecurringTasks: React.FC = () => {
       toast({
         title: 'Task Deleted',
         description: 'Recurring task deleted. Future tasks removed, historical data preserved.',
+      });
+    },
+    onError: (error) => {
+      console.error('❌ Delete failed:', error);
+      toast({
+        title: 'Delete Failed',
+        description: 'Failed to delete recurring task. Please try again.',
+        variant: 'destructive'
       });
     },
   });

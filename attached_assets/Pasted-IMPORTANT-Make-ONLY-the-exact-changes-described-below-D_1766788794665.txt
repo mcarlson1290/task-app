@@ -1,0 +1,78 @@
+IMPORTANT: Make ONLY the exact changes described below. Do not modify any other code.
+Problem: The "Delete Recurring Task" button doesn't work - after typing "DELETE" in the confirmation field, nothing happens when clicking the button.
+Two fixes needed:
+
+FIX 1: Add error handling to deleteTaskMutation
+File: client/src/pages/RecurringTasks.tsx
+Find this code (around lines 223-237):
+tsx  const deleteTaskMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest('DELETE', `/api/recurring-tasks/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] }); // Also refresh tasks
+      setShowDeleteModal(false);
+      setDeletingTask(null);
+      toast({
+        title: 'Task Deleted',
+        description: 'Recurring task deleted. Future tasks removed, historical data preserved.',
+      });
+    },
+  });
+Replace with:
+tsx  const deleteTaskMutation = useMutation({
+    mutationFn: async (id: number) => {
+      console.log('🗑️ Attempting to delete recurring task:', id);
+      return await apiRequest('DELETE', `/api/recurring-tasks/${id}`);
+    },
+    onSuccess: () => {
+      console.log('✅ Delete successful');
+      queryClient.invalidateQueries({ queryKey: ['/api/recurring-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] }); // Also refresh tasks
+      setShowDeleteModal(false);
+      setDeletingTask(null);
+      toast({
+        title: 'Task Deleted',
+        description: 'Recurring task deleted. Future tasks removed, historical data preserved.',
+      });
+    },
+    onError: (error) => {
+      console.error('❌ Delete failed:', error);
+      toast({
+        title: 'Delete Failed',
+        description: 'Failed to delete recurring task. Please try again.',
+        variant: 'destructive'
+      });
+    },
+  });
+
+FIX 2: Add debugging to the delete confirmation handler
+File: client/src/components/DeleteRecurringTaskModal.tsx
+Find this code (around lines 73-78):
+tsx  const handleDelete = () => {
+    if (confirmText === 'DELETE') {
+      onConfirm();
+      setConfirmText('');
+    }
+  };
+Replace with:
+tsx  const handleDelete = () => {
+    console.log('🗑️ handleDelete called, confirmText:', confirmText, 'length:', confirmText.length);
+    console.log('🗑️ Comparison result:', confirmText === 'DELETE', 'trimmed:', confirmText.trim() === 'DELETE');
+    
+    if (confirmText.trim() === 'DELETE') {
+      console.log('✅ Confirmation matched, calling onConfirm');
+      onConfirm();
+      setConfirmText('');
+    } else {
+      console.log('❌ Confirmation did not match "DELETE"');
+    }
+  };
+Also update line 155 to use trimmed comparison:
+Find:
+tsx            disabled={confirmText !== 'DELETE' || isLoading}
+Replace with:
+tsx            disabled={confirmText.trim() !== 'DELETE' || isLoading}
+
+DO NOT make any other changes. Confirm when complete.

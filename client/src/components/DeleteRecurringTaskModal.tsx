@@ -71,9 +71,15 @@ const DeleteRecurringTaskModal: React.FC<DeleteRecurringTaskModalProps> = ({
   }, [isOpen, recurringTask]);
 
   const handleDelete = () => {
-    if (confirmText === 'DELETE') {
+    console.log('🗑️ handleDelete called, confirmText:', confirmText, 'length:', confirmText.length);
+    console.log('🗑️ Comparison result:', confirmText === 'DELETE', 'trimmed:', confirmText.trim() === 'DELETE');
+    
+    if (confirmText.trim() === 'DELETE') {
+      console.log('✅ Confirmation matched, calling onConfirm');
       onConfirm();
       setConfirmText('');
+    } else {
+      console.log('❌ Confirmation did not match "DELETE"');
     }
   };
 
@@ -152,7 +158,7 @@ const DeleteRecurringTaskModal: React.FC<DeleteRecurringTaskModalProps> = ({
           <Button 
             variant="destructive"
             onClick={handleDelete} 
-            disabled={confirmText !== 'DELETE' || isLoading}
+            disabled={confirmText.trim() !== 'DELETE' || isLoading}
           >
             Delete Recurring Task
           </Button>
