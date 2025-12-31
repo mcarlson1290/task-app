@@ -18,12 +18,14 @@ export interface AddInventoryData {
   sku: string;
   category: string;
   trackingCategory: string;
+  trackingType: string;
   quantity: number;
   unit: string;
   totalCost: number;
   costPerUnit: number;
   supplier: string;
   minimumStock: number;
+  location: string;
   notes: string;
 }
 
@@ -37,12 +39,14 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
     sku: '',
     category: 'seeds',
     trackingCategory: 'General',
+    trackingType: 'exact',
     quantity: 0,
     unit: 'oz',
     totalCost: 0,
     costPerUnit: 0,
     supplier: '',
     minimumStock: 0,
+    location: 'K',
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +71,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0) {
+    if (!inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0) {
       return;
     }
 
@@ -80,12 +84,14 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
         sku: '',
         category: 'seeds',
         trackingCategory: 'General',
+        trackingType: 'exact',
         quantity: 0,
         unit: 'oz',
         totalCost: 0,
         costPerUnit: 0,
         supplier: '',
         minimumStock: 0,
+        location: 'K',
         notes: ''
       });
       onClose();
@@ -283,7 +289,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
             <Button 
               type="submit" 
               className="flex-1 bg-[#2D8028] hover:bg-[#203B17]"
-              disabled={isSubmitting || !inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0 || inventoryData.totalCost <= 0}
+              disabled={isSubmitting || !inventoryData.name || !inventoryData.sku || inventoryData.quantity <= 0}
             >
               {isSubmitting ? "Adding..." : "Add New Item"}
             </Button>

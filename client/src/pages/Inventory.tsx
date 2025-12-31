@@ -300,20 +300,25 @@ Please process this reorder request at your earliest convenience.`;
   };
 
   const handleAddInventory = async (data: AddInventoryData) => {
-    // Create a new inventory item with the form data
+    console.log('📦 Adding inventory item:', data);
+    
+    // Create a new inventory item with ALL the form data including new fields
     const newItem = {
       name: data.name,
       sku: data.sku,
       category: data.category,
+      trackingCategory: data.trackingCategory,
+      trackingType: data.trackingType || 'exact',
       currentStock: data.quantity,
       unit: data.unit,
       minimumStock: data.minimumStock,
-      supplier: data.supplier,
-      avgCostPerUnit: data.costPerUnit,
-      totalValue: data.totalCost
+      location: data.location || 'K',
+      supplier: data.supplier || null,
+      avgCostPerUnit: data.costPerUnit || 0,
+      totalValue: data.totalCost || 0
     };
     
-    // Use the create item mutation instead
+    console.log('📤 Sending to API:', newItem);
     await createItemMutation.mutateAsync(newItem);
   };
 
