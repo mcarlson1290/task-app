@@ -841,7 +841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🏷️  Assigning tracking categories to inventory items...');
       
-      const allItems = await storage.getAllInventory();
+      const allItems = await storage.getAllInventoryItems();
       let updateCount = 0;
       
       for (const item of allItems) {
