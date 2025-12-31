@@ -202,7 +202,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[#203B17]">
             {mode === 'edit' ? 'Edit Inventory Item' : 'Add New Item'}
