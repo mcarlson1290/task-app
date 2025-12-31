@@ -18,6 +18,9 @@ import AddStockModal from "@/components/AddStockModal";
 const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
+  const [trackingCategoryFilter, setTrackingCategoryFilter] = React.useState<string>(
+    new URLSearchParams(window.location.search).get('trackingCategory') || 'all'
+  );
   const [showLowStockOnly, setShowLowStockOnly] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<string>("name");
   const [showModal, setShowModal] = React.useState(false);
@@ -115,6 +118,13 @@ const Inventory: React.FC = () => {
     { value: "equipment", label: "Equipment" },
   ];
 
+  const trackingCategories = [
+    { value: "all", label: "All Inventory" },
+    { value: "Microgreen", label: "🌱 Microgreen Supplies" },
+    { value: "Leafy Green", label: "🥬 Leafy Green Supplies" },
+    { value: "General", label: "📦 General Supplies" },
+  ];
+
   const categoryDetails = [
     { id: 'seeds', name: 'Seeds', icon: '🌱', color: '#22c55e' },
     { id: 'nutrients', name: 'Nutrients', icon: '🧪', color: '#3b82f6' },
@@ -185,6 +195,10 @@ const Inventory: React.FC = () => {
 
     if (categoryFilter && categoryFilter !== "all") {
       filtered = filtered.filter(item => item.category === categoryFilter);
+    }
+
+    if (trackingCategoryFilter && trackingCategoryFilter !== "all") {
+      filtered = filtered.filter(item => item.trackingCategory === trackingCategoryFilter);
     }
 
     if (showLowStockOnly) {
@@ -403,6 +417,20 @@ Please process this reorder request at your earliest convenience.`;
             {categories.map((category) => (
               <SelectItem key={category.value} value={category.value}>
                 {category.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {/* Tracking Category Filter */}
+        <Select value={trackingCategoryFilter} onValueChange={setTrackingCategoryFilter}>
+          <SelectTrigger className="w-[180px] bg-white">
+            <SelectValue placeholder="Audit Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {trackingCategories.map((cat) => (
+              <SelectItem key={cat.value} value={cat.value}>
+                {cat.label}
               </SelectItem>
             ))}
           </SelectContent>

@@ -228,6 +228,8 @@ export const inventoryItems = pgTable("inventory_items", {
   name: text("name").notNull(),
   category: text("category").notNull(), // 'seeds', 'nutrients', 'supplies', 'equipment'
   sku: text("sku").notNull().default('TEMP'), // 4-character SKU for tray ID generation (was productCode)
+  trackingCategory: text("tracking_category"), // "Microgreen", "Leafy Green", or "General"
+  trackingType: text("tracking_type").default("exact"), // "exact" or "estimated"
   currentStock: integer("current_stock").default(0),
   minimumStock: integer("minimum_stock").default(0),
   unit: text("unit").notNull(), // 'kg', 'lbs', 'pieces', 'liters', 'grams'

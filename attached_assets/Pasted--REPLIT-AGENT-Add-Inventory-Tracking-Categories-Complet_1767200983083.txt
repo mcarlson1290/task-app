@@ -1,0 +1,400 @@
+# REPLIT AGENT: Add Inventory Tracking Categories - Complete Package
+
+**IMPORTANT: Do not delete any existing tasks, recurring tasks, inventory items, or user data**
+
+---
+
+## PART A: Database Schema Updates
+
+### File: `/db/schema.ts` (or `/shared/schema.ts` - whichever has your pgTable definitions)
+
+**Find the `inventoryItems` table definition and add these two new fields:**
+
+```typescript
+// Add these fields to the inventoryItems pgTable definition:
+trackingCategory: text("tracking_category"), // "Microgreen", "Leafy Green", or "General"
+trackingType: text("tracking_type").default("exact"), // "exact" or "estimated"
+```
+
+**Example of complete schema (add the two fields marked NEW):**
+```typescript
+export const inventoryItems = pgTable("inventory_items", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  sku: text("sku"),
+  category: text("category").notNull(),
+  trackingCategory: text("tracking_category"), // NEW
+  trackingType: text("tracking_type").default("exact"), // NEW
+  currentStock: integer("current_stock").default(0),
+  unit: text("unit").notNull(),
+  minimumStock: integer("minimum_stock").default(0),
+  location: text("location").default("K"),
+  supplier: text("supplier"),
+  avgCostPerUnit: doublePrecision("avg_cost_per_unit").default(0),
+  totalValue: doublePrecision("total_value").default(0),
+  lastRestocked: timestamp("last_restocked"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+```
+
+---
+
+## PART B: Update Inventory Page UI
+
+### File: `/client/src/pages/Inventory.tsx`
+
+### B1: Add tracking categories constant (around line 109, after the categories array)
+
+```typescript
+const trackingCategories = [
+  { value: "all", label: "All Inventory" },
+  { value: "Microgreen", label: "🌱 Microgreen Supplies" },
+  { value: "Leafy Green", label: "🥬 Leafy Green Supplies" },
+  { value: "General", label: "📦 General Supplies" },
+];
+```
+
+### B2: Add state for tracking category filter (around line 20, after categoryFilter state)
+
+```typescript
+const [trackingCategoryFilter, setTrackingCategoryFilter] = React.useState<string>("all");
+```
+
+### B3: Update the component to read URL params for auto-filtering
+
+**Add this import at the top:**
+```typescript
+import { useSearchParams } from 'react-router-dom';
+```
+
+**Replace the trackingCategoryFilter useState line with:**
+```typescript
+const [searchParams] = useSearchParams();
+const [trackingCategoryFilter, setTrackingCategoryFilter] = React.useState<string>(
+  searchParams.get('trackingCategory') || 'all'
+);
+```
+
+### B4: Add filtering logic (in the filteredInventory useMemo, after the categoryFilter block)
+
+**Find this section:**
+```typescript
+if (categoryFilter && categoryFilter !== "all") {
+  filtered = filtered.filter(item => item.category === categoryFilter);
+}
+```
+
+**Add this NEW filter right after it:**
+```typescript
+if (trackingCategoryFilter && trackingCategoryFilter !== "all") {
+  filtered = filtered.filter(item => item.trackingCategory === trackingCategoryFilter);
+}
+```
+
+### B5: Add the tracking category filter dropdown to the UI
+
+**Find the filter controls section where the categoryFilter dropdown is rendered.**
+
+**Add this NEW filter component after the existing category filter Select component:**
+
+```tsx
+{/* Tracking Category Filter */}
+<div className="flex flex-col gap-2">
+  <label className="text-sm font-medium text-gray-700">
+    📋 Audit Category
+  </label>
+  <Select
+    value={trackingCategoryFilter}
+    onValueChange={setTrackingCategoryFilter}
+  >
+    <SelectTrigger className="w-[220px]">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      {trackingCategories.map((cat) => (
+        <SelectItem key={cat.value} value={cat.value}>
+          {cat.label}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+```
+
+---
+
+## PART C: Update Monthly Audit Tasks
+
+### File: `/server/routes.ts`
+
+**Find the default recurring tasks section (around line 1806) where you see these tasks:**
+- "Check the Inventory of Leafy Green Stock"
+- "Check General Inventory Stock"  
+- "Check Nutrient Inventory"
+
+**REPLACE or UPDATE those three tasks to look like this:**
+
+```typescript
+{ 
+  title: "Check Microgreen Inventory", 
+  description: "Audit microgreen seeds, growing media, trays, and harvest supplies.", 
+  category: "Inventory", 
+  priority: "medium", 
+  frequency: "monthly", 
+  daysOfWeek: null,
+  dayOfMonth: 1, 
+  assignedRole: "General Staff",
+  checklist: JSON.stringify([
+    {
+      type: "instruction",
+      label: "📋 Click 'Open Inventory' below to view and update microgreen supply quantities.",
+      required: false
+    }
+  ]),
+  metadata: JSON.stringify({ 
+    autoFilterInventory: "Microgreen"
+  })
+},
+{ 
+  title: "Check Leafy Green Inventory", 
+  description: "Audit rockwool, oasis cubes, lettuce seeds, net cups, and leafy green packaging.", 
+  category: "Inventory", 
+  priority: "medium", 
+  frequency: "monthly", 
+  daysOfWeek: null,
+  dayOfMonth: 1, 
+  assignedRole: "General Staff",
+  checklist: JSON.stringify([
+    {
+      type: "instruction",
+      label: "📋 Click 'Open Inventory' below to view and update leafy green supply quantities.",
+      required: false
+    }
+  ]),
+  metadata: JSON.stringify({ 
+    autoFilterInventory: "Leafy Green"
+  })
+},
+{ 
+  title: "Check General Inventory", 
+  description: "Audit general supplies: order bags, boxes, labels, cleaning supplies, and nutrients.", 
+  category: "Inventory", 
+  priority: "medium", 
+  frequency: "monthly", 
+  daysOfWeek: null,
+  dayOfMonth: 1, 
+  assignedRole: "General Staff",
+  checklist: JSON.stringify([
+    {
+      type: "instruction",
+      label: "📋 Click 'Open Inventory' below to view and update general supply quantities.",
+      required: false
+    }
+  ]),
+  metadata: JSON.stringify({ 
+    autoFilterInventory: "General"
+  })
+},
+```
+
+---
+
+## PART D: Add Task → Inventory Auto-Filter Navigation
+
+### File: `/client/src/components/TaskActionModal.tsx` or similar task modal component
+
+**Find where the task modal handles navigation or has an "Open Inventory" button.**
+
+**Add this function to handle navigation with auto-filtering:**
+
+```typescript
+const handleInventoryNavigation = (task: any) => {
+  let metadata;
+  try {
+    metadata = task.metadata ? JSON.parse(task.metadata) : {};
+  } catch (e) {
+    metadata = {};
+  }
+  
+  const autoFilter = metadata.autoFilterInventory;
+  
+  if (autoFilter) {
+    navigate(`/inventory?trackingCategory=${autoFilter}`);
+  } else {
+    navigate('/inventory');
+  }
+};
+```
+
+**Update the Inventory button in the modal (if it exists):**
+```tsx
+{task.category === "Inventory" && (
+  <Button
+    onClick={() => handleInventoryNavigation(task)}
+    className="w-full"
+  >
+    📦 Open Inventory Page
+  </Button>
+)}
+```
+
+**If there's NO "Open Inventory" button, add one:**
+```tsx
+{/* Add this section in the modal where action buttons are */}
+{task.category === "Inventory" && (
+  <div className="mt-4">
+    <Button
+      onClick={() => handleInventoryNavigation(task)}
+      className="w-full bg-green-600 hover:bg-green-700"
+    >
+      📦 Open Inventory Page
+    </Button>
+  </div>
+)}
+```
+
+---
+
+## PART E: Assign Tracking Categories to Existing Inventory
+
+### File: `/server/routes.ts`
+
+**Add this NEW endpoint (put it with the other inventory endpoints):**
+
+```typescript
+// Bulk assign tracking categories to existing inventory
+app.post("/api/inventory/assign-tracking-categories", async (req, res) => {
+  try {
+    console.log('🏷️  Assigning tracking categories to inventory items...');
+    
+    const allItems = await storage.getAllInventory();
+    let updateCount = 0;
+    
+    for (const item of allItems) {
+      // Skip if already assigned
+      if (item.trackingCategory) {
+        console.log(`  ⏭️  Skipping ${item.name} - already has category: ${item.trackingCategory}`);
+        continue;
+      }
+      
+      let category = 'General'; // Default
+      const nameLower = item.name.toLowerCase();
+      const skuUpper = (item.sku || '').toUpperCase();
+      
+      // Microgreen items
+      if (nameLower.includes('microgreen') || skuUpper.includes('MG')) {
+        category = 'Microgreen';
+      }
+      // Leafy Green items (seeds and supplies)
+      else if (
+        item.category === 'seeds' ||
+        nameLower.includes('lettuce') ||
+        nameLower.includes('spinach') ||
+        nameLower.includes('arugula') ||
+        nameLower.includes('kale') ||
+        nameLower.includes('romaine') ||
+        nameLower.includes('basil') ||
+        nameLower.includes('rockwool') ||
+        nameLower.includes('oasis') ||
+        nameLower.includes('net cup')
+      ) {
+        category = 'Leafy Green';
+      }
+      
+      await storage.updateInventoryItem(item.id, {
+        trackingCategory: category,
+        trackingType: 'exact'
+      });
+      
+      console.log(`  ✅ ${item.name} → ${category}`);
+      updateCount++;
+    }
+    
+    console.log(`🎉 Assigned tracking categories to ${updateCount} items`);
+    
+    res.json({ 
+      success: true, 
+      message: `Assigned tracking categories to ${updateCount} items`,
+      updated: updateCount
+    });
+  } catch (error) {
+    console.error("❌ Error assigning tracking categories:", error);
+    res.status(500).json({ message: "Failed to assign tracking categories" });
+  }
+});
+```
+
+---
+
+## PART F: Update Add/Edit Inventory Forms
+
+### File: `/client/src/components/InventoryModal.tsx`
+
+**Add tracking category field to the form (add this where other fields like category, unit, etc. are):**
+
+```tsx
+{/* Tracking Category */}
+<div className="space-y-2">
+  <label className="text-sm font-medium text-gray-700">
+    Tracking Category
+  </label>
+  <Select
+    value={formData.trackingCategory || 'General'}
+    onValueChange={(value) => setFormData({ ...formData, trackingCategory: value })}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select category" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="Microgreen">🌱 Microgreen Supplies</SelectItem>
+      <SelectItem value="Leafy Green">🥬 Leafy Green Supplies</SelectItem>
+      <SelectItem value="General">📦 General Supplies</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+```
+
+### File: `/client/src/components/AddInventoryModal.tsx`
+
+**Add the same tracking category field as above.**
+
+---
+
+## IMPLEMENTATION ORDER
+
+After pasting all the above code changes:
+
+1. ✅ Changes will auto-apply
+2. ✅ Database schema updates
+3. 🔄 **Run this command once to assign categories to existing inventory:**
+   - Make a POST request to: `/api/inventory/assign-tracking-categories`
+   - You can use Replit's web preview or curl
+4. 🔄 **Regenerate monthly tasks:**
+   - Make a POST request to: `/api/admin/generate-tasks`
+   - Or wait until next month for them to auto-generate
+
+---
+
+## NOTES
+
+- Existing monthly inventory tasks will stay (they won't be deleted)
+- New tasks will generate with the updated metadata
+- To see the new tasks immediately, delete old monthly inventory tasks first, then regenerate
+- All existing inventory will be auto-categorized based on name/SKU patterns
+- You can manually change categories later through the Edit Inventory form
+
+---
+
+## WHAT THIS ACHIEVES
+
+✅ Three tracking categories for inventory (Microgreen, Leafy Green, General)  
+✅ Filter dropdown on Inventory page to filter by tracking category  
+✅ Monthly audit tasks auto-filter inventory when opened  
+✅ All existing inventory items assigned to correct categories  
+✅ Add/Edit forms let you set tracking category  
+✅ URL-based filtering works (can share filtered inventory links)
+
+---
+
+Ready to paste this into Replit Agent!

@@ -836,6 +836,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk assign tracking categories to existing inventory
+  app.post("/api/inventory/assign-tracking-categories", async (req, res) => {
+    try {
+      console.log('🏷️  Assigning tracking categories to inventory items...');
+      
+      const allItems = await storage.getAllInventory();
+      let updateCount = 0;
+      
+      for (const item of allItems) {
+        if (item.trackingCategory) {
+          console.log(`  ⏭️  Skipping ${item.name} - already has category: ${item.trackingCategory}`);
+          continue;
+        }
+        
+        let category = 'General';
+        const nameLower = item.name.toLowerCase();
+        const skuUpper = (item.sku || '').toUpperCase();
+        
+        if (nameLower.includes('microgreen') || skuUpper.includes('MG')) {
+          category = 'Microgreen';
+        }
+        else if (
+          item.category === 'seeds' ||
+          nameLower.includes('lettuce') ||
+          nameLower.includes('spinach') ||
+          nameLower.includes('arugula') ||
+          nameLower.includes('kale') ||
+          nameLower.includes('romaine') ||
+          nameLower.includes('basil') ||
+          nameLower.includes('rockwool') ||
+          nameLower.includes('oasis') ||
+          nameLower.includes('net cup')
+        ) {
+          category = 'Leafy Green';
+        }
+        
+        await storage.updateInventoryItem(item.id, {
+          trackingCategory: category,
+          trackingType: 'exact'
+        });
+        
+        console.log(`  ✅ ${item.name} → ${category}`);
+        updateCount++;
+      }
+      
+      console.log(`🎉 Assigned tracking categories to ${updateCount} items`);
+      
+      res.json({ 
+        success: true, 
+        message: `Assigned tracking categories to ${updateCount} items`,
+        updated: updateCount
+      });
+    } catch (error) {
+      console.error("❌ Error assigning tracking categories:", error);
+      res.status(500).json({ message: "Failed to assign tracking categories" });
+    }
+  });
+
   // Training routes
   app.get("/api/training/modules", async (req, res) => {
     try {
@@ -1803,9 +1861,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { title: "Deep Floor Scrub", description: "This task is designed to deep clean stained and heavily soiled areas of the facility floor using a baking soda solution and manual scrubbing.", category: "Other", priority: "medium", frequency: "bi-weekly", daysOfWeek: null, assignedRole: "Manager" },
         { title: "Opening", description: "Open the farm.", category: "Other", priority: "high", frequency: "daily", daysOfWeek: null, assignedRole: "General Staff" },
         { title: "Clean Tower Clips", description: "Clean tower clips.", category: "Cleaning", priority: "medium", frequency: "weekly", daysOfWeek: "tuesday", assignedRole: "General Staff" },
-        { title: "Check the Inventory of Leafy Green Stock", description: "Check the Rockwool, Oasis Cubes, Seeds, and Leafy Green Bags.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
-        { title: "Check General Inventory Stock", description: "Check the stock of Order Bags, Order Boxes, Labels, and More", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
-        { title: "Check Nutrient Inventory", description: "Ensure we have enough nutrients to last roughly three months.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff" },
+        { title: "Check Microgreen Inventory", description: "Audit microgreen seeds, growing media, trays, and harvest supplies.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff", checklist: JSON.stringify([{ type: "instruction", label: "📋 Click 'Open Inventory' below to view and update microgreen supply quantities.", required: false }]), metadata: JSON.stringify({ autoFilterInventory: "Microgreen" }) },
+        { title: "Check Leafy Green Inventory", description: "Audit rockwool, oasis cubes, lettuce seeds, net cups, and leafy green packaging.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff", checklist: JSON.stringify([{ type: "instruction", label: "📋 Click 'Open Inventory' below to view and update leafy green supply quantities.", required: false }]), metadata: JSON.stringify({ autoFilterInventory: "Leafy Green" }) },
+        { title: "Check General Inventory", description: "Audit general supplies: order bags, boxes, labels, cleaning supplies, and nutrients.", category: "Inventory", priority: "medium", frequency: "monthly", daysOfWeek: null, dayOfMonth: 1, assignedRole: "General Staff", checklist: JSON.stringify([{ type: "instruction", label: "📋 Click 'Open Inventory' below to view and update general supply quantities.", required: false }]), metadata: JSON.stringify({ autoFilterInventory: "General" }) },
         { title: "Uncover the Leafy Green and Herb trays", description: "There should be many trays to uncover including Romaine, Swiss Chard, Butter Crunch, Red Oak, Kale, Summer Crisp, Basil, and Collard Greens", category: "Other", priority: "medium", frequency: "weekly", daysOfWeek: "friday", assignedRole: "General Staff" },
         { title: "Seed Pea Microgreens", description: "Use soaked seeds. Place trays directly into Watering Rack. Use 1 shim under tray in watering rack.", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "monday", assignedRole: "Microgreen Seeder" },
         { title: "Seed Radish Microgreens", description: "Seed the Radish Microgreens", category: "Seeding - Microgreens", priority: "high", frequency: "weekly", daysOfWeek: "saturday", assignedRole: "Microgreen Seeder" },

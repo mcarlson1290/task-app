@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Pause, CheckCircle, SkipForward } from "lucide-react";
+import { Clock, Pause, CheckCircle, SkipForward, Package } from "lucide-react";
 import { Task } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
+import { useLocation as useWouterLocation } from "wouter";
 
 interface TaskActionModalProps {
   task: Task | null;
@@ -22,6 +23,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
   const [elapsedTime, setElapsedTime] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useWouterLocation();
 
   // HARD RESET: Clear notes when task changes
   useEffect(() => {
@@ -191,6 +193,34 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
               className="mt-1"
             />
           </div>
+
+          {/* Open Inventory button for inventory tasks */}
+          {task.category?.toLowerCase().includes('inventory') && (
+            <div className="pb-2">
+              <Button
+                onClick={() => {
+                  let metadata;
+                  try {
+                    metadata = task.metadata ? JSON.parse(task.metadata as string) : {};
+                  } catch (e) {
+                    metadata = {};
+                  }
+                  const autoFilter = metadata.autoFilterInventory;
+                  if (autoFilter) {
+                    navigate(`/inventory?trackingCategory=${autoFilter}`);
+                  } else {
+                    navigate('/inventory');
+                  }
+                  onClose();
+                }}
+                className="w-full bg-green-600 hover:bg-green-700"
+                data-testid="button-open-inventory"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                📦 Open Inventory Page
+              </Button>
+            </div>
+          )}
 
           <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2 pt-4">
             <Button

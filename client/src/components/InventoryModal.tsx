@@ -40,6 +40,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: item.unit,
         minimumStock: minimumStock,
         category: item.category,
+        trackingCategory: item.trackingCategory || 'General',
         supplier: item.supplier || '',
         location: item.location || currentLocation.code,
         estimatedTotalValue: item?.totalValue?.toString() || '' // Not shown for edit mode
@@ -52,6 +53,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
       unit: 'units',
       minimumStock: 0,
       category: 'other-supplies',
+      trackingCategory: 'General',
       supplier: '',
       location: currentLocation.code,
       estimatedTotalValue: ''
@@ -77,6 +79,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: item.unit,
         minimumStock: minimumStock,
         category: item.category,
+        trackingCategory: item.trackingCategory || 'General',
         supplier: item.supplier || '',
         location: item.location || currentLocation.code,
         estimatedTotalValue: '' // Not used in edit mode
@@ -92,6 +95,7 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
         unit: 'units',
         minimumStock: 0,
         category: 'other-supplies',
+        trackingCategory: 'General',
         supplier: '',
         estimatedTotalValue: ''
       });
@@ -320,6 +324,20 @@ const InventoryModal: React.FC<InventoryModalProps> = ({
                     {category.label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trackingCategory">Tracking Category</Label>
+            <Select value={formData.trackingCategory || 'General'} onValueChange={(value) => setFormData({...formData, trackingCategory: value})}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select tracking category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Microgreen">🌱 Microgreen Supplies</SelectItem>
+                <SelectItem value="Leafy Green">🥬 Leafy Green Supplies</SelectItem>
+                <SelectItem value="General">📦 General Supplies</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -17,6 +17,7 @@ export interface AddInventoryData {
   name: string;
   sku: string;
   category: string;
+  trackingCategory: string;
   quantity: number;
   unit: string;
   totalCost: number;
@@ -35,6 +36,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
     name: '',
     sku: '',
     category: 'seeds',
+    trackingCategory: 'General',
     quantity: 0,
     unit: 'oz',
     totalCost: 0,
@@ -77,6 +79,7 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
         name: '',
         sku: '',
         category: 'seeds',
+        trackingCategory: 'General',
         quantity: 0,
         unit: 'oz',
         totalCost: 0,
@@ -149,6 +152,24 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
                 <SelectItem value="farm-supplies">Farm Supplies</SelectItem>
                 <SelectItem value="other-supplies">Other Supplies</SelectItem>
                 <SelectItem value="equipment">Equipment</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tracking Category */}
+          <div className="space-y-2">
+            <Label htmlFor="trackingCategory">Tracking Category</Label>
+            <Select
+              value={inventoryData.trackingCategory}
+              onValueChange={(value) => setInventoryData({ ...inventoryData, trackingCategory: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select tracking category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Microgreen">🌱 Microgreen Supplies</SelectItem>
+                <SelectItem value="Leafy Green">🥬 Leafy Green Supplies</SelectItem>
+                <SelectItem value="General">📦 General Supplies</SelectItem>
               </SelectContent>
             </Select>
           </div>
