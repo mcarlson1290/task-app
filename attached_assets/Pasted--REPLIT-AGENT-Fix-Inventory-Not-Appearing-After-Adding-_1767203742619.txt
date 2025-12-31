@@ -1,0 +1,269 @@
+# REPLIT AGENT: Fix Inventory Not Appearing After Adding Items
+
+**IMPORTANT: Do not delete any existing data**
+
+---
+
+## Problem
+
+Items are successfully saved to the database, but they don't appear on the Inventory page after adding them. The page requires a manual refresh to see new items.
+
+## Root Cause
+
+The cache invalidation is using a **partial query key** that doesn't match the **full query key** used by the data fetch.
+
+- **Query uses:** `["/api/inventory", locationCode, isViewingAllLocations]`
+- **Invalidation uses:** `["/api/inventory"]` ← Doesn't match!
+
+React Query needs the **exact key match** to invalidate the cache.
+
+---
+
+## Fix: Update All Mutation Cache Invalidations
+
+**File:** `/client/src/pages/Inventory.tsx`
+
+### Fix 1: Update createItemMutation
+
+**Find this code (around line 69):**
+
+```typescript
+const createItemMutation = useMutation({
+  mutationFn: (itemData: any) => apiRequest("POST", "/api/inventory", itemData),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+    setShowModal(false);
+  },
+});
+```
+
+**Replace with:**
+
+```typescript
+const createItemMutation = useMutation({
+  mutationFn: (itemData: any) => apiRequest("POST", "/api/inventory", itemData),
+  onSuccess: () => {
+    console.log('✅ Item created, invalidating cache...');
+    // Invalidate with full query key including location
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory", locationCode, isViewingAllLocations] 
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations] 
+    });
+    setShowAddInventoryModal(false); // Close the correct modal
+  },
+  onError: (error: any) => {
+    console.error('❌ Failed to create item:', error);
+    alert(`Failed to add inventory item: ${error.message || 'Unknown error'}`);
+  },
+});
+```
+
+### Fix 2: Update updateItemMutation
+
+**Find this code (around line 78):**
+
+```typescript
+const updateItemMutation = useMutation({
+  mutationFn: (itemData: any) => apiRequest("PATCH", `/api/inventory/${itemData.id}`, itemData),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+    setShowModal(false);
+  },
+});
+```
+
+**Replace with:**
+
+```typescript
+const updateItemMutation = useMutation({
+  mutationFn: (itemData: any) => apiRequest("PATCH", `/api/inventory/${itemData.id}`, itemData),
+  onSuccess: () => {
+    console.log('✅ Item updated, invalidating cache...');
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory", locationCode, isViewingAllLocations] 
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations] 
+    });
+    setShowModal(false);
+  },
+  onError: (error: any) => {
+    console.error('❌ Failed to update item:', error);
+    alert(`Failed to update inventory item: ${error.message || 'Unknown error'}`);
+  },
+});
+```
+
+### Fix 3: Update deleteItemMutation
+
+**Find this code (around line 87):**
+
+```typescript
+const deleteItemMutation = useMutation({
+  mutationFn: (itemId: number) => apiRequest("DELETE", `/api/inventory/${itemId}`),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+    setShowModal(false);
+  },
+});
+```
+
+**Replace with:**
+
+```typescript
+const deleteItemMutation = useMutation({
+  mutationFn: (itemId: number) => apiRequest("DELETE", `/api/inventory/${itemId}`),
+  onSuccess: () => {
+    console.log('✅ Item deleted, invalidating cache...');
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory", locationCode, isViewingAllLocations] 
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations] 
+    });
+    setShowModal(false);
+  },
+  onError: (error: any) => {
+    console.error('❌ Failed to delete item:', error);
+    alert(`Failed to delete inventory item: ${error.message || 'Unknown error'}`);
+  },
+});
+```
+
+### Fix 4: Update addStockMutation
+
+**Find this code (around line 96):**
+
+```typescript
+const addStockMutation = useMutation({
+  mutationFn: (data: { itemId: number; quantity: number; unitCost: number; supplier: string; notes: string }) => 
+    apiRequest("POST", "/api/inventory/add-stock", data),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+    setShowAddStockModal(false);
+  },
+  onError: (error) => {
+    console.error("Failed to add stock:", error);
+  },
+});
+```
+
+**Replace with:**
+
+```typescript
+const addStockMutation = useMutation({
+  mutationFn: (data: { itemId: number; quantity: number; unitCost: number; supplier: string; notes: string }) => 
+    apiRequest("POST", "/api/inventory/add-stock", data),
+  onSuccess: () => {
+    console.log('✅ Stock added, invalidating cache...');
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory", locationCode, isViewingAllLocations] 
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations] 
+    });
+    setShowAddStockModal(false);
+  },
+  onError: (error) => {
+    console.error("❌ Failed to add stock:", error);
+    alert(`Failed to add stock: ${error.message || 'Unknown error'}`);
+  },
+});
+```
+
+---
+
+## Alternative: Use Prefix-Based Invalidation (More Robust)
+
+If you want to invalidate ALL inventory queries regardless of location, you can use:
+
+```typescript
+queryClient.invalidateQueries({ 
+  predicate: (query) => query.queryKey[0] === "/api/inventory"
+});
+```
+
+This will match any query that starts with `"/api/inventory"`, regardless of the other parameters.
+
+**If you prefer this approach, update all mutations to:**
+
+```typescript
+onSuccess: () => {
+  console.log('✅ Invalidating all inventory queries...');
+  queryClient.invalidateQueries({ 
+    predicate: (query) => 
+      query.queryKey[0] === "/api/inventory" || 
+      query.queryKey[0] === "/api/inventory/low-stock"
+  });
+  setShowAddInventoryModal(false); // or appropriate modal state
+},
+```
+
+---
+
+## Testing After Fix
+
+1. **Go to Inventory page**
+2. **Click "Add to Inventory"**
+3. **Add a test item:**
+   - Name: "Test Item 2"
+   - SKU: "TEST"
+   - Category: Seeds
+   - Tracking Category: General
+   - Quantity: 1
+   - Unit: oz
+4. **Click "Add New Item"**
+
+### Expected Result:
+
+✅ Modal closes  
+✅ **Item appears IMMEDIATELY** without refreshing  
+✅ Console shows: "✅ Item created, invalidating cache..."  
+✅ Console shows: "✅ Invalidating all inventory queries..." (if using predicate approach)
+
+### If Item Still Doesn't Appear:
+
+Check browser console for:
+- "✅ Item created, invalidating cache..." (confirms mutation ran)
+- Any React Query errors
+- Network tab shows GET request to `/api/inventory?location=K` after POST
+
+---
+
+## Why This Happens
+
+React Query caches data by **exact query key match**. When the query key is:
+```typescript
+["/api/inventory", "K", false]
+```
+
+And you invalidate with:
+```typescript
+["/api/inventory"]
+```
+
+React Query sees these as **different keys** and won't invalidate the cache.
+
+**Solution:** Match the full key OR use a predicate to match partially.
+
+---
+
+## Summary
+
+**Changed 4 mutations:**
+1. ✅ createItemMutation - Now invalidates with full query key
+2. ✅ updateItemMutation - Now invalidates with full query key  
+3. ✅ deleteItemMutation - Now invalidates with full query key
+4. ✅ addStockMutation - Now invalidates with full query key
+
+**Result:** Inventory will refresh automatically after any mutation without manual page refresh.
+
+---
+
+**After applying this fix, new items will appear immediately!**

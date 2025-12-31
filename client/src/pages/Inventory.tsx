@@ -72,27 +72,48 @@ const Inventory: React.FC = () => {
   const createItemMutation = useMutation({
     mutationFn: (itemData: any) => apiRequest("POST", "/api/inventory", itemData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
-      setShowModal(false);
+      console.log('✅ Item created, invalidating cache...');
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === "/api/inventory" || 
+          query.queryKey[0] === "/api/inventory/low-stock"
+      });
+      setShowAddInventoryModal(false);
+    },
+    onError: (error: any) => {
+      console.error('❌ Failed to create item:', error);
     },
   });
 
   const updateItemMutation = useMutation({
     mutationFn: (itemData: any) => apiRequest("PATCH", `/api/inventory/${itemData.id}`, itemData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      console.log('✅ Item updated, invalidating cache...');
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === "/api/inventory" || 
+          query.queryKey[0] === "/api/inventory/low-stock"
+      });
       setShowModal(false);
+    },
+    onError: (error: any) => {
+      console.error('❌ Failed to update item:', error);
     },
   });
 
   const deleteItemMutation = useMutation({
     mutationFn: (itemId: number) => apiRequest("DELETE", `/api/inventory/${itemId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      console.log('✅ Item deleted, invalidating cache...');
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === "/api/inventory" || 
+          query.queryKey[0] === "/api/inventory/low-stock"
+      });
       setShowModal(false);
+    },
+    onError: (error: any) => {
+      console.error('❌ Failed to delete item:', error);
     },
   });
 
@@ -100,12 +121,16 @@ const Inventory: React.FC = () => {
     mutationFn: (data: { itemId: number; quantity: number; unitCost: number; supplier: string; notes: string }) => 
       apiRequest("POST", "/api/inventory/add-stock", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory/low-stock"] });
+      console.log('✅ Stock added, invalidating cache...');
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] === "/api/inventory" || 
+          query.queryKey[0] === "/api/inventory/low-stock"
+      });
       setShowAddStockModal(false);
     },
-    onError: (error) => {
-      console.error("Failed to add stock:", error);
+    onError: (error: any) => {
+      console.error("❌ Failed to add stock:", error);
     },
   });
 
