@@ -2446,7 +2446,19 @@ async function generateBlueprintTaskInstances(
         case 'monthly':
           if (currentDate.getDate() === 1) {
             shouldGenerate = true;
-            dueDate.setMonth(dueDate.getMonth() + 1, 0); // Due on last day of month
+            // Monthly tasks are visible from 1st of the month
+            const visibleFromDate = new Date(currentDate);
+            visibleFromDate.setHours(0, 0, 0, 0);
+            
+            // Due on last day of current month
+            dueDate.setMonth(dueDate.getMonth() + 1, 0); // Last day of next month
+            dueDate.setHours(23, 59, 59, 999); // End of day
+            
+            console.log(`📅 MONTHLY task generation for ${recurringTask.title}:`, {
+              visibleFrom: visibleFromDate.toISOString().split('T')[0],
+              dueDate: dueDate.toISOString().split('T')[0],
+              currentMonth: currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+            });
           }
           break;
           
