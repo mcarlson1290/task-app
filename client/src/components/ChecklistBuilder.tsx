@@ -92,11 +92,8 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
         return { min: 0, max: 100, unit: '', default: 0 };
       case 'inventory-select':
         return { 
-          inventoryItemId: '', 
-          inventoryItemName: '', 
-          inventoryUnit: '', 
-          customText: '', 
-          defaultQuantity: '' 
+          stepLabel: '',
+          items: []
         };
       case 'system-assignment':
         return { systemType: '', autoSuggest: true };
@@ -256,6 +253,12 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
   onMoveDown
 }) => {
   const [expanded, setExpanded] = useState(true);
+  const [newInventoryItem, setNewInventoryItem] = useState<{
+    inventoryItemId: number | null;
+    itemName: string;
+    unit: string;
+    quantity: number;
+  }>({ inventoryItemId: null, itemName: '', unit: '', quantity: 0 });
 
   const getStepIcon = (type: string) => {
     const icons = {
@@ -427,116 +430,153 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-3">Inventory Usage Step Configuration</h4>
                   
-                  {/* Input 1: What inventory item */}
+                  {/* Step Label */}
                   <div className="space-y-2 mb-4">
-                    <Label className="text-sm font-medium">1. What inventory item will be used?</Label>
-                    <Select
-                      value={step.config.inventoryItemId || ''}
-                      onValueChange={(value) => {
-                        const item = allInventoryItems.find(i => i.id.toString() === value);
-                        const updatedStep = {
-                          ...step,
-                          config: { 
-                            ...step.config, 
-                            inventoryItemId: value,
-                            inventoryItemName: item?.name || '',
-                            inventoryUnit: item?.unit || ''
-                          }
-                        };
-                        console.log('Updating inventory item:', item?.name, 'with config:', updatedStep.config);
-                        onUpdate(updatedStep);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select inventory item..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allInventoryItems.length === 0 && (
-                          <div className="p-4 text-sm text-gray-500">
-                            No inventory items found. Add items in the Inventory page first.
-                          </div>
-                        )}
-                        {allInventoryItems.map((item) => (
-                          <SelectItem 
-                            key={item.id} 
-                            value={item.id.toString()}
-                            disabled={item.currentStock === 0}
-                          >
-                            <div className="flex justify-between items-center w-full gap-4">
-                              <span className={item.currentStock === 0 ? 'text-gray-400' : ''}>
-                                {item.name}
-                              </span>
-                              <span className={`text-xs ${
-                                item.currentStock === 0 ? 'text-red-500' : 
-                                item.currentStock <= (item.minimumStock || 0) ? 'text-yellow-600' : 
-                                'text-gray-500'
-                              }`}>
-                                ({item.currentStock} {item.unit})
-                                {item.currentStock === 0 && ' - Out of stock'}
-                                {item.currentStock > 0 && item.currentStock <= (item.minimumStock || 0) && ' - Low'}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Input 2: Custom text/question */}
-                  <div className="space-y-2 mb-4">
-                    <Label className="text-sm font-medium">2. What text should appear for this step?</Label>
+                    <Label className="text-sm font-medium">Step Label (Optional)</Label>
                     <Input
                       type="text"
-                      value={step.config.customText || ''}
-                      onChange={(e) => {
-                        const updatedStep = {
-                          ...step,
-                          config: { ...step.config, customText: e.target.value }
-                        };
-                        console.log('Updating custom text:', e.target.value);
-                        onUpdate(updatedStep);
-                      }}
-                      placeholder="e.g., How much RO water did you use?"
+                      value={step.config.stepLabel || ''}
+                      onChange={(e) => onUpdate({
+                        ...step,
+                        config: { ...step.config, stepLabel: e.target.value }
+                      })}
+                      placeholder="e.g., Record materials used for seeding"
                     />
                     <p className="text-xs text-gray-600">This is what the user will see when completing the task</p>
                   </div>
 
-                  {/* Input 3: Default quantity (optional) */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">3. Default quantity (optional)</Label>
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="number"
-                        value={step.config.defaultQuantity || ''}
-                        onChange={(e) => {
-                          const updatedStep = {
-                            ...step,
-                            config: { ...step.config, defaultQuantity: e.target.value }
-                          };
-                          console.log('Updating default quantity:', e.target.value);
-                          onUpdate(updatedStep);
+                  {/* List of Items Being Tracked */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Items to Track</Label>
+                    
+                    {/* Show current items */}
+                    {step.config.items && step.config.items.length > 0 && (
+                      <div className="space-y-2">
+                        {step.config.items.map((item: any, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2 p-3 bg-white rounded-lg border">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{item.itemName}</div>
+                              <div className="text-xs text-gray-500">
+                                {item.quantity > 0 ? `Default: ${item.quantity} ${item.unit}` : `Unit: ${item.unit}`}
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => {
+                                const newItems = step.config.items.filter((_: any, i: number) => i !== idx);
+                                onUpdate({ ...step, config: { ...step.config, items: newItems } });
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Add New Item Section */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 space-y-3 bg-white">
+                      <h5 className="font-medium text-sm text-gray-700">Add Item to Track</h5>
+                      
+                      {/* Select Inventory Item */}
+                      <div className="space-y-2">
+                        <Label className="text-xs">Select Item</Label>
+                        <Select
+                          value={newInventoryItem.inventoryItemId?.toString() || ''}
+                          onValueChange={(value) => {
+                            const item = allInventoryItems.find(i => i.id.toString() === value);
+                            setNewInventoryItem({
+                              inventoryItemId: parseInt(value),
+                              itemName: item?.name || '',
+                              unit: item?.unit || '',
+                              quantity: 0
+                            });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select inventory item..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allInventoryItems.length === 0 && (
+                              <div className="p-4 text-sm text-gray-500">
+                                No inventory items found. Add items in the Inventory page first.
+                              </div>
+                            )}
+                            {allInventoryItems.map((item) => (
+                              <SelectItem 
+                                key={item.id} 
+                                value={item.id.toString()}
+                                disabled={item.currentStock === 0}
+                              >
+                                <div className="flex justify-between items-center w-full gap-4">
+                                  <span className={item.currentStock === 0 ? 'text-gray-400' : ''}>
+                                    {item.name}
+                                  </span>
+                                  <span className={`text-xs ${
+                                    item.currentStock === 0 ? 'text-red-500' : 
+                                    item.currentStock <= (item.minimumStock || 0) ? 'text-yellow-600' : 
+                                    'text-gray-500'
+                                  }`}>
+                                    ({item.currentStock} {item.unit})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Enter Default Quantity */}
+                      <div className="space-y-2">
+                        <Label className="text-xs">
+                          Default Quantity (Optional)
+                          {newInventoryItem.unit && (
+                            <span className="text-gray-500 ml-2">({newInventoryItem.unit})</span>
+                          )}
+                        </Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          placeholder="Leave blank if amount varies"
+                          value={newInventoryItem.quantity || ''}
+                          onChange={(e) => setNewInventoryItem({
+                            ...newInventoryItem,
+                            quantity: parseFloat(e.target.value) || 0
+                          })}
+                        />
+                      </div>
+                      
+                      {/* Add Item Button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          if (!newInventoryItem.inventoryItemId) return;
+                          
+                          const updatedItems = [...(step.config.items || []), { ...newInventoryItem }];
+                          onUpdate({ ...step, config: { ...step.config, items: updatedItems } });
+                          
+                          setNewInventoryItem({ inventoryItemId: null, itemName: '', unit: '', quantity: 0 });
                         }}
-                        placeholder="e.g., 2.5"
-                        step="0.1"
-                        min="0"
-                        className="w-32"
-                      />
-                      {step.config.inventoryUnit && (
-                        <span className="text-sm text-gray-600">{step.config.inventoryUnit}</span>
-                      )}
+                        disabled={!newInventoryItem.inventoryItemId}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Item to List
+                      </Button>
                     </div>
-                    <p className="text-xs text-gray-600">Pre-fills this amount to save time during task completion</p>
-                  </div>
-
-                  {step.config.inventoryItemName && (
-                    <div className="mt-3 p-2 bg-white rounded border">
-                      <p className="text-sm text-gray-700">
-                        <strong>Preview:</strong> {step.config.customText || step.label} 
-                        <span className="text-gray-500"> (tracking {step.config.inventoryItemName}
-                        {step.config.defaultQuantity && ` - default: ${step.config.defaultQuantity} ${step.config.inventoryUnit}`})</span>
+                    
+                    {/* Help Text */}
+                    {(!step.config.items || step.config.items.length === 0) && (
+                      <p className="text-xs text-gray-500">
+                        Add all inventory items that will be tracked in this step. Users will enter actual quantities when completing the task.
                       </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             )}
