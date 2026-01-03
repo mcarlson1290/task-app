@@ -34,39 +34,13 @@ const Inventory: React.FC = () => {
   const isManager = currentUser?.role === 'Manager' || currentUser?.role === 'Corporate';
   const queryClient = useQueryClient();
 
-  // Use location code for API filtering (K, R, MKE)
-  const locationCode = currentLocation.code;
-  
+  // Fetch all inventory - no location filtering for simplified single-location use
   const { data: inventory = [], isLoading } = useQuery<InventoryItem[]>({
-    queryKey: ["/api/inventory", locationCode, isViewingAllLocations],
-    queryFn: async () => {
-      try {
-        const url = isViewingAllLocations 
-          ? "/api/inventory" 
-          : `/api/inventory?location=${locationCode}`;
-        const result = await apiRequest("GET", url);
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Failed to fetch inventory:', error);
-        return [];
-      }
-    },
+    queryKey: ["/api/inventory"],
   });
 
   const { data: lowStockItems = [] } = useQuery<InventoryItem[]>({
-    queryKey: ["/api/inventory/low-stock", locationCode, isViewingAllLocations],
-    queryFn: async () => {
-      try {
-        const url = isViewingAllLocations 
-          ? "/api/inventory/low-stock" 
-          : `/api/inventory/low-stock?location=${locationCode}`;
-        const result = await apiRequest("GET", url);
-        return Array.isArray(result) ? result : [];
-      } catch (error) {
-        console.error('Failed to fetch low stock items:', error);
-        return [];
-      }
-    },
+    queryKey: ["/api/inventory/low-stock"],
   });
 
   const createItemMutation = useMutation({
@@ -532,10 +506,7 @@ Please process this reorder request at your earliest convenience.`;
                     <p className="text-sm text-red-700">
                       {item.currentStock} {item.unit} remaining • Reorder at {item.minimumStock} {item.unit}
                     </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      Location: {getLocationName(item.location || 'K')} ({item.location || 'K'})
-                    </p>
-                  </div>
+                                      </div>
                 </div>
                 <button
                   onClick={() => handleReorder(item)}
@@ -553,7 +524,7 @@ Please process this reorder request at your earliest convenience.`;
       {/* Main Inventory Items Section */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-          📦 {isViewingAllLocations ? 'All Locations' : `${currentLocation.name}`} Inventory ({filteredInventory.length} items)
+          📦 Inventory ({filteredInventory.length} items)
         </h3>
 
 
@@ -617,13 +588,7 @@ Please process this reorder request at your earliest convenience.`;
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Location</span>
-                      <span className="font-medium text-blue-600">
-                        {getLocationName(item.location || 'K')} ({item.location || 'K'})
-                      </span>
-                    </div>
-
+                    
                     {item.lastRestocked && (
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Last Restocked</span>
