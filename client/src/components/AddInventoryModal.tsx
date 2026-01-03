@@ -231,19 +231,18 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
 
           {/* Total Cost */}
           <div className="space-y-2">
-            <Label htmlFor="total-cost">Total Cost Paid ($) *</Label>
+            <Label htmlFor="total-cost">Total Cost Paid ($) (Optional)</Label>
             <Input
               id="total-cost"
               type="number"
-              min="0.01"
+              min="0"
               step="0.01"
               value={inventoryData.totalCost || ''}
               onChange={(e) => handleCostChange('totalCost', e.target.value)}
-              placeholder="e.g., 125.00"
-              required
+              placeholder="e.g., 125.00 (optional)"
             />
             <div className="text-sm text-gray-500">
-              Enter the total amount paid for this quantity
+              Optional - Enter if you know the cost
             </div>
           </div>
 
@@ -265,12 +264,23 @@ const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
           </div>
 
           {/* Calculated Cost Per Unit */}
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <Label className="text-sm font-medium text-blue-900">Cost Per Unit (Calculated)</Label>
-            <div className="text-xl font-bold text-blue-900">
-              ${inventoryData.costPerUnit.toFixed(2)} / {inventoryData.unit}
+          {inventoryData.totalCost > 0 && (
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <Label className="text-sm font-medium text-blue-900">Cost Per Unit (Calculated)</Label>
+              <div className="text-xl font-bold text-blue-900">
+                ${inventoryData.costPerUnit.toFixed(2)} / {inventoryData.unit}
+              </div>
             </div>
-          </div>
+          )}
+
+          {inventoryData.totalCost === 0 && (
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <Label className="text-sm font-medium text-gray-600">Cost Per Unit</Label>
+              <div className="text-sm text-gray-500">
+                Not entered - Add total cost to calculate
+              </div>
+            </div>
+          )}
 
           {/* Optional Notes */}
           <div className="space-y-2">
