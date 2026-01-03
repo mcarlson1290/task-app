@@ -31,6 +31,7 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
   const [steps, setSteps] = useState<ChecklistStep[]>(template?.steps || []);
   const [showAddStep, setShowAddStep] = useState(false);
   const [availableSeeds, setAvailableSeeds] = useState<any[]>([]);
+  const [allInventoryItems, setAllInventoryItems] = useState<any[]>([]);
 
   const stepTypes = [
     { value: 'instruction', label: 'Text Instruction', icon: FileText, description: 'Display read-only information or instructions' },
@@ -46,39 +47,36 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
     { value: 'create-tray', label: 'Create Tray', icon: PlusCircle, description: 'Create new trays with specifications' }
   ];
 
-  // Load available seeds from inventory
+  // Load all inventory items for selection
   React.useEffect(() => {
-    const loadSeeds = async () => {
+    const loadInventory = async () => {
       try {
         const response = await fetch('/api/inventory');
         const inventory = await response.json();
         
-        // Filter to only seed items
+        // Store all inventory items
+        setAllInventoryItems(Array.isArray(inventory) ? inventory : []);
+        
+        // Filter to only seed items for seed-specific features
         const seeds = inventory.filter((item: any) => 
           item.category === 'Seeds' || 
           item.category === 'seeds' || 
           (item.name && item.name.toLowerCase().includes('seed'))
         );
         
-        console.log('Available seeds loaded:', seeds);
+        console.log('Inventory loaded:', inventory.length, 'items,', seeds.length, 'seeds');
         setAvailableSeeds(seeds);
       } catch (error) {
-        console.error('Failed to load seeds from inventory:', error);
-        // Fallback to localStorage if API fails
-        const localInventory = JSON.parse(localStorage.getItem('inventory') || '[]');
-        const seeds = localInventory.filter((item: any) => 
-          item.category === 'Seeds' || 
-          item.category === 'seeds' || 
-          (item.name && item.name.toLowerCase().includes('seed'))
-        );
-        setAvailableSeeds(seeds);
+        console.error('Failed to load inventory:', error);
+        setAllInventoryItems([]);
+        setAvailableSeeds([]);
       }
     };
 
-    loadSeeds();
+    loadInventory();
 
     // Listen for inventory updates
-    const handleInventoryUpdate = () => loadSeeds();
+    const handleInventoryUpdate = () => loadInventory();
     window.addEventListener('inventoryUpdated', handleInventoryUpdate);
     
     return () => {
@@ -179,6 +177,7 @@ const ChecklistBuilder: React.FC<ChecklistBuilderProps> = ({ template, systems, 
             index={index}
             systems={systems}
             availableSeeds={availableSeeds}
+            allInventoryItems={allInventoryItems}
             onUpdate={(updatedStep) => updateStep(index, updatedStep)}
             onDelete={() => deleteStep(index)}
             onMoveUp={index > 0 ? () => moveStep(index, 'up') : undefined}
@@ -238,6 +237,7 @@ interface ChecklistStepEditorProps {
   index: number;
   systems: GrowingSystem[];
   availableSeeds: any[];
+  allInventoryItems: any[];
   onUpdate: (step: ChecklistStep) => void;
   onDelete: () => void;
   onMoveUp?: () => void;
@@ -249,6 +249,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
   index,
   systems,
   availableSeeds,
+  allInventoryItems,
   onUpdate,
   onDelete,
   onMoveUp,
@@ -432,19 +433,7 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                     <Select
                       value={step.config.inventoryItemId || ''}
                       onValueChange={(value) => {
-                        const inventoryItems = [
-                          { id: '1', name: 'RO Water', unit: 'gallons' },
-                          { id: '2', name: 'pH Down', unit: 'ml' },
-                          { id: '3', name: 'pH Up', unit: 'ml' },
-                          { id: '4', name: 'Nutrients Part A', unit: 'ml' },
-                          { id: '5', name: 'Nutrients Part B', unit: 'ml' },
-                          { id: '6', name: 'Rockwool Cubes', unit: 'cubes' },
-                          { id: '7', name: 'Romaine Seeds', unit: 'seeds' },
-                          { id: '8', name: 'Buttercrunch Seeds', unit: 'seeds' },
-                          { id: '9', name: 'Arugula Seeds', unit: 'seeds' },
-                          { id: '10', name: 'Basil Seeds', unit: 'seeds' }
-                        ];
-                        const item = inventoryItems.find(i => i.id === value);
+                        const item = allInventoryItems.find(i => i.id.toString() === value);
                         const updatedStep = {
                           ...step,
                           config: { 
@@ -462,16 +451,33 @@ const ChecklistStepEditor: React.FC<ChecklistStepEditorProps> = ({
                         <SelectValue placeholder="Select inventory item..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">RO Water (gallons)</SelectItem>
-                        <SelectItem value="2">pH Down (ml)</SelectItem>
-                        <SelectItem value="3">pH Up (ml)</SelectItem>
-                        <SelectItem value="4">Nutrients Part A (ml)</SelectItem>
-                        <SelectItem value="5">Nutrients Part B (ml)</SelectItem>
-                        <SelectItem value="6">Rockwool Cubes (cubes)</SelectItem>
-                        <SelectItem value="7">Romaine Seeds (seeds)</SelectItem>
-                        <SelectItem value="8">Buttercrunch Seeds (seeds)</SelectItem>
-                        <SelectItem value="9">Arugula Seeds (seeds)</SelectItem>
-                        <SelectItem value="10">Basil Seeds (seeds)</SelectItem>
+                        {allInventoryItems.length === 0 && (
+                          <div className="p-4 text-sm text-gray-500">
+                            No inventory items found. Add items in the Inventory page first.
+                          </div>
+                        )}
+                        {allInventoryItems.map((item) => (
+                          <SelectItem 
+                            key={item.id} 
+                            value={item.id.toString()}
+                            disabled={item.currentStock === 0}
+                          >
+                            <div className="flex justify-between items-center w-full gap-4">
+                              <span className={item.currentStock === 0 ? 'text-gray-400' : ''}>
+                                {item.name}
+                              </span>
+                              <span className={`text-xs ${
+                                item.currentStock === 0 ? 'text-red-500' : 
+                                item.currentStock <= (item.minimumStock || 0) ? 'text-yellow-600' : 
+                                'text-gray-500'
+                              }`}>
+                                ({item.currentStock} {item.unit})
+                                {item.currentStock === 0 && ' - Out of stock'}
+                                {item.currentStock > 0 && item.currentStock <= (item.minimumStock || 0) && ' - Low'}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
