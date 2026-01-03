@@ -471,18 +471,22 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
         );
 
       case 'inventory-select':
-        // Use pre-configured inventory item from recurring task setup
-        const quantity = stepData[step.id] || step.config.defaultQuantity || '';
+        // Support both old format (single item) and new format (multiple items)
+        const items = step.config.items || [];
+        const hasOldFormat = step.config.inventoryItemId && !step.config.items;
         
-        // Handle case where inventory item isn't properly configured
-        const inventoryItem = {
-          id: step.config.inventoryItemId || '',
-          name: step.config.inventoryItemName || 'Unknown Item',
-          unit: step.config.inventoryUnit || 'units'
-        };
+        // Convert old format to new format for backward compatibility
+        const trackedItems = hasOldFormat 
+          ? [{
+              inventoryItemId: step.config.inventoryItemId,
+              itemName: step.config.inventoryItemName || 'Unknown Item',
+              unit: step.config.inventoryUnit || 'units',
+              quantity: step.config.defaultQuantity || 0
+            }]
+          : items;
         
-        // If no item is configured, show error
-        if (!inventoryItem.id) {
+        // If no items configured, show error
+        if (trackedItems.length === 0) {
           return (
             <div className="space-y-4">
               <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
@@ -491,10 +495,7 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                   <span className="font-medium">Configuration Error</span>
                 </div>
                 <p className="text-sm text-red-700 mt-1">
-                  This inventory step needs to be configured with an item selection. Please contact your manager to fix the recurring task setup.
-                </p>
-                <p className="text-xs text-red-600 mt-2">
-                  <strong>For managers:</strong> Edit the recurring task and properly configure the inventory step with: item selection, custom text, and default quantity.
+                  This inventory step needs at least one item configured. Please contact your manager to fix the recurring task setup.
                 </p>
               </div>
               <Button 
@@ -508,101 +509,104 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
           );
         }
         
-        // Find current stock level for the pre-configured item
-        const currentItem = inventoryItems.find(item => item.id.toString() === inventoryItem.id);
-        const currentStock = currentItem?.currentStock || 0;
-        const hasQuantityError = quantity && parseFloat(quantity) > currentStock;
+        // Get current step data or initialize with defaults
+        const inventoryStepData = stepData[step.id] || {};
+        
+        // Check if all items have quantities entered
+        const allItemsHaveQuantity = trackedItems.every((item: any) => {
+          const qty = inventoryStepData[item.inventoryItemId] ?? item.quantity;
+          return qty !== undefined && qty !== '' && parseFloat(qty) >= 0;
+        });
         
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-base font-medium">Record Inventory Usage</Label>
-              <p className="text-sm text-gray-600">{step.config.customText || step.label}</p>
+              <Label className="text-base font-medium">
+                {step.config.stepLabel || step.label || 'Record Inventory Usage'}
+              </Label>
+              <p className="text-sm text-gray-600">
+                Enter the quantity used for each item
+              </p>
             </div>
             
-            {/* Show what item is being tracked */}
-            <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-medium text-blue-900">Item: {inventoryItem.name}</span>
-                  <p className="text-sm text-blue-700">
-                    Current stock: {currentStock} {inventoryItem.unit}
-                  </p>
-                </div>
-                <Package className="w-5 h-5 text-blue-600" />
-              </div>
-            </div>
-            
-            {/* Quantity input with default pre-filled */}
-            <div className="space-y-2">
-              <Label htmlFor={step.id}>Amount used:</Label>
-              <div className="flex items-center space-x-2">
-                <Input
-                  id={step.id}
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setStepData({
-                    ...stepData,
-                    [step.id]: e.target.value
-                  })}
-                  placeholder={step.config.defaultQuantity || "Enter amount"}
-                  min="0"
-                  step="0.01"
-                  className="w-32"
-                  autoFocus
-                />
-                <Badge variant="outline">{inventoryItem.unit}</Badge>
-              </div>
-              
-              {hasQuantityError && (
-                <p className="text-sm text-red-600">
-                  ⚠️ This exceeds available stock ({currentStock} {inventoryItem.unit})
-                </p>
-              )}
+            {/* Show all items */}
+            <div className="space-y-3">
+              {trackedItems.map((item: any, idx: number) => {
+                const currentInvItem = inventoryItems.find(inv => inv.id.toString() === item.inventoryItemId?.toString());
+                const currentStock = currentInvItem?.currentStock || 0;
+                const currentQty = inventoryStepData[item.inventoryItemId] ?? item.quantity ?? '';
+                const hasQtyError = currentQty && parseFloat(currentQty) > currentStock;
+                
+                return (
+                  <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="font-medium">{item.itemName}</span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          (Stock: {currentStock} {item.unit})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={currentQty}
+                        onChange={(e) => setStepData({
+                          ...stepData,
+                          [step.id]: {
+                            ...inventoryStepData,
+                            [item.inventoryItemId]: e.target.value
+                          }
+                        })}
+                        placeholder={item.quantity > 0 ? item.quantity.toString() : "0"}
+                        min="0"
+                        step="0.1"
+                        className="w-24"
+                      />
+                      <span className="text-sm text-gray-600">{item.unit}</span>
+                      {hasQtyError && (
+                        <span className="text-xs text-red-500">Exceeds stock!</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {quantity && parseFloat(quantity) > 0 && !hasQuantityError ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-green-600 font-medium">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Using: {quantity} {inventoryItem.unit} of {inventoryItem.name}
-                </div>
+            <div className="flex justify-between items-center pt-2">
+              {allItemsHaveQuantity ? (
                 <Button 
                   onClick={() => {
+                    // Format data for saving
+                    const formattedData = trackedItems.map((item: any) => ({
+                      itemId: item.inventoryItemId,
+                      itemName: item.itemName,
+                      quantity: parseFloat(inventoryStepData[item.inventoryItemId] ?? item.quantity) || 0,
+                      unit: item.unit,
+                      action: 'remove'
+                    }));
                     setStepData({
                       ...stepData,
-                      [step.id]: {
-                        itemId: inventoryItem.id,
-                        itemName: inventoryItem.name,
-                        quantity: parseFloat(quantity),
-                        unit: inventoryItem.unit,
-                        action: 'remove'
-                      }
+                      [step.id]: formattedData
                     });
                     handleStepComplete();
                   }}
                   className="bg-green-600 hover:bg-green-700"
                   disabled={isProcessing}
                 >
-                  Record Usage
+                  Record All Usage
                 </Button>
-              </div>
-            ) : (
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-gray-500">
-                  {!quantity ? 'Enter quantity to continue' : hasQuantityError ? 'Invalid quantity' : 'Ready to record'}
-                </p>
-                {!quantity && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleStepSkip(currentStep)}
-                    disabled={isProcessing}
-                  >
-                    Complete Step
-                  </Button>
-                )}
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-gray-500">Enter quantities for all items</p>
+              )}
+              <Button 
+                variant="outline"
+                onClick={() => handleStepSkip(currentStep)}
+                disabled={isProcessing}
+              >
+                Skip Step
+              </Button>
+            </div>
           </div>
         );
 
