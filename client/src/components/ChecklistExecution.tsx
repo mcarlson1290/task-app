@@ -353,21 +353,50 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
   };
 
   const handleInventoryDeduction = async (step: ChecklistStep, selectedItems: any) => {
-    // Handle inventory deduction for selected items
-    const items = Array.isArray(selectedItems) ? selectedItems : [selectedItems];
+    // Handle both old single-item format and new multi-item array format
+    if (!selectedItems) return;
+    
+    // Normalize to array format
+    let items: any[];
+    if (Array.isArray(selectedItems)) {
+      items = selectedItems;
+    } else if (typeof selectedItems === 'object' && selectedItems.itemId) {
+      // Single item object format (old format)
+      items = [selectedItems];
+    } else {
+      // Legacy scalar format - skip deduction (no itemId available)
+      return;
+    }
     
     try {
       for (const item of items) {
-        await fetch(`/api/inventory/${item.id}`, {
-          method: 'PATCH',
+        if (!item || !item.itemId) continue;
+        const qty = parseFloat(item.quantity) || 0;
+        if (qty <= 0) continue;
+        
+        // Use API to get authoritative stock and subtract
+        const response = await fetch(`/api/inventory/${item.itemId}/deduct`, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            currentStock: (item.currentStock || 0) - (item.usedQuantity || 1)
-          })
+          body: JSON.stringify({ quantity: qty })
         });
+        
+        if (!response.ok) {
+          // Fallback to PATCH if deduct endpoint doesn't exist
+          const currentInv = inventoryItems.find(inv => inv.id.toString() === item.itemId?.toString());
+          if (currentInv) {
+            const newStock = Math.max(0, (currentInv.currentStock || 0) - qty);
+            await fetch(`/api/inventory/${item.itemId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ currentStock: newStock })
+            });
+          }
+        }
       }
     } catch (error) {
-      throw new Error('Failed to update inventory');
+      console.error('Inventory deduction error:', error);
+      // Don't throw - allow task to complete even if deduction fails
     }
   };
 
@@ -576,8 +605,8 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
             <div className="flex justify-between items-center pt-2">
               {allItemsHaveQuantity ? (
                 <Button 
-                  onClick={() => {
-                    // Format data for saving
+                  onClick={async () => {
+                    // Format data for saving - construct locally to avoid state batching issues
                     const formattedData = trackedItems.map((item: any) => ({
                       itemId: item.inventoryItemId,
                       itemName: item.itemName,
@@ -585,11 +614,38 @@ const ChecklistExecution: React.FC<ChecklistExecutionProps> = ({
                       unit: item.unit,
                       action: 'remove'
                     }));
-                    setStepData({
-                      ...stepData,
-                      [step.id]: formattedData
-                    });
-                    handleStepComplete();
+                    
+                    // Update step data and call complete with the data directly
+                    const updatedStepData = { ...stepData, [step.id]: formattedData };
+                    setStepData(updatedStepData);
+                    
+                    // Handle inventory deduction with the formatted data directly
+                    setIsProcessing(true);
+                    try {
+                      await handleInventoryDeduction(step, formattedData);
+                      
+                      // Mark step completed
+                      const updatedSteps = steps.map((s, index) => {
+                        if (index === currentStep) {
+                          return { ...s, completed: true };
+                        }
+                        return s;
+                      });
+                      setSteps(updatedSteps);
+                      
+                      await saveChecklistProgress(updatedSteps, updatedStepData);
+                      
+                      if (isLastStep) {
+                        onComplete(updatedStepData);
+                      } else {
+                        setCurrentStep(currentStep + 1);
+                      }
+                    } catch (error) {
+                      console.error('Error completing inventory step:', error);
+                      setErrors({ [step.id]: 'Failed to record inventory usage' });
+                    } finally {
+                      setIsProcessing(false);
+                    }
                   }}
                   className="bg-green-600 hover:bg-green-700"
                   disabled={isProcessing}
