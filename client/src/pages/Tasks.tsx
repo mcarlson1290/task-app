@@ -510,7 +510,7 @@ const Tasks: React.FC = () => {
         `📅 DATE FILTER ACTIVE: ${dateFilter} - Before: ${filtered.length} tasks (${biweeklyTasks.length} biweekly)`,
       );
 
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayString();
       const isViewingToday = dateFilter === today;
 
       filtered = filtered.filter((task) => {
