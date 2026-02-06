@@ -1,9 +1,7 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import "dotenv/config";
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from "@shared/schema";
-
-// Disable connection caching to prevent stale data issues
-neonConfig.fetchConnectionCache = false;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -11,6 +9,5 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Use HTTP client instead of WebSocket Pool to avoid connection termination issues
-const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle(sql, { schema });
+const client = postgres(process.env.DATABASE_URL);
+export const db = drizzle(client, { schema });
