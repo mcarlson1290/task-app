@@ -4474,8 +4474,8 @@ class DatabaseStorage implements IStorage {
             console.log(`  ✅ First match! dayOffset=${dayOffset}, taskDate=${taskDate.toISOString().split('T')[0]}, dayName=${dayName}`);
           }
           
+          // Weekly tasks are due on their scheduled day (same as taskDate)
           const dueDate = new Date(taskDate);
-          dueDate.setDate(dueDate.getDate() + 6); // Due at end of week
           
           // Check if this task instance already exists
           const [existing] = await db.select().from(tasks).where(
