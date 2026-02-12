@@ -53,10 +53,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
 
   const updateTaskMutation = useMutation({
     mutationFn: async (updates: Partial<Task>) => {
-      return await apiRequest(`/api/tasks/${task?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
-      });
+      return await apiRequest("PATCH", `/api/tasks/${task?.id}`, updates);
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });

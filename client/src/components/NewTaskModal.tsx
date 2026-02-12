@@ -50,12 +50,9 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose }) => {
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: NewTaskForm) => {
       const { dueDate, ...rest } = taskData;
-      return await apiRequest("/api/tasks", {
-        method: "POST",
-        body: JSON.stringify({
-          ...rest,
-          dueDate: new Date(dueDate).toISOString(),
-        }),
+      return await apiRequest("POST", "/api/tasks", {
+        ...rest,
+        dueDate: new Date(dueDate).toISOString(),
       });
     },
     onSuccess: () => {
