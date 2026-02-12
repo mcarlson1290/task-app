@@ -222,17 +222,25 @@ const Tasks: React.FC = () => {
     async (actionName: string, shouldRefresh: boolean = true) => {
       console.log(`=== HARD RESET: ${actionName} ===`);
 
-      // 1. Clear all UI state
+      // 1. Save scroll position before any state changes
+      const scrollY = window.scrollY;
+
+      // 2. Clear all UI state
       setSelectedTask(null);
       setModalOpen(false);
       setTaskActionModalOpen(false);
 
-      // 2. If requested, refresh tasks from database (with duplicate check)
+      // 3. If requested, refresh tasks from database (with duplicate check)
       if (shouldRefresh) {
         await refreshTasks();
       }
 
-      // 3. Log completion
+      // 4. Restore scroll position after re-render
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+
+      // 5. Log completion
       console.log(`=== ${actionName} COMPLETE - Clean State ===`);
     },
     [refreshTasks],
