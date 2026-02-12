@@ -771,7 +771,7 @@ const Tasks: React.FC = () => {
 
     // Perform hard reset after completing task
     console.log("✅ Task completed - performing hard reset");
-    await performHardReset("COMPLETE TASK");
+    await performHardReset("COMPLETE TASK", false);
 
     toast({
       title: "🎉 Task completed!",
@@ -841,7 +841,7 @@ const Tasks: React.FC = () => {
         });
         // Hard reset after pausing
         console.log("⏸️ Task paused - performing hard reset");
-        await performHardReset("PAUSE TASK");
+        await performHardReset("PAUSE TASK", false);
         toast({
           title: "Task Paused",
           description: "The task has been paused and can be resumed later.",
@@ -859,7 +859,7 @@ const Tasks: React.FC = () => {
         });
         // Hard reset after skipping
         console.log("⏭️ Task skipped - performing hard reset");
-        await performHardReset("SKIP TASK");
+        await performHardReset("SKIP TASK", false);
         toast({
           title: "Task Skipped",
           description: reason
