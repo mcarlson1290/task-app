@@ -149,7 +149,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{task.title}</DialogTitle>
         </DialogHeader>

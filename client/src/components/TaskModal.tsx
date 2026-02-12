@@ -235,7 +235,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <span className="text-2xl">{getTaskEmoji(task.type as TaskType)}</span>
