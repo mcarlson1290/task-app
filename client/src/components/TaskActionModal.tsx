@@ -67,7 +67,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
       setActionType(null);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });
+      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks", refetchType: 'none' });
       
       // Show success feedback based on action type
       if (actionType === 'pause') {

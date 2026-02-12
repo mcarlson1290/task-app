@@ -52,7 +52,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: 'none' });
     },
     onError: (error) => {
       console.error("Error updating task:", error);

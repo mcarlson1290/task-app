@@ -311,7 +311,7 @@ const Tasks: React.FC = () => {
     },
     onSettled: (data, error, variables, context) => {
       if (context?.queryKey) {
-        queryClient.invalidateQueries({ queryKey: context.queryKey });
+        queryClient.invalidateQueries({ queryKey: context.queryKey, refetchType: 'none' });
       }
     },
   });
