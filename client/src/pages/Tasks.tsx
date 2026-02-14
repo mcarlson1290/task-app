@@ -281,27 +281,43 @@ const Tasks: React.FC = () => {
       return await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
     },
     onMutate: async ({ taskId, updates }) => {
-      const queryKey = [
-        "/api/tasks",
-        { userId: auth.user?.id, location: currentLocation.code },
-      ];
-
-      await queryClient.cancelQueries({ queryKey });
-
-      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
-
-      queryClient.setQueryData<Task[]>(queryKey, (old) => {
-        if (!old) return old;
-        return old.map((task) =>
-          task.id === taskId ? { ...task, ...updates } : task,
-        );
+      // Cancel ALL in-flight task queries to prevent race conditions
+      // Use predicate to catch every query variant regardless of key shape
+      await queryClient.cancelQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
       });
 
-      return { previousTasks, queryKey };
+      // Collect previous data from ALL task query caches for rollback
+      const previousQueries = new Map<readonly unknown[], unknown>();
+      const queryCache = queryClient.getQueryCache();
+      const taskQueries = queryCache.findAll({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+      });
+
+      taskQueries.forEach((query) => {
+        const data = queryClient.getQueryData(query.queryKey);
+        if (Array.isArray(data)) {
+          previousQueries.set(query.queryKey, data);
+          // Apply optimistic update to EVERY matching task query cache
+          queryClient.setQueryData(
+            query.queryKey,
+            data.map((task: any) =>
+              task.id === taskId ? { ...task, ...updates } : task,
+            ),
+          );
+        }
+      });
+
+      return { previousQueries };
     },
     onError: (error, variables, context) => {
-      if (context?.previousTasks && context?.queryKey) {
-        queryClient.setQueryData(context.queryKey, context.previousTasks);
+      // Rollback ALL optimistic updates on failure
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((data, queryKey) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
       toast({
         title: "Update failed",
@@ -309,9 +325,27 @@ const Tasks: React.FC = () => {
         variant: "destructive",
       });
     },
-    onSettled: (data, error, variables, context) => {
-      if (context?.queryKey) {
-        queryClient.invalidateQueries({ queryKey: context.queryKey, refetchType: 'none' });
+    onSettled: (data, error, variables) => {
+      // For status-changing actions (complete, skip, pause), do a delayed refetch
+      // as a safety net to ensure server state is reflected in the UI
+      const isStatusChange = variables?.updates?.status !== undefined;
+
+      if (isStatusChange) {
+        // Delayed refetch ensures the server-confirmed state replaces any stale cache
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            predicate: (query) =>
+              Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+            refetchType: "active",
+          });
+        }, 500);
+      } else {
+        // For non-status updates (progress, data), just mark stale without refetch
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+          refetchType: "none",
+        });
       }
     },
   });

@@ -52,7 +52,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: 'none' });
+      // Only invalidate if the task is NOT being completed
+      // This prevents race conditions where a checklist save's invalidation
+      // interferes with the completion mutation's optimistic update
+      if (task?.status !== 'completed') {
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: 'none' });
+      }
     },
     onError: (error) => {
       console.error("Error updating task:", error);
