@@ -310,7 +310,7 @@ const Tasks: React.FC = () => {
         }
       });
 
-      return { previousQueries };
+      return { previousQueries, isStatusChange: updates.status !== undefined };
     },
     onError: (error, variables, context) => {
       // Rollback ALL optimistic updates on failure
@@ -325,20 +325,18 @@ const Tasks: React.FC = () => {
         variant: "destructive",
       });
     },
-    onSettled: (data, error, variables) => {
-      // For status-changing actions (complete, skip, pause), do a delayed refetch
-      // as a safety net to ensure server state is reflected in the UI
-      const isStatusChange = variables?.updates?.status !== undefined;
-
-      if (isStatusChange) {
-        // Delayed refetch ensures the server-confirmed state replaces any stale cache
+    onSettled: (data, error, variables, context) => {
+      if (context?.isStatusChange) {
+        // For status changes (complete, skip, pause): force a refetch after a delay
+        // The delay lets the optimistic update render first so the user sees instant feedback
+        // Then the refetch confirms the server state, overriding any stale data from
+        // competing mutations (like ChecklistExecution's unmount save)
         setTimeout(() => {
-          queryClient.invalidateQueries({
+          queryClient.refetchQueries({
             predicate: (query) =>
               Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
-            refetchType: "active",
           });
-        }, 500);
+        }, 800);
       } else {
         // For non-status updates (progress, data), just mark stale without refetch
         queryClient.invalidateQueries({

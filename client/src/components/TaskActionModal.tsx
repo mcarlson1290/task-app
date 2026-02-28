@@ -55,10 +55,43 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
     mutationFn: async (updates: Partial<Task>) => {
       return await apiRequest("PATCH", `/api/tasks/${task?.id}`, updates);
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks" });
+    onMutate: async (updates) => {
+      // Cancel all in-flight task queries
+      await queryClient.cancelQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+      });
+
+      // Apply optimistic update to ALL task query caches
+      const previousQueries = new Map<readonly unknown[], unknown>();
+      const queryCache = queryClient.getQueryCache();
+      const taskQueries = queryCache.findAll({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+      });
+
+      taskQueries.forEach((query) => {
+        const data = queryClient.getQueryData(query.queryKey);
+        if (Array.isArray(data) && task?.id) {
+          previousQueries.set(query.queryKey, data);
+          queryClient.setQueryData(
+            query.queryKey,
+            data.map((t: any) =>
+              t.id === task.id ? { ...t, ...updates } : t,
+            ),
+          );
+        }
+      });
+
+      return { previousQueries };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback optimistic updates
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((data, queryKey) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
       toast({
         title: "Update failed",
         description: "Failed to update task. Please try again.",
@@ -67,8 +100,14 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
       setActionType(null);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] === "/api/tasks", refetchType: 'none' });
-      
+      // Delayed refetch to confirm server state
+      setTimeout(() => {
+        queryClient.refetchQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) && query.queryKey[0] === "/api/tasks",
+        });
+      }, 800);
+
       // Show success feedback based on action type
       if (actionType === 'pause') {
         toast({
@@ -91,7 +130,7 @@ const TaskActionModal: React.FC<TaskActionModalProps> = ({ task, open, onClose }
           description: "The task has been skipped with your reason noted.",
         });
       }
-      
+
       setActionType(null);
       onClose();
     },

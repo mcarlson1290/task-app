@@ -51,14 +51,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onTaskActi
       const response = await apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
       return response.json();
     },
-    onSuccess: () => {
-      // Only invalidate if the task is NOT being completed
-      // This prevents race conditions where a checklist save's invalidation
-      // interferes with the completion mutation's optimistic update
-      if (task?.status !== 'completed') {
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: 'none' });
-      }
-    },
+    // NO onSuccess invalidation — checklist progress saves just go to the server.
+    // Tasks.tsx's mutation handles all cache management for the task list.
+    // Having invalidateQueries here caused race conditions: when ChecklistExecution
+    // unmounts during task completion, its cleanup save triggers this mutation,
+    // and the onSuccess invalidation would overwrite the completion optimistic update.
     onError: (error) => {
       console.error("Error updating task:", error);
       toast({

@@ -12,7 +12,7 @@ import {
   type SystemLock, type InsertSystemLock
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, or, gte, lte, isNull } from "drizzle-orm";
+import { eq, and, sql, or, gte, lte, isNull, inArray } from "drizzle-orm";
 import { PersistenceManager } from './persistence';
 
 // Safe date handling utility to prevent TypeScript errors
@@ -3831,7 +3831,28 @@ class DatabaseStorage implements IStorage {
         return false;
       }
 
-      // Delete associated pending/skipped tasks (these are future tasks that haven't been worked on)
+      // Step 1: Delete task_logs for pending/skipped tasks that will be deleted
+      // Must happen BEFORE deleting tasks due to foreign key constraint (task_logs.task_id -> tasks.id)
+      const pendingTaskIds = await db.select({ id: tasks.id })
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.recurringTaskId, id),
+            or(
+              eq(tasks.status, 'pending'),
+              eq(tasks.status, 'skipped')
+            )
+          )
+        );
+      
+      if (pendingTaskIds.length > 0) {
+        const idsToClean = pendingTaskIds.map(t => t.id);
+        const deletedLogs = await db.delete(taskLogs)
+          .where(inArray(taskLogs.taskId, idsToClean));
+        console.log(`🗑️ [DB DELETE] Deleted ${deletedLogs.rowCount || 0} task_logs for ${idsToClean.length} pending/skipped tasks`);
+      }
+
+      // Step 2: Delete the pending/skipped task instances
       const deletedTasks = await db.delete(tasks)
         .where(
           and(
@@ -3845,21 +3866,27 @@ class DatabaseStorage implements IStorage {
       
       console.log(`🗑️ [DB DELETE] Deleted ${deletedTasks.rowCount || 0} pending/skipped tasks for recurring task ${id}`);
 
-      // Orphan remaining tasks (completed, in_progress) by setting recurringTaskId to null
+      // Step 3: Orphan remaining tasks (completed, in_progress) by setting recurringTaskId to null
       // This preserves historical data while breaking the foreign key reference
+      // task_logs for these tasks are kept intact since the tasks themselves are preserved
       const orphanedTasks = await db.update(tasks)
-        .set({ recurringTaskId: null })
+        .set({ 
+          recurringTaskId: null,
+          isFromDeletedRecurring: true,
+          deletedRecurringTaskTitle: recurringTask[0].title
+        })
         .where(eq(tasks.recurringTaskId, id));
       
       console.log(`🗑️ [DB DELETE] Orphaned ${orphanedTasks.rowCount || 0} historical tasks for recurring task ${id}`);
 
-      // Now delete the recurring task (no more foreign key references)
+      // Step 4: Delete the recurring task template (no more foreign key references)
       const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
       
-      console.log(`🗑️ [DB DELETE] Successfully deleted recurring task ${id}`);
-      return result.rowCount > 0;
+      console.log(`✅ [DB DELETE] Successfully deleted recurring task ${id}: "${recurringTask[0].title}"`);
+      return (result.rowCount || 0) > 0;
+      
     } catch (error) {
-      console.error('🚨 [DB DELETE] Error deleting recurring task:', error);
+      console.error('❌ [DB DELETE] Failed to delete recurring task:', error);
       throw error;
     }
   }
