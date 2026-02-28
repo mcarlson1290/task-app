@@ -3880,10 +3880,10 @@ class DatabaseStorage implements IStorage {
       console.log(`🗑️ [DB DELETE] Orphaned ${orphanedTasks.rowCount || 0} historical tasks for recurring task ${id}`);
 
       // Step 4: Delete the recurring task template (no more foreign key references)
-      const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
+      await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
       
       console.log(`✅ [DB DELETE] Successfully deleted recurring task ${id}: "${recurringTask[0].title}"`);
-      return (result.rowCount || 0) > 0;
+      return true;
       
     } catch (error) {
       console.error('❌ [DB DELETE] Failed to delete recurring task:', error);
